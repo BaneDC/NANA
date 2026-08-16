@@ -338,6 +338,39 @@ export default function Dashboard({ care, onCare, hasBookings, onAskAssistant })
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
+      {/* First on the page while it is live. It is the newest thing that has
+          happened, the only one with a clock on it, and the only one that
+          changes if it is read — everything below is standing information.
+          Once it is settled it drops into the list at the bottom. */}
+      {charging && (
+        <Section
+          title={`New report from ${caregiver.name.split(' ')[0]}`}
+          badge={
+            <span className="status-pill is-muted">
+              <Clock size={12} strokeWidth={2} />
+              Charges in {charging.chargesInHours} h
+            </span>
+          }
+        >
+          <button type="button" className="report-card" onClick={() => setModal('report')}>
+            <span className="cg-avatar">{caregiver.initials}</span>
+            <span className="report-body">
+              <span className="report-top">
+                <span className="report-when">
+                  {charging.date} · {charging.time}
+                </span>
+              </span>
+              <span className="report-note">{charging.note}</span>
+              <span className="report-meta">
+                {charging.hours} h · {money(chargedFor(charging.hours, agreement.rate))} · sent{' '}
+                {charging.sentOn} — open to read it
+              </span>
+            </span>
+            <ChevronRight size={18} strokeWidth={1.75} className="report-open" />
+          </button>
+        </Section>
+      )}
+
       <Section
         title="Your caregiver"
         badge={
@@ -428,38 +461,6 @@ export default function Dashboard({ care, onCare, hasBookings, onAskAssistant })
               No card on file yet — add one in Settings so this visit can be paid for.
             </p>
           )}
-        </Section>
-      )}
-
-      {/* A report that has just landed is not history yet, and it is the one
-          thing on this page that changes if it is read. It sits apart until it
-          is settled, then joins the list below. */}
-      {charging && (
-        <Section
-          title={`New report from ${caregiver.name.split(' ')[0]}`}
-          badge={
-            <span className="status-pill is-muted">
-              <Clock size={12} strokeWidth={2} />
-              Charges in {charging.chargesInHours} h
-            </span>
-          }
-        >
-          <button type="button" className="report-card" onClick={() => setModal('report')}>
-            <span className="cg-avatar">{caregiver.initials}</span>
-            <span className="report-body">
-              <span className="report-top">
-                <span className="report-when">
-                  {charging.date} · {charging.time}
-                </span>
-              </span>
-              <span className="report-note">{charging.note}</span>
-              <span className="report-meta">
-                {charging.hours} h · {money(chargedFor(charging.hours, agreement.rate))} · sent{' '}
-                {charging.sentOn} — open to read it
-              </span>
-            </span>
-            <ChevronRight size={18} strokeWidth={1.75} className="report-open" />
-          </button>
         </Section>
       )}
 
