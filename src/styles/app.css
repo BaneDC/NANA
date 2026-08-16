@@ -4700,3 +4700,25 @@ textarea.wo-text {
 .visit-raise:hover {
   color: var(--status-no-fg);
 }
+
+/* The fold for older visits. A row, not a button that looks like an action —
+   there is nothing to do here, only more to read. */
+.visit-more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1-5);
+  align-self: flex-start;
+  margin-top: var(--spacing-1);
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.visit-more:hover {
+  color: var(--text-primary);
+}
+
+.visit-list.is-earlier {
+  padding-top: var(--spacing-2);
+}

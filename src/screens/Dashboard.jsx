@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
   CalendarClock,
   Check,
   CheckCircle2,
+  ChevronDown,
   Clock,
   FileText,
   Frown,
@@ -67,6 +69,66 @@ function Line({ label, value }) {
   );
 }
 
+function Visit({ visit: v, rate, onRaise }) {
+  const Mood = MOOD[v.mood]?.icon;
+  return (
+    <li className="visit">
+      <div className="visit-head">
+        <p className="visit-when">
+          {v.date} · {v.time}
+        </p>
+        {v.status === 'charging' && (
+          <span className="status-pill is-muted">
+            <Clock size={12} strokeWidth={2} />
+            Charges in {v.chargesInHours} h
+          </span>
+        )}
+        {v.status === 'disputed' && (
+          <span className="status-pill is-declined">
+            <AlertTriangle size={12} strokeWidth={2} />
+            On hold — you raised it
+          </span>
+        )}
+        {v.status === 'paid' && <span className="status-pill is-accepted">Charged {v.chargedOn}</span>}
+      </div>
+      <p className="visit-note">{v.note}</p>
+      <p className="visit-services">{v.services.map(serviceTitle).join(' · ')}</p>
+      {v.concern && (
+        <p className="visit-concern">
+          <AlertTriangle size={12} strokeWidth={2} />
+          {v.concern}
+        </p>
+      )}
+      {v.disputeText && (
+        <p className="visit-concern">
+          <AlertTriangle size={12} strokeWidth={2} />
+          You said: {v.disputeText}
+        </p>
+      )}
+      <div className="visit-foot">
+        {Mood && (
+          <span className="visit-mood">
+            <Mood size={13} strokeWidth={1.75} />
+            {MOOD[v.mood].label}
+          </span>
+        )}
+        {v.eating && <span className="visit-mood">ate {AMOUNT_WORD[v.eating]}</span>}
+        {v.moving && <span className="visit-mood">moved {AMOUNT_WORD[v.moving]}</span>}
+        <span className="visit-money">
+          {v.hours} h · {money(chargedFor(v.hours, rate))}
+        </span>
+      </div>
+      {/* Quietly, on the row it belongs to: the charge is not a problem, but
+          the family can say so if it is. */}
+      {v.status === 'charging' && (
+        <button type="button" className="visit-raise" onClick={onRaise}>
+          Something is wrong with this visit
+        </button>
+      )}
+    </li>
+  );
+}
+
 const DISPUTE_REASONS = [
   { id: 'hours', label: 'The hours are wrong' },
   { id: 'not-done', label: 'Something on the list did not happen' },
@@ -126,12 +188,22 @@ function DisputeForm({ visit, caregiver, rate, onSend, onCancel }) {
 
 export default function Dashboard({ care, onCare, hasBookings, onAskAssistant }) {
   const [modal, setModal] = useState(null); // 'sign' | 'dispute'
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const counts = statusCounts();
   const rows = bookingsWithCaregiver().filter((b) => b.status !== 'accepted');
   const { caregiver, elder, agreement, payment, plan } = care;
   const charging = chargingVisit(care);
   const signed = agreement.status === 'active';
+
+  // Anything with money still moving stays out regardless of its age, then the
+  // list is topped up to two. Everything before that folds away.
+  const live = care.visits.filter((v) => v.status !== 'paid');
+  const shown = [...live, ...care.visits.filter((v) => v.status === 'paid')].slice(
+    0,
+    Math.max(2, live.length)
+  );
+  const earlier = care.visits.filter((v) => !shown.includes(v));
 
   const sign = () => {
     onCare((c) => ({ ...c, agreement: { ...c.agreement, status: 'active', signedOn: 'just now' } }));
@@ -255,68 +327,50 @@ export default function Dashboard({ care, onCare, hasBookings, onAskAssistant })
 
       <Section title="Visits">
         <ul className="visit-list">
-          {care.visits.map((v) => {
-            const Mood = MOOD[v.mood]?.icon;
-            return (
-              <li key={v.id} className="visit">
-                <div className="visit-head">
-                  <p className="visit-when">
-                    {v.date} · {v.time}
-                  </p>
-                  {v.status === 'charging' && (
-                    <span className="status-pill is-muted">
-                      <Clock size={12} strokeWidth={2} />
-                      Charges in {v.chargesInHours} h
-                    </span>
-                  )}
-                  {v.status === 'disputed' && (
-                    <span className="status-pill is-declined">
-                      <AlertTriangle size={12} strokeWidth={2} />
-                      On hold — you raised it
-                    </span>
-                  )}
-                  {v.status === 'paid' && (
-                    <span className="status-pill is-accepted">Charged {v.chargedOn}</span>
-                  )}
-                </div>
-                <p className="visit-note">{v.note}</p>
-                <p className="visit-services">{v.services.map(serviceTitle).join(' · ')}</p>
-                {v.concern && (
-                  <p className="visit-concern">
-                    <AlertTriangle size={12} strokeWidth={2} />
-                    {v.concern}
-                  </p>
-                )}
-                {v.disputeText && (
-                  <p className="visit-concern">
-                    <AlertTriangle size={12} strokeWidth={2} />
-                    You said: {v.disputeText}
-                  </p>
-                )}
-                <div className="visit-foot">
-                  {Mood && (
-                    <span className="visit-mood">
-                      <Mood size={13} strokeWidth={1.75} />
-                      {MOOD[v.mood].label}
-                    </span>
-                  )}
-                  {v.eating && <span className="visit-mood">ate {AMOUNT_WORD[v.eating]}</span>}
-                  {v.moving && <span className="visit-mood">moved {AMOUNT_WORD[v.moving]}</span>}
-                  <span className="visit-money">
-                    {v.hours} h · {money(chargedFor(v.hours, agreement.rate))}
-                  </span>
-                </div>
-                {/* Quietly, on the row it belongs to: the charge is not a
-                    problem, but the family can say so if it is. */}
-                {v.status === 'charging' && (
-                  <button type="button" className="visit-raise" onClick={() => setModal('dispute')}>
-                    Something is wrong with this visit
-                  </button>
-                )}
-              </li>
-            );
-          })}
+          {shown.map((v) => (
+            <Visit key={v.id} visit={v} rate={agreement.rate} onRaise={() => setModal('dispute')} />
+          ))}
         </ul>
+
+        {/* The recent ones stay open: a family opens this to read how yesterday
+            went, and putting that behind a click hides the only thing they came
+            for. What is older is reference, and reference folds away. */}
+        {earlier.length > 0 && (
+          <>
+            <button
+              type="button"
+              className="visit-more"
+              onClick={() => setHistoryOpen((v) => !v)}
+              aria-expanded={historyOpen}
+            >
+              {historyOpen ? 'Hide earlier visits' : `${earlier.length} earlier visits`}
+              <ChevronDown
+                size={14}
+                strokeWidth={2}
+                className={`toggle-chevron${historyOpen ? '' : ' is-up'}`}
+              />
+            </button>
+
+            <AnimatePresence initial={false}>
+              {historyOpen && (
+                <motion.div
+                  key="earlier"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <ul className="visit-list is-earlier">
+                    {earlier.map((v) => (
+                      <Visit key={v.id} visit={v} rate={agreement.rate} onRaise={() => setModal('dispute')} />
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </Section>
 
       {hasBookings && rows.length > 0 && (
