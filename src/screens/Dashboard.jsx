@@ -5,38 +5,35 @@ import {
   Check,
   CheckCircle2,
   Clock,
-  CreditCard,
   FileText,
   Frown,
   Meh,
   Phone,
-  ShieldCheck,
   Smile,
   XCircle,
 } from 'lucide-react';
 import { STATUS_LABEL, bookingsWithCaregiver, statusCounts } from '../data/bookings';
-import {
-  care as seedCare,
-  chargedFor,
-  chargingVisit,
-  heldForPlan,
-  money,
-  needsYou,
-  paidThisMonth,
-  serviceTitle,
-} from '../data/familyCare';
+import { chargedFor, chargingVisit, heldForPlan, money, serviceTitle } from '../data/familyCare';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
 
-// The family's side of the arrangement. The caregiver's board answers "what do
-// I owe whom next"; this answers the two questions a family actually has —
-// how is my mother, and what is this costing — and holds the three things the
-// caregiver's board sits blocked on: a signature, a card, and the right to say
-// something is wrong before it is charged.
+// The family's side of the arrangement, and only what a family opens it to see:
+// who is caring for their mother, what is coming, and what each visit cost.
+//
+// There is no alert panel. A charge going through 24 hours after a visit is the
+// normal working of the thing — nothing is asked of the family, and dressing it
+// in a warning said "something is wrong" on every day that nothing was. The one
+// thing that genuinely waits on them, signing the agreement, is asked for where
+// the agreement already is. The card lives in Settings, because it is set up
+// once and then never thought about again.
 
 const STATUS_ICON = { accepted: CheckCircle2, pending: Clock, declined: XCircle };
-const MOOD = { low: { icon: Frown, label: 'Low' }, usual: { icon: Meh, label: 'As usual' }, good: { icon: Smile, label: 'Good' } };
+const MOOD = {
+  low: { icon: Frown, label: 'Low' },
+  usual: { icon: Meh, label: 'As usual' },
+  good: { icon: Smile, label: 'Good' },
+};
 const AMOUNT_WORD = { less: 'less than usual', usual: 'as usual', more: 'more than usual' };
 
 function StatusPill({ status }) {
@@ -77,7 +74,7 @@ const DISPUTE_REASONS = [
   { id: 'other', label: 'Something else' },
 ];
 
-function DisputeForm({ visit, rate, onSend, onCancel }) {
+function DisputeForm({ visit, caregiver, rate, onSend, onCancel }) {
   const [reason, setReason] = useState('hours');
   const [text, setText] = useState('');
 
@@ -85,7 +82,8 @@ function DisputeForm({ visit, rate, onSend, onCancel }) {
     <>
       <p className="ag-lead">
         {visit.date} · {visit.time} — {visit.hours} h, {money(chargedFor(visit.hours, rate))}. Raising
-        this stops the charge while we look at it, and Vesna is told what you said.
+        this stops the charge while we look at it, and {caregiver.name.split(' ')[0]} is told what
+        you said.
       </p>
 
       <p className="ag-label">What is wrong</p>
@@ -119,7 +117,6 @@ function DisputeForm({ visit, rate, onSend, onCancel }) {
           Cancel
         </Button>
         <Button variant="primary" disabled={!text.trim()} onClick={() => onSend(reason, text.trim())}>
-          <AlertTriangle size={14} strokeWidth={1.75} />
           Raise it
         </Button>
       </div>
@@ -127,33 +124,22 @@ function DisputeForm({ visit, rate, onSend, onCancel }) {
   );
 }
 
-export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
-  const [care, setCare] = useState(seedCare);
-  const [modal, setModal] = useState(null); // 'sign' | 'pay' | 'dispute'
+export default function Dashboard({ care, onCare, hasBookings, onAskAssistant }) {
+  const [modal, setModal] = useState(null); // 'sign' | 'dispute'
 
   const counts = statusCounts();
   const rows = bookingsWithCaregiver().filter((b) => b.status !== 'accepted');
   const { caregiver, elder, agreement, payment, plan } = care;
   const charging = chargingVisit(care);
-  const todo = needsYou(care);
+  const signed = agreement.status === 'active';
 
   const sign = () => {
-    setCare((c) => ({ ...c, agreement: { ...c.agreement, status: 'active', signedOn: 'just now' } }));
-    setModal(null);
-  };
-
-  // No card details are collected here, and none should be: this is the point
-  // where a real build hands off to Stripe and gets a token back.
-  const connect = () => {
-    setCare((c) => ({
-      ...c,
-      payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: 'just now' },
-    }));
+    onCare((c) => ({ ...c, agreement: { ...c.agreement, status: 'active', signedOn: 'just now' } }));
     setModal(null);
   };
 
   const dispute = (reason, text) => {
-    setCare((c) => ({
+    onCare((c) => ({
       ...c,
       visits: c.visits.map((v) =>
         v.id === charging.id ? { ...v, status: 'disputed', disputeReason: reason, disputeText: text } : v
@@ -162,69 +148,22 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
     setModal(null);
   };
 
-  // The arrangement is not behind the paywall. Unlocking bought the caregivers'
-  // numbers; it has nothing to do with whether the family can see the care they
-  // are already receiving — and hiding this screen until they paid meant the
-  // one screen that says what is being charged was the one they could not read.
-  // The requests they sent are still gated, because those are what unlocking is
-  // about.
-
   return (
     <div className="view">
       <div className="view-head">
         <div className="view-head-text">
           <h1 className="view-title">Your care</h1>
           <p className="view-sub">
-            {caregiver.name.split(' ')[0]} and {elder.name.split(' ')[0]}, and everything that has
-            passed between you.
+            {caregiver.name.split(' ')[0]} and {elder.name.split(' ')[0]}, and every visit so far.
           </p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
-      {/* Only what is being asked of them, and only while it is. */}
-      {todo.length > 0 && (
-        <section className="panel-card needs-you">
-          <div className="panel-card-head">
-            <p className="doc-section-title">
-              <AlertTriangle size={13} strokeWidth={2} />
-              Waiting on you
-            </p>
-          </div>
-          <ul className="needs-list">
-            {todo.map((item) => (
-              <li key={item.id} className="needs-item">
-                <span className="needs-text">
-                  <span className="needs-label">{item.label}</span>
-                  <span className="needs-note">{item.note}</span>
-                </span>
-                {item.id === 'sign' && (
-                  <Button variant="primary" onClick={() => setModal('sign')}>
-                    <FileText size={14} strokeWidth={1.75} />
-                    Read and sign
-                  </Button>
-                )}
-                {item.id === 'pay' && (
-                  <Button variant="primary" onClick={() => setModal('pay')}>
-                    <CreditCard size={14} strokeWidth={1.75} />
-                    Add a card
-                  </Button>
-                )}
-                {item.id === 'charge' && (
-                  <Button variant="secondary" onClick={() => setModal('dispute')}>
-                    Something is wrong
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       <Section
         title="Your caregiver"
         badge={
-          agreement.status === 'active' ? (
+          signed ? (
             <span className="status-pill is-accepted">
               <Check size={12} strokeWidth={2} />
               Since {agreement.signedOn}
@@ -251,7 +190,6 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
             {caregiver.phone}
           </a>
         </div>
-        <p className="visit-note">{caregiver.bio}</p>
 
         <p className="ag-label">What the agreement covers</p>
         <div className="ag-services">
@@ -267,22 +205,36 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
           <Line label="Agreed hours" value={`${agreement.hours} h/week`} />
           <Line label="Pattern" value={agreement.schedule} />
         </div>
+
+        {/* The one thing that really is waiting on them, asked for where the
+            agreement it concerns already is. */}
+        {!signed && (
+          <>
+            <p className="ag-hint">Sent {agreement.sentOn}. Visits can be booked once you sign.</p>
+            <div className="panel-card-actions is-end">
+              <Button variant="primary" onClick={() => setModal('sign')}>
+                <FileText size={14} strokeWidth={1.75} />
+                Read and sign
+              </Button>
+            </div>
+          </>
+        )}
       </Section>
 
-      {plan && agreement.status === 'active' && (
+      {plan && signed && (
         <Section
           title="Next visit"
           badge={
             <span className="status-pill is-muted">
               <CalendarClock size={12} strokeWidth={2} />
-              {money(heldForPlan(care))} held
+              {money(heldForPlan(care))} set aside
             </span>
           }
         >
           <p className="ag-lead">
             {plan.date} · {plan.time} — {plan.hours} h. {caregiver.name.split(' ')[0]} sent this{' '}
-            {plan.sentOn}, and {money(heldForPlan(care))} is held on your card for it. Nothing is
-            taken until the visit has happened.
+            {plan.sentOn}, and {money(heldForPlan(care))} is set aside on your card for it. Nothing
+            is taken until the visit has happened.
           </p>
           <div className="ag-services">
             {plan.services.map((id) => (
@@ -293,65 +245,15 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
             ))}
           </div>
           {plan.notes && <p className="visit-note">{plan.notes}</p>}
+          {!payment.connected && (
+            <p className="ag-hint">
+              No card on file yet — add one in Settings so this visit can be paid for.
+            </p>
+          )}
         </Section>
       )}
 
-      <Section
-        title="Payment"
-        badge={
-          payment.connected ? (
-            <span className="status-pill is-accepted">
-              <ShieldCheck size={12} strokeWidth={2} />
-              {payment.brand} ···· {payment.last4}
-            </span>
-          ) : (
-            <span className="status-pill is-declined">Not set up</span>
-          )
-        }
-      >
-        {payment.connected ? (
-          <>
-            <p className="ag-lead">
-              Added {payment.connectedOn}. Each visit is charged 24 hours after{' '}
-              {caregiver.name.split(' ')[0]} sends the report — you do not have to approve anything,
-              and you can stop a charge in that window if something is wrong.
-            </p>
-            <div className="bc-lines ag-terms">
-              <Line label="Held for the next visit" value={money(heldForPlan(care))} />
-              <Line
-                label="Charging now"
-                value={
-                  charging
-                    ? `${money(chargedFor(charging.hours, agreement.rate))} · in ${charging.chargesInHours} h`
-                    : 'Nothing'
-                }
-              />
-              <Line label="Charged in August" value={money(paidThisMonth(care))} />
-            </div>
-            <div className="panel-card-actions is-end">
-              <Button variant="secondary" onClick={() => setModal('pay')}>
-                <CreditCard size={14} strokeWidth={1.75} />
-                Change card
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="ag-lead">
-              Visits are paid automatically, so a card has to be on file before one can be booked.
-              It is added through Stripe — we never see the number.
-            </p>
-            <div className="panel-card-actions is-end">
-              <Button variant="primary" onClick={() => setModal('pay')}>
-                <CreditCard size={14} strokeWidth={1.75} />
-                Add a card
-              </Button>
-            </div>
-          </>
-        )}
-      </Section>
-
-      <Section title="Visits and charges">
+      <Section title="Visits">
         <ul className="visit-list">
           {care.visits.map((v) => {
             const Mood = MOOD[v.mood]?.icon;
@@ -362,7 +264,7 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
                     {v.date} · {v.time}
                   </p>
                   {v.status === 'charging' && (
-                    <span className="status-pill is-pending">
+                    <span className="status-pill is-muted">
                       <Clock size={12} strokeWidth={2} />
                       Charges in {v.chargesInHours} h
                     </span>
@@ -373,7 +275,9 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
                       On hold — you raised it
                     </span>
                   )}
-                  {v.status === 'paid' && <span className="status-pill is-accepted">Charged {v.chargedOn}</span>}
+                  {v.status === 'paid' && (
+                    <span className="status-pill is-accepted">Charged {v.chargedOn}</span>
+                  )}
                 </div>
                 <p className="visit-note">{v.note}</p>
                 <p className="visit-services">{v.services.map(serviceTitle).join(' · ')}</p>
@@ -402,12 +306,12 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
                     {v.hours} h · {money(chargedFor(v.hours, agreement.rate))}
                   </span>
                 </div>
+                {/* Quietly, on the row it belongs to: the charge is not a
+                    problem, but the family can say so if it is. */}
                 {v.status === 'charging' && (
-                  <div className="panel-card-actions is-end">
-                    <Button variant="secondary" onClick={() => setModal('dispute')}>
-                      Something is wrong
-                    </Button>
-                  </div>
+                  <button type="button" className="visit-raise" onClick={() => setModal('dispute')}>
+                    Something is wrong with this visit
+                  </button>
                 )}
               </li>
             );
@@ -415,8 +319,6 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
         </ul>
       </Section>
 
-      {/* The requests that never turned into anything are still part of the
-          picture, so they stay — just no longer the whole screen. */}
       {hasBookings && rows.length > 0 && (
         <Section
           title="Your other requests"
@@ -445,94 +347,59 @@ export default function Dashboard({ hasBookings, onGoToChat, onAskAssistant }) {
         </Section>
       )}
 
-      <AnimatedModals
-        modal={modal}
-        care={care}
-        charging={charging}
-        onClose={() => setModal(null)}
-        onSign={sign}
-        onConnect={connect}
-        onDispute={dispute}
-      />
+      {modal === 'sign' && (
+        <Modal eyebrow={caregiver.name} title="Care agreement" wide onClose={() => setModal(null)}>
+          <p className="ag-lead">
+            These are the terms {caregiver.name.split(' ')[0]} proposed on {agreement.sentOn}.
+            Signing them is what lets visits be booked — every visit and charge after this is
+            calculated from them.
+          </p>
+          <p className="ag-label">Services covered</p>
+          <div className="ag-services">
+            {agreement.services.map((id) => (
+              <span key={id} className="svc is-set">
+                <Check size={13} strokeWidth={2.5} />
+                {serviceTitle(id)}
+              </span>
+            ))}
+          </div>
+          <div className="bc-lines ag-terms">
+            <Line label="Hourly rate" value={`${money(agreement.rate)} / h`} />
+            <Line label="Agreed hours" value={`${agreement.hours} h/week`} />
+            <Line label="Pattern" value={agreement.schedule} />
+          </div>
+          <p className="ag-hint">
+            You can end the arrangement at any time. Hours are charged as they are worked, never in
+            advance.
+          </p>
+          <div className="panel-card-actions is-end">
+            <Button variant="secondary" onClick={() => setModal(null)}>
+              Not yet
+            </Button>
+            <Button variant="primary" onClick={sign}>
+              <Check size={14} strokeWidth={2} />
+              Sign the agreement
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'dispute' && charging && (
+        <Modal
+          eyebrow={caregiver.name}
+          title="Something is wrong"
+          wide
+          onClose={() => setModal(null)}
+        >
+          <DisputeForm
+            visit={charging}
+            caregiver={caregiver}
+            rate={agreement.rate}
+            onSend={dispute}
+            onCancel={() => setModal(null)}
+          />
+        </Modal>
+      )}
     </div>
   );
-}
-
-function AnimatedModals({ modal, care, charging, onClose, onSign, onConnect, onDispute }) {
-  const { caregiver, agreement } = care;
-
-  if (modal === 'sign') {
-    return (
-      <Modal eyebrow={caregiver.name} title="Care agreement" wide onClose={onClose}>
-        <p className="ag-lead">
-          These are the terms {caregiver.name.split(' ')[0]} proposed on {agreement.sentOn}. Signing
-          them is what lets visits be booked — every visit and charge after this is calculated from
-          them.
-        </p>
-        <p className="ag-label">Services covered</p>
-        <div className="ag-services">
-          {agreement.services.map((id) => (
-            <span key={id} className="svc is-set">
-              <Check size={13} strokeWidth={2.5} />
-              {serviceTitle(id)}
-            </span>
-          ))}
-        </div>
-        <div className="bc-lines ag-terms">
-          <Line label="Hourly rate" value={`${money(agreement.rate)} / h`} />
-          <Line label="Agreed hours" value={`${agreement.hours} h/week`} />
-          <Line label="Pattern" value={agreement.schedule} />
-        </div>
-        <p className="ag-hint">
-          You can end the arrangement at any time. Hours are charged as they are worked, never in
-          advance.
-        </p>
-        <div className="panel-card-actions is-end">
-          <Button variant="secondary" onClick={onClose}>
-            Not yet
-          </Button>
-          <Button variant="primary" onClick={onSign}>
-            <Check size={14} strokeWidth={2} />
-            Sign the agreement
-          </Button>
-        </div>
-      </Modal>
-    );
-  }
-
-  if (modal === 'pay') {
-    return (
-      <Modal eyebrow="Payment" title="Add a card" onClose={onClose}>
-        <p className="doc-p">
-          Cards are held by Stripe, not by us — you enter the number on their page and we never see
-          it. Once it is on file, visits are charged automatically and you are not asked again.
-        </p>
-        <ul className="paywall-list">
-          <li>
-            <Check size={12} strokeWidth={2.5} /> Charged 24 hours after each visit report
-          </li>
-          <li>
-            <Check size={12} strokeWidth={2.5} /> Nothing taken before a visit happens
-          </li>
-          <li>
-            <Check size={12} strokeWidth={2.5} /> You can stop any charge inside that window
-          </li>
-        </ul>
-        <Button variant="primary" size="lg" full onClick={onConnect}>
-          <CreditCard size={14} strokeWidth={1.75} />
-          Continue to Stripe
-        </Button>
-      </Modal>
-    );
-  }
-
-  if (modal === 'dispute' && charging) {
-    return (
-      <Modal eyebrow={caregiver.name} title="Something is wrong" wide onClose={onClose}>
-        <DisputeForm visit={charging} rate={agreement.rate} onSend={onDispute} onCancel={onClose} />
-      </Modal>
-    );
-  }
-
-  return null;
 }

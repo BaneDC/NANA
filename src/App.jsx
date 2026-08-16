@@ -20,6 +20,7 @@ import ApiKeyPanel from './components/ApiKeyPanel';
 import { loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { statusCounts } from './data/bookings';
+import { care as seedCare } from './data/familyCare';
 import { caregivers } from './data/carePlan';
 import { planEntries, seedThreads } from './data/threads';
 
@@ -53,6 +54,9 @@ export default function App() {
   const [askingKey, setAskingKey] = useState(false);
   // things the family said that no question covers — they reach the plan
   const [notes, setNotes] = useState([]);
+  // The arrangement with the caregiver, shared: the dashboard reads it and the
+  // card that pays for it is set up in Settings.
+  const [care, setCare] = useState(seedCare);
   const [run, setRun] = useState(0); // remounts the flow on restart
 
   const onPlan = useCallback((p) => setPlan(p), []);
@@ -262,8 +266,9 @@ export default function App() {
             <div className="chat-container">
               {view === 'dashboard' && (
                 <Dashboard
+                  care={care}
+                  onCare={setCare}
                   hasBookings={hasBookings}
-                  onGoToChat={goToChat}
                   onAskAssistant={askAssistant}
                 />
               )}
@@ -294,7 +299,12 @@ export default function App() {
                 />
               )}
               {view === 'settings' && (
-                <Settings unlocked={unlocked} onAskAssistant={askAssistant} />
+                <Settings
+                  unlocked={unlocked}
+                  care={care}
+                  onCare={setCare}
+                  onAskAssistant={askAssistant}
+                />
               )}
             </div>
           )}

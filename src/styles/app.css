@@ -4682,3 +4682,21 @@ textarea.wo-text {
 .visit .panel-card-actions {
   margin-top: var(--spacing-2);
 }
+
+/* Raising a problem with a charge is a quiet link on the row it concerns, not
+   an alarm at the top of the page: the charge itself is the normal course of
+   things, and a warning colour on it says otherwise every day it is wrong. */
+.visit-raise {
+  align-self: flex-start;
+  margin-top: var(--spacing-1);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.visit-raise:hover {
+  color: var(--status-no-fg);
+}
