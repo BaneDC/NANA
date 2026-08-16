@@ -73,6 +73,11 @@ export const care = {
       mood: 'good',
       eating: 'usual',
       moving: 'usual',
+      // what the visit order said, so the family can read the report against
+      // what was promised rather than against nothing
+      plannedHours: 4,
+      plannedServices: ['medication', 'meals', 'company'],
+      planNotes: 'Pick up the prescription from the pharmacy on Njegoševa. Milena asked to be called after.',
       // sent, and inside the family's 24 hours
       status: 'charging',
       sentOn: '2 hours ago',

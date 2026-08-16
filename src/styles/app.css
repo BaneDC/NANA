@@ -4722,3 +4722,104 @@ textarea.wo-text {
 .visit-list.is-earlier {
   padding-top: var(--spacing-2);
 }
+
+/* ---------- Family: a report that has just arrived ---------- */
+
+/* Set apart from the settled visits below it, without being an alarm: this is
+   news about someone's mother, not a problem. Tinted, bordered, and the whole
+   card opens. */
+.report-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-primary-300);
+  border-radius: var(--radius-2xl);
+  background: var(--primary-subtle);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.report-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(76, 34, 18, 0.08);
+}
+
+.report-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-top {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.report-when {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.report-note {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.report-meta {
+  margin-top: var(--spacing-1);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--color-primary-700);
+}
+
+.report-open {
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--color-primary-600);
+}
+
+/* the report, read against what was planned for it */
+.report-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.report-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+}
+
+.report-row dt {
+  flex-shrink: 0;
+  width: 116px;
+  color: var(--text-disabled);
+}
+
+.report-row dd {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+/* the mood row reused inside a definition list, where it is a value not a footer */
+.visit-foot.is-inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}

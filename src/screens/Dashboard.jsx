@@ -6,6 +6,7 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   Clock,
   FileText,
   Frown,
@@ -129,6 +130,98 @@ function Visit({ visit: v, rate, onRaise }) {
   );
 }
 
+// What arrived, laid against what was promised. A report is only reassuring if
+// you can see it matched the plan; on its own it is just a paragraph.
+function ReportDetail({ visit: v, caregiver, rate }) {
+  const Mood = MOOD[v.mood]?.icon;
+  const asPlanned = v.plannedHours ? v.hours === v.plannedHours : null;
+  return (
+    <>
+      <p className="ag-lead">
+        {caregiver.name.split(' ')[0]} sent this {v.sentOn}. If you do nothing it is charged in{' '}
+        {v.chargesInHours} hours — you only need to be here if something is wrong.
+      </p>
+
+      <dl className="report-rows">
+        <div className="report-row">
+          <dt>Visit</dt>
+          <dd>
+            {v.date} · {v.time}
+          </dd>
+        </div>
+        <div className="report-row">
+          <dt>Hours</dt>
+          <dd>
+            {v.hours} h
+            {v.plannedHours &&
+              (asPlanned ? ' — as planned' : ` — ${v.plannedHours} h were planned`)}
+          </dd>
+        </div>
+        <div className="report-row">
+          <dt>What she did</dt>
+          <dd>{v.note}</dd>
+        </div>
+        {v.planNotes && (
+          <div className="report-row">
+            <dt>Was asked to</dt>
+            <dd>{v.planNotes}</dd>
+          </div>
+        )}
+        <div className="report-row">
+          <dt>How she was</dt>
+          <dd className="visit-foot is-inline">
+            {Mood && (
+              <span className="visit-mood">
+                <Mood size={13} strokeWidth={1.75} />
+                {MOOD[v.mood].label}
+              </span>
+            )}
+            {v.eating && <span className="visit-mood">ate {AMOUNT_WORD[v.eating]}</span>}
+            {v.moving && <span className="visit-mood">moved {AMOUNT_WORD[v.moving]}</span>}
+          </dd>
+        </div>
+      </dl>
+
+      <p className="ag-label">What got done</p>
+      <div className="ag-services">
+        {v.services.map((id) => (
+          <span key={id} className="svc is-set">
+            <Check size={13} strokeWidth={2.5} />
+            {serviceTitle(id)}
+          </span>
+        ))}
+        {(v.plannedServices || [])
+          .filter((id) => !v.services.includes(id))
+          .map((id) => (
+            <span key={id} className="svc">
+              {serviceTitle(id)} — not this time
+            </span>
+          ))}
+      </div>
+
+      {v.concern && (
+        <p className="visit-concern">
+          <AlertTriangle size={12} strokeWidth={2} />
+          {caregiver.name.split(' ')[0]} flagged: {v.concern}
+        </p>
+      )}
+
+      <div className="bc-total">
+        <p className="bc-line">
+          <span className="bc-line-label">
+            {v.hours} h at {money(rate)}/h
+          </span>
+          <span className="bc-line-value">{money(chargedFor(v.hours, rate))}</span>
+        </p>
+        <p className="bc-line is-net">
+          <span className="bc-line-label">Charged in {v.chargesInHours} h</span>
+          <span className="bc-line-value">{money(chargedFor(v.hours, rate))}</span>
+        </p>
+      </div>
+    </>
+  );
+}
+
 const DISPUTE_REASONS = [
   { id: 'hours', label: 'The hours are wrong' },
   { id: 'not-done', label: 'Something on the list did not happen' },
@@ -198,15 +291,28 @@ export default function Dashboard({ care, onCare, hasBookings, onAskAssistant })
 
   // Anything with money still moving stays out regardless of its age, then the
   // list is topped up to two. Everything before that folds away.
-  const live = care.visits.filter((v) => v.status !== 'paid');
-  const shown = [...live, ...care.visits.filter((v) => v.status === 'paid')].slice(
+  const settledList = care.visits.filter((v) => v.status !== 'charging');
+  const live = settledList.filter((v) => v.status !== 'paid');
+  const shown = [...live, ...settledList.filter((v) => v.status === 'paid')].slice(
     0,
     Math.max(2, live.length)
   );
-  const earlier = care.visits.filter((v) => !shown.includes(v));
+  const earlier = settledList.filter((v) => !shown.includes(v));
 
   const sign = () => {
     onCare((c) => ({ ...c, agreement: { ...c.agreement, status: 'active', signedOn: 'just now' } }));
+    setModal(null);
+  };
+
+  // Saying it is fine only brings the charge forward. Silence does the same
+  // thing 24 hours later, which is the arrangement they signed up to.
+  const confirm = () => {
+    onCare((c) => ({
+      ...c,
+      visits: c.visits.map((v) =>
+        v.id === charging.id ? { ...v, status: 'paid', chargedOn: 'just now' } : v
+      ),
+    }));
     setModal(null);
   };
 
@@ -325,6 +431,38 @@ export default function Dashboard({ care, onCare, hasBookings, onAskAssistant })
         </Section>
       )}
 
+      {/* A report that has just landed is not history yet, and it is the one
+          thing on this page that changes if it is read. It sits apart until it
+          is settled, then joins the list below. */}
+      {charging && (
+        <Section
+          title={`New report from ${caregiver.name.split(' ')[0]}`}
+          badge={
+            <span className="status-pill is-muted">
+              <Clock size={12} strokeWidth={2} />
+              Charges in {charging.chargesInHours} h
+            </span>
+          }
+        >
+          <button type="button" className="report-card" onClick={() => setModal('report')}>
+            <span className="cg-avatar">{caregiver.initials}</span>
+            <span className="report-body">
+              <span className="report-top">
+                <span className="report-when">
+                  {charging.date} · {charging.time}
+                </span>
+              </span>
+              <span className="report-note">{charging.note}</span>
+              <span className="report-meta">
+                {charging.hours} h · {money(chargedFor(charging.hours, agreement.rate))} · sent{' '}
+                {charging.sentOn} — open to read it
+              </span>
+            </span>
+            <ChevronRight size={18} strokeWidth={1.75} className="report-open" />
+          </button>
+        </Section>
+      )}
+
       <Section title="Visits">
         <ul className="visit-list">
           {shown.map((v) => (
@@ -433,6 +571,26 @@ export default function Dashboard({ care, onCare, hasBookings, onAskAssistant })
             <Button variant="primary" onClick={sign}>
               <Check size={14} strokeWidth={2} />
               Sign the agreement
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {modal === 'report' && charging && (
+        <Modal
+          eyebrow={`${caregiver.name} · ${charging.date}`}
+          title="Visit report"
+          wide
+          onClose={() => setModal(null)}
+        >
+          <ReportDetail visit={charging} caregiver={caregiver} rate={agreement.rate} />
+          <div className="panel-card-actions is-end">
+            <Button variant="secondary" onClick={() => setModal('dispute')}>
+              Something is wrong
+            </Button>
+            <Button variant="primary" onClick={confirm}>
+              <Check size={14} strokeWidth={2} />
+              All good — pay now
             </Button>
           </div>
         </Modal>
