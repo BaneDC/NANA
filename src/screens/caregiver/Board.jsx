@@ -111,7 +111,7 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
           label="Paid to you in August"
           note={
             s.awaiting > 0
-              ? `${money(s.awaiting)} awaiting confirmation`
+              ? `${money(s.awaiting)} clearing`
               : `${s.active} arrangements running`
           }
         />

@@ -169,8 +169,8 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       )}
 
       <p className="ag-hint">
-        Sending this starts {client.family}'s 24 hours. They confirm it, or it charges itself when
-        the time is up.
+        Sending this starts {client.family}'s 24 hours. Nothing is asked of them — it charges
+        itself when the time is up, unless they raise something in that window.
       </p>
 
       <div className="bc-total wo-total">

@@ -133,7 +133,7 @@ function Visits({ client }) {
     <>
       <p className="ag-hint">
         {settled.length} paid · {hours} h · {money(earned)} to you
-        {pending > 0 && ` · ${money(pending)} awaiting confirmation`}
+        {pending > 0 && ` · ${money(pending)} clearing`}
       </p>
       <ul className="visit-list">
         {visits.map((v, i) => {
@@ -148,7 +148,7 @@ function Visits({ client }) {
                 {v.status === 'awaiting' ? (
                   <span className="status-pill is-pending">
                     <Clock size={12} strokeWidth={2} />
-                    Confirms in {v.confirmsInHours} h
+                    Charges in {v.confirmsInHours} h
                   </span>
                 ) : (
                   <span className="status-pill is-accepted">Paid</span>

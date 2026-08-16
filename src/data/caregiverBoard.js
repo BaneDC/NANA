@@ -340,6 +340,10 @@ export function agreementState(client) {
 // Money sits in three places on this board and they are not the same thing:
 // held against a visit that has not happened, sent and inside the family's
 // 24 hours, and actually paid. Telling them apart is most of the point.
+//
+// Nothing is asked of the family in that window — the charge goes through on
+// its own. What they have is the right to stop it, which is why this is
+// "clearing" and not "awaiting approval".
 export const heldFor = (client) =>
   client.plan?.sentOn ? totalsFor(client.plan.hours, client.rate).charged : 0;
 

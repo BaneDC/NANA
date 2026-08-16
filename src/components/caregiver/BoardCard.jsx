@@ -188,7 +188,7 @@ const BoardCard = forwardRef(function BoardCard(
             <Line label="Rate" value={`${money(client.rate)}/h`} />
           )}
           {awaitingFor(client) > 0 ? (
-            <Line label="Awaiting" value={`${money(awaitingFor(client))} · family confirming`} />
+            <Line label="Clearing" value={`${money(awaitingFor(client))} · in the 24 h window`} />
           ) : (
             <Line label="Agreed" value={`${client.hours} h/week`} />
           )}

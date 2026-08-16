@@ -118,7 +118,7 @@ export default function CaregiverApp({ user, onRestart }) {
       activity: logged(
         c,
         'work-order',
-        `Work order sent for the ${report.hours} h visit — ${report.services.map(serviceShort).join(', ').toLowerCase() || 'nothing ticked'}. ${money(net)} to you once ${c.family} confirms, or automatically in 24 hours.` +
+        `Work order sent for the ${report.hours} h visit — ${report.services.map(serviceShort).join(', ').toLowerCase() || 'nothing ticked'}. ${money(net)} to you when it charges in 24 hours, unless ${c.family} raises something.` +
           (report.concern ? ` You flagged: ${report.concern}` : '')
       ),
     }));
