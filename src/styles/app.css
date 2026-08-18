@@ -4823,3 +4823,73 @@ textarea.wo-text {
   line-height: 18px;
   color: var(--text-secondary);
 }
+
+/* ---------- Find a caregiver ---------- */
+
+.find-search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  height: var(--input-size);
+  padding: 0 var(--spacing-3);
+  border: 0.8px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+  color: var(--text-disabled);
+  transition: border-color 0.18s ease;
+}
+
+.find-search:focus-within {
+  border-color: var(--primary);
+}
+
+.find-search input {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: var(--text-primary);
+}
+
+.find-count {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.find-count .visit-raise {
+  margin-top: 0;
+}
+
+/* the browse row carries an action, so it needs the width and a middle column.
+   The avatar belongs beside the name, not floating halfway down a three-line
+   block; only the action centres. */
+.caregiver.is-wide {
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-2xl);
+}
+
+.caregiver.is-wide .cg-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.caregiver.is-wide > .btn,
+.caregiver.is-wide > .status-pill {
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: 0;
+}
+
+/* two controls in a view header stay together and stay on one line */
+.view-head-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}

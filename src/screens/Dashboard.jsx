@@ -12,6 +12,7 @@ import {
   Frown,
   Meh,
   Phone,
+  Search,
   Smile,
   XCircle,
 } from 'lucide-react';
@@ -279,7 +280,7 @@ function DisputeForm({ visit, caregiver, rate, onSend, onCancel }) {
   );
 }
 
-export default function Dashboard({ care, onCare, hasBookings, onAskAssistant }) {
+export default function Dashboard({ care, onCare, hasBookings, onAskAssistant, onFindCaregiver }) {
   const [modal, setModal] = useState(null); // 'sign' | 'dispute'
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -335,7 +336,16 @@ export default function Dashboard({ care, onCare, hasBookings, onAskAssistant })
             {caregiver.name.split(' ')[0]} and {elder.name.split(' ')[0]}, and every visit so far.
           </p>
         </div>
-        <AskAssistant onClick={onAskAssistant} />
+        {/* A shortcut, not the home of it: wanting another pair of hands
+            usually occurs while looking at the arrangement you already have.
+            The page itself is in the nav, where a capability belongs. */}
+        <div className="view-head-actions">
+          <AskAssistant onClick={onAskAssistant} />
+          <Button variant="primary" onClick={onFindCaregiver}>
+            <Search size={14} strokeWidth={1.75} />
+            Find a caregiver
+          </Button>
+        </div>
       </div>
 
       {/* First on the page while it is live. It is the newest thing that has

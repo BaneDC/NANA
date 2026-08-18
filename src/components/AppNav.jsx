@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Plus,
   RotateCcw,
+  Search,
   Settings,
   User,
 } from 'lucide-react';
@@ -147,6 +148,16 @@ export default function AppNav({
           <LayoutDashboard size={16} strokeWidth={1.75} />
           <span>Dashboard</span>
           {badge > 0 && <span className="nav-badge">{badge}</span>}
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item${view === 'find-caregiver' ? ' is-active' : ''}`}
+          onClick={() => onView('find-caregiver')}
+          aria-current={view === 'find-caregiver' ? 'page' : undefined}
+        >
+          <Search size={16} strokeWidth={1.75} />
+          <span>Find a caregiver</span>
         </button>
 
         <Section

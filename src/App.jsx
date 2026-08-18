@@ -5,6 +5,7 @@ import Chat from './screens/Chat';
 import ArchivedChat from './screens/ArchivedChat';
 import Dashboard from './screens/Dashboard';
 import Plans from './screens/Plans';
+import FindCaregiver from './screens/FindCaregiver';
 import Profile from './screens/Profile';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
@@ -270,8 +271,10 @@ export default function App() {
                   onCare={setCare}
                   hasBookings={hasBookings}
                   onAskAssistant={askAssistant}
+                  onFindCaregiver={() => setView('find-caregiver')}
                 />
               )}
+              {view === 'find-caregiver' && <FindCaregiver onAskAssistant={askAssistant} />}
               {view === 'plans' && (
                 <Plans
                   entries={entries}
