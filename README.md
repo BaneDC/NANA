@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Opens on http://localhost:5180.
+Opens on http://localhost:5180, or the next free port if that one is taken.
 
 ## Shell
 
