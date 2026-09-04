@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NANA Prime — Billing UI review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9F6; --card:#FFFFFF; --line:#EDE0D4; --hair:#F3EAE1; --soft:#F8F4EF;
+  --accent:#FC703C; --accent-ink:#FFF8F0; --ink:#5D0703; --body:#4E3B31;
+  --mut:rgba(78,59,49,.62); --mut2:rgba(78,59,49,.5); --cat:#A86B4C;
+  --warn-bg:#FFE0CC; --warn-ink:#7A2E1A;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--body);font-family:'Onest',-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+h1,h2,h3{color:var(--ink);letter-spacing:-.02em}
+
+/* ---------- page chrome ---------- */
+.top{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1420px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.01em;flex:none}
+.brand span{color:var(--accent)}
+.jump{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
+.jump a{font-size:12.5px;color:var(--mut);text-decoration:none;padding:5px 9px;border-radius:7px;white-space:nowrap}
+.jump a:hover{background:var(--soft);color:var(--ink)}
+.wrap{max-width:1420px;margin:0 auto;padding:34px 24px 90px}
+
+.lede{max-width:66ch}
+.lede h1{font-size:31px;font-weight:700;line-height:1.15}
+.lede p{font-size:15.5px;color:var(--mut);margin-top:10px;text-wrap:pretty}
+.scope{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
+.cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:24px}
+a.try,button.try{display:inline-flex;border:0;font-family:inherit;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--accent-ink);background:var(--accent);border-radius:10px;padding:12px 18px;text-decoration:none}
+a.try:hover,button.try:hover{background:#E6634E}
+a.try span,button.try span{font-size:16px;line-height:1}
+.cta-row p{font-size:13px;color:var(--mut);max-width:44ch;text-wrap:pretty}
+.scope span{font-size:12.5px;font-weight:500;color:var(--body);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+
+/* ---------- section ---------- */
+section{margin-top:56px;scroll-margin-top:70px}
+.shead{display:flex;align-items:flex-start;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.num{flex:none;width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--accent-ink);display:grid;place-items:center;font-size:12.5px;font-weight:700;margin-top:2px}
+.shead h2{font-size:21px;font-weight:700}
+.shead p{font-size:14px;color:var(--mut);margin-top:3px;max-width:70ch;text-wrap:pretty}
+
+.notes{display:grid;grid-template-columns:1fr;gap:14px;margin-top:20px}
+@media(min-width:900px){.notes{grid-template-columns:1fr 1fr;gap:22px}}
+.note h3{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-bottom:9px}
+.note.bad h3{color:var(--mut2)}
+.note.good h3{color:var(--accent)}
+.note ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.note li{font-size:13.5px;line-height:1.55;color:var(--body);padding-left:17px;position:relative;text-wrap:pretty}
+.note li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%}
+.note.bad li::before{background:#D6C6B6}
+.note.good li::before{background:var(--accent)}
+.note li b{font-weight:600;color:var(--ink)}
+
+/* ---------- before / after ---------- */
+.ba{display:grid;grid-template-columns:1fr;gap:22px;margin-top:26px}
+@media(min-width:1240px){.ba{grid-template-columns:1fr 1fr;gap:26px;align-items:start}}
+.pane{min-width:0}
+.plabel{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.plabel span{font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+.plabel i{flex:1;height:1px;background:var(--line)}
+.pane.b .plabel span{color:var(--mut2)}
+.pane.a .plabel span{color:var(--accent)}
+
+/* ---------- modal mock ---------- */
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 14px 40px rgba(93,7,3,.07)}
+.sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 20px 14px;border-bottom:1px solid var(--hair)}
+.sh-head h4{font-size:17px;font-weight:700;color:var(--ink)}
+.sh-head p{font-size:13px;color:var(--mut);margin-top:3px}
+.x{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--mut);font-size:15px;line-height:1}
+.sh-body{padding:20px}
+.sh-foot{display:flex;justify-content:flex-end;gap:9px;padding:13px 20px;border-top:1px solid var(--hair);background:#fff}
+.sh-foot .ghost{font-size:13.5px;font-weight:600;color:var(--body);background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 16px}
+.sh-foot .cta{font-size:13.5px;font-weight:600;color:var(--accent-ink);background:var(--accent);border:1px solid var(--accent);border-radius:9px;padding:9px 16px}
+
+/* form bits shared by both panes */
+.lab{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.hint{font-size:12px;color:var(--mut2);margin:-2px 0 8px}
+.inp{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13.5px;color:var(--body);background:#fff;font-family:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{flex:none;white-space:nowrap;font-size:12.5px;font-weight:500;border-radius:999px;padding:6px 12px;border:1px solid var(--line);background:#fff;color:var(--body)}
+.chip.on{font-weight:600;border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.chip.ro{font-weight:500;border-color:rgba(93,7,3,.22);background:transparent;color:var(--ink);cursor:default}
+.link{font-size:13px;font-weight:600;color:#9C3B2E;background:none;border:none;padding:0;text-decoration:underline;text-underline-offset:3px}
+.rule{height:1px;background:var(--hair);border:0}
+
+/* --- BEFORE-only artefacts (deliberately reproduced) --- */
+.b-row2{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+.b-two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.b-price{background:var(--soft);border-radius:10px;padding:14px;margin-top:14px;font-size:13px}
+.b-price .r{display:flex;align-items:flex-end;gap:8px;color:var(--body)}
+.b-price .r i{flex:1;border-bottom:1px dotted rgba(78,59,49,.35);margin-bottom:5px}
+.b-price .r.fee{color:var(--mut);margin-top:2px}
+.b-price .r.fee i{border-bottom-color:rgba(78,59,49,.3)}
+.b-price .r.tot{color:var(--ink);font-weight:700;border-top:1px solid rgba(78,59,49,.25);margin-top:8px;padding-top:8px}
+.b-price .note{font-size:12.5px;color:rgba(78,59,49,.75);margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.b-step{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+.b-step span{flex:none;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.b-step i{flex:1;height:3px;border-radius:999px;background:var(--hair);overflow:hidden;display:block}
+.b-step i b{display:block;height:100%;background:var(--accent)}
+.b-frame{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.b-rowline{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:14px 18px;border-top:1px solid var(--hair)}
+.b-rowline .big{flex:none;font-size:23px;font-weight:700;color:var(--ink)}
+.b-rowline p.k{font-size:12.5px;color:var(--mut)}
+.b-rowline p.s{font-size:12.5px;color:var(--mut2);margin-top:2px}
+.b-catline{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.b-catline span:first-child{flex:none;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--cat)}
+.b-catline i{flex:1;height:1px;background:#F5EEE6}
+.b-catline span:last-child{flex:none;font-size:12px;color:rgba(78,59,49,.55)}
+.b-bul{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.b-bul div{display:flex;gap:9px;align-items:flex-start}
+.b-bul em{flex:none;margin-top:6px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.b-bul p{font-size:13.5px;line-height:1.4;color:var(--body)}
+.b-agreed{display:flex;align-items:baseline;gap:7px;font-size:13.5px;color:var(--body);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:8px 12px}
+.b-agreed b{font-size:15px;font-weight:700;color:var(--ink)}
+.b-agreed s{font-size:12px;color:var(--mut);text-decoration:none}
+
+/* --- AFTER patterns --- */
+.field{margin-top:16px}
+.field:first-child{margin-top:0}
+.fset{margin-top:20px}
+.fset:first-child{margin-top:0}
+.fset > .lab{margin-bottom:8px}
+.a-price{background:var(--soft);border-radius:10px;padding:15px 16px;margin-top:20px}
+.a-price .r{display:flex;align-items:baseline;justify-content:space-between;gap:16px;font-size:13.5px;color:var(--body)}
+.a-price .r + .r{margin-top:6px}
+.a-price .r.tot{font-weight:700;color:var(--ink);border-top:1px solid var(--line);margin-top:12px;padding-top:12px;align-items:baseline}
+.a-price .r.tot span:first-child{font-size:14px}
+.a-price .r.tot span:last-child{font-size:19px;letter-spacing:-.02em}
+.a-price .r.fee{color:rgba(78,59,49,.72)}
+.optlab{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.optlab .lab{margin-bottom:0}
+.optlab s{font-size:11.5px;font-weight:500;color:var(--mut2);text-decoration:none;letter-spacing:.02em}
+.opthint{font-size:12px;line-height:1.5;color:var(--mut);margin-top:7px;text-wrap:pretty}
+.a-price .note{font-size:12.5px;line-height:1.5;color:rgba(78,59,49,.72);margin-top:10px}
+.a-price .note.warn{color:var(--warn-ink)}
+.ctlrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ctl{height:36px;display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 11px;font-size:13.5px;color:var(--body);width:100%}
+.seg{display:flex;height:36px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+.seg button{flex:1;border:0;background:#fff;font-size:13.5px;color:var(--body);padding:0}
+.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.ctl.locked{background:var(--soft);justify-content:space-between}
+.ctl.locked b{font-weight:600;color:var(--ink)}
+.ctl.locked s{font-size:12px;color:var(--mut);text-decoration:none}
+.timing{font-size:12.5px;color:var(--mut);margin-top:10px}
+.headline{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.headline .n{font-size:29px;font-weight:700;color:var(--ink);letter-spacing:-.03em;line-height:1.05}
+.headline .sep{color:#D6C6B6;font-size:20px}
+.sub{font-size:13px;color:var(--mut);margin-top:6px;text-wrap:pretty}
+.catlab{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--cat);margin-bottom:8px}
+.lock{font-size:12.5px;line-height:1.55;color:var(--body);background:var(--soft);border-radius:10px;padding:13px 14px;margin-top:20px;text-wrap:pretty}
+
+/* earnings rows */
+.erow{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px;width:100%;text-align:left;display:block}
+.erow + .erow{margin-top:9px}
+.erow-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.erow-top .t{font-size:14.5px;font-weight:600;color:var(--ink)}
+.erow-top .amt{font-size:15px;font-weight:700;color:var(--ink)}
+.erow-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:7px}
+.badge{font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 9px}
+.badge.res{background:var(--soft);color:var(--body);border:1px solid var(--line)}
+.badge.due{background:var(--accent);color:var(--accent-ink)}
+.badge.paid{background:#EAF3EC;color:#2F5D3A}
+.erow-meta .m{font-size:12px;color:var(--mut)}
+.steps{display:flex;gap:0;margin-top:12px;padding-top:11px;border-top:1px solid var(--hair);list-style:none}
+.steps li{flex:1;display:flex;gap:8px;align-items:flex-start;min-width:0}
+.steps .dot{flex:none;margin-top:4px;width:7px;height:7px;border-radius:50%;background:#E3D4C6}
+.steps .dot.on{background:var(--accent)}
+.steps .l{font-size:12.5px;font-weight:600;color:var(--ink)}
+.steps .d{display:block;font-size:11.5px;color:var(--mut)}
+.a-erow{position:relative}
+.a-erow .chev{position:absolute;right:14px;top:15px;color:#C9B7A6;font-size:15px;line-height:1}
+.a-erow:hover{border-color:var(--accent);box-shadow:0 1px 2px rgba(93,7,3,.05),0 8px 20px rgba(93,7,3,.08)}
+.a-erow:hover .chev{color:var(--accent)}
+.callout{display:flex;gap:11px;align-items:flex-start;background:var(--warn-bg);border-radius:10px;padding:12px 14px;margin-top:14px}
+.callout p{font-size:12.5px;line-height:1.55;color:var(--warn-ink);text-wrap:pretty}
+
+/* handoff */
+.handoff{margin-top:64px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px}
+.handoff h2{font-size:19px}
+.handoff p{font-size:14px;color:var(--mut);margin-top:8px;max-width:72ch}
+.files{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.file{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.file s{font-weight:400;color:var(--mut);text-decoration:none}
+.tscroll{overflow-x:auto;margin-top:20px;-webkit-overflow-scrolling:touch}
+table.chg{width:100%;min-width:520px;border-collapse:collapse;font-size:13px}
+table.chg th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mut2);padding:0 12px 9px 0;border-bottom:1px solid var(--line)}
+table.chg td{padding:11px 12px 11px 0;border-bottom:1px solid var(--hair);vertical-align:top;color:var(--body);line-height:1.5}
+table.chg td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+table.chg code{word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--soft);border-radius:5px;padding:1px 5px;color:var(--warn-ink)}
+.foot{margin-top:40px;font-size:12.5px;color:var(--mut2)}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="top-in">
+  <div class="brand">NANA<span>Prime</span> · Billing UI review</div>
+  <nav class="jump">
+    <a href="#s1">1 Work order</a>
+    <a href="#s2">2 Next visit</a>
+    <a href="#s3">3 Agreement form</a>
+    <a href="#s4">4 Agreement review</a>
+    <a href="#s5">5 Earnings</a>
+    <a href="#handoff">Change list</a>
+    <a href="billing-prototype.html" style="color:var(--accent);font-weight:600">Prototype →</a>
+  </nav>
+</div></div>
+
+<div class="wrap">
+
+<div class="lede">
+  <h1>Five layout changes to make billing easier to read</h1>
+  <p>Everything below is presentation only. No wording, no logic, no data model, no new states — the same fields in the same order, laid out so a caregiver can read one column top to bottom instead of scanning left and right. Each section shows the screen as it is today next to the proposed version.</p>
+  <div class="scope">
+    <span>Layout only</span>
+    <span>No copy changes</span>
+    <span>No new components</span>
+    <span>Desktop ≥ 860px is where all of this shows</span>
+  </div>
+  <div class="cta-row">
+    <a class="try" href="billing-prototype.html">Open the working prototype <span>&#8594;</span></a>
+    <p>The original prototype with every change below applied — click through it the same way you would the one you sent.</p>
+  </div>
+</div>
+
+<!-- ===================== 1 · WORK ORDER ===================== -->
+<section id="s1">
+  <div class="shead">
+    <div class="num">1</div>
+    <div>
+      <h2>Work order — one column, one price block</h2>
+      <p>The form currently splits into two reading columns twice, the price block draws six horizontal lines around three numbers, and the one field for flagging a problem is hidden behind a link.</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note bad">
+      <h3>What is wrong now</h3>
+      <ul>
+        <li><b>Hours worked</b> and <b>What you did</b> sit side by side, and the two fields are wildly different widths — 84px next to a full-width input.</li>
+        <li><b>Eating</b> and <b>Moving around</b> are forced into two columns at ≥860px. Each column is then too narrow for its three chips, so <b>More than usual</b> wraps onto a second line in both.</li>
+        <li>The price block has a dotted leader on every row, a solid rule above the total, and another rule above each note — six lines for three numbers.</li>
+        <li>The total <b>You receive</b> is the same size as the rows above it, so nothing carries the eye to the number that matters.</li>
+        <li><b>Something worried me today</b> is a link that has to be clicked before the field appears. A caregiver skimming the form has no idea it is there, and nothing says whether it is expected of them.</li>
+      </ul>
+    </div>
+    <div class="note good">
+      <h3>What changes</h3>
+      <ul>
+        <li>One column throughout. Every label sits above its own field, full width, stacked. Nothing pairs.</li>
+        <li><b>Eating</b> goes above <b>Moving around</b>. At full modal width all three chips fit on one line, so <b>no chip wraps</b>.</li>
+        <li>Drop every dotted leader. Amounts right-align on their own; the gap already reads as a pair.</li>
+        <li>Keep exactly one divider — above <b>You receive</b>. The notes underneath lose their rules and sit as plain text.</li>
+        <li>The total amount goes <b>13px → 19px</b> and its label to 14px, so the number carries and the words stay quiet. Everything else in the block stays 13.5px, and the fee row darkens slightly — it is a real deduction, not disabled text.</li>
+        <li><b>Something worried you today?</b> becomes a field that is always visible, marked <b>OPTIONAL</b>, with one line saying when to use it and where it goes. No click to discover it, and no pressure to fill it.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ba">
+    <!-- BEFORE -->
+    <div class="pane b">
+      <div class="plabel"><span>Now</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Work order</h4><p>Matti Korhonen · Yesterday · 09:00 – 12:00</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <div class="b-row2">
+            <div>
+              <label class="lab">Hours worked</label>
+              <input class="inp" style="width:84px" value="3" readonly>
+            </div>
+            <div style="flex:1;min-width:200px">
+              <label class="lab">What you did</label>
+              <input class="inp" placeholder="Morning routine, breakfast, short walk." readonly>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;border-top:1px solid var(--hair);padding-top:14px">
+            <p class="lab">How was Matti today?</p>
+            <div class="chips">
+              <button class="chip">Low</button>
+              <button class="chip">As usual</button>
+              <button class="chip on">Good</button>
+            </div>
+
+            <div class="b-two">
+              <div>
+                <p class="lab" style="margin-bottom:7px">Eating</p>
+                <div class="chips">
+                  <button class="chip">Less than usual</button>
+                  <button class="chip on">As usual</button>
+                  <button class="chip">More than usual</button>
+                </div>
+              </div>
+              <div>
+                <p class="lab" style="margin-bottom:7px">Moving around</p>
+                <div class="chips">
+                  <button class="chip">Less than usual</button>
+                  <button class="chip on">As usual</button>
+                  <button class="chip">More than usual</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px">
+              <p class="lab" style="margin-bottom:3px">What you got to</p>
+              <p class="hint">Everything is ticked — untick anything that did not happen this time.</p>
+              <div class="chips">
+                <button class="chip on">Personal hygiene</button>
+                <button class="chip on">Food preparation</button>
+                <button class="chip on">Companionship</button>
+              </div>
+            </div>
+
+            <div style="margin-top:14px">
+              <button class="link">Something worried me today</button>
+            </div>
+          </div>
+
+          <div class="b-price">
+            <div class="r"><span>Charged now · 3 h</span><i></i><span style="font-weight:500">€96.00</span></div>
+            <div class="r fee"><span>Service fee (10%)</span><i></i><span>−€9.60</span></div>
+            <div class="r tot"><span>You receive</span><i></i><span>€86.40</span></div>
+            <p class="note">€96.00 was held on Eeva's card. Nothing over that can be charged.</p>
+          </div>
+        </div>
+        <div class="sh-foot"><button class="ghost">Cancel</button><button class="cta">Send work order</button></div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="pane a">
+      <div class="plabel"><span>Proposed</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Work order</h4><p>Matti Korhonen · Yesterday · 09:00 – 12:00</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <div class="field">
+            <label class="lab">Hours worked</label>
+            <input class="inp" style="max-width:120px" value="3" readonly>
+          </div>
+          <div class="field">
+            <label class="lab">What you did</label>
+            <input class="inp" placeholder="Morning routine, breakfast, short walk." readonly>
+          </div>
+
+          <hr class="rule" style="margin:20px 0">
+
+          <div class="fset">
+            <p class="lab">How was Matti today?</p>
+            <div class="chips">
+              <button class="chip">Low</button>
+              <button class="chip">As usual</button>
+              <button class="chip on">Good</button>
+            </div>
+          </div>
+
+          <div class="fset">
+            <p class="lab">Eating</p>
+            <div class="chips">
+              <button class="chip">Less than usual</button>
+              <button class="chip on">As usual</button>
+              <button class="chip">More than usual</button>
+            </div>
+          </div>
+
+          <div class="fset">
+            <p class="lab">Moving around</p>
+            <div class="chips">
+              <button class="chip">Less than usual</button>
+              <button class="chip on">As usual</button>
+              <button class="chip">More than usual</button>
+            </div>
+          </div>
+
+          <div class="fset">
+            <p class="lab" style="margin-bottom:3px">What you got to</p>
+            <p class="hint">Everything is ticked — untick anything that did not happen this time.</p>
+            <div class="chips">
+              <button class="chip on">Personal hygiene</button>
+              <button class="chip on">Food preparation</button>
+              <button class="chip on">Companionship</button>
+            </div>
+          </div>
+
+          <div class="fset">
+            <div class="optlab"><span class="lab">Something worried you today?</span><s>OPTIONAL</s></div>
+            <input class="inp" placeholder="Unsteady on her feet, and she did not want to eat." readonly>
+            <p class="opthint">Leave it empty if the visit was as usual. If something was off, it goes straight to your coordinator — not into the monthly summary the family sees.</p>
+          </div>
+
+          <div class="a-price">
+            <div class="r"><span>Charged now · 3 h</span><span style="font-weight:500">€96.00</span></div>
+            <div class="r fee"><span>Service fee (10%)</span><span>−€9.60</span></div>
+            <div class="r tot"><span>You receive</span><span>€86.40</span></div>
+            <p class="note">€96.00 was held on Eeva's card. Nothing over that can be charged.</p>
+          </div>
+        </div>
+        <div class="sh-foot"><button class="ghost">Cancel</button><button class="cta">Send work order</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 2 · PLAN THE NEXT VISIT ===================== -->
+<section id="s2">
+  <div class="shead">
+    <div class="num">2</div>
+    <div>
+      <h2>Plan the next visit — controls that match, timing out of the price</h2>
+      <p>Three controls sit in one row and all three are a different height. The line that tells you when the visit runs is buried at the top of the price block, where it has nothing to do with money.</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note bad">
+      <h3>What is wrong now</h3>
+      <ul>
+        <li><b>3 h · as agreed</b> is built from a 15px bold number plus 12px caption inside 8/12 padding, so it is visibly taller and heavier than the <b>Today / Tomorrow</b> chips and the time input beside it. The one control you cannot change looks like the most important one.</li>
+        <li>The three controls have three different widths, driven by content rather than by a grid.</li>
+        <li><b>tomorrow, 09:00 – 12:00 · 25 h from now</b> is the first line inside the price block. It describes the schedule, not the charge.</li>
+        <li>Same dotted leaders and stacked rules as the work order.</li>
+      </ul>
+    </div>
+    <div class="note good">
+      <h3>What changes</h3>
+      <ul>
+        <li>One 3-column grid. Every control is <b>36px tall</b>, 13.5px, radius 9 — the day segment, the time field and the locked hours field are the same object at the same size.</li>
+        <li><b>3 h</b> keeps its muted <code>as agreed</code> caption but drops to the shared type size, and the field keeps the soft fill so it still reads as read-only.</li>
+        <li>The timing line moves <b>directly under the controls</b> as a quiet caption — it now sits next to what produces it.</li>
+        <li>The one component change in this whole set: <b>Today / Tomorrow</b> becomes a segmented control rather than two loose pills, so it fills its column and matches the field next to it exactly. If that is unwelcome, keep the two pills and give them the same 36px height — the size problem is fixed either way.</li>
+        <li>Price block is identical to the work order's: no leaders, one divider, the total amount at 19px. Two blocks, one pattern.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ba">
+    <!-- BEFORE -->
+    <div class="pane b">
+      <div class="plabel"><span>Now</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Plan the next visit</h4><p>Onerva Ahonen · €33.00/hour</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <p style="font-size:13px;color:var(--mut);margin-bottom:14px">Sending it reserves the money on the family's card. Nothing is taken until you have been and confirmed what you did.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:16px">
+            <div>
+              <span class="lab">Day</span>
+              <div style="display:flex;gap:6px">
+                <button class="chip">Today</button>
+                <button class="chip on">Tomorrow</button>
+              </div>
+            </div>
+            <div>
+              <span class="lab">Starts at</span>
+              <input class="inp" style="width:auto" value="09:00" readonly>
+            </div>
+            <div>
+              <span class="lab">Hours</span>
+              <p class="b-agreed"><b>3 h</b><s>as agreed</s></p>
+            </div>
+          </div>
+          <div class="b-price" style="margin-top:16px">
+            <p style="font-size:13px;color:rgba(78,59,49,.75);margin-bottom:10px">tomorrow, 09:00 – 12:00 · 25 h from now</p>
+            <div class="r"><span>Reserved on the card</span><i></i><span style="font-weight:500">€99.00</span></div>
+            <div class="r fee"><span>Service fee (10%)</span><i></i><span>−€9.90</span></div>
+            <div class="r tot"><span>You receive</span><i></i><span>€89.10</span></div>
+          </div>
+        </div>
+        <div class="sh-foot"><button class="ghost">Cancel</button><button class="cta">Send visit and reserve funds</button></div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="pane a">
+      <div class="plabel"><span>Proposed</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Plan the next visit</h4><p>Onerva Ahonen · €33.00/hour</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <p style="font-size:13px;color:var(--mut);margin-bottom:18px">Sending it reserves the money on the family's card. Nothing is taken until you have been and confirmed what you did.</p>
+
+          <div class="ctlrow">
+            <div>
+              <span class="lab">Day</span>
+              <div class="seg"><button>Today</button><button class="on">Tomorrow</button></div>
+            </div>
+            <div>
+              <span class="lab">Starts at</span>
+              <div class="ctl"><span>09:00</span></div>
+            </div>
+            <div>
+              <span class="lab">Hours</span>
+              <div class="ctl locked"><b>3 h</b><s>as agreed</s></div>
+            </div>
+          </div>
+          <p class="timing">Tomorrow, 09:00 – 12:00 · 25 h from now</p>
+
+          <div class="a-price">
+            <div class="r"><span>Reserved on the card</span><span style="font-weight:500">€99.00</span></div>
+            <div class="r fee"><span>Service fee (10%)</span><span>−€9.90</span></div>
+            <div class="r tot"><span>You receive</span><span>€89.10</span></div>
+          </div>
+        </div>
+        <div class="sh-foot"><button class="ghost">Cancel</button><button class="cta">Send visit and reserve funds</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 3 · AGREEMENT FORM ===================== -->
+<section id="s3">
+  <div class="shead">
+    <div class="num">3</div>
+    <div>
+      <h2>Care agreement, draft — no stepper, no frame, taller sheet</h2>
+      <p>The form is fine. What surrounds it is not: a two-step progress bar for what is one form and its review, and a bordered card drawn inside a bordered dialog.</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note bad">
+      <h3>What is wrong now</h3>
+      <ul>
+        <li><b>Step 1 of 2 · draft</b> with a progress bar sits above the title. This is one form that gets reviewed before sending, not a two-step wizard — the stepper promises a longer journey than there is.</li>
+        <li>The whole form is wrapped in <code>border: 1px solid #EDE0D4; border-radius: 10px</code> inside a dialog that already has a border and a radius. Two frames, 18px apart.</li>
+        <li>The sheet caps at <code>max-height: 75vh</code>, so the service list scrolls sooner than it needs to and the modal footer eats vertical space that is available.</li>
+      </ul>
+    </div>
+    <div class="note good">
+      <h3>What changes</h3>
+      <ul>
+        <li>Remove the stepper and its progress bar from both steps. The dialog title plus the footer button (<b>Review agreement</b> → <b>Send to Eeva</b>) already say where you are.</li>
+        <li>Remove the inner frame. The form sits directly on the dialog body, so the padding goes from 20 + 18 down to a single 20.</li>
+        <li><code>max-height: 75vh → 86vh</code> (+15%). Roughly four more service rows visible before scrolling.</li>
+        <li>Everything inside the form stays exactly as it is.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ba">
+    <!-- BEFORE -->
+    <div class="pane b">
+      <div class="plabel"><span>Now</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Care agreement</h4><p>Onni Salminen · Helsinki</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <div class="b-frame">
+            <div style="padding:17px 18px 0">
+              <div class="b-step"><span>Step 1 of 2 · draft</span><i><b style="width:50%"></b></i></div>
+              <h4 style="font-size:15px;font-weight:600;color:var(--ink)">Services this agreement covers</h4>
+              <p style="font-size:13px;line-height:1.5;color:var(--mut);margin-top:3px">Pick every service this agreement covers, then one hourly rate for all of them. Search, or scan the four groups.</p>
+              <input class="inp" style="max-width:420px;margin-top:14px" placeholder="e.g. medication, bathing, wound" readonly>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 18px 0;padding:9px 13px;background:var(--soft);border:1px solid var(--hair);border-radius:9px">
+              <span style="font-size:12.5px;font-weight:500;color:var(--body)">4 services selected</span>
+              <button class="link" style="color:var(--warn-ink);font-size:12.5px">Clear all</button>
+            </div>
+            <div style="padding:16px 18px 18px">
+              <div class="b-catline"><span>Care assistance</span><i></i><span>2 of 16</span></div>
+              <div class="b-bul" style="gap:9px">
+                <div><em style="background:var(--accent)"></em><p>Grocery shopping</p></div>
+                <div><em style="background:#E3D4C6"></em><p>Pharmacy pickup</p></div>
+                <div><em style="background:var(--accent)"></em><p>Food preparation</p></div>
+                <div><em style="background:#E3D4C6"></em><p>Assistance with eating and drinking</p></div>
+                <div><em style="background:#E3D4C6"></em><p>Light cleaning</p></div>
+                <div><em style="background:#E3D4C6"></em><p>Laundry</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sh-foot"><button class="ghost">Cancel</button><button class="cta">Review agreement</button></div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="pane a">
+      <div class="plabel"><span>Proposed</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Care agreement</h4><p>Onni Salminen · Helsinki</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <h4 style="font-size:15px;font-weight:600;color:var(--ink)">Services this agreement covers</h4>
+          <p style="font-size:13px;line-height:1.5;color:var(--mut);margin-top:3px">Pick every service this agreement covers, then one hourly rate for all of them. Search, or scan the four groups.</p>
+          <input class="inp" style="max-width:420px;margin-top:14px" placeholder="e.g. medication, bathing, wound" readonly>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:9px 13px;background:var(--soft);border:1px solid var(--hair);border-radius:9px">
+            <span style="font-size:12.5px;font-weight:500;color:var(--body)">4 services selected</span>
+            <button class="link" style="color:var(--warn-ink);font-size:12.5px">Clear all</button>
+          </div>
+
+          <div style="margin-top:18px">
+            <div class="b-catline"><span>Care assistance</span><i></i><span>2 of 16</span></div>
+            <div class="b-bul" style="gap:9px">
+              <div><em style="background:var(--accent)"></em><p>Grocery shopping</p></div>
+              <div><em style="background:#E3D4C6"></em><p>Pharmacy pickup</p></div>
+              <div><em style="background:var(--accent)"></em><p>Food preparation</p></div>
+              <div><em style="background:#E3D4C6"></em><p>Assistance with eating and drinking</p></div>
+              <div><em style="background:#E3D4C6"></em><p>Light cleaning</p></div>
+              <div><em style="background:#E3D4C6"></em><p>Laundry</p></div>
+              <div><em style="background:#E3D4C6"></em><p>Changing bed linens</p></div>
+              <div><em style="background:#E3D4C6"></em><p>Taking out trash</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="sh-foot"><button class="ghost">Cancel</button><button class="cta">Review agreement</button></div>
+      </div>
+      <p class="timing" style="margin-top:10px">Same form, two fewer frames — and the taller sheet shows the extra rows for free.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 4 · AGREEMENT REVIEW ===================== -->
+<section id="s4">
+  <div class="shead">
+    <div class="num">4</div>
+    <div>
+      <h2>Care agreement, review — one reading axis</h2>
+      <p>This is the screen a caregiver checks before committing to a rate. Right now the eye has to cross the dialog five times to read it. It should read straight down.</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note bad">
+      <h3>What is wrong now</h3>
+      <ul>
+        <li><b>Five vertical axes</b> in one short panel: labels at the left edge, big numbers flush right, category headings back at the left, then service bullets in two columns. Every row restarts the scan.</li>
+        <li>The two numbers that matter — <b>€32.00/h</b> and <b>3 h</b> — are split across two rows and pushed to the far right, away from the words that explain them.</li>
+        <li>Services are dot-bulleted here but shown as chips <b>everywhere else</b> in the product — the request cards, the caregiver profile, the work order. The same data gets a different shape on the one screen where it is being confirmed.</li>
+        <li>Four stacked <code>border-top</code> rules cut the panel into slabs, on top of the inner frame and the dialog border.</li>
+        <li>Same stepper as the draft step.</li>
+      </ul>
+    </div>
+    <div class="note good">
+      <h3>What changes</h3>
+      <ul>
+        <li>Everything left-aligns on <b>one axis</b>. Nothing is flush right.</li>
+        <li>Rate and hours become the headline — one line, 29px, with the derived <b>€96.00 per visit</b> as the caption directly beneath. That is the answer the caregiver came for, read first.</li>
+        <li>Services become <b>chips</b>, matching the rest of the product, grouped under the same small category label used in the draft step.</li>
+        <li>These chips are the <b>outlined read-only variant</b>, not the filled one. Nothing here is selectable — a filled accent chip would invite a click that does nothing. The outlined chip already exists in the product, on the request cards.</li>
+        <li>Rules drop from four to one hairline, plus the soft lock note at the bottom which keeps its fill instead of a border.</li>
+        <li>Stepper and inner frame removed, as in step 1.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ba">
+    <!-- BEFORE -->
+    <div class="pane b">
+      <div class="plabel"><span>Now</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Care agreement</h4><p>Onni Salminen · Helsinki</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <div class="b-frame">
+            <div style="padding:17px 18px 18px">
+              <div class="b-step"><span>Step 2 of 2 · review</span><i><b style="width:100%"></b></i></div>
+              <h4 style="font-size:15px;font-weight:600;color:var(--ink)">Ready to send to Eeva</h4>
+              <p style="font-size:13px;line-height:1.5;color:var(--mut);margin-top:3px">A sent agreement is never edited in place — a change always goes out as a new version. Check it over.</p>
+            </div>
+            <div class="b-rowline">
+              <div><p class="k">Hourly rate · all services</p><p class="s">Every visit is billed as rate × hours</p></div>
+              <p class="big">€32.00/h</p>
+            </div>
+            <div class="b-rowline">
+              <div><p class="k">Hours per visit</p><p class="s">Each visit comes to €96.00</p></div>
+              <p class="big">3 h</p>
+            </div>
+            <div style="padding:14px 18px;border-top:1px solid var(--hair)">
+              <p style="font-size:12.5px;color:var(--mut);margin-bottom:11px">4 services selected</p>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div>
+                  <div class="b-catline"><span>Care assistance</span><i></i><span>2 services</span></div>
+                  <div class="b-bul">
+                    <div><em></em><p>Grocery shopping</p></div>
+                    <div><em></em><p>Food preparation</p></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="b-catline"><span>Personal and home care</span><i></i><span>2 services</span></div>
+                  <div class="b-bul">
+                    <div><em></em><p>Personal hygiene</p></div>
+                    <div><em></em><p>Medication reminders</p></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p style="font-size:12.5px;line-height:1.55;color:var(--body);background:var(--soft);padding:14px 18px;border-top:1px solid var(--hair)">Visits stay locked until Eeva confirms these terms and links a payment method. You never see card details.</p>
+          </div>
+        </div>
+        <div class="sh-foot"><button class="ghost">Back to edit</button><button class="cta">Send to Eeva</button></div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="pane a">
+      <div class="plabel"><span>Proposed</span><i></i></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div><h4>Care agreement</h4><p>Onni Salminen · Helsinki</p></div>
+          <button class="x" aria-hidden="true">×</button>
+        </div>
+        <div class="sh-body">
+          <h4 style="font-size:15px;font-weight:600;color:var(--ink)">Ready to send to Eeva</h4>
+          <p style="font-size:13px;line-height:1.5;color:var(--mut);margin-top:3px">A sent agreement is never edited in place — a change always goes out as a new version. Check it over.</p>
+
+          <div style="margin-top:20px">
+            <div class="headline">
+              <span class="n">€32.00<span style="font-size:19px;font-weight:600">/h</span></span>
+              <span class="sep">×</span>
+              <span class="n">3 h</span>
+            </div>
+            <p class="sub">One rate for every service below. Each visit comes to <b style="font-weight:600;color:var(--ink)">€96.00</b>.</p>
+          </div>
+
+          <hr class="rule" style="margin:20px 0">
+
+          <p style="font-size:12.5px;color:var(--mut);margin-bottom:14px">4 services selected</p>
+
+          <div style="margin-bottom:16px">
+            <p class="catlab">Care assistance</p>
+            <div class="chips">
+              <span class="chip ro">Grocery shopping</span>
+              <span class="chip ro">Food preparation</span>
+            </div>
+          </div>
+          <div>
+            <p class="catlab">Personal and home care</p>
+            <div class="chips">
+              <span class="chip ro">Personal hygiene</span>
+              <span class="chip ro">Medication reminders</span>
+            </div>
+          </div>
+
+          <p class="lock">Visits stay locked until Eeva confirms these terms and links a payment method. You never see card details.</p>
+        </div>
+        <div class="sh-foot"><button class="ghost">Back to edit</button><button class="cta">Send to Eeva</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 5 · EARNINGS ===================== -->
+<section id="s5">
+  <div class="shead">
+    <div class="num">5</div>
+    <div>
+      <h2>Earnings — the row opens the work order</h2>
+      <p>Earnings lists every visit and the amount it produced, but there is no way to get from the amount to the work order that produced it. The row is the natural place to ask.</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note bad">
+      <h3>What is wrong now</h3>
+      <ul>
+        <li>Every visit row is a <code>&lt;div&gt;</code>. Nothing is clickable, nothing hovers, there is no chevron.</li>
+        <li>To see what was actually filled in for a visit, the caregiver has to leave Earnings, go to Clients, find the person, and open the visit from there.</li>
+        <li>The three-step tracker names <b>Work order</b> as a stage but gives no way to look at it.</li>
+      </ul>
+    </div>
+    <div class="note good">
+      <h3>What changes</h3>
+      <ul>
+        <li>The row becomes a <code>&lt;button&gt;</code> that opens the <b>existing</b> work order side panel — the same one the board already opens. No new screen to design.</li>
+        <li>Standard affordances: chevron on the right, and the hover treatment already used on the earnings summary cards (<code>border-color: #FC703C</code> plus the soft shadow).</li>
+        <li>A visit with no work order yet opens the same panel in its pre-visit state — reserved amount, hold expiry, what is still owed. Nothing is ever a dead click.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ba">
+    <!-- BEFORE -->
+    <div class="pane b">
+      <div class="plabel"><span>Now</span><i></i></div>
+      <div class="sheet" style="box-shadow:none;background:var(--bg);border:0;border-radius:0">
+        <div style="padding:2px">
+          <div class="erow">
+            <div class="erow-top"><span class="t">Matti Korhonen · Yesterday</span><span class="amt">€86.40</span></div>
+            <div class="erow-meta"><span class="badge due">Work order due</span><span class="m">09:00 – 12:00 · 3 h · €32/h</span></div>
+            <ol class="steps">
+              <li><span class="dot on"></span><span><span class="l">Reserved</span><span class="d">yesterday · €96 held on the card</span></span></li>
+              <li><span class="dot"></span><span><span class="l">Work order</span><span class="d">1 day to send it</span></span></li>
+              <li><span class="dot"></span><span><span class="l">Paid</span><span class="d">once the visit is confirmed</span></span></li>
+            </ol>
+          </div>
+          <div class="erow">
+            <div class="erow-top"><span class="t">Onerva Ahonen · 8 August 2026</span><span class="amt">€89.10</span></div>
+            <div class="erow-meta"><span class="badge paid">Paid</span><span class="m">09:00 – 12:00 · 3 h · €33/h</span></div>
+            <p style="font-size:11.5px;color:var(--mut);margin-top:12px;border-top:1px solid var(--hair);padding-top:11px">Reserved 7 August 2026 · confirmed by the family · in your account 12 August 2026</p>
+          </div>
+        </div>
+        <div class="callout" style="margin:14px 2px 0">
+          <p>Nothing here reacts to a click. The amount is a dead end — the work order behind it lives three screens away.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="pane a">
+      <div class="plabel"><span>Proposed</span><i></i></div>
+      <div class="sheet" style="box-shadow:none;background:var(--bg);border:0;border-radius:0">
+        <div style="padding:2px">
+          <button class="erow a-erow">
+            <span class="chev">›</span>
+            <div class="erow-top" style="padding-right:22px"><span class="t">Matti Korhonen · Yesterday</span><span class="amt">€86.40</span></div>
+            <div class="erow-meta"><span class="badge due">Work order due</span><span class="m">09:00 – 12:00 · 3 h · €32/h</span></div>
+            <ol class="steps">
+              <li><span class="dot on"></span><span><span class="l">Reserved</span><span class="d">yesterday · €96 held on the card</span></span></li>
+              <li><span class="dot"></span><span><span class="l">Work order</span><span class="d">1 day to send it</span></span></li>
+              <li><span class="dot"></span><span><span class="l">Paid</span><span class="d">once the visit is confirmed</span></span></li>
+            </ol>
+          </button>
+          <button class="erow a-erow">
+            <span class="chev">›</span>
+            <div class="erow-top" style="padding-right:22px"><span class="t">Onerva Ahonen · 8 August 2026</span><span class="amt">€89.10</span></div>
+            <div class="erow-meta"><span class="badge paid">Paid</span><span class="m">09:00 – 12:00 · 3 h · €33/h</span></div>
+            <p style="font-size:11.5px;color:var(--mut);margin-top:12px;border-top:1px solid var(--hair);padding-top:11px">Reserved 7 August 2026 · confirmed by the family · in your account 12 August 2026</p>
+          </button>
+        </div>
+        <p class="timing" style="margin:14px 2px 0">Hover either row. The click opens the work order panel that already exists — nothing new is built, it is only reachable from one more place.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HANDOFF ===================== -->
+<section id="handoff" class="handoff">
+  <h2>Change list</h2>
+  <p>Five screens, layout only. The same list is in <b>billing-ui-changes.md</b> next to this file — that is the one to send on.</p>
+
+  <div class="files">
+    <div class="file">billing-ui-changes.md <s>— the change list</s></div>
+    <div class="file">billing-ui-review.html <s>— this page, before / after</s></div>
+    <div class="file">billing-prototype.html <s>— the working prototype, changes applied</s></div>
+  </div>
+  <p>All three are standalone files. The prototype is the original bundle with the changes patched in, so it behaves exactly as before everywhere the list below does not touch.</p>
+
+  <div class="tscroll"><table class="chg">
+    <thead><tr><th>Where</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td>Work order</td><td>Stack the whole form in one column — <b>Hours worked</b> and <b>What you did</b> no longer share a row, and <b>Eating</b> sits above <b>Moving around</b> rather than beside it. At full modal width no chip wraps.</td></tr>
+      <tr><td>Work order</td><td><b>Something worried you today?</b> becomes a field that is always visible, marked optional, with one line of guidance underneath. Drop the disclosure link.</td></tr>
+      <tr><td>Price block<br>(work order + next visit)</td><td>Remove the dotted leaders and every rule except the one above <b>You receive</b>. The total amount goes up to 19px with its label at 14px; other rows stay as they are.</td></tr>
+      <tr><td>Plan the next visit</td><td>Day, start time and hours become three equal columns with controls of the same height and type size. The read-only <b>3 h</b> must not out-weigh the controls the caregiver can change.</td></tr>
+      <tr><td>Plan the next visit</td><td>Move the timing line (<b>tomorrow, 09:00 – 12:00 · 25 h from now</b>) out of the price block, directly under the controls as a caption.</td></tr>
+      <tr><td>Agreement · both steps</td><td>Remove the <b>Step 1 of 2</b> / <b>Step 2 of 2</b> stepper and its progress bar. Remove the bordered card wrapping the form — the dialog already has a border.</td></tr>
+      <tr><td>Agreement · both steps</td><td>Let the dialog grow taller before the content starts scrolling — about 15% more height.</td></tr>
+      <tr><td>Agreement · review</td><td>Everything left-aligns on one axis, nothing flush right. Rate and hours become a single headline — <b>€32.00/h × 3 h</b> — with the per-visit total as a caption beneath.</td></tr>
+      <tr><td>Agreement · review</td><td>Services become chips — the <b>outlined read-only variant</b> used on the request cards, not the filled accent one, since nothing here is selectable. Four rules become one hairline; the lock note keeps its fill but loses its border.</td></tr>
+      <tr><td>Earnings</td><td>The visit row becomes clickable and opens the work order panel that already exists — chevron plus the hover already used on the summary cards above. A visit with no work order yet opens the same panel in its pre-visit state, so no row is a dead click.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p style="margin-top:20px"><b style="color:var(--ink)">One component change:</b> <b>Today / Tomorrow</b> becomes a segmented control instead of two loose pills, so it fills its column and matches the field beside it. Keeping two pills at a matching height fixes the size mismatch just as well.</p>
+  <p style="margin-top:10px"><b style="color:var(--ink)">Not in scope:</b> wording · amounts and how they are calculated · the service catalogue · states and transitions · the mobile layout, which is already single column.</p>
+</section>
+
+<p class="foot">Prepared from the bundled prototype, NANA Prime Billing · desktop breakpoint (≥ 860px), caregiver side.</p>
+
+</div>
+</body>
+</html>
