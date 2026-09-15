@@ -2071,6 +2071,8 @@ input {
 }
 
 .imm-know-label {
+  /* 24px to the scale, with the stack's 6px gap */
+  margin-bottom: 18px;
   font-size: 11px;
   line-height: 16px;
   letter-spacing: 0.06em;
