@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, Info, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { knownFacts, remainingQuestions, systemPrompt } from '../data/conversation';
@@ -306,6 +306,11 @@ export default function ImmersiveConversation({
   const [assessment, setAssessment] = useState({ level: 0, reason: '', unknowns: [] });
   const [dropped, setDropped] = useState(false);
   const history = useRef([]);
+  // The question's height as last written. The answers under it take a moment
+  // to leave once she starts thinking; holding the box at this height for that
+  // moment keeps them from sliding up as they fade.
+  const lineRef = useRef(null);
+  const lineHeight = useRef(0);
   const audioRef = useRef(null);
   const levelRef = useRef(0);
   const dropTimer = useRef(null);
@@ -336,6 +341,10 @@ export default function ImmersiveConversation({
   const typed = useTypewriter(line);
   // the gate everything below the line waits on
   const doneTyping = !busy && line.length > 0 && typed.length >= line.length;
+
+  useLayoutEffect(() => {
+    if (!busy && lineRef.current) lineHeight.current = lineRef.current.offsetHeight;
+  });
 
   const client = useMemo(() => createClient(apiKey), [apiKey]);
   const system = useMemo(() => systemPrompt(user), [user]);
@@ -568,12 +577,14 @@ export default function ImmersiveConversation({
                 {SECTION[remaining[0]?.sekcija] || 'Skoro gotovo'}
               </motion.p>
 
-              {/* The line is anchored: the box reserves three lines' height and
-                  centres within it, so a one-line question sits in the middle
-                  and the cards below never move when the next one is longer.
-                  The thinking indicator lives in the same box, so the wait and
-                  the answer occupy exactly the same space. */}
-              <h1 className="imm-title imm-line">
+              {/* The question sits right under the section label at its own
+                  height. The thinking indicator takes its place while she is
+                  answering, in the same box. */}
+              <h1
+                ref={lineRef}
+                className="imm-title imm-line"
+                style={busy && lineHeight.current ? { minHeight: lineHeight.current } : undefined}
+              >
                 {busy ? (
                   <span className="imm-thinking" role="status">
                     <span className="imm-dot" />
@@ -606,16 +617,12 @@ export default function ImmersiveConversation({
                     animate="animate"
                     exit="exit"
                   >
-                    {/* Under the question, not inside Jovana's sentence: the
-                        sentence stays the question, and the reason reads as an
-                        aside to it. It arrives with the answers, once the
-                        question has finished writing itself. */}
+                    {/* Why she is asking, as the question's subtitle — no label,
+                        no icon, just the next thing she says. It arrives with
+                        the answers, once the question has finished writing. */}
                     {why && (
                       <motion.p className="imm-why" variants={piece}>
-                        <Info size={14} strokeWidth={1.75} aria-hidden="true" />
-                        <span>
-                          <span className="imm-why-label">Zašto pitamo:</span> {why}
-                        </span>
+                        {why}
                       </motion.p>
                     )}
                     {question ? (

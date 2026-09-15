@@ -2258,7 +2258,8 @@ input {
     width: auto;
   }
 
-  .imm-know:not(.is-open) .imm-know-head-text,
+  /* the name of the reading stays beside the ring: a ring alone did not say
+     what it was measuring */
   .imm-know:not(.is-open) .imm-know-reason,
   .imm-know:not(.is-open) .imm-know-lists {
     display: none;
@@ -2682,7 +2683,9 @@ input {
    person sits on it, which way it runs, and what that level means. */
 .imm-scale {
   width: 100%;
-  margin-top: var(--spacing-5);
+  /* --spacing-5 was used here and does not exist, so this was 0 and the title
+     sat on top of the scale */
+  margin-top: var(--spacing-6);
 }
 
 .imm-scale-name {
@@ -3708,31 +3711,27 @@ input {
 
 /* ---------- Why we ask ---------- */
 
-/* An aside, not another card: unboxed and in the subtitle's colour, so it can
-   never be mistaken for something to pick. The block is centred but its text is
-   not — a centred paragraph wraps into a ragged shape the icon at its start no
-   longer lines up with. */
+/* The reason is the question's subtitle — the same voice as the subtitle on the
+   opening screen, centred under the question and tight to it — so it reads as
+   the rest of what Jovana is saying, not as a note pinned beside it. */
 .imm-why {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-2);
-  max-width: 46ch;
-  margin-bottom: var(--spacing-4);
-  text-align: left;
+  max-width: 480px;
+  margin-top: var(--spacing-2-5);
   font-size: var(--text-sm-size);
   line-height: var(--text-sm-leading);
   color: #7d6f63;
+  text-wrap: balance;
 }
 
-.imm-why > svg {
-  flex-shrink: 0;
-  margin-top: 3px;
-  color: var(--primary);
+/* One gap between what Jovana says and what can be answered, whether the
+   question has a subtitle or not. */
+.imm-screen.is-conversation .imm-answer {
+  margin-top: 0;
 }
 
-.imm-why-label {
-  font-weight: var(--font-medium);
-  color: #5f5249;
+.imm-answer > .imm-options,
+.imm-answer > .imm-composer-slot {
+  margin-top: var(--spacing-7);
 }
 
 /* ---------- One composer for everything typed ---------- */
@@ -3792,16 +3791,14 @@ input {
   margin-top: 20vh;
 }
 
-/* Three lines of height are reserved and the text centres inside them, so the
-   line grows out from the middle and what follows starts at the same place
-   whatever Jovana writes. Two lines was not enough: her questions regularly run
-   to three, and the box grew — holding the line still but pushing the cards
-   under it down by a full line every time a long question came up. */
+/* The line takes the height of what Jovana wrote, starting under the section
+   label, and everything below follows it at a fixed distance. Three lines used
+   to be reserved with the text centred inside them, which left a shorter
+   question floating in empty space with an uneven gap above the answers. Nothing
+   below the line is on screen while it changes height: the answers leave when
+   she starts thinking and only come back once the question is written. */
 .imm-line {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(3 * 34px);
+  min-height: 34px;
 }
 
 /* Jovana thinking, in the same box the answer will occupy. Nothing was shown
