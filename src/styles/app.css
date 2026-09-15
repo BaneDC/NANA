@@ -3820,81 +3820,107 @@ input {
   min-height: 34px;
 }
 
-/* Jovana thinking, in the same box the answer will occupy. Nothing was shown
-   at all before: the screen sat empty for the whole of a model turn, which
-   reads as broken rather than as waiting. */
-.imm-thinking {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-normal);
-  color: #7d6f63;
-}
-
-.imm-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--primary);
-  opacity: 0.35;
-  animation: imm-think 1.15s ease-in-out infinite;
-}
-
-.imm-dot:nth-child(2) {
-  animation-delay: 0.16s;
-}
-
-.imm-dot:nth-child(3) {
-  animation-delay: 0.32s;
-}
-
-.imm-thinking-text {
-  margin-left: var(--spacing-2);
-}
-
-/* What she is thinking, out loud, while she works out what to ask. Left-aligned
-   in a centred column: it grows as she writes, and centred text that grows
-   re-centres every line under the reader. */
-.imm-thoughts {
-  width: 100%;
-  max-width: 520px;
+/* Her thinking while she works: the newest whole sentence, small and centred,
+   with a light shimmer running through it — a sign of work going on, not a
+   paragraph to read. */
+.imm-thinking-line {
+  max-width: 480px;
   margin: 0 auto;
-  text-align: left;
-}
-
-.imm-thoughts-text {
-  margin-top: var(--spacing-3);
-  font-size: 17px;
-  line-height: 26px;
-  font-weight: var(--font-normal);
-  color: #5f5249;
-}
-
-.imm-thoughts-missing {
-  margin-top: var(--spacing-3);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-normal);
+  font-size: 15px;
+  line-height: 24px;
   color: #8a7a6d;
+  text-wrap: balance;
 }
 
-.imm-thoughts-missing strong {
-  font-weight: var(--font-medium);
+.imm-shimmer {
+  display: inline-block;
+  background: linear-gradient(100deg, #8a7a6d 35%, #eadfd5 50%, #8a7a6d 65%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: imm-shimmer 2.6s linear infinite;
+}
+
+@keyframes imm-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-shimmer {
+    animation: none;
+    background: none;
+    color: #8a7a6d;
+  }
+}
+
+/* How she got to the question, folded above it. The row keeps its height while
+   she is thinking too, so neither the question nor what is under it shifts. */
+.imm-cot {
+  /* a column, not a line of text: an inline button in a line box picks up the
+     descender space under it, and the row came out taller than the 20px it
+     holds while she thinks — enough to nudge everything below it */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 20px;
+  margin-bottom: var(--spacing-2);
+}
+
+.imm-cot-toggle {
+  display: inline-flex;
+  height: 20px;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 20px;
+  color: #a2917f;
+  transition: color 0.2s ease;
+}
+
+.imm-cot-toggle:hover {
   color: #6d6157;
 }
 
-@keyframes imm-think {
-  0%,
-  100% {
-    opacity: 0.25;
-    transform: translateY(0);
-  }
-  40% {
-    opacity: 0.9;
-    transform: translateY(-3px);
-  }
+.imm-cot-toggle svg {
+  transition: transform 0.25s ease;
+}
+
+.imm-cot-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.imm-cot-body {
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.imm-cot-text {
+  max-width: 480px;
+  margin: var(--spacing-2) auto var(--spacing-1);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 22px;
+  color: #6d6157;
+  text-align: left;
+}
+
+.imm-cot-missing {
+  margin-top: var(--spacing-2);
+  color: #8a7a6d;
+}
+
+.imm-cot-missing strong {
+  font-weight: var(--font-medium);
+  color: #6d6157;
 }
 
 /* A word is the unit that wraps: the characters inside it are inline-blocks

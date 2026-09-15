@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { remainingQuestions, systemPrompt } from '../data/conversation';
@@ -65,10 +65,8 @@ const CHAR_MS = 26;
 // character has settled behind the head.
 const TAIL = 7;
 const HEAD_BLUR = 4.5;
-// Her thinking types quicker than her questions: it is there to be glanced at
-// while waiting. Once written it stays a moment before the question replaces it.
-const THOUGHT_MS = 14;
-const THOUGHT_HOLD = 1200;
+// how long each sentence of her thinking stays before the next replaces it
+const SENTENCE_MS = 2600;
 
 function useTypewriter(full, ms = CHAR_MS) {
   const [typed, setTyped] = useState('');
@@ -323,8 +321,10 @@ export default function ImmersiveConversation({
   const [dropped, setDropped] = useState(false);
   // what she is thinking and still missing, as `assess` streams in
   const [thought, setThought] = useState({ text: '', missing: [] });
-  // false from the moment she starts until her thought has been read
-  const [released, setReleased] = useState(true);
+  // her thinking behind the current question, unfolded on request
+  const [cotOpen, setCotOpen] = useState(false);
+  // which sentence of her thinking is on screen while she works
+  const [sentenceAt, setSentenceAt] = useState(0);
   const history = useRef([]);
   // The question's height as last written. The answers under it take a moment
   // to leave once she starts thinking; holding the box at this height for that
@@ -348,20 +348,31 @@ export default function ImmersiveConversation({
   // And it reads `asking`, not `asked`. An `ask` for a question id that does not
   // exist sets `asked` to something truthy that resolves to nothing — which is
   // how a blank screen got past this check the first time.
-  // Her reasoning, out loud, while she works out what to ask. The question waits
-  // for it to finish typing and sit for a moment: a thought cut off mid-sentence
-  // by the answer it led to would not be worth showing.
-  const thoughtTyped = useTypewriter(thought.text, THOUGHT_MS);
-  const thoughtDone = thoughtTyped.length >= thought.text.length;
+  const waiting = busy;
+  // While she works, the newest whole sentence of her thinking stands where the
+  // question will be — a sentence at a time and never a half-written one, so
+  // nothing grows and re-centres under the reader. Typed out in full it was too
+  // quick to read and gone the moment the question arrived; the whole of it now
+  // waits behind the toggle above the question instead.
+  const sentences = useMemo(
+    () => (thought.text.match(/[^.!?…]+[.!?…]+/g) || []).map((x) => x.trim()),
+    [thought.text]
+  );
+  // A model writes its sentences a fraction of a second apart, so showing only
+  // the newest skipped straight past the first. Each one stays long enough to be
+  // read before the next takes its place.
+  const shownAt = useRef(0);
+  const hasSentence = sentences.length > 0;
   useEffect(() => {
-    if (busy) setReleased(false);
-  }, [busy]);
+    shownAt.current = performance.now();
+  }, [sentenceAt, hasSentence]);
   useEffect(() => {
-    if (busy || released || !thoughtDone) return undefined;
-    const id = setTimeout(() => setReleased(true), thought.text ? THOUGHT_HOLD : 0);
+    if (!waiting || sentenceAt >= sentences.length - 1) return undefined;
+    const wait = Math.max(0, SENTENCE_MS - (performance.now() - shownAt.current));
+    const id = setTimeout(() => setSentenceAt((i) => i + 1), wait);
     return () => clearTimeout(id);
-  }, [busy, released, thoughtDone, thought.text]);
-  const waiting = busy || !released;
+  }, [waiting, sentenceAt, sentences.length]);
+  const thoughtNow = sentences[Math.min(sentenceAt, sentences.length - 1)] || 'Razmišljam…';
 
   const stalled = stage === 'talking' && !waiting && !asking && !followUp;
   // A turn can call tools without writing a sentence, which left the screen
@@ -421,6 +432,8 @@ export default function ImmersiveConversation({
       setFollowUp(null);
       setWhy(null);
       setThought({ text: '', missing: [] });
+      setCotOpen(false);
+      setSentenceAt(0);
       setSaid('');
       setDraft('');
       setStage('talking');
@@ -612,30 +625,66 @@ export default function ImmersiveConversation({
                 {SECTION[remaining[0]?.sekcija] || 'Skoro gotovo'}
               </motion.p>
 
-              {/* The question sits right under the section label at its own
-                  height. While she works out what to ask, her thinking takes
-                  its place, in the same box. */}
+              {/* How she got to this question, folded. The row is there while
+                  she thinks too, empty, so the question never moves by it. */}
+              <div className="imm-cot">
+                {!waiting && thought.text && (
+                  <>
+                    <button
+                      type="button"
+                      className="imm-cot-toggle"
+                      aria-expanded={cotOpen}
+                      onClick={() => setCotOpen((v) => !v)}
+                    >
+                      Kako sam došla do ovog pitanja
+                      <ChevronDown size={13} strokeWidth={1.75} />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {cotOpen && (
+                        <motion.div
+                          className="imm-cot-body"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: EASE_OUT }}
+                        >
+                          <div className="imm-cot-text">
+                            <p>{thought.text}</p>
+                            {thought.missing.length > 0 && (
+                              <p className="imm-cot-missing">
+                                <strong>Još mi fali:</strong> {thought.missing.join(' · ')}
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                )}
+              </div>
+
+              {/* The question, at its own height. While she works out what to
+                  ask, her thinking stands in the same box. */}
               <div
                 ref={lineRef}
                 className="imm-line"
                 style={waiting && lineHeight.current ? { minHeight: lineHeight.current } : undefined}
               >
                 {waiting ? (
-                  <div className="imm-thoughts">
-                    <span className="imm-thinking" role="status">
-                      <span className="imm-dot" />
-                      <span className="imm-dot" />
-                      <span className="imm-dot" />
-                      <span className="imm-thinking-text">Jovana razmišlja…</span>
-                    </span>
-                    {thoughtTyped && <p className="imm-thoughts-text">{thoughtTyped}</p>}
-                    {/* after the thought, so it reads as where the thought led */}
-                    {thoughtDone && thought.missing.length > 0 && (
-                      <p className="imm-thoughts-missing">
-                        <strong>Još mi fali:</strong> {thought.missing.join(' · ')}
-                      </p>
-                    )}
-                  </div>
+                  <p className="imm-thinking-line" role="status">
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.span
+                        key={thoughtNow}
+                        className="imm-shimmer"
+                        initial={{ opacity: 0, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, filter: 'blur(4px)' }}
+                        transition={{ duration: 0.45, ease: EASE_OUT }}
+                      >
+                        {thoughtNow}
+                      </motion.span>
+                    </AnimatePresence>
+                  </p>
                 ) : (
                   <h1 className="imm-title">
                     {/* No caret. The sentence is laid out in full from the

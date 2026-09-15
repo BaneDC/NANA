@@ -276,15 +276,18 @@ and Jovana decides per question whether to send one, worded around what she has 
 told. A name, an age or how she gets around get none. The reason arrives with the
 answer cards, once the question has finished writing, and leaves with them.
 
-**5. "What is she thinking?"** While Jovana works out what to ask, her reasoning is on
-screen in place of the question: `assess` carries a `razmisljanje` — two or three
-first-person sentences on what she understood from the last message, what is still
-unclear, and what she will ask because of it — followed by *Još mi fali:* and her
-`nepoznanice`. It is read from the tool input **as it streams** (`inputJson`), types
-out at its own quicker pace, and the question waits until it has finished and sat for
-a moment. It is written for the family, deliberately not the model's raw thinking,
-which is in English and full of tool names, ids and the frailty score the prompt tells
-her never to mention.
+**5. "What is she thinking?"** `assess` carries a `razmisljanje` — two or three
+first-person sentences for the family on what she understood from the last message,
+what is still unclear, and what she will ask because of it — read from the tool input
+**as it streams** (`inputJson`). While she works, only its newest *whole* sentence is
+shown, small and centred with a light shimmer, crossfading as the next one completes:
+nothing is typed out, so nothing grows or re-centres. Once the question is up, the
+whole thought and *Još mi fali* sit folded above it behind **Kako sam došla do ovog
+pitanja**. An earlier version typed the full thought left-aligned in place of the
+question and held the question back for it; it moved the whole waiting state, was
+too quick to read and was gone the moment the question came. It is written for the
+family, deliberately not the model's raw thinking, which is in English and full of
+tool names, ids and the frailty score the prompt tells her never to mention.
 
 Top left, how well she understands the situation is **a plain five-step scale** with
 the step's name (*Tek počinjemo … Znam dovoljno*). It can fall, and turns amber for a
