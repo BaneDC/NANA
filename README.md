@@ -324,7 +324,9 @@ the project root (gitignored) and restart `npm run dev`:
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-That key wins over one typed into the app. Only the dev server passes it to the page
+A key typed into the app still comes first. One that Anthropic rejects (401) is
+cleared and the key screen comes back saying why, so the next load falls back to the
+file instead of failing on every turn. Only the dev server passes it to the page
 (`define` in `vite.config.js`); `vite build` defines it as empty, so it never reaches
 `dist/`.
 

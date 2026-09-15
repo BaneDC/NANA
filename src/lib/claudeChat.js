@@ -10,13 +10,15 @@ const KEY_STORAGE = 'nana.anthropic-key';
 // their own key — and the wrong call for anything shipped: a browser-held key is
 // readable by any script on the page, so this never goes near a real user.
 //
-// A key in `.env.local` (ANTHROPIC_API_KEY) comes first. The browser's copy
-// belongs to one address, port included, so every time the dev server came up
-// on a different port the saved key was simply not there and the app asked
-// again. The file does not care which port. Only the dev server hands it in —
-// see `define` in vite.config.js — so a build never carries it.
+// A key in `.env.local` (ANTHROPIC_API_KEY) fills in when this browser has none.
+// The browser's copy belongs to one address, port included, so every time the
+// dev server came up on a different port the saved key was simply not there;
+// the file does not care which port. A key typed into the app still comes
+// first, and one Anthropic rejects is cleared (see App), so the next load falls
+// back to the file. Only the dev server hands the file's key in — see `define`
+// in vite.config.js — so a build never carries it.
 const fileKey = typeof __DEV_ANTHROPIC_KEY__ === 'string' ? __DEV_ANTHROPIC_KEY__ : '';
-export const loadKey = () => fileKey || localStorage.getItem(KEY_STORAGE) || '';
+export const loadKey = () => localStorage.getItem(KEY_STORAGE) || fileKey || '';
 export const saveKey = (key) => localStorage.setItem(KEY_STORAGE, key.trim());
 export const clearKey = () => localStorage.removeItem(KEY_STORAGE);
 

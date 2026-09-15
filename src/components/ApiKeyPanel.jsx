@@ -6,7 +6,7 @@ import Button from './Button';
 // account and nothing secret is ever committed. It is also the reason this
 // variant is a local demo and not something to deploy: a key held in the browser
 // is readable by anything running on the page.
-export default function ApiKeyPanel({ initial = '', onSave, onCancel }) {
+export default function ApiKeyPanel({ initial = '', rejected = false, onSave, onCancel }) {
   const [value, setValue] = useState(initial);
   const valid = /^sk-ant-/.test(value.trim());
 
@@ -23,6 +23,14 @@ export default function ApiKeyPanel({ initial = '', onSave, onCancel }) {
         <div className="panel-card-head">
           <p className="doc-section-title">Anthropic API ključ</p>
         </div>
+
+        {rejected && (
+          <p className="key-warning" role="alert">
+            Anthropic nije prihvatio ključ koji je bio sačuvan (401) — obrisan je, istekao ili je
+            pogrešno kopiran. Upiši ključ koji radi; ako je stari u <code>.env.local</code>, zameni
+            ga i tamo.
+          </p>
+        )}
 
         <label className="key-field">
           <KeyRound size={14} strokeWidth={1.75} />

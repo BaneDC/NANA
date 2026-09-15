@@ -18,7 +18,7 @@ import Immersive from './screens/Immersive';
 import ImmersiveConversation from './screens/ImmersiveConversation';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import ApiKeyPanel from './components/ApiKeyPanel';
-import { loadKey, saveKey } from './lib/claudeChat';
+import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { statusCounts } from './data/bookings';
 import { care as seedCare } from './data/familyCare';
@@ -53,6 +53,8 @@ export default function App() {
   // the AI variant runs against the developer's own key, kept in this browser
   const [apiKey, setApiKey] = useState(loadKey);
   const [askingKey, setAskingKey] = useState(false);
+  // set when Anthropic turned the key down, so the key screen can say why it is back
+  const [keyRejected, setKeyRejected] = useState(false);
   // things the family said that no question covers — they reach the plan
   const [notes, setNotes] = useState([]);
   // The arrangement with the caregiver, shared: the dashboard reads it and the
@@ -342,9 +344,11 @@ export default function App() {
           <div className="chat-container key-overlay" key="key-gate">
             <ApiKeyPanel
               initial={apiKey}
+              rejected={keyRejected}
               onSave={(k) => {
                 saveKey(k);
                 setApiKey(k);
+                setKeyRejected(false);
                 setAskingKey(false);
               }}
               onCancel={() => {
@@ -369,6 +373,13 @@ export default function App() {
               setVariant('classic');
               setSelectedPlan('live');
               setView('plan-detail');
+            }}
+            // the saved key goes, so a reload cannot bring the same one back
+            onKeyRejected={() => {
+              clearKey();
+              setApiKey('');
+              setKeyRejected(true);
+              setAskingKey(true);
             }}
           />
         )}

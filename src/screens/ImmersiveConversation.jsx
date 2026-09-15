@@ -16,6 +16,17 @@ import Button from '../components/Button';
 
 const letterFor = (i) => String.fromCharCode(97 + i);
 
+// What went wrong, in words someone watching the demo can read. The raw error
+// still goes to the console for whoever is debugging it.
+function errorText(e) {
+  console.error(e);
+  if (e?.status === 429) return 'Previše zahteva odjednom — sačekajte par sekundi i pošaljite ponovo.';
+  if (e?.status === 529 || e?.status === 503) return 'Claude je trenutno preopterećen — pokušajte ponovo za minut.';
+  if (e?.name === 'APIConnectionError') return 'Nema veze sa Anthropic-om — proverite internet i pošaljite ponovo.';
+  if (e?.status) return `Poziv nije uspeo (${e.status}): ${e.error?.error?.message || e.message}`;
+  return e?.message || String(e);
+}
+
 // The clouds are kept rather than deleted: `?bg=clouds` puts them back behind the
 // conversation, so the two can be compared.
 const Backdrop =
@@ -291,6 +302,7 @@ export default function ImmersiveConversation({
   onPlan,
   onExit,
   onFinish,
+  onKeyRejected,
 }) {
   const [stage, setStage] = useState('open'); // open | talking | plan
   const [said, setSaid] = useState('');
@@ -429,12 +441,19 @@ export default function ImmersiveConversation({
           setStage('plan');
         }
       } catch (e) {
-        setError(e?.message || String(e));
+        // A key Anthropic refuses is refused on every turn after this one too.
+        // Printed under the composer, the raw 401 just sat there turn after
+        // turn with nowhere to put a key that works; the key screen is that place.
+        if (e?.status === 401) {
+          onKeyRejected?.();
+          return;
+        }
+        setError(errorText(e));
       } finally {
         setBusy(false);
       }
     },
-    [client, system, onAnswer, onNote, onPlan, assess]
+    [client, system, onAnswer, onNote, onPlan, assess, onKeyRejected]
   );
 
   const pick = (answer, label) => {
