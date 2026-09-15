@@ -182,19 +182,19 @@ export const TOOLS = [
   {
     name: 'assess',
     description:
-      'Reci koliko stvarno razumeš osobu o kojoj se radi i koliko si sigurna da joj možeš napraviti dobar plan. Pozovi ovo u svakom potezu, posle beleženja a pre nego što pitaš. Broj sme i da padne: ako je čovek rekao nešto što otvara pitanje koje ranije nisi ni znala da postoji, spusti ga iskreno.',
+      'Reci koliko stvarno razumeš osobu o kojoj se radi i koliko si sigurna da joj možeš napraviti dobar plan. Pozovi ovo u svakom potezu, posle beleženja a pre nego što napišeš pitanje — čovek tvoje razmišljanje čita dok čeka. Broj sme i da padne: ako je čovek rekao nešto što otvara pitanje koje ranije nisi ni znala da postoji, spusti ga iskreno.',
     input_schema: {
       type: 'object',
       properties: {
+        razmisljanje: {
+          type: 'string',
+          description:
+            'Naglas, za čoveka koji čeka tvoj odgovor — prikazuje mu se dok razmišljaš. Dve do tri kratke rečenice u prvom licu: šta si upravo razumela iz njegove poruke (sa konkretnim detaljem iz nje), šta ti još nije jasno i šta ćeš zato sledeće da pitaš. Toplo i jednostavno, kao kad misliš naglas pred njim. Bez brojeva i procenata, bez procene krhkosti, bez naziva alata, id-jeva i pravila koja slediš.',
+        },
         razumevanje: {
           type: 'integer',
           description:
             'Od 0 do 100. 0 = ne znaš ništa o njoj. 100 = znaš dovoljno za plan u koji si sigurna. Budi stroga: odgovorena pitanja nisu isto što i razumevanje. Popunjena lista uz nejasan razlog poziva nije 100.',
-        },
-        zasto: {
-          type: 'string',
-          description:
-            'Jedna kratka rečenica korisniku, tvojim rečima: šta ti je sada jasno a šta još nije. Bez brojeva i procenata, bez „razumem vas".',
         },
         nepoznanice: {
           type: 'array',
@@ -203,7 +203,7 @@ export const TOOLS = [
             'Do četiri kratke fraze — šta ti fali da bi bila sigurna. Ljudskim jezikom, ne nazivi pitanja: „zašto baš sada", „kako podnosi stranca u kući".',
         },
       },
-      required: ['razumevanje', 'zasto'],
+      required: ['razmisljanje', 'razumevanje'],
     },
   },
   {
@@ -271,7 +271,7 @@ Kada čovek kaže nešto važno što ne pripada nijednom pitanju, zabeleži to p
 Pitanja tipa \`inputs\` nemaju kartice — čovek odgovara jednom rečenicom, a ti iz nje izvučeš polja. „Bogdan, sin, 063 555 210" je ime, srodstvo i telefon. Ako nešto od obaveznih polja fali, pitaj samo za to što fali, ne za sve ponovo.
 Kada iz onoga što je čovek napisao možeš da popuniš neko pitanje, odmah to zabeležiš preko \`record_answers\` — i kada jednom rečenicom odgovori na više njih. „Pala je dvaput prošle godine i više ne može da kuva" su dva odgovora, ne jedan.
 Nikad ne pitaš ono što već znaš.
-Čovek sa strane vidi koliko je razumeš — to je ono što šalješ kroz \`assess\`. Zato je taj broj tvoja iskrena procena, ne ohrabrenje: ako ti je nešto zamaglilo sliku, neka padne. Rečenica uz njega je jedino objašnjenje koje čovek dobija, pa neka bude konkretna.
+Čovek vidi koliko je razumeš — to je broj koji šalješ kroz \`assess\` — a dok čeka tvoj odgovor, uživo čita tvoje \`razmisljanje\`. Zato \`assess\` pozivaš pre nego što napišeš pitanje. Broj je tvoja iskrena procena, ne ohrabrenje: ako ti je nešto zamaglilo sliku, neka padne. Razmišljanje je jedino što čovek sazna o tome šta razumeš i šta ti još treba, pa neka bude konkretno.
 Ako je odgovor nejasan, pitaj da razjasniš umesto da nagađaš. Ako je jasan, ne traži potvrdu.
 Ako podatak deluje nemoguće ili u šali — 120 godina, grad na drugom kraju sveta — nemoj ga zabeležiti, ali nemoj ni stati. Reci mirno šta ti ne štima i pitaj preko \`follow_up\`. Čovek možda testira aplikaciju, možda je pogrešio, možda misli ozbiljno; u sva tri slučaja razgovor ide dalje.
 Svaki tvoj potez se završava tako što nešto pitaš — \`ask\` ili \`follow_up\`. Beleženje i procena nisu potez; bez pitanja čovek ostaje pred praznim ekranom.

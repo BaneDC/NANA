@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ArrowUp, ArrowUpRight, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
-import { knownFacts, remainingQuestions, systemPrompt } from '../data/conversation';
+import { remainingQuestions, systemPrompt } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregivers } from '../data/carePlan';
 import { planOverview } from '../data/carePlan.sr';
@@ -65,8 +65,12 @@ const CHAR_MS = 26;
 // character has settled behind the head.
 const TAIL = 7;
 const HEAD_BLUR = 4.5;
+// Her thinking types quicker than her questions: it is there to be glanced at
+// while waiting. Once written it stays a moment before the question replaces it.
+const THOUGHT_MS = 14;
+const THOUGHT_HOLD = 1200;
 
-function useTypewriter(full) {
+function useTypewriter(full, ms = CHAR_MS) {
   const [typed, setTyped] = useState('');
   const fullRef = useRef(full);
   fullRef.current = full;
@@ -80,7 +84,7 @@ function useTypewriter(full) {
         if (prev.length >= target.length) return prev; // caught up: no re-render
         return target.slice(0, prev.length + 1);
       });
-    }, CHAR_MS);
+    }, ms);
     return () => clearInterval(id);
   }, []);
 
@@ -317,6 +321,10 @@ export default function ImmersiveConversation({
   const [muted, setMuted] = useState(false);
   const [assessment, setAssessment] = useState({ level: 0, reason: '', unknowns: [] });
   const [dropped, setDropped] = useState(false);
+  // what she is thinking and still missing, as `assess` streams in
+  const [thought, setThought] = useState({ text: '', missing: [] });
+  // false from the moment she starts until her thought has been read
+  const [released, setReleased] = useState(true);
   const history = useRef([]);
   // The question's height as last written. The answers under it take a moment
   // to leave once she starts thinking; holding the box at this height for that
@@ -340,22 +348,39 @@ export default function ImmersiveConversation({
   // And it reads `asking`, not `asked`. An `ask` for a question id that does not
   // exist sets `asked` to something truthy that resolves to nothing — which is
   // how a blank screen got past this check the first time.
-  const stalled = stage === 'talking' && !busy && !asking && !followUp;
+  // Her reasoning, out loud, while she works out what to ask. The question waits
+  // for it to finish typing and sit for a moment: a thought cut off mid-sentence
+  // by the answer it led to would not be worth showing.
+  const thoughtTyped = useTypewriter(thought.text, THOUGHT_MS);
+  const thoughtDone = thoughtTyped.length >= thought.text.length;
+  useEffect(() => {
+    if (busy) setReleased(false);
+  }, [busy]);
+  useEffect(() => {
+    if (busy || released || !thoughtDone) return undefined;
+    const id = setTimeout(() => setReleased(true), thought.text ? THOUGHT_HOLD : 0);
+    return () => clearTimeout(id);
+  }, [busy, released, thoughtDone, thought.text]);
+  const waiting = busy || !released;
+
+  const stalled = stage === 'talking' && !waiting && !asking && !followUp;
   // A turn can call tools without writing a sentence, which left the screen
   // showing options with no question above them. The flow's own wording is the
   // floor: Jovana's phrasing is preferred, but something is always asked.
   //
   // Empty while she is still writing: the reveal only ever runs on a sentence
   // that is already complete, so its layout cannot change under it.
-  const line = busy
+  // the plan's closing line does not wait: that screen has no thinking on it
+  const lineReady = stage === 'plan' || !waiting;
+  const line = !lineReady
     ? ''
     : said || (asking ? Q[asking.id]?.title || asking.title : stalled ? 'Recite mi još nešto o njoj.' : '');
   const typed = useTypewriter(line);
   // the gate everything below the line waits on
-  const doneTyping = !busy && line.length > 0 && typed.length >= line.length;
+  const doneTyping = lineReady && line.length > 0 && typed.length >= line.length;
 
   useLayoutEffect(() => {
-    if (!busy && lineRef.current) lineHeight.current = lineRef.current.offsetHeight;
+    if (!waiting && lineRef.current) lineHeight.current = lineRef.current.offsetHeight;
   });
 
   const client = useMemo(() => createClient(apiKey), [apiKey]);
@@ -363,10 +388,7 @@ export default function ImmersiveConversation({
 
   const frailty = frailtyOf(answers);
   const remaining = remainingQuestions(answers);
-  const firstName = answers['about-person']?.values?.name?.trim().split(' ')[0] || '';
-  const planName = firstName || 'nju';
-  const facts = useMemo(() => knownFacts(answers, notes), [answers, notes]);
-  // Once the plan exists there is nothing left to understand, and a ring stuck
+  // Once the plan exists there is nothing left to understand, and a scale stuck
   // at 94 under a finished plan would contradict the screen it sits on.
   const level = stage === 'plan' ? 100 : assessment.level;
 
@@ -398,6 +420,7 @@ export default function ImmersiveConversation({
       setAsked(null);
       setFollowUp(null);
       setWhy(null);
+      setThought({ text: '', missing: [] });
       setSaid('');
       setDraft('');
       setStage('talking');
@@ -432,6 +455,7 @@ export default function ImmersiveConversation({
             setWhy(reason);
           },
           onAssess: assess,
+          onThinking: setThought,
         });
         setSaid(spoken.trim());
         history.current = result.messages;
@@ -483,15 +507,7 @@ export default function ImmersiveConversation({
       {/* Not in `imm-chrome`: the chrome is a strip across the top, and this is a
           column down the left margin — the one part of the screen the centred
           conversation never uses. */}
-      <UnderstandingPanel
-        level={level}
-        reason={assessment.reason}
-        unknowns={assessment.unknowns}
-        facts={facts}
-        name={firstName}
-        dropped={dropped}
-        done={stage === 'plan'}
-      />
+      <UnderstandingPanel level={level} dropped={dropped} />
 
       <div className="imm-chrome">
         <div className="imm-ctls">
@@ -597,33 +613,42 @@ export default function ImmersiveConversation({
               </motion.p>
 
               {/* The question sits right under the section label at its own
-                  height. The thinking indicator takes its place while she is
-                  answering, in the same box. */}
-              <h1
+                  height. While she works out what to ask, her thinking takes
+                  its place, in the same box. */}
+              <div
                 ref={lineRef}
-                className="imm-title imm-line"
-                style={busy && lineHeight.current ? { minHeight: lineHeight.current } : undefined}
+                className="imm-line"
+                style={waiting && lineHeight.current ? { minHeight: lineHeight.current } : undefined}
               >
-                {busy ? (
-                  <span className="imm-thinking" role="status">
-                    <span className="imm-dot" />
-                    <span className="imm-dot" />
-                    <span className="imm-dot" />
-                    <span className="imm-thinking-text">Jovana razmišlja…</span>
-                  </span>
+                {waiting ? (
+                  <div className="imm-thoughts">
+                    <span className="imm-thinking" role="status">
+                      <span className="imm-dot" />
+                      <span className="imm-dot" />
+                      <span className="imm-dot" />
+                      <span className="imm-thinking-text">Jovana razmišlja…</span>
+                    </span>
+                    {thoughtTyped && <p className="imm-thoughts-text">{thoughtTyped}</p>}
+                    {/* after the thought, so it reads as where the thought led */}
+                    {thoughtDone && thought.missing.length > 0 && (
+                      <p className="imm-thoughts-missing">
+                        <strong>Još mi fali:</strong> {thought.missing.join(' · ')}
+                      </p>
+                    )}
+                  </div>
                 ) : (
-                  /* No caret. It used to sit after the last revealed character;
-                     the sentence is laid out in full from the start, so the end
-                     of the element is the end of text nobody can see yet. The
-                     blurred head is the write position, and a better one.
-                     Once the reveal is finished `shown` runs past the end so
-                     the head clears — without that the last few characters kept
-                     their blur for as long as the question stayed up. */
-                  <span>
-                    <Line full={line} shown={doneTyping ? line.length + TAIL : typed.length} />
-                  </span>
+                  <h1 className="imm-title">
+                    {/* No caret. The sentence is laid out in full from the
+                        start, so the end of the element is the end of text
+                        nobody can see yet; the blurred head is the write
+                        position. Once the reveal is finished `shown` runs past
+                        the end so the head clears. */}
+                    <span>
+                      <Line full={line} shown={doneTyping ? line.length + TAIL : typed.length} />
+                    </span>
+                  </h1>
                 )}
-              </h1>
+              </div>
 
               {/* Nothing below appears until the sentence has finished. */}
               <AnimatePresence mode="wait">

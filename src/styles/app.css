@@ -2044,232 +2044,75 @@ input {
 /* Understanding panel — the AI variant's replacement for the bar above.
    It lives in the left margin, which the centred conversation never occupies,
    so it can grow downward without ever pushing the question around. */
+/* How well Jovana understands the situation: a label, five steps and the name
+   of the step reached. What she knows and lacks is said while she thinks. */
 .imm-know {
   position: fixed;
   left: var(--spacing-6);
   top: 72px;
   z-index: 3;
-  width: 208px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
+  width: 168px;
   text-align: left;
-}
-
-.imm-know.is-open {
-  width: 300px;
-  max-height: calc(100vh - 112px);
-  overflow-y: auto;
-  padding: var(--spacing-4);
-  border-radius: var(--radius-3xl);
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.1);
-}
-
-.imm-know-head {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  width: 100%;
-  text-align: left;
-}
-
-.imm-know-lens {
-  position: relative;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-}
-
-.imm-know-ring {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.imm-know-ring-track {
-  fill: rgba(255, 255, 255, 0.5);
-  stroke: rgba(255, 255, 255, 0.75);
-  stroke-width: 4;
-}
-
-.imm-know-ring-fill {
-  fill: none;
-  stroke: rgba(252, 112, 60, 0.6);
-  stroke-width: 4;
-  stroke-linecap: round;
-  transition: stroke 0.4s ease;
-}
-
-.imm-know.is-dropped .imm-know-ring-fill {
-  stroke: rgba(252, 112, 60, 0.95);
-}
-
-/* The face is what actually carries "out of focus" — the ring only measures it. */
-.imm-know-face {
-  position: relative;
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  font-weight: var(--font-medium);
-  color: #6b5f55;
-  transition: filter 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.imm-know-word {
-  display: block;
-  font-size: 13px;
-  line-height: 17px;
-  font-weight: var(--font-medium);
-  color: #5b5047;
-}
-
-.imm-know-who {
-  display: block;
-  font-size: 11px;
-  line-height: 15px;
-  color: #8a7a6d;
-}
-
-.imm-know-close {
-  margin-left: auto;
-  flex: none;
-  color: #8a7a6d;
-}
-
-.imm-know-reason {
-  font-size: 12px;
-  line-height: 17px;
-  color: #7d6f63;
-}
-
-.imm-know-drop {
-  font-size: 11px;
-  line-height: 15px;
-  letter-spacing: 0.02em;
-  color: var(--color-primary-600);
-}
-
-.imm-know-lists {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
 }
 
 .imm-know-label {
-  margin-top: var(--spacing-2);
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 11px;
+  line-height: 16px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #9a8a7c;
-}
-
-.imm-know-chips {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.imm-know-chip {
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  font-size: 11px;
-  line-height: 15px;
-  color: #6b5f55;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.imm-know.is-open .imm-know-chip {
-  border-radius: var(--radius-2xl);
-  white-space: normal;
-}
-
-/* Dimmed, so the answer still reads first — the topic is there to be glanced
-   past once you already know which question the line belongs to. */
-.imm-know-topic {
-  color: #a2917f;
-}
-
-/* Notes are the things she caught that no question asked for, so they carry a
-   mark rather than just a tint — a tint alone reads as an accident. */
-.imm-know-chip.is-note {
-  background: rgba(255, 241, 236, 0.6);
-  border-left: 2px solid rgba(252, 112, 60, 0.45);
-}
-
-.imm-know-more {
-  margin-top: var(--spacing-2);
-  align-self: flex-start;
-  font-size: 11px;
-  line-height: 15px;
   color: #8a7a6d;
-  text-decoration: underline;
-  text-decoration-color: rgba(138, 122, 109, 0.35);
-  text-underline-offset: 3px;
-  transition: color 0.2s ease;
 }
 
-.imm-know-more:hover {
-  color: #6b5f55;
+.imm-know-scale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: var(--spacing-2);
 }
 
-/* Collapsed, the gaps are literally out of focus. Opened, they sharpen — at that
-   point the person is reading them, and unreadable text is not a metaphor. */
-.imm-know-chip.is-missing {
-  background: rgba(255, 255, 255, 0.26);
-  border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.6);
-  color: #9a8a7c;
-  filter: blur(0.7px);
+.imm-know-step {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(70, 61, 53, 0.1);
+  overflow: hidden;
 }
 
-.imm-know.is-open .imm-know-chip.is-missing {
-  filter: none;
+.imm-know-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transform-origin: left center;
 }
 
-/* Same phrases after the plan is made, but in focus and solid: they are being
-   watched now, not waited on. */
-.imm-know-chip.is-watch {
-  background: rgba(255, 255, 255, 0.42);
-  border-color: rgba(255, 255, 255, 0.7);
-  color: #7d6f63;
+/* a step back is shown, not smoothed over */
+.imm-know.is-dropped .imm-know-fill {
+  background: #e0a35c;
 }
 
-/* Below this the margins are gone, so the panel folds down to the lens alone
-   and everything else waits behind a tap. */
+.imm-know-word {
+  margin-top: var(--spacing-2);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-know-drop {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: #b0703a;
+}
+
 @media (max-width: 1080px) {
+  /* over whatever scrolls beneath it on a phone, so it wears the controls' glass */
   .imm-know {
     left: var(--spacing-3);
-    top: 56px;
-    width: auto;
-  }
-
-  /* the name of the reading stays beside the ring: a ring alone did not say
-     what it was measuring */
-  .imm-know:not(.is-open) .imm-know-reason,
-  .imm-know:not(.is-open) .imm-know-lists {
-    display: none;
-  }
-
-  /* Collapsed it floats over whatever scrolls beneath it — the plan runs longer
-     than a phone screen — so it wears the same glass as the controls opposite. */
-  .imm-know:not(.is-open) {
-    padding: 4px 14px 4px 4px;
-    border-radius: 999px;
+    top: var(--spacing-3);
+    /* wide enough to keep the label on one line */
+    width: 176px;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-2xl);
     background: rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -2279,17 +2122,6 @@ input {
   /* and the plan starts below it, not under it */
   .imm-screen.is-plan {
     padding-top: 84px;
-  }
-
-  .imm-know.is-open {
-    width: min(300px, calc(100vw - 24px));
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .imm-know-face,
-  .imm-know-ring-fill {
-    transition: none;
   }
 }
 
@@ -3897,8 +3729,8 @@ input {
 .imm-why {
   max-width: 480px;
   margin-top: var(--spacing-2-5);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
+  font-size: 16px;
+  line-height: 24px;
   color: #7d6f63;
   text-wrap: balance;
 }
@@ -4013,6 +3845,37 @@ input {
 
 .imm-thinking-text {
   margin-left: var(--spacing-2);
+}
+
+/* What she is thinking, out loud, while she works out what to ask. Left-aligned
+   in a centred column: it grows as she writes, and centred text that grows
+   re-centres every line under the reader. */
+.imm-thoughts {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.imm-thoughts-text {
+  margin-top: var(--spacing-3);
+  font-size: 17px;
+  line-height: 26px;
+  font-weight: var(--font-normal);
+  color: #5f5249;
+}
+
+.imm-thoughts-missing {
+  margin-top: var(--spacing-3);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-normal);
+  color: #8a7a6d;
+}
+
+.imm-thoughts-missing strong {
+  font-weight: var(--font-medium);
+  color: #6d6157;
 }
 
 @keyframes imm-think {

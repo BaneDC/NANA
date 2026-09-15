@@ -44,6 +44,18 @@ const REQUEST = {
 const reasonOf = (input) =>
   typeof input?.obrazlozenje === 'string' && input.obrazlozenje.trim() ? input.obrazlozenje.trim() : null;
 
+// What she is thinking and still missing, from an `assess` that may be only half
+// written — so every field is checked for being there and being a string.
+const thinkingOf = (input) => ({
+  text: typeof input?.razmisljanje === 'string' ? input.razmisljanje.trim() : '',
+  missing: Array.isArray(input?.nepoznanice)
+    ? input.nepoznanice
+        .filter((u) => typeof u === 'string' && u.trim())
+        .map((u) => u.trim())
+        .slice(0, 4)
+    : [],
+});
+
 /**
  * One turn of the conversation, looping until the model stops calling tools.
  *
@@ -63,6 +75,7 @@ export async function runTurn({
   onAsk,
   onFollowUp,
   onAssess,
+  onThinking,
 }) {
   let working = { ...answers };
   const collected = [...notes];
@@ -80,6 +93,19 @@ export async function runTurn({
     });
 
     stream.on('text', (delta) => onText(delta));
+    // Her thinking out loud is the `razmisljanje` in `assess`, shown while she
+    // writes it — so that tool's input is read as it streams, not once the call
+    // is complete. Listening to `inputJson` is also what makes the SDK parse
+    // partial input at all; `streamEvent` says which tool the input belongs to.
+    let streamingTool = null;
+    stream.on('streamEvent', (event) => {
+      if (event.type === 'content_block_start') {
+        streamingTool = event.content_block.type === 'tool_use' ? event.content_block.name : null;
+      }
+    });
+    stream.on('inputJson', (_, input) => {
+      if (streamingTool === 'assess') onThinking?.(thinkingOf(input));
+    });
     const message = await stream.finalMessage();
 
     if (message.stop_reason === 'refusal') {
@@ -132,11 +158,10 @@ export async function runTurn({
         // Clamped here rather than trusted: the panel maps this straight onto a
         // ring's fill, and a model that answers 120 would draw past the circle.
         const level = Math.max(0, Math.min(100, Math.round(Number(call.input.razumevanje) || 0)));
-        onAssess?.({
-          level,
-          reason: call.input.zasto?.trim() || '',
-          unknowns: (call.input.nepoznanice || []).map((u) => u.trim()).filter(Boolean).slice(0, 4),
-        });
+        const thinking = thinkingOf(call.input);
+        onAssess?.({ level, reason: thinking.text, unknowns: thinking.missing });
+        // the finished call too, in case the streamed copy stopped short of the end
+        onThinking?.(thinking);
         // Says what to do next, because `assess` is the one tool that reads like
         // a whole turn's work without being one. A turn that only records and
         // assesses ends with nothing on screen to answer.

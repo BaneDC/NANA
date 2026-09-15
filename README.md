@@ -276,6 +276,21 @@ and Jovana decides per question whether to send one, worded around what she has 
 told. A name, an age or how she gets around get none. The reason arrives with the
 answer cards, once the question has finished writing, and leaves with them.
 
+**5. "What is she thinking?"** While Jovana works out what to ask, her reasoning is on
+screen in place of the question: `assess` carries a `razmisljanje` — two or three
+first-person sentences on what she understood from the last message, what is still
+unclear, and what she will ask because of it — followed by *Još mi fali:* and her
+`nepoznanice`. It is read from the tool input **as it streams** (`inputJson`), types
+out at its own quicker pace, and the question waits until it has finished and sat for
+a moment. It is written for the family, deliberately not the model's raw thinking,
+which is in English and full of tool names, ids and the frailty score the prompt tells
+her never to mention.
+
+Top left, how well she understands the situation is **a plain five-step scale** with
+the step's name (*Tek počinjemo … Znam dovoljno*). It can fall, and turns amber for a
+moment when it does. What she knows and lacks used to be listed beside it; that is now
+said in her thinking instead.
+
 Jovana always writes the question text herself; the flow's phrasing is never shown
 on screen. `ask(questionId)` only decides which cards appear beneath it.
 
