@@ -9,7 +9,14 @@ const KEY_STORAGE = 'nana.anthropic-key';
 // That is the right call for a local demo where whoever pulls the repo brings
 // their own key — and the wrong call for anything shipped: a browser-held key is
 // readable by any script on the page, so this never goes near a real user.
-export const loadKey = () => localStorage.getItem(KEY_STORAGE) || '';
+//
+// A key in `.env.local` (ANTHROPIC_API_KEY) comes first. The browser's copy
+// belongs to one address, port included, so every time the dev server came up
+// on a different port the saved key was simply not there and the app asked
+// again. The file does not care which port. Only the dev server hands it in —
+// see `define` in vite.config.js — so a build never carries it.
+const fileKey = typeof __DEV_ANTHROPIC_KEY__ === 'string' ? __DEV_ANTHROPIC_KEY__ : '';
+export const loadKey = () => fileKey || localStorage.getItem(KEY_STORAGE) || '';
 export const saveKey = (key) => localStorage.setItem(KEY_STORAGE, key.trim());
 export const clearKey = () => localStorage.removeItem(KEY_STORAGE);
 

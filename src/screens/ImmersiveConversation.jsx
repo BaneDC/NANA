@@ -6,7 +6,7 @@ import { frailtyOf } from '../data/frailty';
 import { knownFacts, remainingQuestions, systemPrompt } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregivers } from '../data/carePlan';
-import { planNarrative } from '../data/carePlan.sr';
+import { planOverview } from '../data/carePlan.sr';
 import { createClient, runTurn } from '../lib/claudeChat';
 import CloudBackground from '../components/immersive/CloudBackground';
 import GradientBackground from '../components/immersive/GradientBackground';
@@ -450,7 +450,7 @@ export default function ImmersiveConversation({
       : frailty;
   // The overview is read in the language the conversation was held in. The plan
   // handed to the rest of the app is still buildPlan's; this is its opening.
-  const narrative = stage === 'plan' ? planNarrative(answers, notes) : null;
+  const overview = stage === 'plan' ? planOverview(answers, notes) : null;
 
   return (
     <motion.div
@@ -661,8 +661,8 @@ export default function ImmersiveConversation({
             </motion.div>
           )}
 
-          {stage === 'plan' && narrative && (
-            <motion.div key="plan" className="imm-screen is-wide" variants={screen} initial="initial" animate="animate" exit="exit">
+          {stage === 'plan' && overview && (
+            <motion.div key="plan" className="imm-screen is-wide is-plan" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
                 Vaš plan podrške
               </motion.p>
@@ -680,6 +680,11 @@ export default function ImmersiveConversation({
                   'Plan podrške je spreman.'
                 )}
               </motion.h1>
+
+              {/* who she is, first and largest: everything below is about her */}
+              <motion.p className="imm-plan-lead" variants={piece}>
+                {overview.lead}
+              </motion.p>
 
               {/* Nine numbered boxes with one of them lit meant nothing on
                   their own — no name for the scale, no reading of the level,
@@ -718,20 +723,67 @@ export default function ImmersiveConversation({
                 </motion.div>
               )}
 
-              {narrative.map((p, i) => (
-                <motion.p className="imm-plan-summary" variants={piece} key={i}>
-                  {p}
-                </motion.p>
-              ))}
+              {overview.story.length > 0 && (
+                <motion.section className="imm-plan-section" variants={piece}>
+                  <h2 className="imm-plan-label">Šta se dešava</h2>
+                  {overview.story.map((p) => (
+                    <p className="imm-plan-text" key={p}>
+                      {p}
+                    </p>
+                  ))}
+                </motion.section>
+              )}
 
-              <motion.p className="imm-plan-note" variants={piece}>
-                {caregivers.length} negovateljica odgovara ovoj slici.
-              </motion.p>
+              {overview.risks.length > 0 && (
+                <motion.section className="imm-plan-section" variants={piece}>
+                  <h2 className="imm-plan-label">Na šta najviše treba paziti</h2>
+                  <ul className="imm-plan-risks">
+                    {overview.risks.map((r) => (
+                      <li key={r}>{r}</li>
+                    ))}
+                  </ul>
+                </motion.section>
+              )}
 
-              <motion.div className="imm-actions" variants={piece}>
-                <Button variant="primary" size="lg" onClick={onFinish}>
-                  Pogledaj ceo plan <ArrowUpRight size={14} strokeWidth={2} />
-                </Button>
+              {/* their own words, set as quotes so they read as theirs */}
+              {overview.goal && (
+                <motion.section className="imm-plan-section imm-plan-quotes" variants={piece}>
+                  <figure className="imm-plan-quote">
+                    <figcaption className="imm-plan-label">Najvažnije vam je</figcaption>
+                    <blockquote>„{overview.goal}“</blockquote>
+                  </figure>
+                  {overview.worry && (
+                    <figure className="imm-plan-quote is-worry">
+                      <figcaption className="imm-plan-label">Najviše vas brine</figcaption>
+                      <blockquote>„{overview.worry}“</blockquote>
+                    </figure>
+                  )}
+                </motion.section>
+              )}
+
+              {overview.notes.length > 0 && (
+                <motion.section className="imm-plan-section" variants={piece}>
+                  <h2 className="imm-plan-label">Usput ste rekli</h2>
+                  <ul className="imm-plan-notes">
+                    {overview.notes.map((n) => (
+                      <li key={n}>{n}</li>
+                    ))}
+                  </ul>
+                </motion.section>
+              )}
+
+              {/* what all of the above adds up to, set apart as the one thing
+                  to act on — which is why the button lives inside it */}
+              <motion.div className="imm-plan-reco" variants={piece}>
+                <p className="imm-plan-label">Naša preporuka</p>
+                <p className="imm-plan-reco-title">{overview.role}</p>
+                <p className="imm-plan-text">{overview.recommendation}</p>
+                <div className="imm-plan-reco-foot">
+                  <span className="imm-plan-count">{caregivers.length} negovateljica odgovara ovoj slici</span>
+                  <Button variant="primary" size="lg" onClick={onFinish}>
+                    Pogledaj ceo plan <ArrowUpRight size={14} strokeWidth={2} />
+                  </Button>
+                </div>
               </motion.div>
             </motion.div>
           )}

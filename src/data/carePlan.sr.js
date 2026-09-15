@@ -1,11 +1,14 @@
 import { riskIdsOf } from './carePlan';
 import { frailtyOf } from './frailty';
 
-// The care plan's opening paragraphs in Serbian, for the last screen of the AI
+// The care plan's overview in Serbian, for the last screen of the AI
 // conversation — the plan read back in the language it was talked through in.
 // An overlay, like flow.sr.js: buildPlan still decides what the plan says, and
-// the English document the rest of the app shows is untouched. Only the
-// sentences are written again here.
+// the English document the rest of the app shows is untouched.
+//
+// It comes back in parts rather than as paragraphs, because the screen does not
+// read it as one block of prose: who she is leads, the risks are a list, the
+// family's own words are quotes, and the recommendation stands on its own.
 //
 // Serbian declines names and places, and a template cannot: "za Milica" and
 // "u Vračar" are both wrong. So nothing the family typed is ever inflected. A
@@ -61,34 +64,40 @@ const HELPER = {
   family: ' Porodica to nosi između sebe, a to ne može dugo da traje.',
 };
 
-// Accusative after "paziti na" — which for every one of these is the same as
-// the nominative, so the list never needs declining either.
+// list items, so they stand alone and start with a capital
 const RISK = {
-  medication: 'redovno uzimanje lekova',
-  kitchen: 'bezbednost u kuhinji',
-  bathing: 'kupanje bez pomoći',
-  fall: 'novi pad',
-  isolation: 'usamljenost',
-  flat: 'stanje stana',
-  sores: 'rane od ležanja',
+  medication: 'Redovno uzimanje lekova',
+  kitchen: 'Bezbednost u kuhinji',
+  bathing: 'Kupanje bez pomoći',
+  fall: 'Novi pad',
+  isolation: 'Usamljenost',
+  flat: 'Stanje stana',
+  sores: 'Rane od ležanja',
 };
 
+// a heading, so the nominative
 const ROLE = {
-  light: 'osobu za društvo',
-  moderate: 'negovateljicu',
-  high: 'iskusnu negovateljicu',
-  severe: 'medicinsku sestru uz negovateljicu',
-  palliative: 'palijativni tim',
+  light: 'Osoba za društvo',
+  moderate: 'Negovateljica',
+  high: 'Iskusna negovateljica',
+  severe: 'Medicinska sestra uz negovateljicu',
+  palliative: 'Palijativni tim',
 };
 
-const listOf = (items) =>
-  items.length <= 1 ? items[0] || '' : `${items.slice(0, -1).join(', ')} i ${items[items.length - 1]}`;
+// what that role is there to do — the same promise as BAND_ACTIONS in English
+const ROLE_DOES = {
+  light: 'Neko ko joj pravi društvo, izvodi je napolje i pomaže da ostane aktivna.',
+  moderate: 'Redovne posete za kuću, obroke i svakodnevne obaveze.',
+  high: 'Pomoć oko lične nege, a sprečavanje padova je prvo na listi.',
+  severe: 'Nega na nivou medicinske sestre — sama negovateljica ovde ne bi bila dovoljna.',
+  palliative: 'Medicinska sestra, dostava lekova i podrška za celu porodicu.',
+};
 
 // what the family typed, without the quotes or full stop it may already carry
 const bare = (text) => (text || '').trim().replace(/^["„“”']+|[.!?"„“”']+$/g, '').trim();
 const sentence = (text) => (/[.!?]$/.test(text.trim()) ? text.trim() : `${text.trim()}.`);
 
-export function planNarrative(answers, notes = []) {
+export function planOverview(answers, notes = []) {
   const person = answers['about-person']?.values || {};
   const name = person.name?.trim();
   const details = [person.age?.trim(), person.city?.trim()].filter(Boolean);
@@ -101,51 +110,37 @@ export function planNarrative(answers, notes = []) {
   const reasonId = answers['reason-for-contact']?.optionId;
   const goal = bare(answers['family-goal']?.values?.goal);
   const worry = bare(answers['family-goal']?.values?.worry);
-  const risks = riskIdsOf(answers);
 
-  const out = [];
+  const lead = `${name || 'Osoba o kojoj brinete'}${details.length ? ` (${details.join(', ')})` : ''} ${
+    HOUSEHOLD[answers.household?.optionId] || 'živi kod kuće'
+  }${WISH[band]}.`;
 
-  out.push(
-    `${name || 'Osoba o kojoj brinete'}${details.length ? ` (${details.join(', ')})` : ''} ${
-      HOUSEHOLD[answers.household?.optionId] || 'živi kod kuće'
-    }${WISH[band]}.`
-  );
-
+  const story = [];
   if (reasonId) {
-    out.push(
+    story.push(
       `${REASON[reasonId] || REASON['daily-living']} — ${
         ONSET[answers.onset?.optionId] || 'traje već neko vreme'
       }.${HOSPITAL[answers.hospitalisation?.optionId] || ''}`
     );
   }
-
   if (caller) {
-    out.push(
+    story.push(
       `${caller}${relation ? ` (${relation.toLowerCase()})` : ''} je glavni kontakt.${
         HELPER[answers['who-helps-now']?.optionId] || ''
       }`
     );
   }
 
-  if (risks.length) {
-    out.push(`Sada najviše treba paziti na ${listOf(risks.map((id) => RISK[id]))}.`);
-  }
-
-  if (goal) {
-    out.push(
-      `Rekli ste šta vam je najvažnije: „${goal}“.${worry ? ` A najviše vas brine: „${worry}“.` : ''}`
-    );
-  }
-
-  // Said in passing and belonging to no question — kept as they were said, each
-  // its own sentence, since these arrive as whole sentences already.
-  if (notes.length) {
-    out.push(`Zapamtili smo i ovo što ste usput rekli. ${notes.map(sentence).join(' ')}`);
-  }
-
-  out.push(
-    `Preporučujemo ${ROLE[band]}, po meri ovoga što ste opisali — a nivo podrške proveravamo kad god se stanje promeni.`
-  );
-
-  return out;
+  return {
+    lead,
+    story,
+    risks: riskIdsOf(answers).map((id) => RISK[id]),
+    goal: goal || null,
+    // the worry is the second half of the goal question, as in the English plan
+    worry: goal && worry ? worry : null,
+    // said in passing and belonging to no question, kept as they were said
+    notes: notes.map(sentence),
+    role: ROLE[band],
+    recommendation: `${ROLE_DOES[band]} Nivo podrške proveravamo kad god se stanje promeni.`,
+  };
 }

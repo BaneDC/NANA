@@ -41,6 +41,11 @@ export default function ApiKeyPanel({ initial = '', onSave, onCancel }) {
           Ostaje u <code>localStorage</code> ovog browsera i ne odlazi nigde osim ka Anthropic-u.
           Nije u repozitorijumu — svako ko povuče kod upisuje svoj.
         </p>
+        <p className="doc-p">
+          Browser ga pamti samo za ovu adresu, pa ga posle promene porta traži ponovo. Da ga ne
+          upisuješ svaki put, stavi ga u <code>.env.local</code> u korenu projekta kao{' '}
+          <code>ANTHROPIC_API_KEY=…</code> i restartuj server.
+        </p>
         <p className="key-warning">
           Ovako se radi samo lokalni demo. Ključ u browseru može da pročita bilo koja skripta na
           stranici, pa ovo ne sme da ide u produkciju — tamo poziv ide preko servera.

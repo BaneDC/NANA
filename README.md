@@ -316,6 +316,18 @@ the English plan page, like the rest of the app.
 Bring your own key: the app asks for one and keeps it in `localStorage`, so whoever
 pulls the repo uses their own and nothing secret is committed.
 
+`localStorage` belongs to one address, port included, so a dev server that comes up
+on another port asks for the key again. To enter it once, put it in `.env.local` at
+the project root (gitignored) and restart `npm run dev`:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+That key wins over one typed into the app. Only the dev server passes it to the page
+(`define` in `vite.config.js`); `vite build` defines it as empty, so it never reaches
+`dist/`.
+
 > **Local demo only.** A key held in the browser is readable by anything running on
 > the page. Shipped, this call belongs behind a server.
 

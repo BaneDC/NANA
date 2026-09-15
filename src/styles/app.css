@@ -2265,6 +2265,22 @@ input {
     display: none;
   }
 
+  /* Collapsed it floats over whatever scrolls beneath it — the plan runs longer
+     than a phone screen — so it wears the same glass as the controls opposite. */
+  .imm-know:not(.is-open) {
+    padding: 4px 14px 4px 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+  }
+
+  /* and the plan starts below it, not under it */
+  .imm-screen.is-plan {
+    padding-top: 84px;
+  }
+
   .imm-know.is-open {
     width: min(300px, calc(100vw - 24px));
   }
@@ -2751,6 +2767,170 @@ input {
   border-color: var(--primary);
   color: var(--primary-foreground);
   font-weight: var(--font-medium);
+}
+
+/* ---------- AI plan screen: an overview to read ---------- */
+
+/* Seven centred paragraphs in one size and colour gave the eye nowhere to
+   start. Left-aligned and set in steps, it reads in order: who she is, how she
+   is, what is happening, what to watch, what the family said, and what we
+   recommend. */
+.imm-screen.is-plan {
+  align-items: stretch;
+  text-align: left;
+  /* taller than the viewport now: auto margins centre it when it fits and,
+     unlike the stage's centring, never cut its top off when it does not */
+  max-height: none;
+  margin-block: auto;
+}
+
+.imm-screen.is-plan .imm-count {
+  margin-bottom: var(--spacing-2);
+}
+
+.imm-plan-lead {
+  margin-top: var(--spacing-4);
+  font-size: 19px;
+  line-height: 28px;
+  color: #463d35;
+}
+
+.imm-screen.is-plan .imm-scale {
+  padding: var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.imm-plan-section {
+  margin-top: var(--spacing-7);
+}
+
+.imm-plan-label {
+  margin-bottom: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7a6d;
+}
+
+.imm-plan-text {
+  font-size: 15px;
+  line-height: 24px;
+  color: #5f5249;
+}
+
+.imm-plan-text + .imm-plan-text {
+  margin-top: var(--spacing-2);
+}
+
+.imm-plan-risks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  list-style: none;
+}
+
+.imm-plan-risks li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #463d35;
+}
+
+.imm-plan-risks li::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.imm-plan-quotes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.imm-plan-quote {
+  margin: 0;
+  padding-left: var(--spacing-4);
+  border-left: 2px solid var(--color-primary-300);
+}
+
+.imm-plan-quote.is-worry {
+  border-left-color: rgba(138, 122, 109, 0.35);
+}
+
+.imm-plan-quote blockquote {
+  margin: 0;
+  font-size: 17px;
+  line-height: 26px;
+  color: #463d35;
+}
+
+.imm-plan-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1-5);
+  list-style: none;
+}
+
+.imm-plan-notes li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 24px;
+  color: #5f5249;
+}
+
+.imm-plan-notes li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: #b3a397;
+}
+
+.imm-plan-reco {
+  margin-top: var(--spacing-8);
+  padding: var(--spacing-6);
+  border-radius: var(--radius-3xl);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
+}
+
+.imm-plan-reco-title {
+  margin-bottom: var(--spacing-1-5);
+  font-size: 22px;
+  line-height: 30px;
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-plan-reco-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-6);
+}
+
+.imm-plan-count {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: #8a7a6d;
 }
 
 /* ---------- Review: everything you told us, before the plan ---------- */
