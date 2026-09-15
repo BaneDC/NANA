@@ -119,7 +119,7 @@ clouds, with generative ambient audio.
   soft, so the upscale costs nothing visually. Falls back to a CSS sky gradient if
   WebGL or shader compilation is unavailable. The WebGL plumbing lives in
   `useFragmentShader.js`, shared with the AI variant's gradient.
-- **Audio** — `src/lib/zenAudio.js`. Web Audio only, no files and nothing to license:
+- **Audio** — `src/lib/zenAudio.js`, **currently off** (`AMBIENT_AUDIO = false`) until the client confirms it; flipping the flag restores the music and its mute button. Web Audio only, no files and nothing to license:
   a detuned sine drone, band-passed noise for air, and pentatonic tones blooming on a
   loose random timer, so it never loops audibly. Starts from a click, so autoplay
   policies are satisfied. Mute is in the top-right.

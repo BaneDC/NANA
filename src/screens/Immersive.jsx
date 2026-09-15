@@ -15,7 +15,7 @@ import { answerSummary, dependentsOf, isLoadBearing, reconcile } from '../data/d
 import { FIELD_HINTS, FIELD_PLACEHOLDERS, FIELD_PROMPTS } from '../data/prompts';
 import { buildPlan, caregivers } from '../data/carePlan';
 import CloudBackground from '../components/immersive/CloudBackground';
-import { createZenAudio } from '../lib/zenAudio';
+import { AMBIENT_AUDIO, createZenAudio } from '../lib/zenAudio';
 import Button from '../components/Button';
 
 const letterFor = (i) => String.fromCharCode(97 + i);
@@ -265,6 +265,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
   const audioRef = useRef(null);
 
   useEffect(() => {
+    if (!AMBIENT_AUDIO) return undefined;
     const audio = createZenAudio();
     audio.start(); // mounting is the result of a click, so autoplay is allowed
     audioRef.current = audio;
@@ -409,18 +410,20 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           <div className="imm-progress-fill" style={{ width: `${progress * 100}%` }} />
         </div>
         <div className="imm-ctls">
-          <button
-            type="button"
-            className="imm-ctl"
-            onClick={() => {
-              const next = !muted;
-              setMuted(next);
-              audioRef.current?.setMuted(next);
-            }}
-            aria-label={muted ? 'Unmute music' : 'Mute music'}
-          >
-            {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
-          </button>
+          {AMBIENT_AUDIO && (
+            <button
+              type="button"
+              className="imm-ctl"
+              onClick={() => {
+                const next = !muted;
+                setMuted(next);
+                audioRef.current?.setMuted(next);
+              }}
+              aria-label={muted ? 'Unmute music' : 'Mute music'}
+            >
+              {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
+            </button>
+          )}
           <button type="button" className="imm-ctl" onClick={onExit} aria-label="Switch to classic view">
             <LayoutList size={15} strokeWidth={1.75} />
           </button>

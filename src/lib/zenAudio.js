@@ -6,6 +6,10 @@
 // A pentatonic — no semitone clashes, so any two overlapping notes stay consonant.
 const NOTES = [220.0, 246.94, 277.18, 329.63, 369.99, 440.0];
 
+// Off until the client confirms they want it. The generator below is untouched;
+// flip this to bring back the music and its mute button in both immersive screens.
+export const AMBIENT_AUDIO = false;
+
 export function createZenAudio() {
   let ctx = null;
   let master = null;

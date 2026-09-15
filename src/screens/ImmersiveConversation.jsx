@@ -11,7 +11,7 @@ import { createClient, runTurn } from '../lib/claudeChat';
 import CloudBackground from '../components/immersive/CloudBackground';
 import GradientBackground from '../components/immersive/GradientBackground';
 import UnderstandingPanel from '../components/immersive/UnderstandingPanel';
-import { createZenAudio } from '../lib/zenAudio';
+import { AMBIENT_AUDIO, createZenAudio } from '../lib/zenAudio';
 import Button from '../components/Button';
 
 const letterFor = (i) => String.fromCharCode(97 + i);
@@ -407,6 +407,7 @@ export default function ImmersiveConversation({
   const level = stage === 'plan' ? 100 : assessment.level;
 
   useEffect(() => {
+    if (!AMBIENT_AUDIO) return undefined;
     const audio = createZenAudio();
     audio.start();
     audioRef.current = audio;
@@ -531,18 +532,20 @@ export default function ImmersiveConversation({
 
       <div className="imm-chrome">
         <div className="imm-ctls">
-          <button
-            type="button"
-            className="imm-ctl"
-            onClick={() => {
-              const next = !muted;
-              setMuted(next);
-              audioRef.current?.setMuted(next);
-            }}
-            aria-label={muted ? 'Uključi zvuk' : 'Isključi zvuk'}
-          >
-            {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
-          </button>
+          {AMBIENT_AUDIO && (
+            <button
+              type="button"
+              className="imm-ctl"
+              onClick={() => {
+                const next = !muted;
+                setMuted(next);
+                audioRef.current?.setMuted(next);
+              }}
+              aria-label={muted ? 'Uključi zvuk' : 'Isključi zvuk'}
+            >
+              {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
+            </button>
+          )}
           <button type="button" className="imm-ctl" onClick={onExit} aria-label="Klasični prikaz">
             <LayoutList size={15} strokeWidth={1.75} />
           </button>
