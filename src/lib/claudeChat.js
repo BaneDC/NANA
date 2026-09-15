@@ -29,6 +29,12 @@ const REQUEST = {
   tools: TOOLS,
 };
 
+// `obrazlozenje` is optional by design — most questions come without one — so
+// anything that is not a non-empty string counts as none, and can never draw an
+// empty "why" under a question.
+const reasonOf = (input) =>
+  typeof input?.obrazlozenje === 'string' && input.obrazlozenje.trim() ? input.obrazlozenje.trim() : null;
+
 /**
  * One turn of the conversation, looping until the model stops calling tools.
  *
@@ -140,7 +146,7 @@ export async function runTurn({
             is_error: true,
           });
         } else {
-          onAsk(id);
+          onAsk(id, reasonOf(call.input));
           waiting = true;
           results.push({
             type: 'tool_result',
@@ -149,7 +155,7 @@ export async function runTurn({
           });
         }
       } else if (call.name === 'follow_up') {
-        onFollowUp?.(call.input.predlozi || []);
+        onFollowUp?.(call.input.predlozi || [], reasonOf(call.input));
         waiting = true;
         results.push({
           type: 'tool_result',

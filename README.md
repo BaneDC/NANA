@@ -117,12 +117,14 @@ clouds, with generative ambient audio.
   shader, no libraries: domain-warped fbm noise over a pale golden-hour sky, drifting
   at 0.015× time. Rendered at 0.75× resolution and capped at 1.25 DPR — the clouds are
   soft, so the upscale costs nothing visually. Falls back to a CSS sky gradient if
-  WebGL or shader compilation is unavailable.
+  WebGL or shader compilation is unavailable. The WebGL plumbing lives in
+  `useFragmentShader.js`, shared with the AI variant's gradient.
 - **Audio** — `src/lib/zenAudio.js`. Web Audio only, no files and nothing to license:
   a detuned sine drone, band-passed noise for air, and pentatonic tones blooming on a
   loose random timer, so it never loops audibly. Starts from a click, so autoplay
   policies are satisfied. Mute is in the top-right.
-- Honours `prefers-reduced-motion`: the clouds render one frame and hold.
+- Honours `prefers-reduced-motion`: the background renders one frame and holds it,
+  redrawing only when a resize clears the canvas.
 
 ## Flow
 
@@ -217,8 +219,16 @@ Note: `?forceRaf` URL param is a test hook that keeps animations running in head
 ## Third variant: the AI conversation, inside the immersive shell
 
 `Classic / Immersive / AI`. The AI variant is **not a chat window** — it is the
-immersive shell (one screen at a time, clouds, ambient audio) with the question on
-each screen written by Jovana instead of read off a list.
+immersive shell (one screen at a time, ambient audio) with the question on each
+screen written by Jovana instead of read off a list.
+
+**Background** — `src/components/immersive/GradientBackground.jsx`, not the clouds.
+Five soft pools of the clouds' own colours drift on slow elliptical orbits over the
+same pale sky, each axis on its own period so the loop never shows, with a light
+noise warp so they don't read as circles. Nothing in it has an edge to follow, which
+is the point behind someone reading. Drawn at 0.5× resolution and capped at 30 fps,
+with a fixed half-step of dither so eight bits of pastel don't band. The clouds are
+kept, not deleted: **`?bg=clouds`** puts them back behind the conversation.
 
 It answers three things a questionnaire structurally cannot:
 
@@ -254,6 +264,18 @@ screen never re-animates as the next token extends the string.
   the care plan narrative**. Without it that sentence would be collected and then
   silently dropped, which is the failure mode this variant exists to fix.
 
+**4. "Why are you asking me this?"** `ask` and `follow_up` both take an optional
+`obrazlozenje` — one sentence shown under the question as *Zašto pitamo: …*. The
+client's brief: not on every question, only where a family might wonder why we need
+it, and decided by the AI from their answers. So nothing is fixed to a question on
+screen. The prompt carries the house's reasoning instead — a reason for each
+question that tends to raise the doubt (`WHY` in `flow.sr.js`: who else lives there,
+the state of the flat, falls, incontinence, pressure sores…) and example follow-ups
+with theirs (`WHY_FOLLOW_UPS`, the first being the client's own dementia example) —
+and Jovana decides per question whether to send one, worded around what she has been
+told. A name, an age or how she gets around get none. The reason arrives with the
+answer cards, once the question has finished writing, and leaves with them.
+
 Jovana always writes the question text herself; the flow's phrasing is never shown
 on screen. `ask(questionId)` only decides which cards appear beneath it.
 
@@ -281,6 +303,13 @@ chooses, so `remainingQuestions()` enforces it.
 
 Serbian copy is an overlay (`src/data/flow.sr.js`), not a rewrite of `flow.js` —
 the other two variants stay English to match Figma, and the ids must not move.
+
+The plan screen at the end is Serbian too: `src/data/carePlan.sr.js` writes the
+opening paragraphs `buildPlan` produces again, from the same answers and notes and
+naming the same risks. Serbian declines names and places and a template can't, so
+nothing the family typed is ever inflected — a name only as the subject, age and
+place in brackets, their own words in quotes. **Pogledaj ceo plan** still lands on
+the English plan page, like the rest of the app.
 
 ### Running it
 

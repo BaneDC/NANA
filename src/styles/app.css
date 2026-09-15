@@ -3706,6 +3706,35 @@ input {
   align-items: center;
 }
 
+/* ---------- Why we ask ---------- */
+
+/* An aside, not another card: unboxed and in the subtitle's colour, so it can
+   never be mistaken for something to pick. The block is centred but its text is
+   not — a centred paragraph wraps into a ragged shape the icon at its start no
+   longer lines up with. */
+.imm-why {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  max-width: 46ch;
+  margin-bottom: var(--spacing-4);
+  text-align: left;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #7d6f63;
+}
+
+.imm-why > svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--primary);
+}
+
+.imm-why-label {
+  font-weight: var(--font-medium);
+  color: #5f5249;
+}
+
 /* ---------- One composer for everything typed ---------- */
 
 .imm-composer-slot {

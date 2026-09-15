@@ -246,24 +246,35 @@ const LETTER_ACKNOWLEDGEMENT = {
 };
 
 // The risks worth naming out loud, in the order the document names them:
-// medication, kitchen safety, isolation.
-function risksOf(answers) {
+// medication, kitchen safety, isolation. Ids rather than words, so the Serbian
+// overview names the same risks without deciding them a second time.
+export function riskIdsOf(answers) {
   const selfCare = answers['self-care']?.optionIds;
   const manages = (id) => !!selfCare?.includes(id);
   const risks = [];
 
-  if (selfCare && !manages('medication')) risks.push('taking medication on time');
-  if (selfCare && !manages('meals')) risks.push('safety in the kitchen');
-  if (selfCare && !manages('bathing')) risks.push('washing without help');
+  if (selfCare && !manages('medication')) risks.push('medication');
+  if (selfCare && !manages('meals')) risks.push('kitchen');
+  if (selfCare && !manages('bathing')) risks.push('bathing');
   const falls = answers['falls']?.optionId;
-  if (falls && falls !== 'none') risks.push('another fall');
-  if (['rarely', 'never'].includes(answers['outdoors']?.optionId)) risks.push('social isolation');
-  if (answers['home-condition']?.optionId === 'neglected') risks.push('the state of the flat');
+  if (falls && falls !== 'none') risks.push('fall');
+  if (['rarely', 'never'].includes(answers['outdoors']?.optionId)) risks.push('isolation');
+  if (answers['home-condition']?.optionId === 'neglected') risks.push('flat');
   const sores = answers['pressure-sores']?.optionId;
-  if (sores && sores !== 'none') risks.push('pressure sores');
+  if (sores && sores !== 'none') risks.push('sores');
 
   return risks.slice(0, 3);
 }
+
+const RISK_PHRASE = {
+  medication: 'taking medication on time',
+  kitchen: 'safety in the kitchen',
+  bathing: 'washing without help',
+  fall: 'another fall',
+  isolation: 'social isolation',
+  flat: 'the state of the flat',
+  sores: 'pressure sores',
+};
 
 // The support section asks a different question per band, and it is the one place
 // the family describes their own needs — including anything they typed into the
@@ -310,7 +321,7 @@ export function buildPlan(answers, notes = []) {
   const household = HOUSEHOLD_PHRASE[answers['household']?.optionId];
   const helper = answers['who-helps-now']?.optionId;
   const needs = supportNeedsOf(answers);
-  const risks = risksOf(answers);
+  const risks = riskIdsOf(answers).map((id) => RISK_PHRASE[id]);
   const actions = REASON_ACTIONS[reasonId] || REASON_ACTIONS['daily-living'];
   const role = CAREGIVER_ROLE[band];
 

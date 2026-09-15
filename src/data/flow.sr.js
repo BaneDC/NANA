@@ -303,3 +303,63 @@ export const SECTION = {
   support: 'Kakva podrška',
   reason: 'Zašto ste se javili',
 };
+
+// Why we ask — for the questions a family might reasonably wonder about. These
+// are not shown as written: they go into Jovana's instructions as the house's
+// own reasoning, and she decides per conversation whether a question needs one
+// and words it around what the family has told her. A name, an age, how she
+// gets around explain themselves and have none on purpose; a reason under every
+// question is a reason nobody reads.
+export const WHY = {
+  'about-you': 'Da bi vas negovateljica mogla odmah dobiti ako se tokom posete nešto desi.',
+  household:
+    'Ako živi sama, negovateljica je često prva koja primeti promenu; ako živi sa nekim, sa njim dogovaramo ko šta preuzima.',
+  'home-condition': 'Da znamo da li negovateljica prvo treba da sredi stan, pa tek onda da uđe u svakodnevnu rutinu.',
+  'daily-help': 'Po ovome procenjujemo koliko je poseta nedeljno stvarno potrebno — ni previše, ni premalo.',
+  'self-care': 'Ono što još može sama ne preuzimamo od nje, da to ne izgubi — pomažemo samo tamo gde treba.',
+  falls:
+    'Posle jednog pada raste rizik od sledećeg; ako je padala, prvo proveravamo stan i kretanje, pa tek onda krećemo sa negom.',
+  outdoors:
+    'Da znamo da li je usamljenost deo slike — tada negovateljica nije samo pomoć u kući, nego i društvo i razlog da izađe.',
+  slowing: 'Da znamo da li se stanje menja, i da li plan pravimo za danas ili za narednih nekoliko meseci.',
+  'who-helps-now': 'Da znamo koga rasterećujemo, i šta ne sme da stane dok ne krenemo.',
+  'personal-care':
+    'Za kupanje, premeštanje i inkontinenciju biramo negovateljicu koja je to već radila — to se ne uči na licu mesta.',
+  'fall-risk': 'Vaš osećaj je često tačniji od svakog upitnika; ako strahujete od pada, prevenciju stavljamo na prvo mesto.',
+  'bed-mobility':
+    'Ko ne može sam da se okrene, mora redovno da se okreće i noću — to menja koliko često neko mora da bude uz nju.',
+  eating: 'Ako ima problem sa gutanjem, hrana se priprema drugačije i obrok traži nekoga ko zna kako.',
+  'pressure-sores': 'Od ovoga zavisi da li je dovoljna negovateljica, ili treba da dolazi i medicinska sestra.',
+  respiratory: 'Kiseonik i aparati za disanje traže nekoga ko je obučen da radi sa njima.',
+  onset: 'Nagla promena traži brzu reakciju i često lekara, a postepena dugoročan plan.',
+  hospitalisation:
+    'Prve nedelje posle bolnice su najosetljivije — tada prvo usklađujemo lekove i negu sa otpusnom listom.',
+};
+
+// Follow-ups are where a reason matters most: the question was on no list, the
+// family's own answer opened it, and nothing tells them why Jovana picked up on
+// that particular thing. The first one is the client's own example, word for
+// word bar the diacritics.
+export const WHY_FOLLOW_UPS = [
+  {
+    kad: 'porodica pomene demenciju',
+    pitanje: 'Da li je demencija u epizodama ili u kontinuitetu?',
+    obrazlozenje:
+      'Ovo nam je potrebno da znamo da li sa bakom treba da se rade mentalne vežbe, ili se sa porodicom dogovaraju priče koje se konstantno ponavljaju baki.',
+  },
+  {
+    kad: 'pomene Parkinsonovu bolest',
+    pitanje: 'Da li su joj simptomi jači u neko određeno doba dana?',
+    obrazlozenje: 'Da posete zakažemo onda kada joj je najteže, a ne kada je nama zgodno.',
+  },
+  {
+    kad: 'niko od porodice ne živi blizu',
+    pitanje: 'Ima li neko ko može da stigne do nje za pola sata ako zatreba?',
+    obrazlozenje: 'Ako niko nije blizu, sa negovateljicom unapred dogovaramo koga zove i šta sme sama da odluči.',
+  },
+  {
+    kad: 'pomene dijabetes',
+    pitanje: 'Da li sama meri šećer i daje sebi insulin?',
+    obrazlozenje: 'Od ovoga zavisi da li je dovoljna negovateljica, ili nam za insulin treba i medicinska sestra.',
+  },
+];

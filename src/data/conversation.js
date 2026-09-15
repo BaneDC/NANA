@@ -1,6 +1,6 @@
 import { applicableQuestions, flowContext, questionById, steps } from './flow';
 import { frailtyOf } from './frailty';
-import { Q, STEP_INTRO } from './flow.sr';
+import { Q, STEP_INTRO, WHY, WHY_FOLLOW_UPS } from './flow.sr';
 
 // The AI variant's contract with the model.
 //
@@ -125,6 +125,11 @@ export function toAnswer(entry) {
   return { optionIds: ids, ...(other ? { other } : {}) };
 }
 
+// Shared by `ask` and `follow_up`: either kind of question can need a reason, and
+// a follow-up — which no list prepared anyone for — needs one most.
+const WHY_FIELD =
+  'Opciono. Jedna rečenica koja se prikazuje ispod pitanja: zašto nam baš ovo treba i šta radimo drugačije u zavisnosti od odgovora. Samo kada bi se čovek mogao zapitati zašto pitaš — ne uz svako pitanje.';
+
 export const TOOLS = [
   {
     name: 'record_answers',
@@ -207,7 +212,10 @@ export const TOOLS = [
       'Postavi pitanje iz liste. Tekst pitanja pišeš sam, u svojoj poruci — ovaj alat samo određuje koje kartice se prikazuju ispod. Pozovi ga jednom na kraju poteza.',
     input_schema: {
       type: 'object',
-      properties: { questionId: { type: 'string', description: 'id pitanja iz liste preostalih' } },
+      properties: {
+        questionId: { type: 'string', description: 'id pitanja iz liste preostalih' },
+        obrazlozenje: { type: 'string', description: WHY_FIELD },
+      },
       required: ['questionId'],
     },
   },
@@ -223,6 +231,7 @@ export const TOOLS = [
           items: { type: 'string' },
           description: 'Do četiri kratka predloga odgovora, kao meki nagoveštaj. Opciono.',
         },
+        obrazlozenje: { type: 'string', description: WHY_FIELD },
       },
     },
   },
@@ -267,6 +276,25 @@ Ako je odgovor nejasan, pitaj da razjasniš umesto da nagađaš. Ako je jasan, n
 Ako podatak deluje nemoguće ili u šali — 120 godina, grad na drugom kraju sveta — nemoj ga zabeležiti, ali nemoj ni stati. Reci mirno šta ti ne štima i pitaj preko \`follow_up\`. Čovek možda testira aplikaciju, možda je pogrešio, možda misli ozbiljno; u sva tri slučaja razgovor ide dalje.
 Svaki tvoj potez se završava tako što nešto pitaš — \`ask\` ili \`follow_up\`. Beleženje i procena nisu potez; bez pitanja čovek ostaje pred praznim ekranom.
 Redosled je tvoj, ali drži se sekcija: prvo upoznavanje, pa svakodnevni život, pa podrška, pa razlog poziva.
+
+# Zašto pitamo
+Uz \`ask\` i \`follow_up\` možeš da pošalješ i \`obrazlozenje\`: jednu rečenicu koja čoveku kaže zašto nam baš to treba. Prikazuje se ispod pitanja, odvojeno od tvoje poruke, pa ga u poruci ne ponavljaš.
+Ne ide uz svako pitanje. Većina pitanja se sama objašnjava — ime, godine, kako se kreće — i tu je obrazloženje višak koji niko ne čita. Pošalji ga kada bi se čovek mogao zapitati zašto to pitaš:
+- kada je pitanje lično ili neprijatno (kupanje, inkontinencija, rane, stanje stana),
+- kada ne vidi kakve to veze ima sa negom (koliko izlazi napolje, ko još živi u stanu),
+- kada tražiš lični podatak (telefon),
+- i skoro uvek kada postavljaš potpitanje koje je otvorio njegov odgovor — tada najmanje zna zašto si se zakačila baš za to.
+Kako ga pišeš: jedna rečenica, do dvadesetak reči, u ime NANA Prime („treba nam“, „da znamo“). Konkretno reci šta radimo drugačije u zavisnosti od odgovora: „da znamo da li … ili …“. Nikad uopšteno — „da bismo vam bolje pomogli“ je gore nego nikakvo obrazloženje.
+Obrazloženje zavisi od onoga što je čovek rekao: isto pitanje posle pada i posle usamljenosti ne traži isto objašnjenje. Kad znaš ime, koristi ga.
+Bez dijagnoza i bez obećanja.
+
+Primeri potpitanja koja otvara odgovor, sa obrazloženjem. Prvi je primer same NANA Prime:
+${WHY_FOLLOW_UPS.map((w) => `- Kad ${w.kad}. Pitanje: „${w.pitanje}“ Obrazloženje: „${w.obrazlozenje}“`).join('\n')}
+
+Obrazloženja za pitanja iz liste, kao orijentir — prilagodi ih razgovoru i ne šalji ih samo zato što postoje:
+${Object.entries(WHY)
+  .map(([id, text]) => `- ${id}: ${text}`)
+  .join('\n')}
 
 # Šta ne radiš
 Ne izmišljaš pitanja ni opcije van liste. Ne postavljaš medicinske dijagnoze. Ne obećavaš cene, rokove ni konkretne osobe.

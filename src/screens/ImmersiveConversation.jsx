@@ -1,18 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, Info, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { knownFacts, remainingQuestions, systemPrompt } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregivers } from '../data/carePlan';
+import { planNarrative } from '../data/carePlan.sr';
 import { createClient, runTurn } from '../lib/claudeChat';
 import CloudBackground from '../components/immersive/CloudBackground';
+import GradientBackground from '../components/immersive/GradientBackground';
 import UnderstandingPanel from '../components/immersive/UnderstandingPanel';
 import { createZenAudio } from '../lib/zenAudio';
 import Button from '../components/Button';
 
 const letterFor = (i) => String.fromCharCode(97 + i);
+
+// The clouds are kept rather than deleted: `?bg=clouds` puts them back behind the
+// conversation, so the two can be compared.
+const Backdrop =
+  new URLSearchParams(window.location.search).get('bg') === 'clouds' ? CloudBackground : GradientBackground;
 
 const EASE_OUT = [0.22, 0.61, 0.36, 1];
 const EASE_IN = [0.55, 0.06, 0.68, 0.19];
@@ -290,6 +297,9 @@ export default function ImmersiveConversation({
   const [draft, setDraft] = useState('');
   const [asked, setAsked] = useState(null);
   const [followUp, setFollowUp] = useState(null); // string[] of suggestions
+  // Why the question on screen is being asked — only when Jovana judged it needs
+  // saying, so most questions have none.
+  const [why, setWhy] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [muted, setMuted] = useState(false);
@@ -366,6 +376,7 @@ export default function ImmersiveConversation({
       history.current.push({ role: 'user', content: text });
       setAsked(null);
       setFollowUp(null);
+      setWhy(null);
       setSaid('');
       setDraft('');
       setStage('talking');
@@ -391,8 +402,14 @@ export default function ImmersiveConversation({
           },
           onAnswer,
           onNote,
-          onAsk: (id) => setAsked(id),
-          onFollowUp: (suggestions) => setFollowUp(suggestions),
+          onAsk: (id, reason) => {
+            setAsked(id);
+            setWhy(reason);
+          },
+          onFollowUp: (suggestions, reason) => {
+            setFollowUp(suggestions);
+            setWhy(reason);
+          },
           onAssess: assess,
         });
         setSaid(spoken.trim());
@@ -422,7 +439,9 @@ export default function ImmersiveConversation({
     frailty && CFS_SR[frailty.level]
       ? { ...frailty, label: CFS_SR[frailty.level].label, blurb: CFS_SR[frailty.level].blurb }
       : frailty;
-  const plan = stage === 'plan' ? buildPlan(answers, notes) : null;
+  // The overview is read in the language the conversation was held in. The plan
+  // handed to the rest of the app is still buildPlan's; this is its opening.
+  const narrative = stage === 'plan' ? planNarrative(answers, notes) : null;
 
   return (
     <motion.div
@@ -431,7 +450,7 @@ export default function ImmersiveConversation({
       animate={{ opacity: 1, transition: { duration: 0.9, ease: 'easeOut' } }}
       exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeIn' } }}
     >
-      <CloudBackground />
+      <Backdrop />
 
       {/* Not in `imm-chrome`: the chrome is a strip across the top, and this is a
           column down the left margin — the one part of the screen the centred
@@ -587,6 +606,18 @@ export default function ImmersiveConversation({
                     animate="animate"
                     exit="exit"
                   >
+                    {/* Under the question, not inside Jovana's sentence: the
+                        sentence stays the question, and the reason reads as an
+                        aside to it. It arrives with the answers, once the
+                        question has finished writing itself. */}
+                    {why && (
+                      <motion.p className="imm-why" variants={piece}>
+                        <Info size={14} strokeWidth={1.75} aria-hidden="true" />
+                        <span>
+                          <span className="imm-why-label">Zašto pitamo:</span> {why}
+                        </span>
+                      </motion.p>
+                    )}
                     {question ? (
                       <Cards
                         question={question}
@@ -623,13 +654,24 @@ export default function ImmersiveConversation({
             </motion.div>
           )}
 
-          {stage === 'plan' && plan && (
+          {stage === 'plan' && narrative && (
             <motion.div key="plan" className="imm-screen is-wide" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
                 Vaš plan podrške
               </motion.p>
+              {/* Jovana's closing sentence, revealed in place like every other
+                  line of hers; this was the last one still grown a character
+                  at a time and re-centred on each. The fallback used to be
+                  "Evo plana za" and the name, which Serbian has to decline
+                  ("za Zorku") and a template cannot. */}
               <motion.h1 className="imm-title" variants={piece}>
-                {typed || `Evo plana za ${plan.firstName}`}
+                {line ? (
+                  <span>
+                    <Line full={line} shown={doneTyping ? line.length + TAIL : typed.length} />
+                  </span>
+                ) : (
+                  'Plan podrške je spreman.'
+                )}
               </motion.h1>
 
               {/* Nine numbered boxes with one of them lit meant nothing on
@@ -669,7 +711,7 @@ export default function ImmersiveConversation({
                 </motion.div>
               )}
 
-              {plan.narrative.map((p, i) => (
+              {narrative.map((p, i) => (
                 <motion.p className="imm-plan-summary" variants={piece} key={i}>
                   {p}
                 </motion.p>
