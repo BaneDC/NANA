@@ -524,7 +524,10 @@ export default function ImmersiveConversation({
 
       {/* docked at the bottom centre, outside the stage so it stays put as the
           stage scrolls */}
-      <UnderstandingPanel level={level} dropped={dropped} />
+      {/* Not on the blank first page: nothing has been said yet, so "Tek
+          počinjemo" tells no one anything — and that page runs to the bottom
+          of the screen, where the scale sat on top of the emergency line. */}
+      {stage !== 'open' && <UnderstandingPanel level={level} dropped={dropped} />}
 
       <div className="imm-chrome">
         <div className="imm-ctls">
