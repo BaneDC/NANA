@@ -3727,12 +3727,19 @@ input {
    opening screen, centred under the question and tight to it — so it reads as
    the rest of what Jovana is saying, not as a note pinned beside it. */
 .imm-why {
-  max-width: 480px;
+  /* the question's own width, so the two read as one block */
+  width: 100%;
   margin-top: var(--spacing-2-5);
   font-size: 16px;
   line-height: 24px;
   color: #7d6f63;
-  text-wrap: balance;
+}
+
+/* a little more air before the answers when the question carries a reason, so
+   the reason stays with the question and not with the cards */
+.imm-answer > .imm-why + .imm-options,
+.imm-answer > .imm-why + .imm-composer-slot {
+  margin-top: 40px;
 }
 
 /* One gap between what Jovana says and what can be answered, whether the
