@@ -3820,9 +3820,10 @@ input {
   min-height: 34px;
 }
 
-/* Her thinking while she works: the newest whole sentence, small and centred,
-   with a light shimmer running through it — a sign of work going on, not a
-   paragraph to read. */
+/* Her thinking while she works: the newest whole sentence, small and centred.
+   The shimmer is a narrow, slightly lighter band passing over text that keeps
+   its own colour, as reasoning labels in AI chats do it. The first version
+   swept a wide pale band over transparent text and washed the words out. */
 .imm-thinking-line {
   max-width: 480px;
   margin: 0 auto;
@@ -3834,20 +3835,23 @@ input {
 
 .imm-shimmer {
   display: inline-block;
-  background: linear-gradient(100deg, #8a7a6d 35%, #eadfd5 50%, #8a7a6d 65%);
-  background-size: 250% 100%;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 40px), #b9aa9e 50%, transparent calc(50% + 40px)),
+    linear-gradient(#8a7a6d, #8a7a6d);
+  background-size: 250% 100%, auto;
+  background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: imm-shimmer 2.6s linear infinite;
+  animation: imm-shimmer 2.8s linear infinite;
 }
 
 @keyframes imm-shimmer {
   from {
-    background-position: 100% 0;
+    background-position: 100% center, 0 0;
   }
   to {
-    background-position: 0% 0;
+    background-position: 0% center, 0 0;
   }
 }
 
@@ -3876,8 +3880,8 @@ input {
   display: inline-flex;
   height: 20px;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
+  gap: 3px;
+  font-size: 12px;
   line-height: 20px;
   color: #a2917f;
   transition: color 0.2s ease;
@@ -3902,25 +3906,22 @@ input {
 
 .imm-cot-text {
   max-width: 480px;
-  margin: var(--spacing-2) auto var(--spacing-1);
-  padding: var(--spacing-3) var(--spacing-4);
-  border-radius: var(--radius-2xl);
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  line-height: 22px;
-  color: #6d6157;
+  margin: var(--spacing-1) auto var(--spacing-3);
+  padding-left: var(--spacing-3);
+  border-left: 1px solid rgba(138, 122, 109, 0.25);
+  font-size: 12px;
+  line-height: 18px;
+  color: #9a8a7d;
   text-align: left;
 }
 
 .imm-cot-missing {
-  margin-top: var(--spacing-2);
-  color: #8a7a6d;
+  margin-top: var(--spacing-1-5);
 }
 
 .imm-cot-missing strong {
   font-weight: var(--font-medium);
-  color: #6d6157;
+  color: #8a7a6d;
 }
 
 /* A word is the unit that wraps: the characters inside it are inline-blocks

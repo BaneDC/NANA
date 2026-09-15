@@ -325,6 +325,9 @@ export default function ImmersiveConversation({
   const [cotOpen, setCotOpen] = useState(false);
   // which sentence of her thinking is on screen while she works
   const [sentenceAt, setSentenceAt] = useState(0);
+  // how long the last turn took, for "Razmišljala sam N s" above the question
+  const [thoughtFor, setThoughtFor] = useState(0);
+  const turnStarted = useRef(0);
   const history = useRef([]);
   // The question's height as last written. The answers under it take a moment
   // to leave once she starts thinking; holding the box at this height for that
@@ -434,6 +437,7 @@ export default function ImmersiveConversation({
       setThought({ text: '', missing: [] });
       setCotOpen(false);
       setSentenceAt(0);
+      turnStarted.current = performance.now();
       setSaid('');
       setDraft('');
       setStage('talking');
@@ -487,6 +491,7 @@ export default function ImmersiveConversation({
         }
         setError(errorText(e));
       } finally {
+        setThoughtFor(Math.max(1, Math.round((performance.now() - turnStarted.current) / 1000)));
         setBusy(false);
       }
     },
@@ -625,8 +630,10 @@ export default function ImmersiveConversation({
                 {SECTION[remaining[0]?.sekcija] || 'Skoro gotovo'}
               </motion.p>
 
-              {/* How she got to this question, folded. The row is there while
-                  she thinks too, empty, so the question never moves by it. */}
+              {/* How she got to this question, folded — the way AI chats show
+                  reasoning: one muted line with the time it took, and plain
+                  small text under it when opened. The row is there while she
+                  thinks too, empty, so the question never moves by it. */}
               <div className="imm-cot">
                 {!waiting && thought.text && (
                   <>
@@ -636,8 +643,8 @@ export default function ImmersiveConversation({
                       aria-expanded={cotOpen}
                       onClick={() => setCotOpen((v) => !v)}
                     >
-                      Kako sam došla do ovog pitanja
-                      <ChevronDown size={13} strokeWidth={1.75} />
+                      Razmišljala sam {thoughtFor} s
+                      <ChevronDown size={12} strokeWidth={1.75} />
                     </button>
                     <AnimatePresence initial={false}>
                       {cotOpen && (

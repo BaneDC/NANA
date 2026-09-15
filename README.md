@@ -282,8 +282,9 @@ what is still unclear, and what she will ask because of it — read from the too
 **as it streams** (`inputJson`). While she works, only its newest *whole* sentence is
 shown, small and centred with a light shimmer, crossfading as the next one completes:
 nothing is typed out, so nothing grows or re-centres. Once the question is up, the
-whole thought and *Još mi fali* sit folded above it behind **Kako sam došla do ovog
-pitanja**. An earlier version typed the full thought left-aligned in place of the
+whole thought and *Još mi fali* sit folded above it behind **Razmišljala sam N s**,
+set the way AI chats set reasoning: one muted 12px line with the time it took, and
+plain small muted text with a hairline rule when opened — no card. An earlier version typed the full thought left-aligned in place of the
 question and held the question back for it; it moved the whole waiting state, was
 too quick to read and was gone the moment the question came. It is written for the
 family, deliberately not the model's raw thinking, which is in English and full of
