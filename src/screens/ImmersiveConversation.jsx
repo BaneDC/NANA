@@ -515,16 +515,15 @@ export default function ImmersiveConversation({
 
   return (
     <motion.div
-      className="immersive"
+      className="immersive has-scale"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.9, ease: 'easeOut' } }}
       exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeIn' } }}
     >
       <Backdrop />
 
-      {/* Not in `imm-chrome`: the chrome is a strip across the top, and this is a
-          column down the left margin — the one part of the screen the centred
-          conversation never uses. */}
+      {/* docked at the bottom centre, outside the stage so it stays put as the
+          stage scrolls */}
       <UnderstandingPanel level={level} dropped={dropped} />
 
       <div className="imm-chrome">
