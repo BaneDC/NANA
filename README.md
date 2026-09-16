@@ -11,6 +11,16 @@ npm run dev
 
 Opens on http://localhost:5180, or the next free port if that one is taken.
 
+## Deploy
+
+Vercel project `nana-mvp2`, in the **NANA Prime** team, at
+<https://nana-mvp2.vercel.app>. Every push to `main` builds and publishes
+production; any other branch gets its own preview URL.
+
+The whole deployment sits behind HTTP basic auth (`middleware.js`): user `dev`,
+password from `DEV_PASSWORD`, set in all three environments. The gate fails
+closed — without that variable nothing is served, on purpose.
+
 ## Shell
 
 After registering, the user is inside their own account: a left nav with **Chat**,
