@@ -293,7 +293,9 @@ tool names, ids and the frailty score the prompt tells her never to mention.
 Docked at the bottom centre, how well she understands the situation is **a plain five-step scale** with
 the step's name (*Tek počinjemo … Znam dovoljno*). It can fall, and turns amber for a
 moment when it does. What she knows and lacks used to be listed beside it; that is now
-said in her thinking instead.
+said in her thinking instead. It stays off the opening screen: before the first
+message there is nothing understood yet, and an empty scale under a blank page
+reads as a score the person has already been given.
 
 Jovana always writes the question text herself; the flow's phrasing is never shown
 on screen. `ask(questionId)` only decides which cards appear beneath it.
