@@ -5114,3 +5114,15 @@ textarea.wo-text {
     width: auto;
   }
 }
+
+/* Which kind of question this is: one answer, or as many as apply. Set above
+   the cards in the subtitle's voice, so it reads as part of the question. */
+.imm-pick-hint {
+  width: 100%;
+  margin-bottom: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a2917f;
+}

@@ -146,9 +146,14 @@ function Line({ full, shown }) {
 // always there, so the cards read as a shortcut rather than the only way through
 // — and the questions that used to be three stacked input cards are now just
 // answered in a sentence, which Jovana pulls the fields out of.
-function Composer({ placeholder, autoFocus, suggestions = [], onSend }) {
-  const [value, setValue] = useState('');
+function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: outer, onValue, withSend = true }) {
+  const [own, setOwn] = useState('');
   const ref = useRef(null);
+  // A multi-select owns what is typed into it: its submit button sends the
+  // ticked options and this text as one answer, so the text cannot live here.
+  const controlled = typeof outer === 'string';
+  const value = controlled ? outer : own;
+  const setValue = controlled ? onValue : setOwn;
 
   useEffect(() => {
     if (autoFocus) setTimeout(() => ref.current?.focus({ preventScroll: true }), 650);
@@ -156,10 +161,9 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend }) {
 
   const send = () => {
     const t = value.trim();
-    if (t) {
-      setValue('');
-      onSend(t);
-    }
+    if (!t) return;
+    if (!controlled) setValue('');
+    onSend(t);
   };
 
   return (
@@ -197,7 +201,7 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend }) {
             onKeyDown={(e) => e.key === 'Enter' && send()}
           />
         </span>
-        {value.trim() && (
+        {withSend && value.trim() && (
           <Button variant="primary" iconOnly className="imm-send" onClick={send} aria-label="Pošalji">
             <ArrowUp size={16} strokeWidth={2} />
           </Button>
@@ -207,47 +211,79 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend }) {
   );
 }
 
-function Cards({ question, composer, onPick }) {
-  const sr = Q[question.id] || {};
+function Cards({ question, onPick, onSend, sr }) {
   const [ids, setIds] = useState([]);
-  const [values, setValues] = useState({});
+  const [typed, setTyped] = useState('');
+
+  const label = (o) => sr.options?.[o.id] || o.title;
 
   // An `inputs` question has no cards at all — three stacked field cards were
   // the last piece of questionnaire left in here, and the person now answers in
   // a sentence that Jovana maps onto the fields. So the composer *is* the whole
-  // answer here. Returning null instead left the screen with a question and no
-  // way to reply, and since `about-person` is the first thing Jovana asks, the
-  // conversation could not get past its own opening line.
-  if (question.type === 'inputs') return composer;
-
-  const label = (o) => sr.options?.[o.id] || o.title;
-
-  if (question.type === 'single') {
+  // answer here.
+  if (question.type === 'inputs') {
     return (
-      <motion.div className="imm-options" variants={list}>
-        {question.options.map((o, i) => (
-          <motion.button
-            key={o.id}
-            type="button"
-            variants={piece}
-            whileHover={{ y: -1 }}
-            className="imm-option"
-            onClick={() => onPick({ optionId: o.id }, label(o))}
-          >
-            <span className="imm-letter">{letterFor(i)}</span>
-            <span className="imm-option-text">
-              <span className="imm-option-title">{label(o)}</span>
-            </span>
-          </motion.button>
-        ))}
-        {composer}
+      <motion.div className="imm-composer-slot" variants={piece}>
+        <Composer autoFocus placeholder="Odgovorite svojim rečima…" onSend={onSend} />
       </motion.div>
     );
   }
 
-  const empty = ids.length === 0;
+  // Which kind of question this is, said rather than left to be inferred from
+  // whether a card stays lit when you press it.
+  const hint = (
+    <motion.p className="imm-pick-hint" variants={piece}>
+      {question.type === 'single' ? 'Izaberite jedan odgovor' : 'Možete izabrati više odgovora'}
+    </motion.p>
+  );
+
+  if (question.type === 'single') {
+    return (
+      <>
+        {hint}
+        <motion.div className="imm-options" variants={list}>
+          {question.options.map((o, i) => (
+            <motion.button
+              key={o.id}
+              type="button"
+              variants={piece}
+              whileHover={{ y: -1 }}
+              className="imm-option"
+              onClick={() => onPick({ optionId: o.id }, label(o))}
+            >
+              <span className="imm-letter">{letterFor(i)}</span>
+              <span className="imm-option-text">
+                <span className="imm-option-title">{label(o)}</span>
+              </span>
+            </motion.button>
+          ))}
+          {/* one answer, so the composer sends on its own: the button lives in
+              the field, as it does everywhere else a single answer is given */}
+          <motion.div className="imm-composer-slot" variants={piece}>
+            <Composer placeholder="ili odgovorite svojim rečima…" onSend={onSend} />
+          </motion.div>
+        </motion.div>
+      </>
+    );
+  }
+
+  const text = typed.trim();
+  const picked = question.options.filter((o) => ids.includes(o.id)).map(label);
+  const empty = ids.length === 0 && !text;
+  const submit = () =>
+    onPick(
+      {
+        optionIds: ids,
+        // only where the question has a free-text row of its own; elsewhere the
+        // words still reach Jovana in the message, and she keeps them as a note
+        ...(text && question.allowOther ? { other: text } : {}),
+      },
+      [...picked, text].filter(Boolean).join(', ') || sr.empty || 'Ništa od toga'
+    );
+
   return (
     <>
+      {hint}
       <motion.div className="imm-options" variants={list}>
         {question.options.map((o, i) => (
           <motion.button
@@ -264,24 +300,22 @@ function Cards({ question, composer, onPick }) {
             </span>
           </motion.button>
         ))}
-        {composer}
+        {/* No send button in the field here: what is typed is part of the same
+            answer as the ticked cards, and the one below sends both. */}
+        <motion.div className="imm-composer-slot" variants={piece}>
+          <Composer
+            placeholder="dopišite svojim rečima…"
+            value={typed}
+            onValue={setTyped}
+            withSend={false}
+            onSend={submit}
+          />
+        </motion.div>
       </motion.div>
       {/* the confirm sits below the composer: it commits the whole answer,
           typed row included, so it cannot come before it */}
       <motion.div className="imm-actions" variants={piece}>
-        <Button
-          variant="primary"
-          size="lg"
-          disabled={!question.allowEmpty && empty}
-          onClick={() =>
-            onPick(
-              { optionIds: ids },
-              question.options.filter((o) => ids.includes(o.id)).map(label).join(', ') ||
-                sr.empty ||
-                'Ništa od toga'
-            )
-          }
-        >
+        <Button variant="primary" size="lg" disabled={!question.allowEmpty && empty} onClick={submit}>
           {question.allowEmpty && empty ? sr.empty || 'Ništa od toga' : 'Dalje'}
         </Button>
       </motion.div>
@@ -733,20 +767,9 @@ export default function ImmersiveConversation({
                     {question ? (
                       <Cards
                         question={question}
+                        sr={Q[question.id] || {}}
                         onPick={pick}
-                        composer={
-                          <motion.div className="imm-composer-slot" variants={piece}>
-                            <Composer
-                              autoFocus={question.type === 'inputs'}
-                              placeholder={
-                                question.type !== 'inputs'
-                                  ? 'ili odgovorite svojim rečima…'
-                                  : 'Odgovorite svojim rečima…'
-                              }
-                              onSend={(t) => turn(t, answers, notes)}
-                            />
-                          </motion.div>
-                        }
+                        onSend={(t) => turn(t, answers, notes)}
                       />
                     ) : (
                       <motion.div className="imm-composer-slot" variants={piece}>
