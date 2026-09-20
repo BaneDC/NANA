@@ -4998,3 +4998,119 @@ textarea.wo-text {
   align-items: center;
   gap: var(--spacing-2);
 }
+
+/* ---------- What has been asked so far ---------- */
+
+/* An assistant panel down the right side: the questions already answered, read
+   without leaving the one on screen. Glass, like the controls it opens from. */
+.imm-history {
+  position: fixed;
+  /* below the controls it opens from, so the button that closes it stays
+     reachable */
+  top: 56px;
+  right: var(--spacing-4);
+  bottom: var(--spacing-4);
+  z-index: 4;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-3xl);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.1);
+  overflow-y: auto;
+  text-align: left;
+}
+
+.imm-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.imm-history-title {
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7a6d;
+}
+
+.imm-history-close {
+  display: flex;
+  color: #a2917f;
+  transition: color 0.2s ease;
+}
+
+.imm-history-close:hover {
+  color: #6d6157;
+}
+
+.imm-history-empty {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #8a7a6d;
+}
+
+.imm-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  list-style: none;
+}
+
+.imm-history-item {
+  display: flex;
+  gap: var(--spacing-3);
+}
+
+.imm-history-index {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  line-height: 1;
+  color: #a2917f;
+}
+
+.imm-history-pair {
+  min-width: 0;
+}
+
+.imm-history-question {
+  font-size: 13px;
+  line-height: 19px;
+  color: #6d6157;
+}
+
+/* the answer is the part someone scans for, so it carries the weight */
+.imm-history-answer {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-ctl.is-on {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-primary-600);
+}
+
+@media (max-width: 640px) {
+  .imm-history {
+    left: var(--spacing-3);
+    right: var(--spacing-3);
+    width: auto;
+  }
+}

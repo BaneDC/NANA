@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { remainingQuestions, systemPrompt } from '../data/conversation';
@@ -10,6 +10,7 @@ import { planOverview } from '../data/carePlan.sr';
 import { createClient, runTurn } from '../lib/claudeChat';
 import CloudBackground from '../components/immersive/CloudBackground';
 import GradientBackground from '../components/immersive/GradientBackground';
+import HistoryPanel from '../components/immersive/HistoryPanel';
 import UnderstandingPanel from '../components/immersive/UnderstandingPanel';
 import { AMBIENT_AUDIO, createZenAudio } from '../lib/zenAudio';
 import Button from '../components/Button';
@@ -320,6 +321,11 @@ export default function ImmersiveConversation({
   const [thought, setThought] = useState({ text: '', missing: [] });
   // her thinking behind the current question, unfolded on request
   const [cotOpen, setCotOpen] = useState(false);
+  // every question she has asked and what was answered, for the side panel
+  const [log, setLog] = useState([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  // the question that is on screen right now, so the answer can be filed under it
+  const onScreen = useRef('Recite mi svojim rečima šta se dešava.');
   // how long the last turn took, for "Razmišljala sam N s" above the question
   const [thoughtFor, setThoughtFor] = useState(0);
   const turnStarted = useRef(0);
@@ -384,6 +390,10 @@ export default function ImmersiveConversation({
     if (!waiting && lineRef.current) lineHeight.current = lineRef.current.offsetHeight;
   });
 
+  useEffect(() => {
+    if (lineReady && line) onScreen.current = line;
+  }, [lineReady, line]);
+
   const client = useMemo(() => createClient(apiKey), [apiKey]);
   const system = useMemo(() => systemPrompt(user), [user]);
 
@@ -419,6 +429,9 @@ export default function ImmersiveConversation({
   const turn = useCallback(
     async (text, seed, seedNotes) => {
       history.current.push({ role: 'user', content: text });
+      // What was on screen is the question this answer belongs to; the opening
+      // screen's own prompt is the first one.
+      setLog((l) => [...l, { question: onScreen.current, answer: text.replace(/^\(izabrano\) /, '') }]);
       setAsked(null);
       setFollowUp(null);
       setWhy(null);
@@ -516,6 +529,8 @@ export default function ImmersiveConversation({
           of the screen, where the scale sat on top of the emergency line. */}
       {stage !== 'open' && <UnderstandingPanel level={level} dropped={dropped} />}
 
+      <HistoryPanel open={historyOpen} entries={log} onClose={() => setHistoryOpen(false)} />
+
       <div className="imm-chrome">
         <div className="imm-ctls">
           {AMBIENT_AUDIO && (
@@ -532,6 +547,15 @@ export default function ImmersiveConversation({
               {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
             </button>
           )}
+          <button
+            type="button"
+            className={`imm-ctl${historyOpen ? ' is-on' : ''}`}
+            onClick={() => setHistoryOpen((v) => !v)}
+            aria-label="Dosadašnji razgovor"
+            aria-expanded={historyOpen}
+          >
+            <History size={15} strokeWidth={1.75} />
+          </button>
           <button type="button" className="imm-ctl" onClick={onExit} aria-label="Klasični prikaz">
             <LayoutList size={15} strokeWidth={1.75} />
           </button>
