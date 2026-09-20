@@ -65,9 +65,6 @@ const CHAR_MS = 26;
 // character has settled behind the head.
 const TAIL = 7;
 const HEAD_BLUR = 4.5;
-// how long each sentence of her thinking stays before the next replaces it
-const SENTENCE_MS = 2600;
-
 function useTypewriter(full, ms = CHAR_MS) {
   const [typed, setTyped] = useState('');
   const fullRef = useRef(full);
@@ -323,8 +320,6 @@ export default function ImmersiveConversation({
   const [thought, setThought] = useState({ text: '', missing: [] });
   // her thinking behind the current question, unfolded on request
   const [cotOpen, setCotOpen] = useState(false);
-  // which sentence of her thinking is on screen while she works
-  const [sentenceAt, setSentenceAt] = useState(0);
   // how long the last turn took, for "Razmišljala sam N s" above the question
   const [thoughtFor, setThoughtFor] = useState(0);
   const turnStarted = useRef(0);
@@ -357,25 +352,17 @@ export default function ImmersiveConversation({
   // nothing grows and re-centres under the reader. Typed out in full it was too
   // quick to read and gone the moment the question arrived; the whole of it now
   // waits behind the toggle above the question instead.
-  const sentences = useMemo(
-    () => (thought.text.match(/[^.!?…]+[.!?…]+/g) || []).map((x) => x.trim()),
-    [thought.text]
-  );
-  // A model writes its sentences a fraction of a second apart, so showing only
-  // the newest skipped straight past the first. Each one stays long enough to be
-  // read before the next takes its place.
-  const shownAt = useRef(0);
-  const hasSentence = sentences.length > 0;
+  // While she works, all that is on screen is how long she has been at it. Her
+  // reasoning is a click away, in the same place it stays once the question
+  // arrives — the sentences used to stand in for the question, which moved the
+  // whole waiting state and was gone before it could be read.
   useEffect(() => {
-    shownAt.current = performance.now();
-  }, [sentenceAt, hasSentence]);
-  useEffect(() => {
-    if (!waiting || sentenceAt >= sentences.length - 1) return undefined;
-    const wait = Math.max(0, SENTENCE_MS - (performance.now() - shownAt.current));
-    const id = setTimeout(() => setSentenceAt((i) => i + 1), wait);
-    return () => clearTimeout(id);
-  }, [waiting, sentenceAt, sentences.length]);
-  const thoughtNow = sentences[Math.min(sentenceAt, sentences.length - 1)] || 'Razmišljam…';
+    if (!busy) return undefined;
+    const tick = () => setThoughtFor(Math.max(1, Math.round((performance.now() - turnStarted.current) / 1000)));
+    tick();
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [busy]);
 
   const stalled = stage === 'talking' && !waiting && !asking && !followUp;
   // A turn can call tools without writing a sentence, which left the screen
@@ -437,7 +424,6 @@ export default function ImmersiveConversation({
       setWhy(null);
       setThought({ text: '', missing: [] });
       setCotOpen(false);
-      setSentenceAt(0);
       turnStarted.current = performance.now();
       setSaid('');
       setDraft('');
@@ -636,23 +622,28 @@ export default function ImmersiveConversation({
               </motion.p>
 
               {/* How she got to this question, folded — the way AI chats show
-                  reasoning: one muted line with the time it took, and plain
-                  small text under it when opened. The row is there while she
-                  thinks too, empty, so the question never moves by it. */}
+                  reasoning. While she works it counts the seconds; once the
+                  question is up it says how long she took. Either way the same
+                  click opens the same plain text underneath. The row keeps its
+                  height when there is nothing to show, so the question never
+                  moves by it. */}
               <div className="imm-cot">
-                {!waiting && thought.text && (
+                {(waiting || thought.text) && (
                   <>
                     <button
                       type="button"
-                      className="imm-cot-toggle"
+                      className={`imm-cot-toggle${waiting ? ' is-thinking' : ''}`}
                       aria-expanded={cotOpen}
+                      aria-label={waiting ? 'Prikaži kako razmišlja' : 'Prikaži kako je došla do pitanja'}
                       onClick={() => setCotOpen((v) => !v)}
                     >
-                      Razmišljala sam {thoughtFor} s
+                      <span className={waiting ? 'imm-shimmer' : undefined}>
+                        {waiting ? `Razmišljam… ${thoughtFor} s` : `Razmišljala sam ${thoughtFor} s`}
+                      </span>
                       <ChevronDown size={12} strokeWidth={1.75} />
                     </button>
                     <AnimatePresence initial={false}>
-                      {cotOpen && (
+                      {cotOpen && thought.text && (
                         <motion.div
                           className="imm-cot-body"
                           initial={{ height: 0, opacity: 0 }}
@@ -682,22 +673,7 @@ export default function ImmersiveConversation({
                 className="imm-line"
                 style={waiting && lineHeight.current ? { minHeight: lineHeight.current } : undefined}
               >
-                {waiting ? (
-                  <p className="imm-thinking-line" role="status">
-                    <AnimatePresence mode="wait" initial={false}>
-                      <motion.span
-                        key={thoughtNow}
-                        className="imm-shimmer"
-                        initial={{ opacity: 0, filter: 'blur(4px)' }}
-                        animate={{ opacity: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, filter: 'blur(4px)' }}
-                        transition={{ duration: 0.45, ease: EASE_OUT }}
-                      >
-                        {thoughtNow}
-                      </motion.span>
-                    </AnimatePresence>
-                  </p>
-                ) : (
+                {waiting ? null : (
                   <h1 className="imm-title">
                     {/* No caret. The sentence is laid out in full from the
                         start, so the end of the element is the end of text

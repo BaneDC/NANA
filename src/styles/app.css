@@ -3828,19 +3828,8 @@ input {
   min-height: 34px;
 }
 
-/* Her thinking while she works: the newest whole sentence, small and centred.
-   The shimmer is a narrow, slightly lighter band passing over text that keeps
-   its own colour, as reasoning labels in AI chats do it. The first version
-   swept a wide pale band over transparent text and washed the words out. */
-.imm-thinking-line {
-  max-width: 480px;
-  margin: 0 auto;
-  font-size: 15px;
-  line-height: 24px;
-  color: #8a7a6d;
-  text-wrap: balance;
-}
-
+/* The shimmer passes a narrow, slightly lighter band over text that keeps its
+   own colour, as reasoning labels in AI chats do it. */
 .imm-shimmer {
   display: inline-block;
   background:
@@ -3897,6 +3886,11 @@ input {
 
 .imm-cot-toggle:hover {
   color: #6d6157;
+}
+
+/* while she works it is the only thing on the screen that moves */
+.imm-cot-toggle.is-thinking {
+  cursor: pointer;
 }
 
 .imm-cot-toggle svg {
