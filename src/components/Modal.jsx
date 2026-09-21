@@ -3,10 +3,13 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
-// A dialog for the things that are done rather than read. The client's page is
-// an overview — what is agreed, what was visited, what has passed between them
-// — and a form sitting open in the middle of it makes the page look like it is
-// waiting for something, every time it is opened.
+// A card's details, opened as the side pane the rest of the app already uses
+// for the care plan and the assistant — not a dialog in the middle of the page.
+// These are the details *of something you are looking at*, so the thing you
+// clicked stays on screen beside them.
+//
+// The name stays `Modal` because every screen calls it that and the contract is
+// unchanged: an eyebrow, a title, a close, and whatever the screen puts inside.
 export default function Modal({ title, eyebrow, wide, onClose, children }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
@@ -16,44 +19,44 @@ export default function Modal({ title, eyebrow, wide, onClose, children }) {
 
   // Rendered into the body. The pages that open this animate themselves, and a
   // transform anywhere above a `position: fixed` element makes it fixed to that
-  // ancestor instead of the viewport — a dialog that lands half off-screen for
-  // reasons nothing about the dialog explains.
+  // ancestor instead of the viewport — a pane that lands half off-screen for
+  // reasons nothing about the pane explains.
   return createPortal(
     <motion.div
-      className="modal-backdrop"
+      className="drawer-backdrop"
       onClick={onClose}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, pointerEvents: 'auto' }}
       // On the way out it stops taking clicks immediately. It covers the whole
-      // screen, and it outlives its own fade by the length of the card's spring
+      // screen, and it outlives its own fade by the length of the pane's spring
       // — long enough to swallow the first thing clicked after dismissing it.
       exit={{ opacity: 0, pointerEvents: 'none' }}
       transition={{ duration: 0.18 }}
     >
-      <motion.div
-        className={`modal${wide ? ' is-wide' : ''}`}
+      <motion.aside
+        className={`drawer${wide ? ' is-wide' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        // A spring to arrive on, a short curve to leave on: a dismissal that
-        // settles is a dismissal you wait for.
-        exit={{ opacity: 0, scale: 0.98, y: 8, transition: { duration: 0.14, ease: 'easeIn' } }}
-        transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+        initial={{ x: 28, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        // a spring to arrive on, a short curve to leave on
+        exit={{ x: 20, opacity: 0, transition: { duration: 0.16, ease: 'easeIn' } }}
+        transition={{ type: 'spring', stiffness: 320, damping: 34 }}
       >
-        <button type="button" className="ci-btn modal-close" onClick={onClose} aria-label="Close">
-          <X size={16} strokeWidth={1.75} />
-        </button>
-
-        <div className="modal-title">
-          {eyebrow && <p className="doc-eyebrow">{eyebrow}</p>}
-          <p className="doc-title">{title}</p>
+        <div className="sidebar-head">
+          <div className="sidebar-head-text">
+            {eyebrow && <p className="doc-eyebrow">{eyebrow}</p>}
+            <p className="doc-title">{title}</p>
+          </div>
+          <button type="button" className="ci-btn" onClick={onClose} aria-label="Close panel">
+            <X size={16} strokeWidth={1.75} />
+          </button>
         </div>
 
-        {children}
-      </motion.div>
+        <div className="drawer-body">{children}</div>
+      </motion.aside>
     </motion.div>,
     document.body
   );
