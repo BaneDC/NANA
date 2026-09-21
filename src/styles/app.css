@@ -5179,6 +5179,10 @@ textarea.wo-text {
    `margin-top: auto` puts it on the floor when the content is short. */
 .drawer-body > .panel-card-actions:last-child,
 .drawer-body > .visit-foot:last-child {
+  /* `width: 100%` above measures the body's content box, which the negative
+     margins then widen past — the row came out 32px short and its buttons sat
+     in from the edge the content lines up with */
+  width: auto;
   position: sticky;
   bottom: calc(-1 * var(--spacing-4));
   z-index: 1;
