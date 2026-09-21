@@ -5191,3 +5191,10 @@ textarea.wo-text {
   background: var(--surface-elevated);
   border-top: 1px solid var(--border-subtle);
 }
+
+/* The confirm belongs to the cards above it, so it ends where they end rather
+   than floating in the middle of the column. */
+.imm-answer .imm-actions {
+  width: 100%;
+  justify-content: flex-end;
+}
