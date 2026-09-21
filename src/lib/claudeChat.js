@@ -47,7 +47,7 @@ const reasonOf = (input) =>
 // What she is thinking and still missing, from an `assess` that may be only half
 // written — so every field is checked for being there and being a string.
 const thinkingOf = (input) => ({
-  text: typeof input?.razmisljanje === 'string' ? input.razmisljanje.trim() : '',
+  text: typeof input?.utisak === 'string' ? input.utisak.trim() : '',
   missing: Array.isArray(input?.nepoznanice)
     ? input.nepoznanice
         .filter((u) => typeof u === 'string' && u.trim())
@@ -93,10 +93,15 @@ export async function runTurn({
     });
 
     stream.on('text', (delta) => onText(delta));
-    // Her thinking out loud is the `razmisljanje` in `assess`, shown while she
-    // writes it — so that tool's input is read as it streams, not once the call
-    // is complete. Listening to `inputJson` is also what makes the SDK parse
+    // Her note to the user is the `utisak` in `assess`, shown while she writes
+    // it — so that tool's input is read as it streams, not once the call is
+    // complete. Listening to `inputJson` is also what makes the SDK parse
     // partial input at all; `streamEvent` says which tool the input belongs to.
+    //
+    // It is a note she writes *for the person*, not her reasoning laid bare:
+    // asking a model to surface its own chain of thought is what Anthropic's
+    // classifiers read as `reasoning_extraction`, and this tool used to be
+    // worded that way — every turn came back refused.
     let streamingTool = null;
     stream.on('streamEvent', (event) => {
       if (event.type === 'content_block_start') {
