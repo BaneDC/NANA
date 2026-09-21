@@ -210,10 +210,12 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
               <Check size={12} strokeWidth={2.5} /> You can stop any charge inside that window
             </li>
           </ul>
-          <Button variant="primary" size="lg" full onClick={connect}>
-            <CreditCard size={14} strokeWidth={1.75} />
-            Continue to Stripe
-          </Button>
+          <div className="panel-card-actions is-end">
+            <Button variant="primary" size="lg" onClick={connect}>
+              <CreditCard size={14} strokeWidth={1.75} />
+              Continue to Stripe
+            </Button>
+          </div>
         </Modal>
       )}
     </div>

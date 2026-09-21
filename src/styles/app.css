@@ -5172,3 +5172,18 @@ textarea.wo-text {
 .drawer-body > * {
   width: 100%;
 }
+
+/* The drawer's footer: whatever action row a screen ends with is pinned to the
+   bottom of the pane and the rest scrolls under it. Sticky rather than a
+   separate slot, so each screen keeps its own buttons and its own logic — and
+   `margin-top: auto` puts it on the floor when the content is short. */
+.drawer-body > .panel-card-actions:last-child,
+.drawer-body > .visit-foot:last-child {
+  position: sticky;
+  bottom: calc(-1 * var(--spacing-4));
+  z-index: 1;
+  margin: auto calc(-1 * var(--spacing-4)) calc(-1 * var(--spacing-4));
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--surface-elevated);
+  border-top: 1px solid var(--border-subtle);
+}
