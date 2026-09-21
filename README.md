@@ -300,7 +300,7 @@ too quick to read and was gone the moment the question came. It is written for t
 family, deliberately not the model's raw thinking, which is in English and full of
 tool names, ids and the frailty score the prompt tells her never to mention.
 
-Docked at the bottom centre, how well she understands the situation is **a plain five-step scale** with
+Docked at the top centre, how well she understands the situation is **a plain five-step scale** with
 the step's name (*Tek počinjemo … Znam dovoljno*). It can fall, and turns amber for a
 moment when it does. What she knows and lacks used to be listed beside it; that is now
 said in her thinking instead. It stays off the opening screen: before the first

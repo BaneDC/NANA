@@ -523,7 +523,7 @@ export default function ImmersiveConversation({
     >
       <Backdrop />
 
-      {/* docked at the bottom centre, outside the stage so it stays put as the
+      {/* docked at the top centre, outside the stage so it stays put as the
           stage scrolls */}
       {/* Not on the blank first page: nothing has been said yet, so "Tek
           počinjemo" tells no one anything — and that page runs to the bottom

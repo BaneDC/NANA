@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 
 // How well Jovana understands the family's situation, as a plain scale docked at
-// the bottom centre of the screen — out of the way of the question, and centred
+// the top centre of the screen — out of the way of the question, and centred
 // like everything else on it.
 //
 // It used to be a portrait coming into focus, with lists beside it of what she
@@ -34,7 +34,7 @@ export default function UnderstandingPanel({ level = 0, dropped }) {
     <div className="imm-know-dock">
       <motion.div
         className={`imm-know${dropped ? ' is-dropped' : ''}`}
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut', delay: 0.4 } }}
         role="meter"
         aria-label="Koliko vas razumem"

@@ -2044,14 +2044,14 @@ input {
 /* Understanding panel — the AI variant's replacement for the bar above.
    It lives in the left margin, which the centred conversation never occupies,
    so it can grow downward without ever pushing the question around. */
-/* How well Jovana understands the situation, docked at the bottom centre: the
+/* How well Jovana understands the situation, docked at the top centre: the
    label, five steps and the step's name stacked and centred. What she knows and
    lacks is said in her thinking. */
 .imm-know-dock {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: var(--spacing-4);
+  top: var(--spacing-4);
   z-index: 3;
   display: flex;
   justify-content: center;
@@ -2114,21 +2114,22 @@ input {
   color: #463d35;
 }
 
-/* above the stack, so it does not push the scale up */
+/* below the stack, so it does not push the scale down */
 .imm-know-drop {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   text-align: center;
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   color: #b0703a;
 }
 
-/* room at the end of the scroll, so nothing ends up under the dock */
-.immersive.has-scale .imm-stage {
-  padding-bottom: 96px;
+/* The plan starts at the very top of the stage, where the dock now is; the
+   conversation screen already begins a fifth of the way down. */
+.imm-screen.is-plan {
+  padding-top: 76px;
 }
 
 
