@@ -109,7 +109,14 @@ export async function runTurn({
     const message = await stream.finalMessage();
 
     if (message.stop_reason === 'refusal') {
-      throw new Error('Model je odbio da odgovori na ovu poruku.');
+      // `stop_details` is the only place that says *why*, and it is set for no
+      // other stop reason. Throwing it away leaves a dead end that reads like a
+      // billing or key problem when it is neither, so it goes into the message
+      // and, in full, to the console for whoever is debugging the deployment.
+      const details = message.stop_details;
+      console.error('Refusal', { details, model: message.model, usage: message.usage });
+      const why = [details?.category, details?.explanation].filter(Boolean).join(' — ');
+      throw new Error(`Model je odbio da odgovori na ovu poruku.${why ? ` (${why})` : ''}`);
     }
 
     history.push({ role: 'assistant', content: message.content });
