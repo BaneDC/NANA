@@ -6203,6 +6203,13 @@ textarea.wo-text {
   --ick-marker-rgb: 252 112 60;
   /* the pane is white, like every other page */
   --ick-page: var(--surface-elevated);
+  /* The artifact pane sits inside the chat's section, so its corner follows
+     the section's: 8 in from a 24 edge takes 16 (8 + 16 = 24), the app's card
+     corner. The kit's own 24 inset under a 40 corner came out rounder than the
+     section around it. */
+  --ick-artifact-pane-inset: var(--spacing-2);
+  --ick-artifact-pane-radius: var(--radius-2xl);
+  --ick-artifact-pane-pad: var(--spacing-4);
   flex: 1;
   min-height: 0;
   height: 100%;
