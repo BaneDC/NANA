@@ -54,7 +54,7 @@ function ImmActions({ onBack, children }) {
       {onBack && (
         <Button variant="secondary" size="lg" onClick={onBack}>
           <ArrowLeft size={14} strokeWidth={1.75} />
-          Back
+          Nazad
         </Button>
       )}
       {children}
@@ -182,7 +182,7 @@ function MultiQ({ question, initial, initialOther, onBack, onCommit }) {
                 type="text"
                 className="imm-option-input"
                 value={otherText}
-                placeholder={question.otherPlaceholder || 'Something else'}
+                placeholder={question.otherPlaceholder || 'Nešto drugo'}
                 onChange={(e) => setOtherText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') commit();
@@ -194,7 +194,7 @@ function MultiQ({ question, initial, initialOther, onBack, onCommit }) {
       </motion.div>
       <ImmActions onBack={onBack}>
         <Button variant="primary" size="lg" disabled={!question.allowEmpty && empty} onClick={commit}>
-          {question.allowEmpty && empty ? 'None of these' : 'Continue'}
+          {question.allowEmpty && empty ? 'Ništa od ovoga' : 'Dalje'}
         </Button>
       </ImmActions>
     </>
@@ -232,7 +232,7 @@ function FieldQ({ item, initial, onBack, onCommit }) {
       </motion.label>
       <ImmActions onBack={onBack}>
         <Button variant="primary" size="lg" disabled={!ready} onClick={commit}>
-          {optional && !value.trim() ? 'Skip' : 'Continue'}
+          {optional && !value.trim() ? 'Preskoči' : 'Dalje'}
         </Button>
       </ImmActions>
     </>
@@ -419,7 +419,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
                 setMuted(next);
                 audioRef.current?.setMuted(next);
               }}
-              aria-label={muted ? 'Unmute music' : 'Mute music'}
+              aria-label={muted ? 'Uključi muziku' : 'Isključi muziku'}
             >
               {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
             </button>
@@ -436,13 +436,13 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'review' && (
             <motion.div key="review" className="imm-screen is-wide" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                One last look
+                Još jedan pogled
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
-                Have I got this right?
+                Da li sam sve dobro razumela?
               </motion.h1>
               <motion.p className="imm-subtitle" variants={piece}>
-                Everything you’ve told me about {planName}. Anything can still be changed.
+                Sve što ste mi rekli. Sve još može da se promeni.
               </motion.p>
 
               <motion.div className="imm-review" variants={list}>
@@ -476,20 +476,19 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
                     <AlertTriangle size={15} strokeWidth={2} />
                     <div>
                       <p className="imm-warning-title">
-                        “{confirmChange.shortTitle}” decides what I ask afterwards
+                        Od odgovora „{confirmChange.shortTitle}“ zavisi šta pitam posle
                       </p>
                       <p className="imm-warning-note">
-                        Changing it can move {planName}’s frailty level, and{' '}
-                        {dependentsOf(confirmChange.id, answers).length} answer
-                        {dependentsOf(confirmChange.id, answers).length === 1 ? '' : 's'} you
-                        already gave would be replaced with different questions.
+                        {`Izmena može da pomeri nivo krhkosti, a odgovori koje ste već dali (${
+                          dependentsOf(confirmChange.id, answers).length
+                        }) zamenili bi se drugim pitanjima.`}
                       </p>
                       <div className="imm-warning-actions">
                         <Button variant="primary" onClick={() => editAnswer(confirmChange)}>
-                          Change it anyway
+                          Ipak promeni
                         </Button>
                         <Button variant="secondary" onClick={() => setConfirmChange(null)}>
-                          Leave it
+                          Ostavi
                         </Button>
                       </div>
                     </div>
@@ -499,7 +498,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
 
               <motion.div className="imm-actions" variants={piece}>
                 <Button variant="primary" size="lg" onClick={() => setStage('breath')}>
-                  That’s all correct
+                  Sve je tačno
                 </Button>
               </motion.div>
             </motion.div>
@@ -509,20 +508,18 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'notice' && flowChange && (
             <motion.div key="notice" className="imm-screen" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                That changed things
+                Ovo menja stvari
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
-                {planName} now looks like level {flowChange.level}, not {flowChange.previousLevel}
+                {planName} je sada oko nivoa {flowChange.level}, a ne {flowChange.previousLevel}
               </motion.h1>
               <motion.p className="imm-subtitle" variants={piece}>
                 {flowChange.dropped.length > 0 &&
-                  `I've set aside what you told me about ${flowChange.dropped
+                  `Sklonila sam ono što ste rekli o sledećem: ${flowChange.dropped
                     .map((q) => q.shortTitle.toLowerCase())
                     .join(', ')}. `}
                 {flowChange.added.length > 0 &&
-                  `There ${flowChange.added.length === 1 ? 'is' : 'are'} ${
-                    flowChange.added.length
-                  } thing${flowChange.added.length === 1 ? '' : 's'} I need to ask instead.`}
+                  `Umesto toga treba da vas pitam još (${flowChange.added.length}).`}
               </motion.p>
               <motion.div className="imm-actions" variants={piece}>
                 <Button
@@ -533,7 +530,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
                     settle(answers, current?.id);
                   }}
                 >
-                  Continue
+                  Dalje
                 </Button>
               </motion.div>
             </motion.div>
@@ -542,7 +539,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'breath' && (
             <motion.div key="breath" className="imm-screen" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-intro-text" variants={piece}>
-                That’s everything, {firstName}. Take a breath — I’m putting the plan together.
+                To je sve, {firstName}. Predahnite — pravim plan.
               </motion.p>
             </motion.div>
           )}
@@ -550,10 +547,10 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'plan' && plan && (
             <motion.div key="plan" className="imm-screen is-wide" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                Your care plan
+                Vaš plan nege
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
-                Here’s the plan for {plan.firstName}
+                Evo plana
               </motion.h1>
 
               {plan.narrative.map((p, i) => (
@@ -574,7 +571,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
               </motion.div>
 
               <motion.p className="imm-plan-note" variants={piece}>
-                {caregivers.length} caregivers matched — here are the two closest fits.
+                Odgovara {caregivers.length} negovateljica — evo dve najbliže.
               </motion.p>
               <motion.div className="imm-options" variants={list}>
                 {preview.map((c) => (
@@ -583,7 +580,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
                     <span className="imm-option-text">
                       <span className="imm-option-title">{c.name}</span>
                       <span className="imm-option-desc">
-                        {c.match}% match · {c.years} yrs · {c.rate} · {c.area}
+                        {c.match}% poklapanje · {c.years} god. iskustva · {c.rate} · {c.area}
                       </span>
                     </span>
                   </motion.div>
@@ -592,7 +589,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
 
               <motion.div className="imm-actions" variants={piece}>
                 <Button variant="primary" size="lg" onClick={onFinish}>
-                  See the full plan <ArrowUpRight size={14} strokeWidth={2} />
+                  Pogledaj ceo plan <ArrowUpRight size={14} strokeWidth={2} />
                 </Button>
               </motion.div>
             </motion.div>
@@ -601,10 +598,10 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'asking' && current?.type === 'frailty' && frailty && (
             <motion.div key="frailty" className="imm-screen" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                Frailty assessment
+                Procena krhkosti
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
-                Level {frailty.level} — {frailty.label}
+                Nivo {frailty.level} — {frailty.label}
               </motion.h1>
               <motion.p className="imm-subtitle" variants={piece}>
                 {frailty.blurb}
@@ -624,7 +621,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
               </motion.div>
               <ImmActions onBack={canGoBack ? goBack : null}>
                 <Button variant="primary" size="lg" onClick={() => settle(answers, current.id)}>
-                  Continue
+                  Dalje
                 </Button>
               </ImmActions>
             </motion.div>
@@ -637,7 +634,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
               </motion.p>
               <ImmActions onBack={canGoBack ? goBack : null}>
                 <Button variant="primary" size="lg" onClick={() => settle(answers, current.id)}>
-                  Continue
+                  Dalje
                 </Button>
               </ImmActions>
             </motion.div>
@@ -646,7 +643,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'asking' && current?.type === 'field' && (
             <motion.div key={current.id} className="imm-screen" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                {position + 1} of {total}
+                {position + 1} od {total}
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
                 {FIELD_PROMPTS[current.field.id] || current.field.label}
@@ -669,7 +666,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'asking' && current?.type === 'question' && (
             <motion.div key={current.id} className="imm-screen" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                {position + 1} of {total}
+                {position + 1} od {total}
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
                 {current.question.title}

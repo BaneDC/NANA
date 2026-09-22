@@ -36,7 +36,7 @@ export default function ChatInput({ disabled, placeholder, onSend }) {
           className="ci-btn"
           onClick={send}
           disabled={!canSend}
-          aria-label="Send message"
+          aria-label="Pošalji poruku"
         >
           <CornerDownLeft size={16} strokeWidth={1.75} />
         </button>

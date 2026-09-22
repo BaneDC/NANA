@@ -415,7 +415,14 @@ export default function ImmersiveConversation({
   const lineReady = stage === 'plan' || !waiting;
   const line = !lineReady
     ? ''
-    : said || (asking ? Q[asking.id]?.title || asking.title : stalled ? 'Recite mi još nešto o njoj.' : '');
+    : said ||
+      (asking
+        ? Q[asking.id]?.title || asking.title
+        : // a follow-up asked without a sentence is the same blank screen as
+          // no question at all, just with a composer waiting under nothing
+          stalled || followUp
+          ? 'Recite mi još nešto o njoj.'
+          : '');
   const typed = useTypewriter(line);
   // the gate everything below the line waits on
   const doneTyping = lineReady && line.length > 0 && typed.length >= line.length;

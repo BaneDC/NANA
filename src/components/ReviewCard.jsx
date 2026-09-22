@@ -22,10 +22,9 @@ export default function ReviewCard({ groups, answers, onEdit, onConfirm, name })
   return (
     <div className="workflow-card review-card">
       <div className="review-head">
-        <p className="doc-section-title">Before I build the plan</p>
+        <p className="doc-section-title">Pre nego što napravim plan</p>
         <p className="doc-p">
-          Here is everything you told me about {name}. Have a read — anything can still be
-          changed.
+          Evo svega što ste mi rekli. Pročitajte — sve još može da se promeni.
         </p>
       </div>
 
@@ -55,7 +54,7 @@ export default function ReviewCard({ groups, answers, onEdit, onConfirm, name })
                   <Button
                     variant="secondary"
                     iconOnly
-                    aria-label={`Edit ${q.shortTitle}`}
+                    aria-label={`Izmeni: ${q.shortTitle}`}
                     onClick={() => request(q)}
                   >
                     <Pencil size={14} strokeWidth={1.75} />
@@ -76,13 +75,12 @@ export default function ReviewCard({ groups, answers, onEdit, onConfirm, name })
                         <AlertTriangle size={14} strokeWidth={2} className="review-warning-icon" />
                         <div className="review-warning-text">
                           <p className="review-warning-title">
-                            This answer decides which questions come later
+                            Od ovog odgovora zavisi koja pitanja slede
                           </p>
                           <p className="review-warning-note">
-                            Changing it can move {name}’s frailty level. If it does,{' '}
-                            {dependents.length} follow-up{dependents.length === 1 ? '' : 's'} you
-                            already answered would no longer apply, and I would ask you a different
-                            set instead — {dependents.map((d) => d.shortTitle).join(', ')}.
+                            Izmena može da pomeri nivo krhkosti. Ako se to desi, dopunska pitanja na
+                            koja ste već odgovorili ({dependents.length}) više ne bi važila, i pitala
+                            bih vas druga — {dependents.map((d) => d.shortTitle).join(', ')}.
                           </p>
                           <div className="review-warning-actions">
                             <Button
@@ -92,10 +90,10 @@ export default function ReviewCard({ groups, answers, onEdit, onConfirm, name })
                                 onEdit(q);
                               }}
                             >
-                              Change it anyway
+                              Ipak promeni
                             </Button>
                             <Button variant="secondary" onClick={() => setConfirming(null)}>
-                              Leave it as it is
+                              Ostavi kako jeste
                             </Button>
                           </div>
                         </div>
@@ -111,7 +109,7 @@ export default function ReviewCard({ groups, answers, onEdit, onConfirm, name })
 
       <div className="review-footer">
         <Button variant="primary" size="lg" onClick={onConfirm}>
-          <Check size={14} strokeWidth={2} /> That’s all correct — build the plan
+          <Check size={14} strokeWidth={2} /> Sve je tačno — napravi plan
         </Button>
       </div>
     </div>

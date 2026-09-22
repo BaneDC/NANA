@@ -18,17 +18,17 @@ export default function CaregiverTopBar({ user, onRestart }) {
   return (
     <div className="chat-topbar cg-topbar">
       <Logo width={92} />
-      <span className="cg-topbar-role">Caregiver</span>
+      <span className="cg-topbar-role">Negovateljica</span>
 
       <div className="cg-topbar-user">
         <span className="cg-avatar">{initials}</span>
         <span className="nav-user-text">
-          <span className="nav-user-name">{user.name || 'Guest'}</span>
+          <span className="nav-user-name">{user.name || 'Gost'}</span>
           <span className="nav-user-mail">{user.email}</span>
         </span>
       </div>
 
-      <button type="button" className="ci-btn" onClick={onRestart} aria-label="Start over" title="Start over">
+      <button type="button" className="ci-btn" onClick={onRestart} aria-label="Počni ispočetka" title="Počni ispočetka">
         <RotateCcw size={15} strokeWidth={1.75} />
       </button>
     </div>

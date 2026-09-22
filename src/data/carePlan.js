@@ -1,5 +1,6 @@
-import { optionTitles } from './flow';
+import { questionById } from './flow';
 import { frailtyOf } from './frailty';
+import { CFS_SR, srOptionTitles } from './flow.sr';
 
 // Matched caregivers. `match` is the fake relevance score the assistant "computed"
 // from the questionnaire — it exists to sell the AI framing in the prototype.
@@ -14,10 +15,15 @@ export const caregivers = [
     reviews: 64,
     rate: '850 RSD/h',
     area: 'Vračar',
-    distance: '1.8 km away',
-    bio: 'Certified geriatric nurse. Twelve years with families caring for a parent at home, most of them with early-stage dementia.',
-    tags: ['Dementia care', 'Medication', 'Personal care'],
+    distance: '1,8 km od vas',
+    bio: 'Diplomirana gerijatrijska sestra. Dvanaest godina sa porodicama koje brinu o roditelju kod kuće, najčešće u ranoj fazi demencije.',
+    tags: ['Demencija', 'Lekovi', 'Lična nega'],
     phone: '+381 63 210 4471',
+    qualification: 'Medicinska sestra',
+    languages: ['srpski', 'engleski'],
+    days: 'pon – pet',
+    slot: 'pre podne',
+    nightShift: false,
   },
   {
     id: 'snezana',
@@ -29,10 +35,15 @@ export const caregivers = [
     reviews: 88,
     rate: '950 RSD/h',
     area: 'Vračar',
-    distance: '2.4 km away',
-    bio: 'Fifteen years in home care, including post-stroke recovery. Cooks, keeps a written daily log and reports back to the family every evening.',
-    tags: ['Meals', 'Mobility support', 'Daily reports'],
+    distance: '2,4 km od vas',
+    bio: 'Petnaest godina u kućnoj nezi, uključujući oporavak posle šloga. Kuva, vodi pisani dnevnik i svake večeri javlja porodici kako je prošao dan.',
+    tags: ['Obroci', 'Pomoć pri kretanju', 'Dnevni izveštaji'],
     phone: '+381 64 118 9032',
+    qualification: 'Medicinski tehničar',
+    languages: ['srpski'],
+    days: 'pon – sub',
+    slot: 'pre i posle podne',
+    nightShift: false,
   },
   {
     id: 'dragana',
@@ -44,10 +55,15 @@ export const caregivers = [
     reviews: 41,
     rate: '780 RSD/h',
     area: 'Zvezdara',
-    distance: '3.1 km away',
-    bio: 'Warm and patient, known for getting reluctant clients out for a daily walk. Available for weekend shifts.',
-    tags: ['Companionship', 'Household', 'Weekends'],
+    distance: '3,1 km od vas',
+    bio: 'Topla i strpljiva, poznata po tome što i one koji ne žele izvede u svakodnevnu šetnju. Dostupna i vikendom.',
+    tags: ['Društvo', 'Kućni poslovi', 'Vikendi'],
     phone: '+381 62 447 1120',
+    qualification: 'Negovateljica',
+    languages: ['srpski', 'ruski'],
+    days: 'sre – ned',
+    slot: 'posle podne',
+    nightShift: false,
   },
   {
     id: 'gordana',
@@ -59,10 +75,15 @@ export const caregivers = [
     reviews: 130,
     rate: '1000 RSD/h',
     area: 'Savski venac',
-    distance: '4.0 km away',
-    bio: 'The most experienced caregiver in our network. Trained in transfers and fall prevention, works with clients who need full assistance.',
-    tags: ['Transfers', 'Fall prevention', 'Personal care'],
+    distance: '4,0 km od vas',
+    bio: 'Najiskusnija negovateljica u našoj mreži. Obučena za premeštanje i sprečavanje padova, radi sa onima kojima je potrebna potpuna pomoć.',
+    tags: ['Premeštanje', 'Sprečavanje padova', 'Lična nega'],
     phone: '+381 60 993 2218',
+    qualification: 'Medicinska sestra',
+    languages: ['srpski', 'nemački'],
+    days: 'pon – pet',
+    slot: 'ceo dan',
+    nightShift: true,
   },
   {
     id: 'ljiljana',
@@ -74,10 +95,15 @@ export const caregivers = [
     reviews: 29,
     rate: '720 RSD/h',
     area: 'Voždovac',
-    distance: '5.2 km away',
-    bio: 'Former hospital assistant. Calm in emergencies and comfortable coordinating with doctors and pharmacies.',
-    tags: ['Medication', 'Doctor visits', 'Meals'],
+    distance: '5,2 km od vas',
+    bio: 'Bivša bolnička negovateljica. Mirna u hitnim situacijama i navikla da se dogovara sa lekarima i apotekama.',
+    tags: ['Lekovi', 'Odlasci lekaru', 'Obroci'],
     phone: '+381 65 302 7754',
+    qualification: 'Bolnička negovateljica',
+    languages: ['srpski'],
+    days: 'pon – pet',
+    slot: 'pre podne',
+    nightShift: false,
   },
   {
     id: 'mirjana',
@@ -89,10 +115,15 @@ export const caregivers = [
     reviews: 52,
     rate: '800 RSD/h',
     area: 'Novi Beograd',
-    distance: '6.7 km away',
-    bio: 'Nine years of overnight shifts. A good fit if the schedule shifts towards nights later on.',
-    tags: ['Overnight', 'Companionship', 'Household'],
+    distance: '6,7 km od vas',
+    bio: 'Devet godina noćnih smena. Dobar izbor ako se raspored kasnije pomeri ka noćima.',
+    tags: ['Noćne smene', 'Društvo', 'Kućni poslovi'],
     phone: '+381 63 771 5580',
+    qualification: 'Negovateljica',
+    languages: ['srpski', 'engleski'],
+    days: 'svaki dan',
+    slot: 'uveče i noću',
+    nightShift: true,
   },
 ];
 
@@ -112,113 +143,130 @@ export function caregiversFor(unlocked) {
 export const coordinator = {
   name: 'Jovana Đorđević',
   initials: 'JĐ',
-  role: 'Your care coordinator',
+  role: 'Vaša koordinatorka nege',
   phone: '+381 11 4000 220',
   whatsapp: '+381 63 4000 220',
   email: 'jovana@nanaprime.rs',
 };
 
 // ---------------------------------------------------------------------------
-// Narrative helpers. The plan is written, not tabulated: the client's document
-// opens with a paragraph about the person, not a field list.
+// The plan is written in Serbian, the language the family talked it through in.
+//
+// Serbian declines names and places, and a template cannot: "za Zorka" and
+// "u Vračar" are both wrong. So nothing the family typed is ever inflected — a
+// name only appears as the subject, age and place go in brackets, and their own
+// words go in quotes, exactly as they were written. Where Serbian forces a
+// gender, the person is "she", as everywhere else in the Serbian copy.
 // ---------------------------------------------------------------------------
 
 const HOUSEHOLD_PHRASE = {
-  alone: 'lives alone',
-  partner: 'lives with a partner',
-  family: 'lives with family',
-  crowded: 'lives in a full household',
-};
-
-const ONSET_PHRASE = {
-  sudden: 'and it came on suddenly, in the last weeks',
-  gradual: 'and it has come on gradually, over months',
-  'long-standing': 'and it has been this way for a long time',
-};
-
-const REASON_PHRASE = {
-  fall: 'You came to us after a fall',
-  memory: 'What brought you to us is a change in memory',
-  discharge: 'What brought you to us is the return home from hospital',
-  loneliness: 'What brought you to us is how much time they spend alone',
-  medication: 'What brought you to us is medication becoming hard to manage',
-  diagnosis: 'What brought you to us is a diagnosis',
-  'home-help': 'What brought you to us is that the house has become too much',
-  respite: 'What brought you to us is that the family needs a break',
-  'daily-living': 'What brought you to us is day-to-day life needing support',
+  alone: 'živi sama',
+  partner: 'živi sa suprugom',
+  family: 'živi sa porodicom',
+  crowded: 'živi u punoj kući',
 };
 
 const WISH = {
-  light: 'and wants to keep living exactly as they do now',
-  moderate: 'and wants to hold on to as much independence as possible',
-  high: 'and wants to stay at home, with the right hands around them',
-  severe: 'and needs care that keeps them comfortable and safe at home',
-  palliative: 'and what matters now is comfort, dignity and having the family close',
+  light: ' i želi da nastavi da živi baš kao do sada',
+  moderate: ' i želi da sačuva što više samostalnosti',
+  high: ' i želi da ostane u svom domu, uz pravu pomoć oko sebe',
+  severe: ' i potrebna joj je nega koja pruža mir i sigurnost',
+  palliative: ', a sada su najvažniji udobnost, dostojanstvo i porodica u blizini',
 };
 
+const REASON_PHRASE = {
+  fall: 'Javili ste nam se posle pada',
+  memory: 'Javili ste nam se zbog promena u pamćenju',
+  discharge: 'Javili ste nam se jer se vraća kući iz bolnice',
+  loneliness: 'Javili ste nam se jer je previše sama',
+  medication: 'Javili ste nam se jer je praćenje lekova postalo teško',
+  diagnosis: 'Javili ste nam se zbog dijagnoze',
+  'home-help': 'Javili ste nam se jer joj je kuća postala prevelika',
+  respite: 'Javili ste nam se jer je porodici potreban predah',
+  'daily-living': 'Javili ste nam se jer svakodnevica traži podršku',
+};
+
+const ONSET_PHRASE = {
+  sudden: 'počelo je naglo, u poslednjih par nedelja',
+  gradual: 'počelo je postepeno, pre nekoliko meseci',
+  'long-standing': 'ovako je već dugo',
+};
+
+const HOSPITAL_PHRASE = {
+  recent: ' U poslednjih mesec dana bila je i u bolnici.',
+  older: ' Ranije je bila i u bolnici.',
+};
+
+const HELPER_PHRASE = {
+  nobody: ' Za sada oko nje ništa nije organizovano.',
+  neighbour: ' Komšinica ili prijateljica pomaže kad stigne, ali to nije organizovano.',
+  family: ' Porodica to nosi između sebe, a to ne može dugo da traje.',
+};
+
+// a heading, so the nominative
 const CAREGIVER_ROLE = {
-  light: 'a companion',
-  moderate: 'a caregiver',
-  high: 'an experienced caregiver',
-  severe: 'a nurse alongside a caregiver',
-  palliative: 'a palliative team',
+  light: 'Osoba za društvo',
+  moderate: 'Negovateljica',
+  high: 'Iskusna negovateljica',
+  severe: 'Medicinska sestra uz negovateljicu',
+  palliative: 'Palijativni tim',
 };
 
 const BAND_ACTIONS = {
-  light: 'Light-touch support — company, transport and keeping them active.',
-  moderate: 'Regular caregiver visits for the house, meals and errands.',
-  high: 'Hands-on personal care, with fall prevention as the priority.',
-  severe: 'Nursing-level care. A caregiver alone would not be enough here.',
-  palliative: 'Palliative coordination — nursing, medication delivery and family support.',
+  light: 'Lagana podrška — društvo, prevoz i da ostane aktivna.',
+  moderate: 'Redovne posete negovateljice za kuću, obroke i obaveze.',
+  high: 'Pomoć oko lične nege, a sprečavanje padova je na prvom mestu.',
+  severe: 'Nega na nivou medicinske sestre — sama negovateljica ovde ne bi bila dovoljna.',
+  palliative: 'Palijativna koordinacija — medicinska sestra, dostava lekova i podrška porodici.',
 };
 
 // The document's scenarios: what gets arranged depends far more on why the family
 // called than on the frailty level alone. Each entry is a coordinator's first move.
 const REASON_ACTIONS = {
   fall: [
-    'A nurse visit to assess the fall and check for injury',
-    'A home fall-risk assessment',
-    'A physiotherapist, then a caregiver once they are steadier',
+    'Poseta medicinske sestre da proceni pad i proveri povrede',
+    'Procena rizika od pada u stanu',
+    'Fizioterapeut, pa negovateljica kad bude stabilnija',
   ],
   memory: [
-    'A cognitive screening with a neuropsychiatrist',
-    'A caregiver experienced with dementia',
-    'A safety check of the flat — hob, locks, keys',
+    'Kognitivni pregled kod neuropsihijatra',
+    'Negovateljica sa iskustvom u radu sa demencijom',
+    'Provera bezbednosti stana — šporet, brave, ključevi',
   ],
   discharge: [
-    'A nurse for the first week after discharge',
-    'Medication reconciliation against the discharge letter',
-    'Daily caregiver visits while they regain strength',
+    'Medicinska sestra prve nedelje posle otpusta',
+    'Usklađivanje lekova sa otpusnom listom',
+    'Svakodnevne posete negovateljice dok ne povrati snagu',
   ],
   loneliness: [
-    'A companion caregiver on a regular rhythm',
-    'Getting them out to a local social group',
-    'Transport so visits stop depending on the family',
+    'Negovateljica za društvo, u redovnom ritmu',
+    'Odlazak u lokalni klub ili grupu',
+    'Prevoz, da posete ne zavise samo od porodice',
   ],
   medication: [
-    'A medication review with the GP',
-    'A weekly organiser prepared by the caregiver',
-    'Reminder visits at the times that matter',
+    'Pregled terapije sa izabranim lekarom',
+    'Nedeljna kutijica za lekove koju puni negovateljica',
+    'Posete za podsećanje u vreme kada je to važno',
   ],
   diagnosis: [
-    'A caregiver with experience of this condition',
-    'Coordination with the treating specialist',
-    'Equipment suited to how the condition progresses',
+    'Negovateljica sa iskustvom sa ovom bolešću',
+    'Koordinacija sa lekarom specijalistom',
+    'Pomagala prilagođena toku bolesti',
   ],
   'home-help': [
-    'A caregiver for cooking, laundry and shopping',
-    'A deeper clean to reset the flat',
-    'A regular weekly rhythm so it does not slip again',
+    'Negovateljica za kuvanje, veš i nabavku',
+    'Generalno čišćenje, da se stan sredi',
+    'Redovan nedeljni ritam, da se ne ponovi',
   ],
   respite: [
-    'A caregiver covering the hours you need back',
-    'Cover arranged for a longer break',
-    'A single coordinator so you stop managing it',
+    'Negovateljica za sate koje želite nazad',
+    'Zamena za duži odmor',
+    'Jedna koordinatorka, da vi ne morate sve da vodite',
   ],
   'daily-living': [
-    'A caregiver for the parts of the day that are hardest',
-    'Help with meals and medication',
-    'A weekly check-in call with you',
+    'Negovateljica za najteže delove dana',
+    'Pomoć oko obroka i lekova',
+    'Nedeljni razgovor telefonom sa vama',
   ],
 };
 
@@ -226,23 +274,16 @@ const REASON_ACTIONS = {
 // named the specific hard thing ("watching someone you love change") rather than
 // offering generic sympathy, so each reason gets its own sentence.
 const LETTER_ACKNOWLEDGEMENT = {
-  fall: 'A fall changes how a family sees everything. The worry afterwards is often heavier than the fall itself.',
+  fall: 'Pad promeni kako porodica gleda na sve. Briga koja dođe posle često je teža od samog pada.',
   memory:
-    'We know it isn’t easy to watch someone you love change over time, especially when you are trying to support them and keep your own life going.',
-  discharge:
-    'Coming home from hospital is the point where families are left with the most to do and the least guidance.',
-  loneliness:
-    'Loneliness is rarely mentioned out loud, and it is one of the things that wears a person down fastest.',
-  medication:
-    'Medication is one of those quiet worries that sits with you all day — whether it was taken, and whether it was the right one.',
-  diagnosis:
-    'A diagnosis rearranges everything at once, and it usually arrives with more questions than answers.',
-  'home-help':
-    'When the house starts slipping it is rarely about the house. It is a sign that the day has become too long.',
-  respite:
-    'Asking for a break is not giving up. Families who last are the ones who let someone else take a shift.',
-  'daily-living':
-    'The everyday things are what quietly take the most out of a family, and they are the easiest to share.',
+    'Znam da nije lako gledati kako se neko koga volite menja, pogotovo dok pokušavate da ga podržite i da pritom nastavite svoj život.',
+  discharge: 'Povratak iz bolnice je trenutak kada porodica ima najviše posla, a najmanje uputstava.',
+  loneliness: 'O usamljenosti se retko govori naglas, a to je jedna od stvari koje čoveka najbrže iscrpe.',
+  medication: 'Lekovi su jedna od onih tihih briga koje nosite ceo dan — da li su uzeti, i da li su pravi.',
+  diagnosis: 'Dijagnoza sve preuredi odjednom, i obično stigne sa više pitanja nego odgovora.',
+  'home-help': 'Kad kuća počne da izmiče, retko je stvar u kući. To je znak da je dan postao predug.',
+  respite: 'Tražiti predah ne znači odustati. Porodice koje izdrže su one koje dozvole nekom drugom da preuzme smenu.',
+  'daily-living': 'Svakodnevne stvari porodicu najviše iscrpljuju, a najlakše ih je podeliti.',
 };
 
 // The risks worth naming out loud, in the order the document names them:
@@ -266,29 +307,35 @@ export function riskIdsOf(answers) {
   return risks.slice(0, 3);
 }
 
+// list items, so they stand alone and start with a capital
 const RISK_PHRASE = {
-  medication: 'taking medication on time',
-  kitchen: 'safety in the kitchen',
-  bathing: 'washing without help',
-  fall: 'another fall',
-  isolation: 'social isolation',
-  flat: 'the state of the flat',
-  sores: 'pressure sores',
+  medication: 'redovno uzimanje lekova',
+  kitchen: 'bezbednost u kuhinji',
+  bathing: 'kupanje bez pomoći',
+  fall: 'novi pad',
+  isolation: 'usamljenost',
+  flat: 'stanje stana',
+  sores: 'rane od ležanja',
 };
 
 // The support section asks a different question per band, and it is the one place
 // the family describes their own needs — including anything they typed into the
-// "something else" row, which optionTitles folds in.
+// "something else" row.
 const SUPPORT_QUESTIONS = ['lifestyle', 'household-tasks', 'personal-care', 'palliative-needs'];
 
+const titlesOf = (id, answers) => srOptionTitles(questionById[id], answers[id]);
+
 function supportNeedsOf(answers) {
-  return SUPPORT_QUESTIONS.flatMap((id) => optionTitles(id, answers[id]));
+  return SUPPORT_QUESTIONS.flatMap((id) => titlesOf(id, answers));
 }
 
 const listOf = (items) =>
-  items.length <= 1
-    ? items[0] || ''
-    : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+  items.length <= 1 ? items[0] || '' : `${items.slice(0, -1).join(', ')} i ${items[items.length - 1]}`;
+
+// what the family typed, without the quotes or full stop it may already carry
+const bare = (text) => (text || '').trim().replace(/^["„“”']+|[.!?"„“”']+$/g, '').trim();
+const quoted = (text) => `„${bare(text)}“`;
+const lower = (t) => (t ? t.charAt(0).toLowerCase() + t.slice(1) : t);
 
 // ---------------------------------------------------------------------------
 
@@ -296,113 +343,82 @@ const listOf = (items) =>
 // visibly reflects the questionnaire — and follows the client's formula:
 // decision = frailty (50%) + reason for contact (35%) + context (15%).
 export function buildPlan(answers, notes = []) {
-  const name = answers['about-person']?.values?.name?.trim() || 'your loved one';
-  const firstName = name.split(' ')[0];
+  const name = answers['about-person']?.values?.name?.trim() || 'Osoba o kojoj brinete';
+  const firstName = answers['about-person']?.values?.name?.trim()?.split(' ')[0] || 'Ona';
   const age = answers['about-person']?.values?.age?.trim();
   const city = answers['about-person']?.values?.city?.trim();
 
   const caller = answers['about-you']?.values?.['your-name']?.trim() || '';
-  const callerFirst = caller.split(' ')[0] || 'there';
+  const callerFirst = caller.split(' ')[0] || '';
   const relation = answers['about-you']?.values?.relation?.trim();
 
   const frailty = frailtyOf(answers);
   const band = frailty?.band ?? 'moderate';
 
   const reasonId = answers['reason-for-contact']?.optionId;
-  const reason = optionTitles('reason-for-contact', answers['reason-for-contact'])[0];
+  const reason = titlesOf('reason-for-contact', answers)[0];
   const onsetId = answers['onset']?.optionId;
-  const onset = optionTitles('onset', answers['onset'])[0];
-  const hospital = optionTitles('hospitalisation', answers['hospitalisation'])[0];
-  const mobility = optionTitles('mobility', answers['mobility'])[0];
-  const dailyHelp = optionTitles('daily-help', answers['daily-help'])[0];
-  const goal = answers['family-goal']?.values?.goal?.trim();
-  const worry = answers['family-goal']?.values?.worry?.trim();
+  const onset = titlesOf('onset', answers)[0];
+  const hospital = titlesOf('hospitalisation', answers)[0];
+  const mobilityId = answers['mobility']?.optionId;
+  const mobility = titlesOf('mobility', answers)[0];
+  const dailyHelp = titlesOf('daily-help', answers)[0];
+  const goal = bare(answers['family-goal']?.values?.goal);
+  const worry = bare(answers['family-goal']?.values?.worry);
 
-  const household = HOUSEHOLD_PHRASE[answers['household']?.optionId];
   const helper = answers['who-helps-now']?.optionId;
   const needs = supportNeedsOf(answers);
   const risks = riskIdsOf(answers).map((id) => RISK_PHRASE[id]);
   const actions = REASON_ACTIONS[reasonId] || REASON_ACTIONS['daily-living'];
   const role = CAREGIVER_ROLE[band];
 
-  // The narrative summary, built the way the client's example reads: who they are,
-  // how it developed, who is around them, what is at risk, what matters to you.
-  const narrative = [];
-  narrative.push(
-    [
-      `${name}${age ? ` (${age})` : ''}`,
-      household || 'lives at home',
-      city ? `in ${city}` : null,
-      WISH[band],
-      '.',
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .replace(' .', '.')
-  );
-
+  // The narrative summary, the way the client's example reads: who they are, how
+  // it developed, who is around them, what is at risk, what matters to you.
+  const details = [age, city].filter(Boolean);
+  const narrative = [
+    `${name}${details.length ? ` (${details.join(', ')})` : ''} ${HOUSEHOLD_PHRASE[answers['household']?.optionId] || 'živi kod kuće'}${WISH[band]}.`,
+  ];
   if (reasonId) {
     narrative.push(
-      // Falls back the way the line below it and `actions` already do. The plan
-      // is the last thing anyone reads: a missing phrase here should cost a
-      // sentence's precision, never print the word "undefined" at a family.
-      `${REASON_PHRASE[reasonId] || REASON_PHRASE['daily-living']}, ${
-        ONSET_PHRASE[onsetId] || 'and it has been building for a while'
-      }.` +
-        (hospital && answers['hospitalisation']?.optionId !== 'none'
-          ? ` There has been a hospital stay — ${hospital.toLowerCase()}.`
-          : '')
+      `${REASON_PHRASE[reasonId] || REASON_PHRASE['daily-living']} — ${ONSET_PHRASE[onsetId] || 'traje već neko vreme'}.${
+        HOSPITAL_PHRASE[answers['hospitalisation']?.optionId] || ''
+      }`
     );
   }
-
   if (caller) {
-    narrative.push(
-      `${caller}${relation ? ` (${relation.toLowerCase()})` : ''} is the main contact.` +
-        (helper === 'nobody'
-          ? ' Nothing is organised around them at the moment.'
-          : helper === 'neighbour'
-            ? ' A neighbour helps when they can, but the support isn’t organised.'
-            : helper === 'family'
-              ? ' The family is holding it together between them, which is not something that lasts.'
-              : '')
-    );
+    narrative.push(`${caller}${relation ? ` (${relation.toLowerCase()})` : ''} je glavni kontakt.${HELPER_PHRASE[helper] || ''}`);
   }
-
-  if (risks.length) {
-    narrative.push(`The biggest risks right now are ${listOf(risks)}.`);
-  }
-
-  if (goal) {
-    narrative.push(
-      `What matters most to you is ${goal.charAt(0).toLowerCase()}${goal.slice(1).replace(/\.$/, '')}.` +
-        (worry ? ` The worry you named is ${worry.charAt(0).toLowerCase()}${worry.slice(1).replace(/\.$/, '')}.` : '')
-    );
-  }
-
+  if (risks.length) narrative.push(`Najveći rizici su sada ${listOf(risks)}.`);
+  if (goal) narrative.push(`Najvažnije vam je ${quoted(goal)}.${worry ? ` Najviše vas brine ${quoted(worry)}.` : ''}`);
   // Anything the family said that no question covers. Without this it would be
   // collected in the conversation and then quietly dropped on the way to the plan.
-  if (notes.length) {
-    narrative.push(`You also told us: ${listOf(notes.map((n) => n.replace(/\.$/, '')))}.`);
-  }
-
-  narrative.push(
-    `We recommend ${role} matched to that picture, with the level reassessed as things change.`
-  );
+  if (notes.length) narrative.push(`Rekli ste nam i: ${notes.map(quoted).join(', ')}.`);
+  narrative.push(`Preporučujemo: ${lower(role)}, uz proveru nivoa podrške kad god se stanje promeni.`);
 
   // The coordinator's letter. Personal, addressed by name, and explicitly not a
   // sales message — the client's note was that nothing should read like "book now".
   const letter = {
-    greeting: `Dear ${callerFirst},`,
+    greeting: callerFirst ? `Zdravo, ${callerFirst},` : 'Zdravo,',
     paragraphs: [
-      `Thank you for telling me about ${firstName}. ${LETTER_ACKNOWLEDGEMENT[reasonId] || LETTER_ACKNOWLEDGEMENT['daily-living']}`,
-      `What I’ve put together is meant to keep ${firstName} safe while protecting as much of their independence, habits and daily routine as we can. ${BAND_ACTIONS[band]}`,
+      `Hvala vam što ste mi ispričali šta se dešava. ${LETTER_ACKNOWLEDGEMENT[reasonId] || LETTER_ACKNOWLEDGEMENT['daily-living']}`,
+      `Ovo što sam pripremila treba da ${firstName} bude bezbedna, a da sačuvamo što više njene samostalnosti, navika i svakodnevne rutine. ${BAND_ACTIONS[band]}`,
       goal
-        ? `You told me what a good outcome looks like for you, and everything below is built around that.`
-        : `Everything below is built around what you told me matters most.`,
-      `You don’t have to solve all of this today. We’ll go step by step, together. Whenever you’re ready, I’m here to arrange the next one.`,
+        ? 'Rekli ste mi kako za vas izgleda dobar ishod, i sve ispod je napravljeno oko toga.'
+        : 'Sve ispod je napravljeno oko onoga što ste mi rekli da je najvažnije.',
+      // what was said in passing stays in the letter, where the family reads it
+      // and the coordinator acts on it
+      ...(notes.length ? [`Zabeležila sam i ono što ste usput rekli: ${notes.map(quoted).join(', ')}.`] : []),
+      'Ne morate sve ovo da rešite danas. Idemo korak po korak, zajedno. Kad god budete spremni, tu sam da organizujem sledeći.',
     ],
     from: coordinator,
   };
+
+  const defaultNeeds =
+    band === 'light'
+      ? ['društvo', 'izlasci', 'aktivnost']
+      : band === 'high' || band === 'severe' || band === 'palliative'
+        ? ['lična nega', 'obroci', 'lekovi']
+        : ['kuća', 'obroci', 'obaveze'];
 
   // Recommendations, in the document's card shape: a title, why it is being
   // recommended for this person specifically, who would do it, and soft actions.
@@ -413,71 +429,66 @@ export function buildPlan(answers, notes = []) {
       locked: false,
       title:
         band === 'light'
-          ? 'A companion, two or three times a week'
+          ? 'Osoba za društvo, dva-tri puta nedeljno'
           : band === 'severe' || band === 'palliative'
-            ? 'Daily nursing-level visits'
-            : 'Regular caregiver visits',
+            ? 'Svakodnevne posete na nivou medicinske sestre'
+            : 'Redovne posete negovateljice',
+      // their own words first — this is what they actually asked for, including
+      // anything the option list did not cover
       why:
-        // their own words first — this is what they actually asked for, including
-        // anything the option list did not cover
-        `${firstName} would have steady support with ${listOf(
-          needs.length
-            ? needs.slice(0, 4).map((n) => n.toLowerCase())
-            : band === 'light'
-              ? ['company', 'getting out', 'staying active']
-              : band === 'high' || band === 'severe' || band === 'palliative'
-                ? ['personal care', 'meals', 'medication']
-                : ['the house', 'meals', 'errands']
-        )}, and you would know that someone is with them every day.` +
-        (worry ? ` It is also the most direct answer to what worries you.` : ''),
+        `Stalna podrška za ${needs.length ? 'ono što ste naveli' : 'ono što je najpotrebnije'}: ${listOf(
+          (needs.length ? needs.slice(0, 4) : defaultNeeds).map(lower)
+        )}. A vi biste znali da je neko uz nju svakog dana.` + (worry ? ' To je i najdirektniji odgovor na ono što vas brine.' : ''),
       providers: 'caregivers',
-      actions: ['Ask Jovana to arrange this', 'Talk it through first'],
+      actions: ['Neka Jovana ovo organizuje', 'Hoću prvo da porazgovaramo'],
     },
     {
       id: 'medical',
       kind: 'list',
       locked: true,
-      title: reasonId === 'fall' ? 'A nurse assessment, then a doctor’s review' : 'A doctor’s review',
-      why: `${firstName} has more than one thing going on at once, and a single visit that looks at medication, mobility and cognition together tells us more than three separate ones.`,
+      title: reasonId === 'fall' ? 'Procena medicinske sestre, pa pregled kod lekara' : 'Pregled kod lekara',
+      why: 'Više stvari se dešava istovremeno, a jedan pregled koji zajedno gleda lekove, kretanje i pamćenje kaže nam više nego tri odvojena.',
       items: actions,
-      actions: ['Ask Jovana to book this', 'I have a question'],
+      actions: ['Neka Jovana zakaže', 'Imam pitanje'],
     },
     {
       id: 'equipment',
       kind: 'list',
       locked: true,
-      title: 'Small changes at home',
+      title: 'Male promene u stanu',
       why:
-        mobility && mobility !== 'Completely on their own'
-          ? `${firstName} gets around ${mobility.toLowerCase()}, and the flat can be made to work with that rather than against it.`
-          : `A few inexpensive changes now are what keep a small stumble from becoming a fall.`,
+        mobilityId === 'bed'
+          ? 'Uglavnom leži, pa stan treba prilagoditi tome, a ne obrnuto.'
+          : mobility && mobilityId !== 'independent'
+            ? `Kreće se ${lower(mobility)}, pa stan može da radi uz to, a ne protiv toga.`
+            : 'Nekoliko jeftinih promena sada sprečava da se mali posrtaj pretvori u pad.',
       items: [
-        'Grab bars and a non-slip mat in the bathroom',
-        'A weekly pill organiser the caregiver fills',
-        'An upper-arm blood pressure monitor',
+        'Rukohvati i protivklizna podloga u kupatilu',
+        'Nedeljna kutijica za lekove koju puni negovateljica',
+        'Merač pritiska za nadlakticu',
       ],
-      actions: ['Ask Jovana to organise this', 'Save for later'],
+      actions: ['Neka Jovana ovo organizuje', 'Sačuvaj za kasnije'],
     },
     {
       id: 'local',
       kind: 'list',
       locked: true,
-      title: `More options for ${firstName}${city ? ` in ${city.split(',')[0]}` : ' nearby'}`,
-      why: `Care is not only visits. These are the things nearby that give ${firstName} a reason to leave the flat.`,
-      items: ['The local swimming pool', 'A pensioners’ club', 'The day centre’s morning group'],
-      actions: ['Ask Jovana to look into it'],
+      title: `Još mogućnosti u blizini${city ? ` · ${city.split(',')[0]}` : ''}`,
+      why: 'Nega nisu samo posete. Ovo su stvari u blizini koje joj daju razlog da izađe iz stana.',
+      items: ['Gradski bazen', 'Klub penzionera', 'Jutarnja grupa u dnevnom centru'],
+      actions: ['Neka Jovana to istraži'],
     },
   ];
 
   const facts = [
-    { label: 'Care for', value: name },
-    { label: 'Frailty level', value: frailty ? `${frailty.level} · ${frailty.label}` : '—' },
-    { label: 'Getting around', value: mobility || '—' },
-    { label: 'Help needed', value: dailyHelp || '—' },
-    { label: 'Where help is needed', value: needs.length ? needs.join(', ') : '—' },
-    { label: 'Reason for contact', value: reason || '—' },
-    { label: 'How it started', value: onset || '—' },
-    { label: 'Hospital stay', value: hospital || '—' },
+    { label: 'Za koga', value: name },
+    { label: 'Nivo krhkosti', value: frailty ? `${frailty.level} · ${CFS_SR[frailty.level]?.label || frailty.label}` : '—' },
+    { label: 'Kretanje', value: mobility || '—' },
+    { label: 'Pomoć tokom dana', value: dailyHelp || '—' },
+    { label: 'Gde treba pomoć', value: needs.length ? needs.join(', ') : '—' },
+    { label: 'Razlog javljanja', value: reason || '—' },
+    { label: 'Kako je počelo', value: onset || '—' },
+    { label: 'Bolnica', value: hospital || '—' },
   ];
 
   return {

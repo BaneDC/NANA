@@ -29,7 +29,7 @@ export default function CaregiverApp({ user, onRestart }) {
 
   // Every action the caregiver takes leaves a line behind. The activity feed is
   // only worth having if it is written by the same code that does the thing.
-  const logged = (client, kind, text) => [...(client.activity || []), { kind, when: 'just now', text }];
+  const logged = (client, kind, text) => [...(client.activity || []), { kind, when: 'upravo', text }];
 
   const actions = {
     onOpen: (id) => setOpenId(id),
@@ -39,16 +39,16 @@ export default function CaregiverApp({ user, onRestart }) {
       patch(id, (c) => ({
         stage: 'agreement',
         agreementSent: false,
-        acceptedOn: 'just now',
-        activity: logged(c, 'accepted', 'You accepted. The agreement is still to be set.'),
+        acceptedOn: 'upravo',
+        activity: logged(c, 'accepted', 'Prihvatili ste. Ugovor tek treba postaviti.'),
       })),
 
     onDecline: (id) => setClients((cs) => cs.filter((c) => c.id !== id)),
 
     onRemind: (id) =>
       patch(id, (c) => ({
-        remindedOn: 'just now',
-        activity: logged(c, 'note', `You sent ${c.family} a reminder to sign the agreement.`),
+        remindedOn: 'upravo',
+        activity: logged(c, 'note', `Poslali ste podsetnik da se ugovor potpiše (${c.family}).`),
       })),
 
     // Marking a visit done is what creates the work order, and it takes the
@@ -57,7 +57,7 @@ export default function CaregiverApp({ user, onRestart }) {
     onVisitDone: (id) =>
       patch(id, (c) => ({
         stage: 'work-order',
-        sinceVisit: 'just now',
+        sinceVisit: 'upravo',
         plan: null,
         visits: [
           {
@@ -73,7 +73,7 @@ export default function CaregiverApp({ user, onRestart }) {
         activity: logged(
           c,
           'visit',
-          `Visit done — ${c.plan.date} · ${c.plan.time}, ${c.plan.hours} h. The work order is due.`
+          `Poseta obavljena — ${c.plan.date} · ${c.plan.time}, ${c.plan.hours} h. Treba poslati radni nalog.`
         ),
       })),
   };
@@ -84,11 +84,11 @@ export default function CaregiverApp({ user, onRestart }) {
     patch(id, (c) => {
       const hold = totalsFor(plan.hours, c.rate).charged;
       return {
-        plan: { ...plan, sentOn: 'just now' },
+        plan: { ...plan, sentOn: 'upravo' },
         activity: logged(
           c,
           'visit-planned',
-          `Visit order sent for ${plan.date} · ${plan.time}, ${plan.hours} h. ${money(hold)} held from ${c.family}'s card.`
+          `Plan posete poslat za ${plan.date} · ${plan.time}, ${plan.hours} h. Na kartici porodice rezervisano je ${money(hold)}.`
         ),
       };
     });
@@ -108,9 +108,9 @@ export default function CaregiverApp({ user, onRestart }) {
           ? {
               ...v,
               ...report,
-              note: report.note || 'No notes.',
+              note: report.note || 'Bez napomena.',
               status: 'awaiting',
-              sentOn: 'just now',
+              sentOn: 'upravo',
               confirmsInHours: 24,
             }
           : v
@@ -118,8 +118,8 @@ export default function CaregiverApp({ user, onRestart }) {
       activity: logged(
         c,
         'work-order',
-        `Work order sent for the ${report.hours} h visit — ${report.services.map(serviceShort).join(', ').toLowerCase() || 'nothing ticked'}. ${money(net)} to you when it charges in 24 hours, unless ${c.family} raises something.` +
-          (report.concern ? ` You flagged: ${report.concern}` : '')
+        `Radni nalog poslat za posetu od ${report.hours} h — ${report.services.map(serviceShort).join(', ').toLowerCase() || 'ništa nije označeno'}. ${money(net)} stiže vama kad se naplati za 24 sata, osim ako porodica nešto prijavi.` +
+          (report.concern ? ` Napomenuli ste: ${report.concern}` : '')
       ),
     }));
     setOpenId(null);
@@ -128,13 +128,13 @@ export default function CaregiverApp({ user, onRestart }) {
   const sendAgreement = (id, { services, rate }) =>
     patch(id, (c) => ({
       agreementSent: true,
-      sentOn: 'just now',
+      sentOn: 'upravo',
       services,
       rate: rate || DEFAULT_RATE,
       activity: logged(
         c,
         'agreement-sent',
-        `Agreement sent: ${services.map(serviceTitle).join(', ').toLowerCase()} at ${money(rate)}/h. Waiting for ${c.family} to sign.`
+        `Ugovor poslat: ${services.map(serviceTitle).join(', ').toLowerCase()} po ${money(rate)}/h. Čeka se potpis (${c.family}).`
       ),
     }));
 

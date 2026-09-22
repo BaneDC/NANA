@@ -3,35 +3,35 @@
 // shorter form labels — this copy belongs to the immersive experience only.
 export const FIELD_PROMPTS = {
   // about the person being cared for
-  name: 'Who are we caring for?',
-  age: 'How old are they?',
-  city: 'Where do they live?',
+  name: 'O kome brinemo?',
+  age: 'Koliko ima godina?',
+  city: 'Gde živi?',
 
   // about the caller
-  'your-name': 'And who am I speaking with?',
-  relation: 'How are you related to them?',
-  'your-phone': 'What number can I reach you on?',
+  'your-name': 'A sa kim ja razgovaram?',
+  relation: 'Šta ste joj?',
+  'your-phone': 'Na koji broj mogu da vas dobijem?',
 
   // what the family is hoping for
-  goal: 'What would a good outcome look like?',
-  worry: 'And what worries you most?',
+  goal: 'Kako bi izgledao dobar ishod?',
+  worry: 'A šta vas najviše brine?',
 };
 
 // The classic form uses a generic placeholder on open text fields, which reads
 // oddly when the field is the whole screen. Anything not listed keeps its own.
 export const FIELD_PLACEHOLDERS = {
-  goal: 'That she can stay at home safely',
-  worry: 'That she falls again while I’m at work',
+  goal: 'Da bezbedno ostane kod kuće',
+  worry: 'Da opet padne dok sam na poslu',
 };
 
 // A quiet second line under the prompt, so a single field never feels like a form.
 export const FIELD_HINTS = {
-  name: 'Their full name, as you’d write it on a form.',
-  age: 'Roughly is fine if you’re not sure.',
-  city: 'So we can find caregivers nearby.',
-  'your-name': 'You’ll be the person we keep in the loop.',
-  relation: 'Daughter, son, neighbour — whatever fits.',
-  'your-phone': 'This is where the introduction will be sent.',
-  goal: 'In your own words. This shapes everything we suggest.',
-  worry: 'Optional, but it usually tells us the most.',
+  name: 'Ime i prezime, kako biste ga napisali u formularu.',
+  age: 'Otprilike je u redu ako niste sigurni.',
+  city: 'Da nađemo negovateljice u blizini.',
+  'your-name': 'Vas ćemo obaveštavati o svemu.',
+  relation: 'Ćerka, sin, komšinica — šta god odgovara.',
+  'your-phone': 'Ovde stiže upoznavanje sa negovateljicom.',
+  goal: 'Svojim rečima. Od ovoga zavisi sve što predlažemo.',
+  worry: 'Nije obavezno, ali obično nam kaže najviše.',
 };

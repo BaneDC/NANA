@@ -61,17 +61,18 @@
   --status-no-bg: #fef2f2;
   --status-no-fg: #c10007;
 
-  /* ---- spacing (Tailwind scale) ---- */
-  --spacing-0-5: 2px;
+  /* ---- spacing: a 4px grid ----
+     Only steps of 4. The half steps (2, 6, 10) are gone on purpose: every
+     padding, margin and gap in the app sits on this grid, and a token that
+     is off it is an invitation to use it. */
   --spacing-1: 4px;
-  --spacing-1-5: 6px;
   --spacing-2: 8px;
-  --spacing-2-5: 10px;
   --spacing-3: 12px;
   --spacing-4: 16px;
   --spacing-6: 24px;
   --spacing-7: 28px;
   --spacing-8: 32px;
+  --spacing-10: 40px;
 
   /* ---- radius ---- */
   --radius-lg: 8px;

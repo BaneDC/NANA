@@ -11,21 +11,23 @@ import Button from './Button';
 // recommended for this person — then the full caregiver list, then the two ways the
 // family can push back on the plan. Shared by the side panel and the full page so
 // they never drift apart.
-export default function PlanContents({ plan, unlocked, onSelectCaregiver, onUnlock, archived }) {
+export default function PlanContents({ plan, unlocked, onSelectCaregiver, onUnlock, archived, change }) {
   const open = (plan.recommendations || []).filter((r) => !r.locked);
   const locked = (plan.recommendations || []).filter((r) => r.locked);
 
   return (
     <>
-      {plan.letter && <CoordinatorMessage letter={plan.letter} />}
+      {plan.letter && <CoordinatorMessage letter={plan.letter} changed={Boolean(change?.letter)} changeKey={change?.at} />}
 
-      <p className="doc-section-title">What we recommend</p>
+      <p className="doc-section-title">Šta preporučujemo</p>
 
       {open.map((rec) => (
         <RecommendationCard
           key={rec.id}
           rec={rec}
           unlocked={unlocked}
+          changed={Boolean(change?.recs.includes(rec.id))}
+          changeKey={change?.at}
           onSelectCaregiver={onSelectCaregiver}
         />
       ))}
@@ -35,7 +37,14 @@ export default function PlanContents({ plan, unlocked, onSelectCaregiver, onUnlo
           it is obvious what is being withheld. */}
       {unlocked ? (
         locked.map((rec) => (
-          <RecommendationCard key={rec.id} rec={rec} unlocked onSelectCaregiver={onSelectCaregiver} />
+          <RecommendationCard
+            key={rec.id}
+            rec={rec}
+            unlocked
+            changed={Boolean(change?.recs.includes(rec.id))}
+            changeKey={change?.at}
+            onSelectCaregiver={onSelectCaregiver}
+          />
         ))
       ) : (
         <div className="locked-region">
@@ -48,36 +57,33 @@ export default function PlanContents({ plan, unlocked, onSelectCaregiver, onUnlo
             <span className="locked-badge">
               <Lock size={14} strokeWidth={2} />
             </span>
-            <p className="locked-title">
-              {locked.length} more recommendations in the full plan
-            </p>
+            <p className="locked-title">Još {locked.length} preporuke u punom planu</p>
             <p className="locked-note">
-              Which doctor visits to book for {plan.firstName}, the changes that make the flat
-              safer, and what there is nearby
-              {archived ? '.' : ' — plus the direct number of every caregiver.'}
+              Koje preglede kod lekara zakazati, promene koje stan čine bezbednijim i šta postoji u
+              blizini{archived ? '.' : ' — i direktan broj svake negovateljice.'}
             </p>
             <Button variant="primary" size="lg" onClick={onUnlock}>
-              <Lock size={12} strokeWidth={2} /> Subscribe to see the full plan
+              <Lock size={12} strokeWidth={2} /> Pretplatite se za ceo plan
             </Button>
           </div>
         </div>
       )}
 
       <p className="doc-section-title">
-        Everyone we matched{' '}
+        Sve negovateljice koje odgovaraju{' '}
         <span className="doc-count">{plan.caregiverCount ?? caregivers.length}</span>
       </p>
 
       {archived ? (
         <p className="doc-p">
-          {plan.caregiverCount} caregivers were matched to this plan. Contact details are only kept
-          for the active plan.
+          Ovom planu je odgovaralo {plan.caregiverCount} negovateljica. Kontakti se čuvaju samo za
+          aktivan plan.
         </p>
       ) : (
         <>
           <p className="doc-p">
-            Ranked by how well they fit {plan.firstName}’s schedule, tasks and location.
-            {!unlocked && ' Tap a caregiver to request their number.'}
+            Poređane po tome koliko odgovaraju rasporedu, zadacima i lokaciji.
+            {!unlocked && ' Kliknite na negovateljicu da dobijete njen broj.'}
           </p>
           {caregiversFor(unlocked).map((c) => (
             <CaregiverRow key={c.id} caregiver={c} onSelect={onSelectCaregiver} detailed />

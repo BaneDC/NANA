@@ -101,7 +101,7 @@ function ActiveBody({ question, answer, onCommit }) {
         </div>
         <div className="card-footer">
           <Button variant="secondary" disabled={!inputsValid} onClick={commit}>
-            Next
+            Dalje
           </Button>
         </div>
       </>
@@ -161,7 +161,7 @@ function ActiveBody({ question, answer, onCommit }) {
       </div>
       <div className="card-footer">
         <Button variant="secondary" disabled={!question.allowEmpty && empty} onClick={commitMulti}>
-          {question.allowEmpty && empty ? 'None of these' : 'Next'}
+          {question.allowEmpty && empty ? 'Ništa od ovoga' : 'Dalje'}
         </Button>
       </div>
     </>
@@ -212,7 +212,7 @@ export default function QuestionItem({
             <Button
               variant="secondary"
               iconOnly
-              aria-label="Edit answer"
+              aria-label="Izmeni odgovor"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit();

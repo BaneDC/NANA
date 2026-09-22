@@ -198,11 +198,11 @@ input {
 
 .answers-summary-count {
   flex-shrink: 0;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 6px;
   background: var(--surface-2);
   font-size: 11px;
-  line-height: 16px;
+  line-height: 12px;
   font-weight: var(--font-medium);
   color: var(--text-secondary);
 }
@@ -263,7 +263,7 @@ input {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: 9px 10px 9px 12px;
+  padding: 8px 12px 8px 12px;
   white-space: nowrap;
   overflow: hidden;
   text-align: left;
@@ -408,7 +408,7 @@ input {
   background: var(--surface-elevated-3);
   border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  padding: var(--spacing-2-5) var(--spacing-2);
+  padding: var(--spacing-3) var(--spacing-2);
   transition: border-color 0.18s ease;
   cursor: text;
 }
@@ -492,7 +492,7 @@ input {
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   color: var(--text-secondary);
-  margin-top: var(--spacing-0-5);
+  margin-top: var(--spacing-1);
 }
 
 /* ---------- Chip ---------- */
@@ -501,7 +501,7 @@ input {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   height: var(--chip-size);
   padding: 0 var(--chip-px);
   border-radius: var(--chip-radius);
@@ -523,7 +523,7 @@ input {
   justify-content: center;
   gap: var(--spacing-2);
   height: var(--button-size);
-  padding: 0 13px;
+  padding: 0 12px;
   border-radius: var(--radius-lg);
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
@@ -589,7 +589,7 @@ input {
   background: var(--surface-0);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
-  padding: var(--spacing-2-5);
+  padding: var(--spacing-3);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
@@ -606,7 +606,7 @@ input {
 
 .ci-text input {
   width: 100%;
-  padding: 6px 0;
+  padding: 8px 0;
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   color: var(--text-primary);
@@ -690,7 +690,7 @@ input {
 
 .bubble {
   max-width: 80%;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: var(--radius-2xl);
   background: var(--surface-2);
   font-size: var(--text-sm-size);
@@ -773,8 +773,8 @@ input {
 
 .doc-icon {
   flex-shrink: 0;
-  margin-top: 2px;
   color: var(--primary);
+  height: 1lh;
 }
 
 .doc-eyebrow {
@@ -813,7 +813,7 @@ input {
 .fact {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   min-width: 0;
 }
 
@@ -836,7 +836,7 @@ input {
 .doc-section-title {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: var(--spacing-1);
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
@@ -845,7 +845,7 @@ input {
 }
 
 .doc-count {
-  padding: 1px 6px;
+  padding: 0 8px;
   border-radius: 6px;
   background: var(--surface-2);
   font-size: 11px;
@@ -857,7 +857,7 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: var(--spacing-3);
 }
 
@@ -921,7 +921,7 @@ input {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .cg-top {
@@ -940,7 +940,7 @@ input {
 .cg-match {
   margin-left: auto;
   flex-shrink: 0;
-  padding: 1px 6px;
+  padding: 0 8px;
   border-radius: 6px;
   background: var(--primary-subtle);
   color: var(--primary-highlight);
@@ -974,22 +974,22 @@ input {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .cg-tag {
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: 6px;
   background: var(--surface-2);
   font-size: 11px;
-  line-height: 14px;
+  line-height: 12px;
   color: var(--text-secondary);
 }
 
 .cg-phone {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: 8px;
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
@@ -1088,12 +1088,12 @@ input {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
 }
 
 .suggestion {
   max-width: 100%;
-  padding: 7px var(--spacing-3);
+  padding: 8px var(--spacing-3);
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
   background: var(--surface-0);
@@ -1150,7 +1150,7 @@ input {
 .nav-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .nav-group-end {
@@ -1163,7 +1163,7 @@ input {
   align-items: center;
   gap: var(--spacing-2);
   width: 100%;
-  padding: var(--spacing-2) var(--spacing-2-5);
+  padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
   font-size: var(--text-sm-size);
   line-height: var(--text-sm-leading);
@@ -1199,7 +1199,7 @@ input {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-2) 4px var(--spacing-2) var(--spacing-2-5);
+  padding: var(--spacing-2) 4px var(--spacing-2) var(--spacing-3);
   color: inherit;
   font-size: inherit;
   line-height: inherit;
@@ -1213,7 +1213,7 @@ input {
   justify-content: center;
   width: 24px;
   height: 24px;
-  margin-right: 6px;
+  margin-right: 8px;
   border-radius: 6px;
   color: var(--text-disabled);
   transition: background 0.15s ease, color 0.15s ease;
@@ -1233,8 +1233,8 @@ input {
 .nav-sub {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  margin: 2px 0 6px;
+  gap: 0;
+  margin: 4px 0 8px;
   padding-left: var(--spacing-3);
   border-left: 1px solid var(--border-subtle);
   margin-left: var(--spacing-4);
@@ -1243,9 +1243,9 @@ input {
 .nav-sub-item {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   width: 100%;
-  padding: 6px var(--spacing-2);
+  padding: 8px var(--spacing-2);
   border-radius: var(--radius-lg);
   text-align: left;
   color: var(--text-secondary);
@@ -1281,7 +1281,7 @@ input {
 }
 
 .nav-sub-empty {
-  padding: 6px var(--spacing-2);
+  padding: 8px var(--spacing-2);
   font-size: 11px;
   line-height: 14px;
   color: var(--text-disabled);
@@ -1324,7 +1324,7 @@ input {
   align-items: center;
   gap: var(--spacing-2);
   width: 100%;
-  padding: var(--spacing-2-5) var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-3);
   border-radius: var(--radius-2xl);
   background: var(--surface-2);
   font-size: var(--text-xs-size);
@@ -1342,8 +1342,8 @@ input {
 
 .nav-badge {
   margin-left: auto;
-  min-width: 18px;
-  padding: 1px 5px;
+  min-width: 16px;
+  padding: 0 4px;
   border-radius: 6px;
   background: var(--primary);
   color: var(--primary-foreground);
@@ -1443,7 +1443,7 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: var(--spacing-8) var(--spacing-6);
   text-align: center;
   background: var(--surface-2);
@@ -1465,7 +1465,7 @@ input {
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding: var(--spacing-3) var(--spacing-4);
   background: var(--surface-elevated);
   border-radius: var(--radius-2xl);
@@ -1547,7 +1547,7 @@ input {
 }
 
 .plan-row-meta {
-  margin-top: 1px;
+  margin-top: 0;
   font-size: 11px;
   line-height: 16px;
   color: var(--text-disabled);
@@ -1555,14 +1555,14 @@ input {
 
 .plan-row-summary {
   max-width: 62ch;
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: var(--text-xs-size);
   line-height: 18px;
   color: var(--text-secondary);
 }
 
 .booking-detail {
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: var(--text-xs-size);
   line-height: 18px;
   color: var(--text-secondary);
@@ -1573,7 +1573,7 @@ input {
 }
 
 .booking-actions {
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .status-pill {
@@ -1582,10 +1582,10 @@ input {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 6px;
   font-size: 11px;
-  line-height: 16px;
+  line-height: 12px;
   font-weight: var(--font-medium);
   white-space: nowrap;
 }
@@ -1660,7 +1660,7 @@ input {
   align-items: center;
   gap: var(--spacing-4);
   width: 100%;
-  padding: var(--spacing-2-5) 0;
+  padding: var(--spacing-3) 0;
   text-align: left;
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -1674,14 +1674,14 @@ input {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
 }
 
 .switch {
   flex-shrink: 0;
-  width: 36px;
-  height: 20px;
-  padding: 2px;
+  width: 40px;
+  height: 24px;
+  padding: 4px;
   border-radius: 999px;
   background: var(--surface-elevated-4);
   transition: background 0.18s ease;
@@ -1723,8 +1723,8 @@ input {
   flex-direction: column;
   gap: var(--spacing-3);
   max-height: 300px;
-  margin: 0 -14px;
-  padding: 0 14px;
+  margin: 0 -16px;
+  padding: 0 16px;
   overflow: hidden;
   filter: blur(3.5px);
   pointer-events: none;
@@ -1742,7 +1742,7 @@ input {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
   padding: var(--spacing-4);
   text-align: center;
   background: linear-gradient(
@@ -1837,7 +1837,7 @@ input {
 .paywall-list li {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   color: var(--text-secondary);
@@ -1949,12 +1949,12 @@ input {
 .text-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   width: 100%;
 }
 
 .text-field .tf-label {
-  padding: 0 var(--spacing-2-5);
+  padding: 0 var(--spacing-3);
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
@@ -1964,13 +1964,13 @@ input {
 .text-field .tf-input {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   height: var(--input-size);
   width: 100%;
   background: var(--surface-0);
   border: 0.8px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-2) var(--spacing-2-5) var(--spacing-2) var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3) var(--spacing-2) var(--spacing-2);
   transition: border-color 0.18s ease;
 }
 
@@ -2028,7 +2028,7 @@ input {
 
 .imm-progress {
   width: 180px;
-  height: 3px;
+  height: 4px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
   overflow: hidden;
@@ -2065,14 +2065,14 @@ input {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   white-space: nowrap;
   pointer-events: auto;
 }
 
 .imm-know-label {
   /* 24px to the scale, with the stack's 6px gap */
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   font-size: 11px;
   line-height: 16px;
   letter-spacing: 0.06em;
@@ -2088,7 +2088,7 @@ input {
 }
 
 .imm-know-step {
-  height: 6px;
+  height: 4px;
   border-radius: 999px;
   background: rgba(70, 61, 53, 0.1);
   overflow: hidden;
@@ -2119,7 +2119,7 @@ input {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   text-align: center;
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
@@ -2145,8 +2145,8 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(12px);
@@ -2197,7 +2197,7 @@ input {
 }
 
 .imm-subtitle {
-  margin-top: 6px;
+  margin-top: 8px;
   margin-bottom: var(--spacing-6);
   font-size: var(--text-sm-size);
   line-height: var(--text-sm-leading);
@@ -2237,6 +2237,9 @@ input {
   gap: var(--spacing-3);
   width: 100%;
   padding: var(--spacing-3) var(--spacing-4);
+  /* 12 + 24 + 12 plus the 1px border each side would be 50; the card is held
+     on the grid at 52 and the badge sits centred inside it */
+  min-height: 52px;
   border-radius: var(--radius-2xl);
   background: rgba(255, 255, 255, 0.52);
   backdrop-filter: blur(16px) saturate(140%);
@@ -2267,8 +2270,8 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--radius-lg);
   /* White on a white-ish glass card left this all but invisible. The warm brown
      the card's own shadow uses reads against it without shouting. */
@@ -2287,7 +2290,7 @@ input {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   min-width: 0;
 }
 
@@ -2309,7 +2312,7 @@ input {
   flex-direction: column;
   gap: 4px;
   width: 100%;
-  padding: var(--spacing-2-5) var(--spacing-4) var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4) var(--spacing-3);
   border-radius: var(--radius-2xl);
   background: rgba(255, 255, 255, 0.52);
   backdrop-filter: blur(16px) saturate(140%);
@@ -2363,7 +2366,7 @@ input {
 .nav-variant {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   padding: 0 var(--spacing-2);
 }
 
@@ -2375,15 +2378,15 @@ input {
 
 .segmented {
   display: flex;
-  gap: 2px;
-  padding: 2px;
+  gap: 4px;
+  padding: 4px;
   border-radius: var(--radius-lg);
   background: var(--surface-2);
 }
 
 .segmented button {
   flex: 1;
-  padding: 5px 0;
+  padding: 4px 0;
   border-radius: 6px;
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
@@ -2454,8 +2457,8 @@ input {
 .imm-fact {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: var(--spacing-2-5) var(--spacing-3);
+  gap: 4px;
+  padding: var(--spacing-3) var(--spacing-3);
   border-radius: var(--radius-2xl);
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(14px) saturate(140%);
@@ -2506,7 +2509,7 @@ input {
 
 .cfs-step {
   flex: 1;
-  padding: 6px 0;
+  padding: 8px 0;
   border-radius: 6px;
   background: var(--surface-2);
   color: var(--text-disabled);
@@ -2558,7 +2561,7 @@ input {
 .imm-scale-ends {
   display: flex;
   justify-content: space-between;
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 11px;
   line-height: 16px;
   color: #a2917f;
@@ -2580,14 +2583,14 @@ input {
 
 .imm-cfs {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   margin-top: var(--spacing-3);
 }
 
 .imm-cfs-step {
   flex: 1;
-  padding: 10px 0;
+  padding: 12px 0;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -2677,7 +2680,7 @@ input {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.8);
@@ -2688,8 +2691,8 @@ input {
 
 .imm-plan-risks li::before {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: var(--primary);
 }
@@ -2720,13 +2723,13 @@ input {
 .imm-plan-notes {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   list-style: none;
 }
 
 .imm-plan-notes li {
   position: relative;
-  padding-left: 22px;
+  padding-left: 24px;
   font-size: 15px;
   line-height: 24px;
   color: #5f5249;
@@ -2751,7 +2754,7 @@ input {
 }
 
 .imm-plan-reco-title {
-  margin-bottom: var(--spacing-1-5);
+  margin-bottom: var(--spacing-2);
   font-size: 22px;
   line-height: 30px;
   font-weight: var(--font-medium);
@@ -2855,8 +2858,8 @@ input {
   max-width: 100%;
   height: auto;
   min-height: var(--chip-size);
-  padding-top: 2px;
-  padding-bottom: 2px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   white-space: normal;
 }
 
@@ -2875,8 +2878,8 @@ input {
 
 .review-warning-icon {
   flex-shrink: 0;
-  margin-top: 2px;
   color: var(--status-wait-fg);
+  height: 1lh;
 }
 
 .review-warning-text {
@@ -2922,8 +2925,8 @@ input {
 
 .flow-change-icon {
   flex-shrink: 0;
-  margin-top: 2px;
   color: var(--primary-highlight);
+  height: 1lh;
 }
 
 .flow-change-text {
@@ -3044,7 +3047,7 @@ input {
 .rec-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   margin-top: var(--spacing-1);
   list-style: none;
 }
@@ -3060,8 +3063,8 @@ input {
 
 .rec-list svg {
   flex-shrink: 0;
-  margin-top: 3px;
   color: var(--primary-highlight);
+  height: 1lh;
 }
 
 .rec-actions {
@@ -3085,7 +3088,7 @@ input {
 .plan-ask-added {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
   background: var(--surface-elevated);
@@ -3264,7 +3267,7 @@ input {
 
 .imm-review-label {
   flex-shrink: 0;
-  width: 150px;
+  width: 152px;
   font-size: var(--text-xs-size);
   line-height: 18px;
   color: var(--color-primary-800);
@@ -3304,8 +3307,8 @@ input {
 
 .imm-warning > svg {
   flex-shrink: 0;
-  margin-top: 2px;
   color: var(--status-wait-fg);
+  height: 1lh;
 }
 
 .imm-warning-title {
@@ -3316,7 +3319,7 @@ input {
 }
 
 .imm-warning-note {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: var(--text-xs-size);
   line-height: 18px;
   color: var(--color-primary-800);
@@ -3455,8 +3458,8 @@ input {
 
 .conv-error > svg {
   flex-shrink: 0;
-  margin-top: 2px;
   color: var(--status-no-fg);
+  height: 1lh;
 }
 
 .conv-error-title {
@@ -3467,7 +3470,7 @@ input {
 }
 
 .conv-error-note {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: var(--text-xs-size);
   line-height: 18px;
   color: var(--text-secondary);
@@ -3535,7 +3538,7 @@ input {
 .imm-write-toggle {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   margin-top: var(--spacing-4);
   padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
@@ -3605,7 +3608,7 @@ input {
 .imm-option.is-field {
   flex-direction: column;
   align-items: stretch;
-  gap: 2px;
+  gap: 4px;
   cursor: text;
 }
 
@@ -3677,7 +3680,7 @@ input {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .imm-starter-title {
@@ -3737,18 +3740,12 @@ input {
 .imm-why {
   /* the question's own width, so the two read as one block */
   width: 100%;
-  margin-top: var(--spacing-2-5);
+  margin-top: var(--spacing-3);
   font-size: 16px;
   line-height: 24px;
   color: #7d6f63;
 }
 
-/* a little more air before the answers when the question carries a reason, so
-   the reason stays with the question and not with the cards */
-.imm-answer > .imm-why + .imm-options,
-.imm-answer > .imm-why + .imm-composer-slot {
-  margin-top: 40px;
-}
 
 /* One gap between what Jovana says and what can be answered, whether the
    question has a subtitle or not. */
@@ -3756,9 +3753,19 @@ input {
   margin-top: 0;
 }
 
+/* Two groups on this screen, and one gap between them: the question (with its
+   reason, when it has one) and the answers. The gap is the same either way, so
+   the answers always start the same distance below whatever was asked. */
 .imm-answer > .imm-options,
-.imm-answer > .imm-composer-slot {
-  margin-top: var(--spacing-7);
+.imm-answer > .imm-composer-slot,
+.imm-answer > .imm-pick-hint {
+  margin-top: var(--spacing-10);
+}
+
+/* "Choose one" belongs to the cards, not to the question: the gap between the
+   groups sits above it, and it keeps close to the cards it describes. */
+.imm-answer > .imm-pick-hint + .imm-options {
+  margin-top: 0;
 }
 
 /* ---------- One composer for everything typed ---------- */
@@ -3825,7 +3832,7 @@ input {
    below the line is on screen while it changes height: the answers leave when
    she starts thinking and only come back once the question is written. */
 .imm-line {
-  min-height: 34px;
+  min-height: 36px;
 }
 
 /* The shimmer passes a narrow, slightly lighter band over text that keeps its
@@ -3877,7 +3884,7 @@ input {
   display: inline-flex;
   height: 20px;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-size: 12px;
   line-height: 20px;
   color: #a2917f;
@@ -3918,7 +3925,7 @@ input {
 }
 
 .imm-cot-missing {
-  margin-top: var(--spacing-1-5);
+  margin-top: var(--spacing-2);
 }
 
 .imm-cot-missing strong {
@@ -4054,7 +4061,7 @@ input {
   justify-content: center;
   min-width: 20px;
   height: 20px;
-  padding: 0 6px;
+  padding: 0 8px;
   border-radius: 999px;
   background: var(--surface-elevated-4);
   font-size: 11px;
@@ -4063,7 +4070,7 @@ input {
 }
 
 .board-col-note {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 11px;
   line-height: 16px;
   color: var(--text-disabled);
@@ -4076,7 +4083,7 @@ input {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
-  padding: var(--spacing-0-5);
+  padding: var(--spacing-1);
   scrollbar-width: thin;
 }
 
@@ -4168,13 +4175,13 @@ input {
 .bc-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
 }
 
 .bc-lines {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .bc-line {
@@ -4201,8 +4208,8 @@ input {
 .bc-total {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: var(--spacing-2) var(--spacing-2-5);
+  gap: 4px;
+  padding: var(--spacing-2) var(--spacing-3);
   background: var(--surface-2);
   border-radius: var(--radius-lg);
 }
@@ -4252,7 +4259,7 @@ input {
 .client-contact {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding: var(--spacing-3) var(--spacing-4);
   background: var(--surface-2);
   border-radius: var(--radius-2xl);
@@ -4297,7 +4304,7 @@ input {
 .svc {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   padding: var(--spacing-2) var(--spacing-3);
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
@@ -4449,7 +4456,7 @@ button.svc:hover {
 .tl-item::before {
   content: '';
   position: absolute;
-  top: 26px;
+  top: 28px;
   bottom: 0;
   left: 12px;
   width: 1px;
@@ -4477,7 +4484,7 @@ button.svc:hover {
 .tl-body {
   flex: 1;
   min-width: 0;
-  padding-top: 2px;
+  padding-top: 4px;
 }
 
 .tl-text {
@@ -4503,7 +4510,7 @@ button.svc:hover {
 .wo-field {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   min-width: 0;
 }
 
@@ -4554,7 +4561,7 @@ textarea.wo-text {
 
 /* the same pill as a service, in the size a three-way answer wants */
 .svc.is-sm {
-  padding: var(--spacing-1) var(--spacing-2-5);
+  padding: var(--spacing-1) var(--spacing-3);
   font-size: 11px;
   line-height: 18px;
 }
@@ -4564,7 +4571,7 @@ textarea.wo-text {
 .wo-concern-open {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   align-self: flex-start;
   margin-top: var(--spacing-1);
   font-size: var(--text-xs-size);
@@ -4580,7 +4587,7 @@ textarea.wo-text {
 .wo-concern {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   margin-top: var(--spacing-1);
   padding: var(--spacing-3);
   border-radius: var(--radius-2xl);
@@ -4610,8 +4617,8 @@ textarea.wo-text {
 .visit-concern {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-1-5);
-  padding: var(--spacing-2) var(--spacing-2-5);
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
   background: var(--status-no-bg);
   font-size: 11px;
@@ -4632,7 +4639,7 @@ textarea.wo-text {
 .modal-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   /* the close button sits over this corner */
   padding-right: var(--spacing-8);
   margin-bottom: var(--spacing-1);
@@ -4664,7 +4671,7 @@ textarea.wo-text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 4px;
   text-align: left;
   cursor: pointer;
 }
@@ -4700,8 +4707,8 @@ textarea.wo-text {
 .wo-plan-note {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-1-5);
-  padding: var(--spacing-2) var(--spacing-2-5);
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
   background: var(--surface-2);
   font-size: 11px;
@@ -4722,7 +4729,7 @@ textarea.wo-text {
 .needs-you .doc-section-title {
   display: flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   color: var(--color-primary-700);
 }
 
@@ -4737,7 +4744,7 @@ textarea.wo-text {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  padding: var(--spacing-2-5) var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-3);
   background: var(--surface-0);
   border-radius: var(--radius-2xl);
 }
@@ -4747,7 +4754,7 @@ textarea.wo-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
 }
 
 .needs-label {
@@ -4779,7 +4786,7 @@ textarea.wo-text {
 .cg-head .cg-phone {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   flex-shrink: 0;
 }
 
@@ -4811,7 +4818,7 @@ textarea.wo-text {
 .visit-more {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-1-5);
+  gap: var(--spacing-2);
   align-self: flex-start;
   margin-top: var(--spacing-1);
   font-size: var(--text-xs-size);
@@ -4857,7 +4864,7 @@ textarea.wo-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .report-top {
@@ -5095,7 +5102,7 @@ textarea.wo-text {
 
 /* the answer is the part someone scans for, so it carries the weight */
 .imm-history-answer {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 14px;
   line-height: 20px;
   font-weight: var(--font-medium);
@@ -5197,4 +5204,931 @@ textarea.wo-text {
 .imm-answer .imm-actions {
   width: 100%;
   justify-content: flex-end;
+}
+
+/* ── the family's side ─────────────────────────────────────────────────────
+   Home, her page, visits and requests. Rows sit on the same cards, pills and
+   avatars as the rest of the app; the only new pieces are a row that can hold
+   an action and the quoted lines a caregiver writes. */
+
+.btn.danger {
+  background: var(--status-no-fg);
+  color: #fff;
+  box-shadow: var(--shadow-button);
+}
+
+.btn.danger:hover {
+  filter: brightness(0.94);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fam-sub {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.fam-sub.is-flush {
+  margin: 0;
+}
+
+.fam-link {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-700);
+}
+
+.fam-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fam-quiet p {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.fam-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* One person or one visit per row: avatar, what it is, and whatever can be
+   done about it on the right. The same row is a button when all it does is
+   open her page. */
+.fam-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-0);
+  text-align: left;
+}
+
+.needs-you .fam-row {
+  border-color: var(--color-primary-200);
+}
+
+.fam-row.is-link {
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fam-row.is-link:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: var(--shadow-card);
+}
+
+.fam-row.is-ended .cg-avatar {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.fam-row.is-ended .fam-row-title {
+  color: var(--text-secondary);
+}
+
+.fam-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fam-row-main > .ag-services {
+  margin-top: var(--spacing-2);
+}
+
+.fam-row-main .svc {
+  padding: 4px var(--spacing-3);
+  font-size: 11px;
+  line-height: 12px;
+}
+
+.fam-row-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.fam-row-title > .status-pill {
+  margin-left: 0;
+}
+
+.fam-row-body {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.fam-row-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: var(--font-medium);
+  color: var(--color-primary-700);
+}
+
+.fam-row-side {
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-disabled);
+}
+
+.fam-row-chevron {
+  flex-shrink: 0;
+  color: var(--text-disabled);
+}
+
+.fam-row-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--spacing-1);
+}
+
+.fam-row > .status-pill {
+  margin-left: 0;
+}
+
+/* the last visit, as one block that opens its work order */
+.fam-report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-0);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fam-report:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: var(--shadow-card);
+}
+
+.fam-report-top {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-2);
+}
+
+.fam-report-meta {
+  margin-left: auto;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-disabled);
+}
+
+.fam-report .svc {
+  padding: 4px var(--spacing-3);
+  font-size: 11px;
+  line-height: 12px;
+}
+
+/* what a caregiver wrote, in her words */
+.fam-quote {
+  padding-left: var(--spacing-3);
+  border-left: 2px solid var(--color-primary-200);
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.fam-quote.is-inline {
+  display: block;
+}
+
+.fam-callout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-2xl);
+  background: var(--primary-subtle);
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-primary);
+}
+
+/* a second thought before something that cannot be undone, said in the
+   drawer's own footer so the buttons stay where they were */
+.fam-confirm {
+  flex-wrap: wrap;
+}
+
+.fam-confirm-text {
+  flex-basis: 100%;
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.fam-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--spacing-6) + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  max-width: min(520px, calc(100vw - 32px));
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: #fff;
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  box-shadow: var(--shadow-container);
+}
+
+.fam-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-bottom: calc(-1 * var(--spacing-2));
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.fam-back:hover {
+  color: var(--text-primary);
+}
+
+.fam-person {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  min-width: 0;
+}
+
+.view-head-actions a.btn {
+  text-decoration: none;
+}
+
+.cg-avatar.is-lg {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-2xl);
+  font-size: var(--text-sm-size);
+}
+
+.cg-avatar.is-ended {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.fam-next {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: var(--text-primary);
+}
+
+/* how a visit gets paid for, in three beats */
+.fam-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+  list-style: none;
+  counter-reset: flow;
+}
+
+.fam-flow li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--spacing-3) var(--spacing-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.fam-flow li span {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.fam-flow li span::before {
+  counter-increment: flow;
+  content: counter(flow) '. ';
+  color: var(--color-primary-600);
+}
+
+.fam-visits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  list-style: none;
+}
+
+.fam-visit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-0);
+}
+
+/* the one a family is being asked to look at */
+.fam-visit.is-charging {
+  border-color: var(--color-primary-300);
+  background: var(--primary-subtle);
+}
+
+.fam-visit.is-planned {
+  border-color: var(--color-primary-200);
+}
+
+.fam-visit.is-cancelled,
+.fam-visit.is-awaiting {
+  background: var(--surface-2);
+}
+
+.fam-visit > .status-pill {
+  margin-left: 0;
+}
+
+.fam-visit-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  width: 100%;
+}
+
+.fam-visit-when {
+  flex: 1;
+  min-width: 0;
+}
+
+.fam-visit-money {
+  text-align: right;
+}
+
+.fam-visit-amount {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.fam-visit-note {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-disabled);
+}
+
+.fam-visit-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+}
+
+.fam-visit-line {
+  flex: 1;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.status-pill.is-attention {
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+
+.fam-end {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-disabled);
+}
+
+.fam-end p {
+  flex: 1;
+}
+
+.btn.ghost.fam-end-btn {
+  color: var(--status-no-fg);
+}
+
+.fam-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.fam-filter-note {
+  font-size: 11px;
+  color: var(--text-disabled);
+}
+
+.svc.is-on .fam-filter-note {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.fam-filter-count {
+  margin-left: auto;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-disabled);
+}
+
+.fam-request-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.fam-request.is-linked {
+  border: 1px solid var(--color-primary-200);
+}
+
+@media (max-width: 640px) {
+  .fam-row,
+  .fam-visit-foot {
+    flex-wrap: wrap;
+  }
+
+  .fam-flow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fam-name-link {
+  text-align: left;
+}
+
+.fam-name-link:hover {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cg-top > .status-pill {
+  margin-left: var(--spacing-2);
+}
+
+.fam-find-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-1);
+  flex-shrink: 0;
+}
+
+.fam-find-actions > .status-pill {
+  margin-left: 0;
+}
+
+.fam-coordinator {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-3);
+  color: var(--text-secondary);
+}
+
+.fam-coordinator p {
+  flex: 1;
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+}
+
+.fam-profile-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.fam-profile-head > .status-pill {
+  margin-left: auto;
+}
+
+.fam-asked {
+  margin-left: 0;
+}
+
+/* ── changing a care plan: by hand, or through the assistant ─────────────── */
+
+.pe-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.pe-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.pe-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-0);
+  text-align: left;
+  transition: border-color 0.15s ease;
+}
+
+.pe-row:hover {
+  border-color: var(--color-primary-300);
+}
+
+.pe-q {
+  flex-shrink: 0;
+  width: 136px;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.pe-a {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.pe-a.is-empty {
+  font-weight: var(--font-normal);
+  color: var(--text-disabled);
+}
+
+.pe-edit {
+  flex-shrink: 0;
+  color: var(--text-disabled);
+}
+
+.pe-row:hover .pe-edit {
+  color: var(--color-primary-600);
+}
+
+.pe-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border: 1px solid var(--color-primary-300);
+  border-radius: var(--radius-2xl);
+  background: var(--primary-subtle);
+}
+
+.pe-editor-title {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.pe-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.wo-text.is-line {
+  height: 36px;
+  padding: 0 var(--spacing-3);
+}
+
+.pe-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+}
+
+.cp-reply {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.assistant-text.is-error {
+  color: var(--status-no-fg);
+}
+
+.cp-proposal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-primary-300);
+  border-radius: var(--radius-2xl);
+  background: var(--primary-subtle);
+}
+
+.cp-proposal.is-applied {
+  border-color: var(--border-subtle);
+  background: var(--surface-0);
+}
+
+.cp-proposal.is-dismissed {
+  border-color: var(--border-subtle);
+  background: var(--surface-2);
+  opacity: 0.72;
+}
+
+.cp-proposal-title {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-700);
+}
+
+.cp-proposal.is-applied .cp-proposal-title {
+  color: var(--status-ok-fg);
+}
+
+.cp-proposal-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  list-style: none;
+}
+
+.cp-proposal-rows li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.cp-proposal-q {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.cp-proposal-change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+}
+
+.cp-was {
+  color: var(--text-disabled);
+  text-decoration: line-through;
+}
+
+.cp-now {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.cp-proposal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+}
+
+.cp-proposal-change.is-list {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-1);
+  color: var(--text-secondary);
+}
+
+.cp-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--status-ok-fg);
+}
+
+/* ── what just changed in the plan ─────────────────────────────────────────── */
+
+.pc-banner {
+  gap: var(--spacing-3);
+  border: 1px solid var(--color-primary-300);
+  background: var(--primary-subtle);
+  box-shadow: none;
+}
+
+.pc-banner-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.pc-banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+
+.pc-banner-title {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.pc-banner-sub {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.pc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  list-style: none;
+}
+
+/* one answer per line: the question on the left, the change on the right */
+.pc-row {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+}
+
+.pc-row-q {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.pc-row-change,
+.pc-row-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+}
+
+.pc-was {
+  color: var(--text-disabled);
+  text-decoration: line-through;
+}
+
+.pc-now {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.pc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+}
+
+.pc-chip.is-removed {
+  background: var(--status-no-bg);
+  color: var(--status-no-fg);
+}
+
+.pc-chip.is-added {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+  font-weight: var(--font-medium);
+}
+
+.pc-frailty {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--status-wait-fg);
+}
+
+.pc-touched {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.pc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2);
+}
+
+/* a part of the plan that the last change rewrote: marked, and lit once as it
+   arrives so the eye finds it */
+.rec-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.rec-title-row > .status-pill,
+.coordinator-head > .status-pill {
+  margin-left: auto;
+}
+
+.rec-card.is-changed,
+.coordinator-note.is-changed {
+  box-shadow: 0 0 0 1px var(--color-primary-300), var(--shadow-card);
+  animation: plan-changed 1.6s ease-out 1;
+}
+
+@keyframes plan-changed {
+  0% {
+    box-shadow: 0 0 0 4px var(--color-primary-200), var(--shadow-card);
+  }
+  100% {
+    box-shadow: 0 0 0 1px var(--color-primary-300), var(--shadow-card);
+  }
+}
+
+@media (max-width: 640px) {
+  .pc-row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-1);
+  }
+}
+
+/* in the narrow assistant pane the question sits above its change */
+.pc-rows.is-stacked .pc-row {
+  grid-template-columns: 1fr;
+  gap: var(--spacing-1);
+}
+
+.cp-proposal-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.cp-proposal .pc-row {
+  background: var(--surface-0);
+}
+
+.cp-proposal-hint {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
 }

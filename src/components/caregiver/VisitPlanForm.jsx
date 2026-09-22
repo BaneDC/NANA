@@ -27,24 +27,24 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
   return (
     <>
       <p className="ag-lead">
-        What you are going to {client.elder.split(' ')[0]} for. Sending it to {client.family} holds
-        the money for the visit before you go, and the work order afterwards opens against it — so
-        anything you change here is what the visit will be measured against.
+        Zašto dolazite. Kad ovo pošaljete porodici, novac za posetu se rezerviše pre nego što
+        krenete, a radni nalog se posle otvara prema ovome — pa ono što ovde promenite je ono prema
+        čemu se poseta meri.
       </p>
 
       <div className="wo-row">
         <label className="wo-field is-wide">
-          <span className="ag-label">Day</span>
+          <span className="ag-label">Dan</span>
           <input
             type="text"
             className="wo-text"
             value={date}
-            placeholder="Thursday 14 August"
+            placeholder="četvrtak, 14. avgusta"
             onChange={(e) => setDate(e.target.value)}
           />
         </label>
         <label className="wo-field">
-          <span className="ag-label">Time</span>
+          <span className="ag-label">Vreme</span>
           <input
             type="text"
             className="wo-text is-time"
@@ -56,15 +56,15 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
       </div>
       <p className="ag-hint">
         {hours
-          ? `${hours} h at the agreed ${money(client.rate)}/h. ${money(
+          ? `${hours} h po dogovorenih ${money(client.rate)}/h. Na kartici porodice rezerviše se ${money(
               totalsFor(hours, client.rate).charged
-            )} is held from ${client.family}'s card, ${money(
+            )}, od toga ${money(
               totalsFor(hours, client.rate).net
-            )} of it yours if the visit runs to plan. The pattern in the agreement is ${client.schedule}.`
-          : `Times as a range, like 09:00–13:00. The pattern in the agreement is ${client.schedule}.`}
+            )} vama ako poseta prođe po planu. Raspored iz ugovora: ${client.schedule}.`
+          : `Vreme kao raspon, npr. 09:00–13:00. Raspored iz ugovora: ${client.schedule}.`}
       </p>
 
-      <p className="ag-label">What you plan to do</p>
+      <p className="ag-label">Šta planirate da radite</p>
       <div className="ag-services">
         {client.services.map((id) => (
           <button
@@ -81,19 +81,19 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
       </div>
 
       <label className="wo-field">
-        <span className="ag-label">Anything to remember</span>
+        <span className="ag-label">Šta treba zapamtiti</span>
         <textarea
           rows={2}
           className="wo-text"
           value={notes}
-          placeholder="A prescription to collect, something the family asked for, something to check on."
+          placeholder="Recept za podizanje, nešto što je porodica tražila, nešto što treba proveriti."
           onChange={(e) => setNotes(e.target.value)}
         />
       </label>
 
       <div className="panel-card-actions is-end">
         <Button variant="secondary" onClick={onCancel}>
-          Cancel
+          Otkaži
         </Button>
         <Button
           variant="primary"
@@ -103,7 +103,7 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
           }
         >
           <Send size={14} strokeWidth={1.75} />
-          {plan ? 'Send the change' : 'Send to client'}
+          {plan ? 'Pošalji izmenu' : 'Pošalji porodici'}
         </Button>
       </div>
     </>

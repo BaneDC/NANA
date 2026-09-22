@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Check, Search, Star } from 'lucide-react';
+import { Check, Phone, Search, Star } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
+import { arrangementOf, askCaregiver, firstName } from '../data/familyCare';
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 
@@ -10,17 +11,23 @@ import AskAssistant from '../components/AskAssistant';
 // capability that exists on only one screen is not a capability.
 
 const AREAS = [...new Set(caregivers.map((c) => c.area))];
+
+// where an earlier request to her stands, said on her card
+const REQUEST_PILL = {
+  pending: { className: 'is-pending', label: (r) => `Upit poslat ${r.requested}` },
+  accepted: { className: 'is-accepted', label: () => 'Prihvatila' },
+  declined: { className: 'is-declined', label: () => 'Odbila' },
+};
 const SKILLS = [...new Set(caregivers.flatMap((c) => c.tags))];
 
-export default function FindCaregiver({ onAskAssistant }) {
+export default function FindCaregiver({ care, onCare, onDrawer, onFlash, onAskAssistant }) {
   const [query, setQuery] = useState('');
   const [area, setArea] = useState(null);
   const [skill, setSkill] = useState(null);
-  const [requested, setRequested] = useState([]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return caregivers.filter((c) => {
+    const found = caregivers.filter((c) => {
       if (area && c.area !== area) return false;
       if (skill && !c.tags.includes(skill)) return false;
       if (!q) return true;
@@ -30,7 +37,14 @@ export default function FindCaregiver({ onAskAssistant }) {
         c.tags.some((t) => t.toLowerCase().includes(q))
       );
     });
+    // best match first, as the recommendation it is
+    return found.sort((a, b) => b.match - a.match);
   }, [query, area, skill]);
+
+  const ask = (c) => {
+    onCare(askCaregiver(c.id));
+    onFlash(`Upit je poslat. ${firstName(c.name)} odgovara sa svoje table — upit ništa ne košta.`);
+  };
 
   const clear = () => {
     setQuery('');
@@ -42,10 +56,11 @@ export default function FindCaregiver({ onAskAssistant }) {
     <div className="view">
       <div className="view-head">
         <div className="view-head-text">
-          <h1 className="view-title">Find a caregiver</h1>
+          <h1 className="view-title">Pronađi negovateljicu</h1>
           <p className="view-sub">
-            Everyone available near you. Requesting sends them your care plan — they reply, and
-            nothing is agreed until you both set the terms.
+            Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju. Upit im
+            šalje plan nege i ništa ne košta — možete da pitate više njih, a ništa nije dogovoreno dok
+            zajedno ne postavite uslove.
           </p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
@@ -57,12 +72,12 @@ export default function FindCaregiver({ onAskAssistant }) {
           <input
             type="text"
             value={query}
-            placeholder="A name, or what you need — dementia, meals, overnight…"
+            placeholder="Ime, ili šta vam treba — demencija, obroci, noćne smene…"
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
 
-        <p className="ag-label">Area</p>
+        <p className="ag-label">Deo grada</p>
         <div className="ag-services">
           {AREAS.map((a) => (
             <button
@@ -77,7 +92,7 @@ export default function FindCaregiver({ onAskAssistant }) {
           ))}
         </div>
 
-        <p className="ag-label">What they do</p>
+        <p className="ag-label">Čime se bave</p>
         <div className="ag-services">
           {SKILLS.map((t) => (
             <button
@@ -95,33 +110,41 @@ export default function FindCaregiver({ onAskAssistant }) {
 
       <div className="find-count">
         <span>
-          {results.length} of {caregivers.length} caregivers
+          {results.length} od {caregivers.length} negovateljica
         </span>
         {(query || area || skill) && (
           <button type="button" className="visit-raise" onClick={clear}>
-            Clear the filters
+            Poništi filtere
           </button>
         )}
       </div>
 
       {results.length === 0 ? (
         <p className="board-empty">
-          Nobody matches that. Widen the area, or drop one of the filters.
+          Niko ne odgovara. Proširite deo grada ili uklonite neki filter.
         </p>
       ) : (
         <div className="view-list">
           {results.map((c) => {
-            const sent = requested.includes(c.id);
+            const request = care.requests.find((r) => r.caregiverId === c.id);
+            const coming = arrangementOf(care, c.id);
             return (
               <div className="caregiver is-wide" key={c.id}>
                 <div className="cg-avatar">{c.initials}</div>
                 <div className="cg-main">
                   <div className="cg-top">
-                    <span className="cg-name">{c.name}</span>
+                    <button
+                      type="button"
+                      className="cg-name fam-name-link"
+                      onClick={() => onDrawer({ kind: 'profile', caregiverId: c.id })}
+                    >
+                      {c.name}
+                    </button>
+                    <span className="status-pill is-attention">Poklapanje · {c.match}%</span>
                   </div>
                   <div className="cg-meta">
                     <Star size={11} strokeWidth={2} className="cg-star" />
-                    {c.rating} ({c.reviews}) · {c.years} yrs · {c.rate} · {c.area}, {c.distance}
+                    {c.rating} ({c.reviews}) · {c.years} god. iskustva · {c.rate} · {c.area}, {c.distance}
                   </div>
                   <p className="cg-bio">{c.bio}</p>
                   <div className="cg-tags">
@@ -132,26 +155,44 @@ export default function FindCaregiver({ onAskAssistant }) {
                     ))}
                   </div>
                 </div>
-                {/* Requesting is not hiring. It sends the plan and waits — the
-                    terms are set afterwards, by both of them. */}
-                {sent ? (
-                  <span className="status-pill is-accepted">
-                    <Check size={12} strokeWidth={2} />
-                    Requested
-                  </span>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={() => setRequested((r) => [...r, c.id])}
-                  >
-                    Request
+                {/* Asking is not hiring. It sends the plan and waits — the terms
+                    are set afterwards, by both of them. */}
+                <div className="fam-find-actions">
+                  <Button variant="ghost" onClick={() => onDrawer({ kind: 'profile', caregiverId: c.id })}>
+                    Profil
                   </Button>
-                )}
+                  {coming ? (
+                    <span className="status-pill is-accepted">
+                      <Check size={12} strokeWidth={2} />
+                      {coming.endedOn ? 'Dolazila ranije' : 'Već dolazi'}
+                    </span>
+                  ) : request ? (
+                    <span className={`status-pill ${REQUEST_PILL[request.status].className}`}>
+                      {request.status !== 'declined' && <Check size={12} strokeWidth={2} />}
+                      {REQUEST_PILL[request.status].label(request)}
+                    </span>
+                  ) : (
+                    <Button variant="primary" onClick={() => ask(c)}>
+                      Pošalji upit
+                    </Button>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
       )}
+
+      {/* The way out for someone who does not want to choose from a list. */}
+      <div className="panel-card fam-coordinator">
+        <Phone size={16} strokeWidth={1.75} />
+        <p>
+          Niste sigurni koju da izaberete? Koordinatorka poznaje svaku od njih i može da vas pozove danas.
+        </p>
+        <Button variant="secondary" onClick={() => onFlash('Koordinatorka će vas pozvati danas.')}>
+          Pozovite me
+        </Button>
+      </div>
     </div>
   );
 }

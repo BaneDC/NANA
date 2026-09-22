@@ -1,11 +1,29 @@
-import { ArrowLeft } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { ArrowLeft, PenLine } from 'lucide-react';
 import PlanContents from '../components/PlanContents';
+import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
 import Button from '../components/Button';
 
 // A care plan as its own page, reached from the Care plans list or the nav.
-export default function PlanDetail({ entry, unlocked, onBack, onSelectCaregiver, onUnlock, onAskAssistant }) {
+//
+// It opens on Jovana's letter. The summary of the person that used to sit above
+// it told the family what they had just told us; the letter is the first thing
+// the plan has to say back.
+export default function PlanDetail({
+  entry,
+  unlocked,
+  change,
+  onBack,
+  onSelectCaregiver,
+  onUnlock,
+  onAskAssistant,
+  onEdit,
+  onUndoChange,
+  onDismissChange,
+}) {
   const { plan, title, date, status, archived } = entry;
+  const shownChange = archived ? null : change;
 
   return (
     <div className="view">
@@ -13,40 +31,43 @@ export default function PlanDetail({ entry, unlocked, onBack, onSelectCaregiver,
         <div className="view-head-text">
           <button type="button" className="back-link" onClick={onBack}>
             <ArrowLeft size={13} strokeWidth={2} />
-            Care plans
+            Planovi nege
           </button>
           <h1 className="view-title">{title}</h1>
           <p className="view-sub">
             {date} · <span className={`status-pill is-${archived ? 'muted' : 'accepted'}`}>{status}</span>
           </p>
         </div>
-        <AskAssistant onClick={onAskAssistant} />
-      </div>
-
-      <div className="panel-card">
-        {archived ? (
-          <p className="doc-p">{entry.summary}</p>
-        ) : (
-          plan.narrative.map((p, i) => (
-            <p className="doc-p" key={i}>
-              {p}
-            </p>
-          ))
-        )}
-        <div className="facts">
-          {plan.facts.map((f) => (
-            <div className="fact" key={f.label}>
-              <span className="fact-label">{f.label}</span>
-              <span className="fact-value">{f.value}</span>
-            </div>
-          ))}
+        {/* Two ways to change the plan, side by side: by hand, or by telling the
+            assistant what is different. Only the live plan can change. */}
+        <div className="view-head-actions">
+          <AskAssistant onClick={onAskAssistant} />
+          {onEdit && (
+            <Button variant="secondary" onClick={onEdit}>
+              <PenLine size={14} strokeWidth={1.75} />
+              Izmeni plan
+            </Button>
+          )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {shownChange && (
+          <PlanChangeBanner key={shownChange.at} change={shownChange} onUndo={onUndoChange} onDismiss={onDismissChange} />
+        )}
+      </AnimatePresence>
+
+      {archived && (
+        <div className="panel-card">
+          <p className="doc-p">{entry.summary}</p>
+        </div>
+      )}
 
       <PlanContents
         plan={{ ...plan, caregiverCount: entry.caregiverCount }}
         unlocked={unlocked}
         archived={archived}
+        change={shownChange}
         onSelectCaregiver={onSelectCaregiver}
         onUnlock={onUnlock}
       />
@@ -54,7 +75,7 @@ export default function PlanDetail({ entry, unlocked, onBack, onSelectCaregiver,
       {archived && (
         <div className="panel-card-actions">
           <Button variant="secondary" onClick={onBack}>
-            Back to all plans
+            Nazad na sve planove
           </Button>
         </div>
       )}

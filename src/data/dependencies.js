@@ -97,6 +97,6 @@ export function answerSummary(question, answer) {
   const labels = picked.map((o) => o.short || o.title);
   // what they typed into "something else" is the answer they cared enough to write
   if (answer.other?.trim()) labels.push(answer.other.trim());
-  if (!labels.length) return ['None of these'];
+  if (!labels.length) return ['Ništa od ovoga'];
   return labels;
 }

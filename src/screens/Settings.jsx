@@ -3,7 +3,7 @@ import { Check, CreditCard, ShieldCheck } from 'lucide-react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
-import { chargingVisit, heldForPlan, money, paidThisMonth } from '../data/familyCare';
+import { chargingVisit, heldNow, money, paidThisMonth, visitCharge } from '../data/familyCare';
 
 function Toggle({ label, hint, on, onChange }) {
   return (
@@ -35,7 +35,7 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
   const set = (key) => (v) => setPrefs((p) => ({ ...p, [key]: v }));
   const [cardOpen, setCardOpen] = useState(false);
 
-  const { payment, agreement } = care;
+  const { payment } = care;
   const charging = chargingVisit(care);
 
   // No card details are collected here, and none should be: this is where a
@@ -43,7 +43,7 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
   const connect = () => {
     onCare((c) => ({
       ...c,
-      payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: 'just now' },
+      payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: 'upravo' },
     }));
     setCardOpen(false);
   };
@@ -52,36 +52,36 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
     <div className="view">
       <div className="view-head">
         <div className="view-head-text">
-          <h1 className="view-title">Settings</h1>
-          <p className="view-sub">Notifications, subscription and account.</p>
+          <h1 className="view-title">Podešavanja</h1>
+          <p className="view-sub">Obaveštenja, pretplata i nalog.</p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
       <div className="panel-card">
-        <p className="doc-section-title">Notifications</p>
+        <p className="doc-section-title">Obaveštenja</p>
         <div className="toggle-list">
           <Toggle
-            label="Caregiver replies"
-            hint="When someone accepts or declines your request"
+            label="Odgovori negovateljica"
+            hint="Kad neko prihvati ili odbije vaš upit"
             on={prefs.replies}
             onChange={set('replies')}
           />
           <Toggle
-            label="Schedule changes"
-            hint="Cancelled or rescheduled visits"
+            label="Promene rasporeda"
+            hint="Otkazane ili pomerene posete"
             on={prefs.schedule}
             onChange={set('schedule')}
           />
           <Toggle
-            label="Weekly digest"
-            hint="A Sunday summary of the week's visits"
+            label="Nedeljni pregled"
+            hint="Nedeljom, kratak pregled poseta te nedelje"
             on={prefs.digest}
             onChange={set('digest')}
           />
           <Toggle
-            label="Product news"
-            hint="Occasional updates about NANA Prime"
+            label="Novosti"
+            hint="Povremene vesti o NANA Prime"
             on={prefs.marketing}
             onChange={set('marketing')}
           />
@@ -92,59 +92,59 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
           it belongs here and not on the dashboard. */}
       <div className="panel-card">
         <div className="panel-card-head">
-          <p className="doc-section-title">Payment method</p>
+          <p className="doc-section-title">Način plaćanja</p>
           {payment.connected ? (
             <span className="status-pill is-accepted">
               <ShieldCheck size={12} strokeWidth={2} />
               {payment.brand} ···· {payment.last4}
             </span>
           ) : (
-            <span className="status-pill is-declined">Not set up</span>
+            <span className="status-pill is-declined">Nije podešeno</span>
           )}
         </div>
 
         {payment.connected ? (
           <>
             <p className="tip-body">
-              Added {payment.connectedOn}. Each visit is charged 24 hours after the caregiver sends
-              her report — nothing is asked of you, and you can stop a charge in that window from
-              the dashboard.
+              Dodato {payment.connectedOn}. Svaka poseta se naplaćuje 24 sata pošto negovateljica
+              pošalje izveštaj — od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite
+              sa stranice Moja nega.
             </p>
             <div className="bc-lines ag-terms">
               <p className="bc-line">
-                <span className="bc-line-label">Set aside for the next visit</span>
-                <span className="bc-line-value">{money(heldForPlan(care))}</span>
+                <span className="bc-line-label">Rezervisano za zakazane posete</span>
+                <span className="bc-line-value">{money(heldNow(care))}</span>
               </p>
               <p className="bc-line">
-                <span className="bc-line-label">Charging now</span>
+                <span className="bc-line-label">Naplaćuje se sada</span>
                 <span className="bc-line-value">
                   {charging
-                    ? `${money(charging.hours * agreement.rate)} · in ${charging.chargesInHours} h`
-                    : 'Nothing'}
+                    ? `${money(visitCharge(charging))} · za ${charging.chargesInHours} h`
+                    : 'Ništa'}
                 </span>
               </p>
               <p className="bc-line">
-                <span className="bc-line-label">Charged in August</span>
+                <span className="bc-line-label">Naplaćeno u avgustu</span>
                 <span className="bc-line-value">{money(paidThisMonth(care))}</span>
               </p>
             </div>
             <div className="panel-card-actions">
               <Button variant="secondary" onClick={() => setCardOpen(true)}>
                 <CreditCard size={14} strokeWidth={1.75} />
-                Change card
+                Promeni karticu
               </Button>
             </div>
           </>
         ) : (
           <>
             <p className="tip-body">
-              Visits are paid automatically, so a card has to be on file before one can be booked.
-              It is added through Stripe — we never see the number.
+              Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže.
+              Dodaje se preko Stripe-a — mi nikad ne vidimo broj.
             </p>
             <div className="panel-card-actions">
               <Button variant="primary" onClick={() => setCardOpen(true)}>
                 <CreditCard size={14} strokeWidth={1.75} />
-                Add a card
+                Dodaj karticu
               </Button>
             </div>
           </>
@@ -153,67 +153,65 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
 
       <div className="panel-card">
         <div className="panel-card-head">
-          <p className="doc-section-title">Subscription</p>
+          <p className="doc-section-title">Pretplata</p>
           <span className={`status-pill is-${unlocked ? 'accepted' : 'muted'}`}>
-            {unlocked ? 'Active' : 'Not subscribed'}
+            {unlocked ? 'Aktivna' : 'Niste pretplaćeni'}
           </span>
         </div>
         {unlocked ? (
           <>
             <ul className="paywall-list">
               <li>
-                <Check size={12} strokeWidth={2.5} /> Caregiver contact details
+                <Check size={12} strokeWidth={2.5} /> Kontakti negovateljica
               </li>
               <li>
-                <Check size={12} strokeWidth={2.5} /> Doctor & equipment recommendations
+                <Check size={12} strokeWidth={2.5} /> Preporuke lekara i pomagala
               </li>
             </ul>
-            <p className="tip-body">1.490 RSD / month · renews 4 September 2026</p>
+            <p className="tip-body">1.490 RSD mesečno · obnavlja se 4. septembra 2026.</p>
             <div className="panel-card-actions">
-              <Button variant="secondary">Manage billing</Button>
+              <Button variant="secondary">Upravljaj plaćanjem</Button>
             </div>
           </>
         ) : (
           <p className="tip-body">
-            Subscribe from the care plan to unlock caregiver numbers and the full
-            recommendations.
+            Pretplatite se iz plana nege da otključate brojeve negovateljica i sve preporuke.
           </p>
         )}
       </div>
 
       <div className="panel-card">
-        <p className="doc-section-title">Account</p>
+        <p className="doc-section-title">Nalog</p>
         <p className="tip-body">
-          Export everything we hold about you, or close the account and delete it.
+          Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.
         </p>
         <div className="panel-card-actions">
-          <Button variant="secondary">Export my data</Button>
-          <Button variant="ghost">Delete account</Button>
+          <Button variant="secondary">Preuzmi moje podatke</Button>
+          <Button variant="ghost">Obriši nalog</Button>
         </div>
       </div>
 
       {cardOpen && (
-        <Modal eyebrow="Payment" title="Add a card" onClose={() => setCardOpen(false)}>
+        <Modal eyebrow="Plaćanje" title="Dodajte karticu" onClose={() => setCardOpen(false)}>
           <p className="doc-p">
-            Cards are held by Stripe, not by us — you enter the number on their page and we never
-            see it. Once it is on file, visits are charged automatically and you are not asked
-            again.
+            Kartice čuva Stripe, ne mi — broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
+            Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.
           </p>
           <ul className="paywall-list">
             <li>
-              <Check size={12} strokeWidth={2.5} /> Charged 24 hours after each visit report
+              <Check size={12} strokeWidth={2.5} /> Naplata 24 sata posle svakog izveštaja o poseti
             </li>
             <li>
-              <Check size={12} strokeWidth={2.5} /> Nothing taken before a visit happens
+              <Check size={12} strokeWidth={2.5} /> Ništa se ne uzima pre nego što se poseta obavi
             </li>
             <li>
-              <Check size={12} strokeWidth={2.5} /> You can stop any charge inside that window
+              <Check size={12} strokeWidth={2.5} /> U tom roku možete da zaustavite svaku naplatu
             </li>
           </ul>
           <div className="panel-card-actions is-end">
             <Button variant="primary" size="lg" onClick={connect}>
               <CreditCard size={14} strokeWidth={1.75} />
-              Continue to Stripe
+              Nastavi na Stripe
             </Button>
           </div>
         </Modal>

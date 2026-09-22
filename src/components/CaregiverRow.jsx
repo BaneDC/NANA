@@ -32,11 +32,11 @@ export default function CaregiverRow({ caregiver, onSelect, detailed }) {
       <div className="cg-main">
         <div className="cg-top">
           <span className="cg-name">{caregiver.name}</span>
-          <span className="cg-match">{caregiver.match}% match</span>
+          <span className="cg-match">{caregiver.match}% poklapanje</span>
         </div>
         <div className="cg-meta">
           <Star size={11} strokeWidth={2} className="cg-star" />
-          {caregiver.rating} ({caregiver.reviews}) · {caregiver.years} yrs · {caregiver.rate} ·{' '}
+          {caregiver.rating} ({caregiver.reviews}) · {caregiver.years} god. iskustva · {caregiver.rate} ·{' '}
           {caregiver.area}, {caregiver.distance}
         </div>
         {detailed && <p className="cg-bio">{caregiver.bio}</p>}
@@ -57,7 +57,7 @@ export default function CaregiverRow({ caregiver, onSelect, detailed }) {
           <span className="cg-phone">
             <span className="cg-phone-mask">{MASKED_PHONE}</span>
             <Lock size={12} strokeWidth={2} />
-            <span className="cg-phone-cta">Get number</span>
+            <span className="cg-phone-cta">Dobij broj</span>
           </span>
         )}
       </div>

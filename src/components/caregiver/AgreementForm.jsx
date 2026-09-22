@@ -21,11 +21,11 @@ export default function AgreementForm({ client, onSend, onCancel }) {
   return (
     <>
       <p className="ag-lead">
-        This sets out which services you provide and one shared hourly rate. Everything after it —
-        visits, work orders, payments — is calculated from it.
+        Ovde postavljate koje usluge pružate i jednu zajedničku cenu po satu. Sve posle toga —
+        posete, radni nalozi, uplate — računa se iz ovoga.
       </p>
 
-      <p className="ag-label">Services this agreement covers</p>
+      <p className="ag-label">Usluge iz ovog ugovora</p>
       <div className="ag-services">
         {SERVICES.map((s) => (
           <button
@@ -41,30 +41,30 @@ export default function AgreementForm({ client, onSend, onCancel }) {
         ))}
       </div>
       <p className="ag-hint">
-        Ticked from what {client.family} asked for. Add or remove anything that does not match.
+        Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.
       </p>
 
-      <p className="ag-label">Hourly rate</p>
+      <p className="ag-label">Cena po satu</p>
       <div className="ag-rate">
         <input
           type="number"
           inputMode="numeric"
           value={rate}
           onChange={(e) => setRate(e.target.value)}
-          aria-label="Hourly rate in dinars"
+          aria-label="Cena po satu u dinarima"
         />
         <span className="ag-rate-suffix">RSD / h</span>
       </div>
       {valid && (
         <p className="ag-hint">
-          At {client.hours} h a week that is {money(weekly)} a week,{' '}
-          {money(totalsFor(client.hours, rateNumber).net)} to you after the 10% service fee.
+          Za {client.hours} h nedeljno to je {money(weekly)} nedeljno,{' '}
+          {money(totalsFor(client.hours, rateNumber).net)} vama posle provizije od 10%.
         </p>
       )}
 
       <div className="panel-card-actions is-end">
         <Button variant="secondary" onClick={onCancel}>
-          Cancel
+          Otkaži
         </Button>
         <Button
           variant="primary"
@@ -72,7 +72,7 @@ export default function AgreementForm({ client, onSend, onCancel }) {
           onClick={() => onSend(client.id, { services, rate: rateNumber })}
         >
           <Send size={14} strokeWidth={1.75} />
-          Send to client
+          Pošalji porodici
         </Button>
       </div>
     </>

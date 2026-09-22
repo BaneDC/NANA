@@ -22,8 +22,8 @@ export default function ArchivedChat({ thread, user, onNewChat }) {
       <div className="chat-scroll">
         <div className="chat-column">
           <motion.p className="assistant-text" {...messageMotion}>
-            Hi {user.name.split(' ')[0]} — I’ll ask you a few things about the person you’re caring
-            for, then put together a care plan with caregivers matched to it.
+            Zdravo, {user.name.split(' ')[0]}. Pitaću vas nekoliko stvari o osobi o kojoj brinete, pa
+            napraviti plan nege sa negovateljicama koje mu odgovaraju.
           </motion.p>
 
           {steps.map((step) => (
@@ -43,8 +43,7 @@ export default function ArchivedChat({ thread, user, onNewChat }) {
 
           <motion.div className="chat-message" {...messageMotion}>
             <p className="assistant-text">
-              That’s everything — here’s the plan for {plan.firstName}, and the caregivers who fit
-              it best.
+              To je sve — evo plana i negovateljica koje mu najbolje odgovaraju.
             </p>
             <div className="workflow-card care-plan" id="archived-artifact">
               <div className="doc is-static">
@@ -52,11 +51,11 @@ export default function ArchivedChat({ thread, user, onNewChat }) {
                   <FileText size={14} strokeWidth={1.75} className="doc-icon" />
                   <div className="doc-head-text">
                     <p className="doc-eyebrow">
-                      Care plan <span className="doc-meta">· {thread.date}</span>
+                      Plan nege <span className="doc-meta">· {thread.date}</span>
                     </p>
-                    <p className="doc-title">Care plan for {plan.name}</p>
+                    <p className="doc-title">Plan nege · {plan.name}</p>
                   </div>
-                  <span className="status-pill is-muted">Archived</span>
+                  <span className="status-pill is-muted">Arhiviran</span>
                 </div>
 
                 <p className="doc-p">{thread.summary}</p>
@@ -70,7 +69,7 @@ export default function ArchivedChat({ thread, user, onNewChat }) {
                   ))}
                 </div>
 
-                <p className="tip-body">{thread.caregivers} caregivers were matched to this plan.</p>
+                <p className="tip-body">Ovom planu je odgovaralo {thread.caregivers} negovateljica.</p>
               </div>
             </div>
           </motion.div>
@@ -93,9 +92,9 @@ export default function ArchivedChat({ thread, user, onNewChat }) {
         <div className="chat-column">
           <div className="archived-bar">
             <Archive size={14} strokeWidth={1.75} />
-            <span>This conversation is archived.</span>
+            <span>Ovaj razgovor je arhiviran.</span>
             <Button variant="secondary" onClick={onNewChat}>
-              Start a new chat
+              Počni novi razgovor
             </Button>
           </div>
         </div>

@@ -31,7 +31,7 @@ export default function PaywallModal({ caregiver, plan, onPay, onClose }) {
         exit={{ opacity: 0, scale: 0.98, y: 8 }}
         transition={{ type: 'spring', stiffness: 320, damping: 30 }}
       >
-        <button type="button" className="ci-btn modal-close" onClick={onClose} aria-label="Close">
+        <button type="button" className="ci-btn modal-close" onClick={onClose} aria-label="Zatvori">
           <X size={16} strokeWidth={1.75} />
         </button>
 
@@ -44,19 +44,19 @@ export default function PaywallModal({ caregiver, plan, onPay, onClose }) {
             </span>
           )}
           <div>
-            <p className="doc-eyebrow">{caregiver ? 'Request number' : 'Full care plan'}</p>
-            <p className="doc-title">{caregiver ? caregiver.name : `Care plan for ${plan.name}`}</p>
+            <p className="doc-eyebrow">{caregiver ? 'Zatražite broj' : 'Ceo plan nege'}</p>
+            <p className="doc-title">{caregiver ? caregiver.name : `Plan nege · ${plan.name}`}</p>
           </div>
         </div>
 
         <p className="doc-p">
           {caregiver
-            ? `Leave your number and we’ll confirm ${caregiver.name.split(' ')[0]}’s availability, then send you the introduction by SMS — along with the direct number of every caregiver in your plan.`
-            : 'Leave your number and we’ll unlock the whole plan — the recommendations, the suggested aids, and the direct number of every matched caregiver.'}
+            ? `Ostavite broj i potvrdićemo da je ${caregiver.name.split(' ')[0]} slobodna, pa vam poslati upoznavanje SMS-om — uz direktan broj svake negovateljice iz plana.`
+            : 'Ostavite broj i otključaćemo ceo plan — preporuke, predložena pomagala i direktan broj svake negovateljice koja odgovara.'}
         </p>
 
         <TextField
-          label="Your phone number"
+          label="Vaš broj telefona"
           icon={Phone}
           placeholder="+381 60 123 45 67"
           value={phone}
@@ -66,22 +66,22 @@ export default function PaywallModal({ caregiver, plan, onPay, onClose }) {
 
         <ul className="paywall-list">
           <li>
-            <Check size={12} strokeWidth={2.5} /> Direct numbers for all {caregivers.length}{' '}
-            caregivers
+            <Check size={12} strokeWidth={2.5} /> Direktni brojevi svih {caregivers.length}{' '}
+            negovateljica
           </li>
           <li>
-            <Check size={12} strokeWidth={2.5} /> Doctor recommendations & suggested aids
+            <Check size={12} strokeWidth={2.5} /> Preporuke lekara i predložena pomagala
           </li>
           <li>
-            <Check size={12} strokeWidth={2.5} /> Availability confirmed by our team
+            <Check size={12} strokeWidth={2.5} /> Dostupnost potvrđuje naš tim
           </li>
         </ul>
 
         <Button variant="primary" size="lg" full disabled={!valid} onClick={pay}>
-          Subscribe — 1.490 RSD / month
+          Pretplati se — 1.490 RSD mesečno
         </Button>
         <Button variant="ghost" onClick={onClose}>
-          Maybe later
+          Možda kasnije
         </Button>
       </motion.div>
     </motion.div>

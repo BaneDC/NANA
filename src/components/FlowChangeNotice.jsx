@@ -11,18 +11,18 @@ export default function FlowChangeNotice({ change, name }) {
       <RefreshCw size={14} strokeWidth={2} className="flow-change-icon" />
       <div className="flow-change-text">
         <p className="flow-change-title">
-          That changed the picture — {name} now looks like level {level}, not {previousLevel}
+          Ovo menja sliku — {name} je sada oko nivoa {level}, a ne {previousLevel}
         </p>
         {dropped.length > 0 && (
           <p className="flow-change-note">
-            {dropped.length === 1 ? 'This answer no longer applies' : 'These answers no longer apply'}
-            , so I’ve set {dropped.length === 1 ? 'it' : 'them'} aside:{' '}
+            {dropped.length === 1 ? 'Ovaj odgovor više ne važi' : 'Ovi odgovori više ne važe'}, pa sam{' '}
+            {dropped.length === 1 ? 'ga' : 'ih'} sklonila:{' '}
             <strong>{dropped.map((q) => q.shortTitle).join(', ')}</strong>.
           </p>
         )}
         {added.length > 0 && (
           <p className="flow-change-note">
-            I need to ask you {added.length} thing{added.length === 1 ? '' : 's'} instead:{' '}
+            Umesto toga treba da vas pitam još ({added.length}):{' '}
             <strong>{added.map((q) => q.shortTitle).join(', ')}</strong>.
           </p>
         )}

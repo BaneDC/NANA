@@ -12,10 +12,10 @@ import { STAGES, boardSummary, money } from '../../data/caregiverBoard';
 // and decline, have no direction to drag in anyway.
 
 const EMPTY_COPY = {
-  request: 'No new requests right now.',
-  agreement: 'No agreements waiting to be set up.',
-  active: 'No arrangements running yet.',
-  'work-order': 'Nothing to invoice. Every visit is settled.',
+  request: 'Trenutno nema novih upita.',
+  agreement: 'Nema ugovora koje treba postaviti.',
+  active: 'Još nema saradnji u toku.',
+  'work-order': 'Nema šta da se fakturiše. Sve posete su izmirene.',
 };
 
 // Forwards a ref for the same reason the cards do — it shares their
@@ -68,19 +68,19 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
 
   const waitNote =
     s.requests === 0
-      ? 'Nothing waiting'
+      ? 'Ništa ne čeka'
       : s.oldestRequest >= 24
-        ? `Oldest ${Math.floor(s.oldestRequest / 24)} days`
-        : `Oldest ${s.oldestRequest} h`;
+        ? `Najstariji: ${Math.floor(s.oldestRequest / 24)} d`
+        : `Najstariji: ${s.oldestRequest} h`;
 
   return (
     <div className="view is-board">
       <div className="view-head">
         <div className="view-head-text">
-          <h1 className="view-title">Your board</h1>
+          <h1 className="view-title">Vaša tabla</h1>
           <p className="view-sub">
-            {user.name ? `${user.name.split(' ')[0]}, everything` : 'Everything'} waiting on you,
-            left to right in the order it happens.
+            {user.name ? `${user.name.split(' ')[0]}, sve` : 'Sve'} što čeka na vas, sleva nadesno, redom
+            kojim se dešava.
           </p>
         </div>
       </div>
@@ -88,31 +88,31 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
       <div className="stat-row is-four">
         <Stat
           value={s.requests}
-          label="To answer"
+          label="Za odgovor"
           note={waitNote}
           tone={s.oldestRequest >= 24 ? 'warn' : null}
         />
         <Stat
           value={s.toSend}
-          label="Agreements to send"
-          note={s.toSend ? 'Blocks every visit' : 'All sent'}
+          label="Ugovori za slanje"
+          note={s.toSend ? 'Blokira svaku posetu' : 'Sve poslato'}
           tone={s.toSend ? 'warn' : null}
         />
         {/* Not sent is money she has done the work for and not asked for; it is
             the only one of the three she can do anything about. */}
         <Stat
           value={s.workOrders}
-          label="Work orders not sent"
-          note={s.workOrders ? `${money(s.unbilled)} unbilled` : 'Everything sent'}
+          label="Neposlati radni nalozi"
+          note={s.workOrders ? `${money(s.unbilled)} nefakturisano` : 'Sve poslato'}
           tone={s.workOrders ? 'urgent' : null}
         />
         <Stat
           value={money(paid)}
-          label="Paid to you in August"
+          label="Isplaćeno vam u avgustu"
           note={
             s.awaiting > 0
-              ? `${money(s.awaiting)} clearing`
-              : `${s.active} arrangements running`
+              ? `${money(s.awaiting)} u obradi`
+              : `Saradnji u toku: ${s.active}`
           }
         />
       </div>

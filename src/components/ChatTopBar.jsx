@@ -18,7 +18,7 @@ export default function ChatTopBar({ title, subtitle, artifactLabel, onArtifacts
       )}
 
       {onNewChat && (
-        <button type="button" className="ci-btn" onClick={onNewChat} aria-label="New chat" title="New chat">
+        <button type="button" className="ci-btn" onClick={onNewChat} aria-label="Novi razgovor" title="Novi razgovor">
           <Plus size={16} strokeWidth={2} />
         </button>
       )}

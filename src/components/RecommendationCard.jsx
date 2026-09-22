@@ -6,12 +6,16 @@ import Button from './Button';
 // One recommendation, in the shape the client's document sketched: what we suggest,
 // *why we suggest it for this person*, who would do it, and soft actions. No
 // "book now" — the client's note on that was unambiguous.
-export default function RecommendationCard({ rec, unlocked, onSelectCaregiver, onAction }) {
+export default function RecommendationCard({ rec, unlocked, changed, changeKey, onSelectCaregiver, onAction }) {
   return (
-    <div className="rec-card">
-      <p className="rec-title">{rec.title}</p>
+    // keyed by the change, so the highlight plays again for a second change
+    <div className={`rec-card${changed ? ' is-changed' : ''}`} key={changed ? changeKey : 'rec'}>
+      <div className="rec-title-row">
+        <p className="rec-title">{rec.title}</p>
+        {changed && <span className="status-pill is-attention">Izmenjeno</span>}
+      </div>
 
-      <p className="rec-why-label">Why we’re recommending this</p>
+      <p className="rec-why-label">Zašto ovo preporučujemo</p>
       <p className="rec-why">{rec.why}</p>
 
       {rec.kind === 'caregivers' && (

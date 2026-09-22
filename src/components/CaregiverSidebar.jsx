@@ -5,7 +5,7 @@ import PlanContents from './PlanContents';
 // the conversation. Opening it from the Care plans page uses the full page instead.
 export default function CaregiverSidebar({ plan, unlocked, onSelectCaregiver, onUnlock, onClose }) {
   return (
-    <SidePanel eyebrow="Care plan" title={`Care plan for ${plan.name}`} onClose={onClose}>
+    <SidePanel eyebrow="Plan nege" title={plan.name} onClose={onClose}>
       <PlanContents
         plan={plan}
         unlocked={unlocked}

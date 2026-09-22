@@ -50,7 +50,7 @@ export default function Modal({ title, eyebrow, wide, onClose, children }) {
             {eyebrow && <p className="doc-eyebrow">{eyebrow}</p>}
             <p className="doc-title">{title}</p>
           </div>
-          <button type="button" className="ci-btn" onClick={onClose} aria-label="Close panel">
+          <button type="button" className="ci-btn" onClick={onClose} aria-label="Zatvori panel">
             <X size={16} strokeWidth={1.75} />
           </button>
         </div>

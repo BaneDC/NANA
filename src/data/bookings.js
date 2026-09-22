@@ -7,33 +7,33 @@ export const bookings = [
   {
     caregiverId: 'vesna',
     status: 'accepted',
-    requested: '2 days ago',
-    detail: 'Starts Monday 11 August, 08:00–14:00. Trial week agreed.',
+    requested: 'pre 2 dana',
+    detail: 'Počinje u ponedeljak 11. avgusta, 08:00–14:00. Dogovorena probna nedelja.',
   },
   {
     caregiverId: 'snezana',
     status: 'pending',
-    requested: '1 day ago',
-    detail: 'Usually replies within 48 hours.',
+    requested: 'pre 1 dan',
+    detail: 'Obično odgovori u roku od 48 sati.',
   },
   {
     caregiverId: 'gordana',
     status: 'pending',
-    requested: '4 hours ago',
-    detail: 'We’ve sent your request and the schedule you selected.',
+    requested: 'pre 4 sata',
+    detail: 'Poslali smo vaš upit i raspored koji ste izabrali.',
   },
   {
     caregiverId: 'dragana',
     status: 'declined',
-    requested: '3 days ago',
-    detail: 'Already committed to another family on Mondays and Thursdays until October.',
+    requested: 'pre 3 dana',
+    detail: 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.',
   },
 ];
 
 export const STATUS_LABEL = {
-  accepted: 'Accepted',
-  pending: 'Waiting for reply',
-  declined: 'Declined',
+  accepted: 'Prihvaćeno',
+  pending: 'Čeka odgovor',
+  declined: 'Odbijeno',
 };
 
 export function bookingsWithCaregiver() {

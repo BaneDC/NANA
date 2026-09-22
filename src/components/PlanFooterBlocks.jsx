@@ -21,10 +21,10 @@ export function PlanAsk({ onAdd }) {
 
   return (
     <div className="plan-ask">
-      <p className="rec-title">Anything you’d like to add or change?</p>
+      <p className="rec-title">Želite nešto da dodate ili promenite?</p>
       <p className="doc-p">
-        If you want to ask something, or adjust part of this plan, write it here and I’ll pick it
-        up.
+        Ako želite nešto da pitate ili da prilagodite deo plana, napišite ovde i ja ću to
+        preuzeti.
       </p>
 
       {added.map((a, i) => (
@@ -37,12 +37,12 @@ export function PlanAsk({ onAdd }) {
         <input
           type="text"
           value={text}
-          placeholder="Could we start with mornings only?"
+          placeholder="Može li za početak samo pre podne?"
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
         />
         <Button variant="secondary" disabled={!text.trim()} onClick={submit}>
-          <Plus size={13} strokeWidth={2} /> Add to my plan
+          <Plus size={13} strokeWidth={2} /> Dodaj u plan
         </Button>
       </div>
     </div>
@@ -54,7 +54,7 @@ export function PlanAsk({ onAdd }) {
 export function CoordinatorContact({ coordinator }) {
   return (
     <div className="coordinator-contact">
-      <p className="rec-title">If you’d like to reach {coordinator.name.split(' ')[0]} directly</p>
+      <p className="rec-title">Ako želite da se direktno javite koordinatorki</p>
       <div className="contact-rows">
         <a className="contact-row" href={`https://wa.me/${coordinator.whatsapp.replace(/\D/g, '')}`}>
           <MessageCircle size={14} strokeWidth={1.75} />
@@ -63,7 +63,7 @@ export function CoordinatorContact({ coordinator }) {
         </a>
         <a className="contact-row" href={`tel:${coordinator.phone.replace(/\s/g, '')}`}>
           <Phone size={14} strokeWidth={1.75} />
-          <span className="contact-label">Phone</span>
+          <span className="contact-label">Telefon</span>
           <span className="contact-value">{coordinator.phone}</span>
         </a>
         <a className="contact-row" href={`mailto:${coordinator.email}`}>
@@ -73,8 +73,7 @@ export function CoordinatorContact({ coordinator }) {
         </a>
       </div>
       <p className="contact-note">
-        From here on you don’t have to organise all of this yourself. Whenever you need a hand,
-        call me.
+        Od sada ne morate sve sami da organizujete. Kad god vam zatreba pomoć, pozovite me.
       </p>
     </div>
   );

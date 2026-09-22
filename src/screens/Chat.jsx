@@ -12,22 +12,22 @@ import FlowChangeNotice from '../components/FlowChangeNotice';
 import ChatInput from '../components/ChatInput';
 
 const STEP_TITLES = {
-  'getting-to-know': 'Getting to know you',
-  'daily-life': 'Daily life',
-  support: 'Support',
-  reason: 'Why you got in touch',
+  'getting-to-know': 'Upoznavanje',
+  'daily-life': 'Svakodnevica',
+  support: 'Podrška',
+  reason: 'Zašto ste se javili',
 };
 
 const REPLIES = {
   locked: [
-    'Vesna and Snežana have both worked with this combination of tasks before, and they’re free on the days you picked. Tap either of them to get their number.',
-    'Noted — I’ve updated the care plan above. The recommendations reflect the change too.',
-    'Every caregiver in your list is background-checked and interviewed by our team. Rates are per hour and settled through NANA Prime, never in cash.',
+    'Vesna i Snežana su obe već radile baš ovu kombinaciju poslova, i slobodne su u dane koje ste izabrali. Kliknite na bilo koju da dobijete njen broj.',
+    'Zabeleženo — ažurirala sam plan nege iznad. I preporuke prate izmenu.',
+    'Svaku negovateljicu sa liste naš tim proveri i intervjuiše. Cene su po satu i plaćaju se preko NANA Prime, nikad u gotovini.',
   ],
   unlocked: [
-    'Vesna and Snežana have both worked with this combination of tasks before, and they’re free on the days you picked. Vesna usually answers faster.',
-    'Noted — I’ve updated the care plan above. The recommendations reflect the change too.',
-    'Every caregiver in your list is background-checked and interviewed by our team. Rates are per hour and settled through NANA Prime, never in cash.',
+    'Vesna i Snežana su obe već radile baš ovu kombinaciju poslova, i slobodne su u dane koje ste izabrali. Vesna obično brže odgovori.',
+    'Zabeleženo — ažurirala sam plan nege iznad. I preporuke prate izmenu.',
+    'Svaku negovateljicu sa liste naš tim proveri i intervjuiše. Cene su po satu i plaćaju se preko NANA Prime, nikad u gotovini.',
   ],
 };
 
@@ -76,7 +76,7 @@ export default function Chat({
   const ctx = flowContext(answers, frailty?.level);
   const questionsFor = (step) => applicableQuestions(step, ctx);
   const planName =
-    answers['about-person']?.values?.name?.trim().split(' ')[0] || 'your loved one';
+    answers['about-person']?.values?.name?.trim().split(' ')[0] || 'Ona';
 
   const currentStep = steps[revealed - 1];
   const currentDone = currentStep ? questionsFor(currentStep).every((q) => answers[q.id]) : false;
@@ -205,8 +205,8 @@ export default function Chat({
       <div className="chat-scroll" ref={scrollRef}>
         <div className="chat-column">
           <motion.p className="assistant-text" {...messageMotion}>
-            Hi {user.name.split(' ')[0]} — I’ll ask you a few things about the person you’re caring
-            for, then put together a care plan with caregivers matched to it.
+            Zdravo, {user.name.split(' ')[0]}. Pitaću vas nekoliko stvari o osobi o kojoj brinete, pa
+            napraviti plan nege sa negovateljicama koje mu odgovaraju.
           </motion.p>
 
           {steps.slice(0, revealed).map((step, si) => {
@@ -240,7 +240,7 @@ export default function Chat({
                 {step.id === 'daily-life' && complete && frailty && (
                   <>
                     <p className="assistant-text">
-                      From everything you’ve told me, here’s where {planName} sits today.
+                      Iz svega što ste mi rekli, evo gde je danas {planName}.
                     </p>
                     <FrailtyCard frailty={frailty} name={planName} />
                   </>
@@ -262,8 +262,8 @@ export default function Chat({
           {reviewing && !thinking && !editing && (
             <motion.div className="chat-message" {...messageMotion}>
               <p className="assistant-text">
-                That’s all my questions. Before I put the plan together, let’s check I’ve got it
-                right.
+                To su sva moja pitanja. Pre nego što napravim plan, da proverimo da li sam sve dobro
+                razumela.
               </p>
               <ReviewCard
                 groups={reviewGroups}
@@ -315,12 +315,12 @@ export default function Chat({
             disabled={!planReady}
             placeholder={
               planReady
-                ? 'Ask about the care plan, the caregivers, or anything else…'
-                : 'Answer the questions above and I’ll build your care plan…'
+                ? 'Pitajte o planu nege, negovateljicama ili bilo čemu drugom…'
+                : 'Odgovorite na pitanja iznad i napraviću vaš plan nege…'
             }
             onSend={send}
           />
-          <p className="footer-note">NANA Prime can make mistakes. Please double-check responses.</p>
+          <p className="footer-note">NANA Prime može da pogreši. Proverite odgovore.</p>
         </div>
       </div>
     </div>

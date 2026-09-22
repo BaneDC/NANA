@@ -50,9 +50,9 @@ import {
 // the overview under an empty form.
 
 const MOOD = {
-  low: { icon: Frown, label: 'Low' },
-  usual: { icon: Meh, label: 'As usual' },
-  good: { icon: Smile, label: 'Good' },
+  low: { icon: Frown, label: 'Loše' },
+  usual: { icon: Meh, label: 'Kao i obično' },
+  good: { icon: Smile, label: 'Dobro' },
 };
 
 const ACTIVITY_ICON = {
@@ -83,7 +83,7 @@ function Section({ title, badge, children }) {
 function AgreedTerms({ client }) {
   return (
     <>
-      <p className="ag-label">Services this agreement covers</p>
+      <p className="ag-label">Usluge iz ovog ugovora</p>
       <div className="ag-services">
         {client.services.map((id) => (
           <span key={id} className="svc is-set">
@@ -94,15 +94,15 @@ function AgreedTerms({ client }) {
       </div>
       <div className="bc-lines ag-terms">
         <p className="bc-line">
-          <span className="bc-line-label">Hourly rate</span>
+          <span className="bc-line-label">Cena po satu</span>
           <span className="bc-line-value">{money(client.rate)} / h</span>
         </p>
         <p className="bc-line">
-          <span className="bc-line-label">Agreed hours</span>
-          <span className="bc-line-value">{client.hours} h/week</span>
+          <span className="bc-line-label">Dogovoreni sati</span>
+          <span className="bc-line-value">{client.hours} h nedeljno</span>
         </p>
         <p className="bc-line">
-          <span className="bc-line-label">Pattern</span>
+          <span className="bc-line-label">Raspored</span>
           <span className="bc-line-value">{client.schedule}</span>
         </p>
       </div>
@@ -110,7 +110,7 @@ function AgreedTerms({ client }) {
   );
 }
 
-const AMOUNT_WORD = { less: 'less than usual', usual: 'as usual', more: 'more than usual' };
+const AMOUNT_WORD = { less: 'manje nego obično', usual: 'kao i obično', more: 'više nego obično' };
 
 function Visits({ client }) {
   // The visit still waiting on its work order is not in here — it is the form
@@ -120,7 +120,7 @@ function Visits({ client }) {
   if (!visits.length) {
     return (
       <p className="board-empty">
-        No visits settled yet. They start once {client.family} signs the agreement.
+        Još nema izmirenih poseta. Počinju kad porodica potpiše ugovor.
       </p>
     );
   }
@@ -132,8 +132,8 @@ function Visits({ client }) {
   return (
     <>
       <p className="ag-hint">
-        {settled.length} paid · {hours} h · {money(earned)} to you
-        {pending > 0 && ` · ${money(pending)} clearing`}
+        Plaćeno: {settled.length} · {hours} h · {money(earned)} vama
+        {pending > 0 && ` · ${money(pending)} u obradi`}
       </p>
       <ul className="visit-list">
         {visits.map((v, i) => {
@@ -148,10 +148,10 @@ function Visits({ client }) {
                 {v.status === 'awaiting' ? (
                   <span className="status-pill is-pending">
                     <Clock size={12} strokeWidth={2} />
-                    Charges in {v.confirmsInHours} h
+                    Naplata za {v.confirmsInHours} h
                   </span>
                 ) : (
-                  <span className="status-pill is-accepted">Paid</span>
+                  <span className="status-pill is-accepted">Plaćeno</span>
                 )}
               </div>
               <p className="visit-note">{v.note}</p>
@@ -171,8 +171,8 @@ function Visits({ client }) {
                     {MOOD[v.mood].label}
                   </span>
                 )}
-                {v.eating && <span className="visit-mood">ate {AMOUNT_WORD[v.eating]}</span>}
-                {v.moving && <span className="visit-mood">moved {AMOUNT_WORD[v.moving]}</span>}
+                {v.eating && <span className="visit-mood">ishrana: {AMOUNT_WORD[v.eating]}</span>}
+                {v.moving && <span className="visit-mood">kretanje: {AMOUNT_WORD[v.moving]}</span>}
                 <span className="visit-money">
                   {v.hours} h · {money(totals.net)}
                 </span>
@@ -232,29 +232,29 @@ export default function ClientPage({
   const summary = (() => {
     switch (state) {
       case 'none':
-        return `${client.family} asked for ${client.hours} h/week · ${client.schedule}`;
+        return `Traženo: ${client.hours} h nedeljno · ${client.schedule}`;
       case 'draft':
-        return `Not set yet — ${client.family} asked for ${client.hours} h/week`;
+        return `Još nije postavljen — traženo ${client.hours} h nedeljno`;
       case 'sent':
-        return `${client.services.length} services · ${money(client.rate)}/h · sent ${client.sentOn}`;
+        return `Usluga: ${client.services.length} · ${money(client.rate)}/h · poslato ${client.sentOn}`;
       default:
-        return `${client.services.length} services · ${money(client.rate)}/h · ${client.hours} h/week`;
+        return `Usluga: ${client.services.length} · ${money(client.rate)}/h · ${client.hours} h nedeljno`;
     }
   })();
 
   const badge = {
-    none: <span className="status-pill is-muted">Not accepted</span>,
-    draft: <span className="status-pill is-pending">Draft</span>,
+    none: <span className="status-pill is-muted">Nije prihvaćeno</span>,
+    draft: <span className="status-pill is-pending">Nacrt</span>,
     sent: (
       <span className="status-pill is-pending">
         <Clock size={12} strokeWidth={2} />
-        Waiting for signature
+        Čeka potpis
       </span>
     ),
     active: (
       <span className="status-pill is-accepted">
         <Check size={12} strokeWidth={2} />
-        Active since {client.since}
+        Aktivno od {client.since}
       </span>
     ),
   }[state];
@@ -269,7 +269,7 @@ export default function ClientPage({
         <div className="view-head-text">
           <button type="button" className="back-link" onClick={onBack}>
             <ArrowLeft size={14} strokeWidth={1.75} />
-            Board
+            Tabla
           </button>
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function ClientPage({
         <div className="client-head-text">
           <h1 className="view-title">{client.elder}</h1>
           <p className="view-sub">
-            {client.age} · {client.area} · {client.distance} · CFS {client.frailty},{' '}
+            {client.age} · {client.area} · {client.distance} · krhkost {client.frailty},{' '}
             {frailtyLabel(client.frailty)}
           </p>
         </div>
@@ -287,14 +287,14 @@ export default function ClientPage({
 
       <div className="client-contact">
         <p className="bc-line">
-          <span className="bc-line-label">Family contact</span>
+          <span className="bc-line-label">Kontakt porodice</span>
           <span className="bc-line-value">
             {client.family} · {client.relation}
           </span>
         </p>
         <p className="bc-line">
           <span className="bc-line-label">
-            <Phone size={12} strokeWidth={1.75} /> Phone
+            <Phone size={12} strokeWidth={1.75} /> Telefon
           </span>
           <span className="bc-line-value">{client.phone}</span>
         </p>
@@ -304,31 +304,31 @@ export default function ClientPage({
           page with a deadline. The agreement below it changes once. */}
       {due && (
         <Section
-          title="Work order outstanding"
+          title="Radni nalog čeka"
           badge={
             <span className="status-pill is-pending">
               <AlertTriangle size={12} strokeWidth={2} />
-              Not sent
+              Nije poslato
             </span>
           }
         >
           <p className="ag-lead">
-            {due.date} · {due.time} — {due.hours} h at the agreed {money(client.rate)}/h, finished{' '}
-            {client.sinceVisit}. Sending it starts {client.family}'s 24 hours: they confirm, or it
-            charges itself when the time is up.
+            {due.date} · {due.time} — {due.hours} h po dogovorenih {money(client.rate)}/h, završeno{' '}
+            {client.sinceVisit}. Slanjem počinje 24 sata za porodicu: ili potvrde, ili se naplata izvrši
+            sama kad rok istekne.
           </p>
           <div className="bc-lines ag-terms">
             <p className="bc-line">
-              <span className="bc-line-label">If sent as worked</span>
+              <span className="bc-line-label">Ako se pošalje kako je rađeno</span>
               <span className="bc-line-value">
-                {money(totalsFor(due.hours, client.rate).net)} to you
+                {money(totalsFor(due.hours, client.rate).net)} vama
               </span>
             </p>
           </div>
           <div className="panel-card-actions is-end">
             <Button variant="primary" onClick={() => setModal('work-order')}>
               <FileText size={14} strokeWidth={1.75} />
-              Fill in work order
+              Popuni radni nalog
             </Button>
           </div>
         </Section>
@@ -338,12 +338,12 @@ export default function ClientPage({
           later filled in against. Only an active arrangement can have one. */}
       {state === 'active' && !due && (
         <Section
-          title="Next visit"
+          title="Sledeća poseta"
           badge={
             client.plan ? (
               <span className="status-pill is-accepted">
                 <Check size={12} strokeWidth={2} />
-                {money(heldFor(client))} held
+                {money(heldFor(client))} rezervisano
               </span>
             ) : null
           }
@@ -351,13 +351,13 @@ export default function ClientPage({
           {client.plan ? (
             <>
               <p className="ag-lead">
-                {client.plan.date} · {client.plan.time} — {client.plan.hours} h at{' '}
-                {money(client.rate)}/h. Sent to {client.family} {client.plan.sentOn};{' '}
-                {money(heldFor(client))} is held against their card, and{' '}
-                {money(totalsFor(client.plan.hours, client.rate).net)} of it reaches you if the
-                visit runs to plan.
+                {client.plan.date} · {client.plan.time} — {client.plan.hours} h po{' '}
+                {money(client.rate)}/h. Poslato porodici {client.plan.sentOn};{' '}
+                {money(heldFor(client))} je rezervisano na njihovoj kartici, a{' '}
+                {money(totalsFor(client.plan.hours, client.rate).net)} od toga stiže vama ako poseta
+                prođe po planu.
               </p>
-              <p className="ag-label">Planned</p>
+              <p className="ag-label">Planirano</p>
               <div className="ag-services">
                 {client.plan.services.map((id) => (
                   <span key={id} className="svc is-set">
@@ -369,25 +369,25 @@ export default function ClientPage({
               {client.plan.notes && <p className="visit-note">{client.plan.notes}</p>}
               <div className="panel-card-actions is-end">
                 <Button variant="secondary" onClick={() => setModal('plan')}>
-                  Change the plan
+                  Promeni plan
                 </Button>
                 <Button variant="primary" onClick={() => onVisitDone(client.id)}>
                   <CheckCheck size={14} strokeWidth={1.75} />
-                  Visit done
+                  Poseta obavljena
                 </Button>
               </div>
             </>
           ) : (
             <>
               <p className="ag-lead">
-                Nothing planned yet. The visit order says what you are going for, and sending it to{' '}
-                {client.family} holds the money for it before you go — so the work order afterwards
-                is only confirming what was already covered.
+                Još ništa nije planirano. Plan posete kaže zašto dolazite, a kad ga pošaljete porodici,
+                novac se rezerviše pre nego što krenete — pa radni nalog posle samo potvrđuje ono što je
+                već pokriveno.
               </p>
               <div className="panel-card-actions is-end">
                 <Button variant="primary" onClick={() => setModal('plan')}>
                   <CalendarPlus size={14} strokeWidth={1.75} />
-                  Plan a visit
+                  Isplaniraj posetu
                 </Button>
               </div>
             </>
@@ -407,7 +407,7 @@ export default function ClientPage({
             aria-expanded={termsOpen}
           >
             <span className="doc-section-title">
-              Care agreement
+              Ugovor o nezi
               <ChevronDown
                 size={14}
                 strokeWidth={2}
@@ -420,13 +420,13 @@ export default function ClientPage({
           {state === 'draft' && (
             <Button variant="primary" onClick={() => setModal('agreement')}>
               <FileText size={14} strokeWidth={1.75} />
-              Set up agreement
+              Postavi ugovor
             </Button>
           )}
           {state === 'sent' && (
             <Button variant="secondary" onClick={() => onRemind(client.id)}>
               <Send size={14} strokeWidth={1.75} />
-              Send a reminder
+              Pošalji podsetnik
             </Button>
           )}
         </div>
@@ -444,7 +444,7 @@ export default function ClientPage({
               <div className="compact-body">
                 {state === 'none' || state === 'draft' ? (
                   <>
-                    <p className="ag-label">What {client.family} asked for</p>
+                    <p className="ag-label">Šta je porodica tražila</p>
                     <div className="ag-services">
                       {client.needs.map((id) => (
                         <span key={id} className="svc">
@@ -454,11 +454,11 @@ export default function ClientPage({
                     </div>
                     <div className="bc-lines ag-terms">
                       <p className="bc-line">
-                        <span className="bc-line-label">Hours</span>
-                        <span className="bc-line-value">{client.hours} h/week</span>
+                        <span className="bc-line-label">Sati</span>
+                        <span className="bc-line-value">{client.hours} h nedeljno</span>
                       </p>
                       <p className="bc-line">
-                        <span className="bc-line-label">Pattern</span>
+                        <span className="bc-line-label">Raspored</span>
                         <span className="bc-line-value">{client.schedule}</span>
                       </p>
                     </div>
@@ -472,11 +472,11 @@ export default function ClientPage({
         </AnimatePresence>
       </section>
 
-      <Section title="Visits">
+      <Section title="Posete">
         <Visits client={client} />
       </Section>
 
-      <Section title="Activity">
+      <Section title="Aktivnost">
         <Activity client={client} />
       </Section>
 
@@ -485,7 +485,7 @@ export default function ClientPage({
           <Modal
             key="agreement"
             eyebrow={client.elder}
-            title="Care agreement"
+            title="Ugovor o nezi"
             wide
             onClose={() => setModal(null)}
           >
@@ -504,7 +504,7 @@ export default function ClientPage({
           <Modal
             key="plan"
             eyebrow={client.elder}
-            title={client.plan ? 'Change the visit' : 'Plan a visit'}
+            title={client.plan ? 'Promeni posetu' : 'Isplaniraj posetu'}
             wide
             onClose={() => setModal(null)}
           >
@@ -524,7 +524,7 @@ export default function ClientPage({
           <Modal
             key="work-order"
             eyebrow={client.elder}
-            title="Work order"
+            title="Radni nalog"
             wide
             onClose={() => setModal(null)}
           >

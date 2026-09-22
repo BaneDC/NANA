@@ -14,14 +14,14 @@ const ROLES = [
   {
     id: 'family',
     letter: 'a',
-    title: 'I need care for a parent',
-    description: 'Answer some questions and we find someone near you',
+    title: 'Treba mi nega za roditelja',
+    description: 'Odgovorite na nekoliko pitanja i naći ćemo nekoga blizu vas',
   },
   {
     id: 'caregiver',
     letter: 'b',
-    title: 'I am a caregiver',
-    description: 'Take requests from families, agree terms, get paid',
+    title: 'Ja sam negovateljica',
+    description: 'Primajte upite porodica, dogovorite uslove, budite plaćeni',
   },
 ];
 
@@ -43,12 +43,12 @@ export default function Register({ onContinue }) {
       <Logo width={150} />
       <PhotoCarousel />
       <div className="welcome">
-        <h1>Welcome to NANA Prime</h1>
-        <p>To continue fill in required fields</p>
+        <h1>Dobro došli u NANA Prime</h1>
+        <p>Da biste nastavili, popunite obavezna polja</p>
       </div>
       <div className="form-card">
         <div className="role-choice">
-          <p className="tf-label">I am here as</p>
+          <p className="tf-label">Ovde sam kao</p>
           {ROLES.map((r) => (
             <SelectCard
               key={r.id}
@@ -62,15 +62,15 @@ export default function Register({ onContinue }) {
         </div>
 
         <TextField
-          label="Name and lastname"
+          label="Ime i prezime"
           icon={User}
-          placeholder="Petar Miric"
+          placeholder="Petar Mirić"
           value={name}
           onChange={setName}
           onEnter={submit}
         />
         <TextField
-          label="Email"
+          label="Imejl"
           icon={Mail}
           placeholder="petar@mail.com"
           type="email"
@@ -81,10 +81,10 @@ export default function Register({ onContinue }) {
       </div>
       <div className="actions">
         <Button variant="primary" size="lg" full disabled={!valid} onClick={submit}>
-          Continue
+          Nastavi
         </Button>
         <Button variant="ghost" size="lg">
-          Already have an account?
+          Već imate nalog?
         </Button>
       </div>
     </motion.div>

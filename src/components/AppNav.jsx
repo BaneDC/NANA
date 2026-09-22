@@ -12,9 +12,13 @@ import {
 } from 'lucide-react';
 import Logo from './Logo';
 
+// The pages that open from the family's home stay under it in the nav: her page,
+// every visit and every request are parts of the dashboard, not places of their own.
+const HOME_VIEWS = ['dashboard', 'caregiver', 'visits', 'requests'];
+
 const FOOTER_ITEMS = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'profile', label: 'Profil', icon: User },
+  { id: 'settings', label: 'Podešavanja', icon: Settings },
 ];
 
 // A nav row that folds a list of its own away — used by Chat and Care plans.
@@ -35,7 +39,7 @@ function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd,
           type="button"
           className="nav-inline-btn"
           onClick={onToggle}
-          aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
+          aria-label={open ? `Skupi: ${label}` : `Proširi: ${label}`}
           aria-expanded={open}
         >
           <ChevronDown size={15} strokeWidth={2} className={`toggle-chevron${open ? '' : ' is-up'}`} />
@@ -45,8 +49,8 @@ function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd,
             type="button"
             className="nav-inline-btn"
             onClick={onAdd}
-            aria-label={`New ${id}`}
-            title="New chat"
+            aria-label="Novi razgovor"
+            title="Novi razgovor"
           >
             <Plus size={15} strokeWidth={2} />
           </button>
@@ -110,7 +114,7 @@ export default function AppNav({
       <div className="nav-group">
         <Section
           id="chat"
-          label="Chat"
+          label="Razgovor"
           icon={MessageSquare}
           active={view === 'chat'}
           onOpen={() => onView('chat')}
@@ -124,7 +128,7 @@ export default function AppNav({
             onClick={() => onSelectThread('live')}
           >
             <span className="nav-sub-label">{liveTitle}</span>
-            <span className="nav-sub-date">Current</span>
+            <span className="nav-sub-date">Trenutni</span>
           </button>
           {threads.map((t) => (
             <button
@@ -141,12 +145,12 @@ export default function AppNav({
 
         <button
           type="button"
-          className={`nav-item${view === 'dashboard' ? ' is-active' : ''}`}
+          className={`nav-item${HOME_VIEWS.includes(view) ? ' is-active' : ''}`}
           onClick={() => onView('dashboard')}
-          aria-current={view === 'dashboard' ? 'page' : undefined}
+          aria-current={HOME_VIEWS.includes(view) ? 'page' : undefined}
         >
           <LayoutDashboard size={16} strokeWidth={1.75} />
-          <span>Dashboard</span>
+          <span>Moja nega</span>
           {badge > 0 && <span className="nav-badge">{badge}</span>}
         </button>
 
@@ -157,19 +161,19 @@ export default function AppNav({
           aria-current={view === 'find-caregiver' ? 'page' : undefined}
         >
           <Search size={16} strokeWidth={1.75} />
-          <span>Find a caregiver</span>
+          <span>Pronađi negovateljicu</span>
         </button>
 
         <Section
           id="plan"
-          label="Care plans"
+          label="Planovi nege"
           icon={FileText}
           active={view === 'plans' || view === 'plan-detail'}
           onOpen={() => onView('plans')}
           open={planListOpen}
           onToggle={onTogglePlanList}
         >
-          {planEntries.length === 0 && <p className="nav-sub-empty">No plans yet</p>}
+          {planEntries.length === 0 && <p className="nav-sub-empty">Još nema planova</p>}
           {planEntries.map((e) => (
             <button
               key={e.id}
@@ -180,7 +184,7 @@ export default function AppNav({
               onClick={() => onSelectPlan(e.id)}
             >
               <span className="nav-sub-label">{e.title}</span>
-              <span className="nav-sub-date">{e.archived ? e.date : 'Active'}</span>
+              <span className="nav-sub-date">{e.archived ? e.date : 'Aktivan'}</span>
             </button>
           ))}
         </Section>
@@ -189,11 +193,11 @@ export default function AppNav({
       <div className="nav-group nav-group-end">
         {/* both questionnaire variants stay available — they write the same answers */}
         <div className="nav-variant">
-          <span className="nav-variant-label">Questionnaire</span>
-          <div className="segmented" role="group" aria-label="Questionnaire variant">
+          <span className="nav-variant-label">Upitnik</span>
+          <div className="segmented" role="group" aria-label="Vrsta upitnika">
             {[
-              ['classic', 'Classic'],
-              ['immersive', 'Immersive'],
+              ['classic', 'Klasični'],
+              ['immersive', 'Imerzivni'],
               ['ai', 'AI'],
             ].map(([id, label]) => (
               <button
@@ -224,10 +228,10 @@ export default function AppNav({
         <div className="nav-user">
           <span className="cg-avatar">{initials}</span>
           <span className="nav-user-text">
-            <span className="nav-user-name">{user.name || 'Guest'}</span>
+            <span className="nav-user-name">{user.name || 'Gost'}</span>
             <span className="nav-user-mail">{user.email}</span>
           </span>
-          <button type="button" className="ci-btn" onClick={onRestart} aria-label="Start over">
+          <button type="button" className="ci-btn" onClick={onRestart} aria-label="Počni ispočetka">
             <RotateCcw size={14} strokeWidth={1.75} />
           </button>
         </div>

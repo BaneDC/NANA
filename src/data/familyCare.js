@@ -1,13 +1,23 @@
 import { SERVICE_FEE, money, serviceTitle, totalsFor } from './caregiverBoard';
+import { bookings } from './bookings';
 
-// The same arrangement the caregiver's board holds, seen from the other end.
-// One family, one caregiver, and everything that passes between them: the
-// agreement they both work under, the visit that is coming, the visits that
-// have been, and the money each one moved.
+// The family's side of NANA Prime: everyone who has cared for their mother, the
+// terms each of them works under, and every visit and what it cost.
 //
-// Deliberately the mirror of `ilic` on the caregiver side — same names, same
-// rate, same dates — so the two halves of the demo tell one story rather than
-// two. In a real system this is one record read from two directions.
+// One family (Milena, for her mother Zorka) and the caregivers they have had.
+// Vesna is the one coming now, and the story is mid-flight on purpose, so
+// that everything a family can be asked to do is on screen at once: she has
+// proposed new terms, sent a work order for yesterday, and has a visit booked
+// for tomorrow. Jelena came before her and the cooperation has ended.
+//
+// A visit moves through the same states the billing prototype uses, in the
+// family's words:
+//   planned   — the plan is in and the money is set aside, not charged
+//   awaiting  — the visit happened, the caregiver has not sent the work order
+//   charging  — the work order is in; it is charged in 24 h unless queried
+//   disputed  — the family queried the plan or the work order; nothing moves
+//   paid      — charged
+//   cancelled — called off before it happened; the money went back
 
 export { money, serviceTitle, totalsFor, SERVICE_FEE };
 
@@ -16,141 +26,405 @@ export { money, serviceTitle, totalsFor, SERVICE_FEE };
 // them a "you receive" line would be showing them someone else's payslip.
 export const chargedFor = (hours, rate) => totalsFor(hours, rate).charged;
 
-export const care = {
-  caregiver: {
-    name: 'Vesna Mitrović',
-    initials: 'VM',
-    phone: '+381 63 210 4471',
-    area: 'Vračar',
-    distance: '1.8 km away',
-    years: 12,
-    rating: 4.9,
-    reviews: 64,
-    bio: 'Certified geriatric nurse. Twelve years with families caring for a parent at home, most of them with early-stage dementia.',
-  },
-  elder: { name: 'Zorka Ilić', age: 86, area: 'Vračar' },
-  contact: { name: 'Milena Ilić', relation: 'Daughter' },
+// Inside this, calling a visit off costs the whole visit: she has kept the time
+// and can no longer fill it.
+export const LATE_HOURS = 1;
 
-  // Signed in June. `sent` is the other state this can be in, and the one the
-  // caregiver's board sits blocked on.
-  agreement: {
-    status: 'active', // 'sent' | 'active'
-    sentOn: '11 June',
-    signedOn: '12 June',
-    services: ['medication', 'meals', 'company', 'housekeeping'],
-    rate: 850,
-    hours: 12,
-    schedule: 'Mon, Wed, Fri · 09:00–13:00',
-  },
+export const MOOD_LABEL = { low: 'Loše', usual: 'Kao i obično', good: 'Dobro' };
+export const AMOUNT_LABEL = { less: 'Manje nego obično', usual: 'Kao i obično', more: 'Više nego obično' };
+
+const vesna = {
+  id: 'vesna',
+  name: 'Vesna Mitrović',
+  initials: 'VM',
+  phone: '+381 63 210 4471',
+  area: 'Vračar',
+  distance: '1,8 km od vas',
+  years: 12,
+  rating: 4.9,
+  reviews: 64,
+  bio: 'Diplomirana gerijatrijska sestra. Dvanaest godina sa porodicama koje brinu o roditelju kod kuće, najčešće u ranoj fazi demencije.',
+};
+
+const jelena = {
+  id: 'jelena',
+  name: 'Jelena Marković',
+  initials: 'JM',
+  phone: '+381 64 332 1809',
+  area: 'Zvezdara',
+  distance: '3,1 km od vas',
+  years: 6,
+  rating: 4.7,
+  reviews: 23,
+  bio: 'Šest godina u kućnoj nezi. Dolazila je tri jutra nedeljno dok nije prešla na stalni posao.',
+};
+
+// the report a caregiver writes after a visit, shared by the visits below
+const report = (done, note, mood, eating, moving, extra = {}) => ({ done, note, mood, eating, moving, ...extra });
+
+export const care = {
+  family: { name: 'Milena Ilić', relation: 'Daughter' },
+  elder: { name: 'Zorka Ilić', age: 86, area: 'Vračar' },
 
   // Connected once and then left alone, which is the whole point of it: after
   // this, a visit is paid for without anybody being asked anything.
-  payment: {
-    connected: true,
-    brand: 'Visa',
-    last4: '4242',
-    connectedOn: '11 June',
-  },
+  payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: '11. juna' },
 
-  // The visit order Vesna sent. Money is already held against the card for it.
-  plan: {
-    date: 'Tomorrow',
-    time: '09:00–13:00',
-    hours: 4,
-    services: ['medication', 'meals', 'company'],
-    notes: 'Pick up the prescription from the pharmacy on Njegoševa. Milena asked to be called after.',
-    sentOn: '2 days ago',
-  },
+  // Everyone the family has asked. Vesna said yes and became the arrangement
+  // above; the rest are still out, or said no and said why.
+  requests: bookings.map((b) => ({
+    ...b,
+    message: 'Tražimo redovnu pomoć za mamu, tri jutra nedeljno. Da li biste mogli da dolazite?',
+  })),
 
-  visits: [
+  arrangements: [
     {
-      id: 'v-10aug',
-      date: '10 August',
-      time: '09:00–13:00',
-      hours: 4,
-      services: ['medication', 'meals', 'company'],
-      note: 'Morning routine, cooked for two days, short walk to the park.',
-      mood: 'good',
-      eating: 'usual',
-      moving: 'usual',
-      // what the visit order said, so the family can read the report against
-      // what was promised rather than against nothing
-      plannedHours: 4,
-      plannedServices: ['medication', 'meals', 'company'],
-      planNotes: 'Pick up the prescription from the pharmacy on Njegoševa. Milena asked to be called after.',
-      // sent, and inside the family's 24 hours
-      status: 'charging',
-      sentOn: '2 hours ago',
-      chargesInHours: 22,
+      caregiver: vesna,
+      since: '12. juna',
+      endedOn: null,
+      versions: [
+        {
+          version: 1,
+          status: 'active',
+          services: ['medication', 'meals', 'company', 'housekeeping'],
+          rate: 850,
+          hours: 12,
+          schedule: 'pon, sre, pet · 09:00–13:00',
+          sentOn: '11. juna',
+          agreedOn: '12. juna',
+        },
+        // Waiting on Milena. The one in force stays in force until she answers.
+        {
+          version: 2,
+          status: 'sent',
+          services: ['medication', 'meals', 'company', 'housekeeping', 'personal-care'],
+          rate: 900,
+          hours: 12,
+          schedule: 'pon, sre, pet · 09:00–13:00',
+          sentOn: 'Juče',
+          note: 'Zorka je nesigurna kad ulazi u kadu i izlazi iz nje, pa bih volela da pomažem i oko kupanja. To je posao medicinske sestre, zato cena raste.',
+        },
+      ],
+      visits: [
+        {
+          id: 'v-12aug',
+          date: 'Sutra',
+          time: '09:00–13:00',
+          hours: 4,
+          rate: 850,
+          services: ['medication', 'meals', 'company'],
+          notes: 'Podići recept u apoteci u Njegoševoj. Milena je tražila da je pozovete posle.',
+          status: 'planned',
+          sentOn: 'pre 2 dana',
+          dueInHours: 20,
+        },
+        {
+          id: 'v-10aug',
+          date: '10. avgusta',
+          time: '09:00–13:00',
+          hours: 4,
+          rate: 850,
+          services: ['medication', 'meals', 'company'],
+          notes: 'Podići recept u apoteci u Njegoševoj.',
+          report: report(
+            ['medication', 'meals', 'company'],
+            'Jutarnja rutina, skuvala za dva dana, kratka šetnja do parka.',
+            'good',
+            'usual',
+            'usual'
+          ),
+          status: 'charging',
+          sentOn: 'pre 2 sata',
+          chargesInHours: 22,
+        },
+        {
+          id: 'v-08aug',
+          date: '8. avgusta',
+          time: '09:00–13:00',
+          hours: 4,
+          rate: 850,
+          services: ['medication', 'meals', 'housekeeping'],
+          report: report(['medication', 'meals', 'housekeeping'], 'Apoteka, veš, ručak.', 'usual', 'usual', 'usual'),
+          status: 'paid',
+          chargedOn: '9. avgusta',
+          confirmed: 'auto',
+        },
+        {
+          id: 'v-06aug',
+          date: '6. avgusta',
+          time: '09:00–13:00',
+          hours: 4,
+          rate: 850,
+          services: ['medication', 'meals', 'company'],
+          report: report(
+            ['medication', 'meals'],
+            'Umorna celo jutro, nije htela da izađe. Jela je vrlo malo.',
+            'low',
+            'less',
+            'less',
+            { concern: 'Jede mnogo manje nego obično, treći put ove nedelje.' }
+          ),
+          status: 'paid',
+          chargedOn: '7. avgusta',
+          confirmed: 'you',
+        },
+        {
+          id: 'v-04aug',
+          date: '4. avgusta',
+          time: '09:00–13:00',
+          hours: 4,
+          rate: 850,
+          services: ['medication', 'meals', 'company'],
+          report: report(['medication', 'meals', 'company'], 'Kuvanje, nabavka, dug razgovor.', 'good', 'usual', 'usual'),
+          status: 'paid',
+          chargedOn: '5. avgusta',
+          confirmed: 'auto',
+        },
+        {
+          id: 'v-01aug',
+          date: '1. avgusta',
+          time: '09:00–13:00',
+          hours: 4,
+          rate: 850,
+          services: ['medication', 'meals', 'company'],
+          status: 'cancelled',
+          cancelledBy: 'you',
+          cancelReason: 'Nije nam potrebna',
+        },
+        {
+          id: 'v-30jul',
+          date: '30. jula',
+          time: '09:00–13:00',
+          hours: 4,
+          rate: 850,
+          services: ['medication', 'meals', 'housekeeping'],
+          report: report(['medication', 'meals', 'housekeeping'], 'Očistila kuhinju, supa za vikend.', 'usual', 'usual', 'usual'),
+          status: 'paid',
+          chargedOn: '31. jula',
+          confirmed: 'auto',
+        },
+      ],
     },
     {
-      id: 'v-08aug',
-      date: '8 August',
-      time: '09:00–13:00',
-      hours: 4,
-      services: ['medication', 'meals', 'company'],
-      note: 'Pharmacy run, laundry, lunch.',
-      mood: 'usual',
-      eating: 'usual',
-      moving: 'usual',
-      status: 'paid',
-      chargedOn: '9 August',
-    },
-    {
-      id: 'v-06aug',
-      date: '6 August',
-      time: '09:00–13:00',
-      hours: 4,
-      services: ['medication', 'meals', 'housekeeping'],
-      note: 'Tired all morning, did not want to go out. Ate very little.',
-      mood: 'low',
-      eating: 'less',
-      moving: 'less',
-      concern: 'Eating much less than usual for the third time this week.',
-      status: 'paid',
-      chargedOn: '7 August',
-    },
-    {
-      id: 'v-04aug',
-      date: '4 August',
-      time: '09:00–13:00',
-      hours: 4,
-      services: ['medication', 'meals', 'company'],
-      note: 'Cooking, shopping, a long conversation.',
-      mood: 'good',
-      eating: 'usual',
-      moving: 'usual',
-      status: 'paid',
-      chargedOn: '5 August',
+      caregiver: jelena,
+      since: '3. februara',
+      endedOn: '28. aprila',
+      versions: [
+        {
+          version: 1,
+          status: 'ended',
+          services: ['meals', 'company', 'errands'],
+          rate: 800,
+          hours: 9,
+          schedule: 'uto, čet, sub · 10:00–13:00',
+          sentOn: '1. februara',
+          agreedOn: '3. februara',
+        },
+      ],
+      visits: [
+        {
+          id: 'v-26apr',
+          date: '26. aprila',
+          time: '10:00–13:00',
+          hours: 3,
+          rate: 800,
+          services: ['meals', 'company'],
+          report: report(['meals', 'company'], 'Poslednja poseta. Zajednički ručak i dug oproštaj.', 'good', 'usual', 'usual'),
+          status: 'paid',
+          chargedOn: '27. aprila',
+          confirmed: 'auto',
+        },
+        {
+          id: 'v-24apr',
+          date: '24. aprila',
+          time: '10:00–13:00',
+          hours: 3,
+          rate: 800,
+          services: ['meals', 'errands'],
+          report: report(['meals', 'errands'], 'Pijaca, pa supa.', 'usual', 'usual', 'usual'),
+          status: 'paid',
+          chargedOn: '25. aprila',
+          confirmed: 'auto',
+        },
+      ],
     },
   ],
 };
 
-export const heldForPlan = (c) => (c.plan ? chargedFor(c.plan.hours, c.agreement.rate) : 0);
+// ── reading it ──────────────────────────────────────────────────────────────
 
-export const chargingVisit = (c) => c.visits.find((v) => v.status === 'charging');
+export const firstName = (name) => name.split(' ')[0];
+
+// A count with its noun in the right form: 1 usluga, 3 usluge, 5 usluga.
+export function pl(n, one, few, many) {
+  const d = n % 10;
+  const h = n % 100;
+  if (d === 1 && h !== 11) return `${n} ${one}`;
+  if (d >= 2 && d <= 4 && (h < 12 || h > 14)) return `${n} ${few}`;
+  return `${n} ${many}`;
+}
+export const services = (n) => pl(n, 'usluga', 'usluge', 'usluga');
+
+export const activeVersion = (a) => a.versions.find((v) => v.status === 'active') || null;
+export const pendingVersion = (a) => a.versions.find((v) => v.status === 'sent') || null;
+// what to show when nothing is in force or waiting: the last one there was
+export const shownVersion = (a) => pendingVersion(a) || activeVersion(a) || a.versions[a.versions.length - 1] || null;
+
+export const arrangementOf = (c, caregiverId) => c.arrangements.find((a) => a.caregiver.id === caregiverId);
+
+// every visit, with the caregiver it belongs to beside it
+export const allVisits = (c) => c.arrangements.flatMap((a) => a.visits.map((v) => ({ ...v, caregiver: a.caregiver })));
+
+export const findVisit = (c, id) => allVisits(c).find((v) => v.id === id);
+
+// The last visit hours can be worked at the rate agreed for it; a report can say
+// more, but only what was reserved is ever taken.
+export const visitCharge = (v) => chargedFor(Math.min(v.report?.hours ?? v.hours, v.hours), v.rate);
+
+export const chargingVisit = (c) => allVisits(c).find((v) => v.status === 'charging');
+
+export const heldNow = (c) =>
+  allVisits(c)
+    .filter((v) => v.status === 'planned')
+    .reduce((sum, v) => sum + chargedFor(v.hours, v.rate), 0);
 
 export const paidThisMonth = (c) =>
-  c.visits.filter((v) => v.status === 'paid').reduce((sum, v) => sum + chargedFor(v.hours, c.agreement.rate), 0);
+  allVisits(c)
+    .filter((v) => v.status === 'paid' && /avgust/.test(v.chargedOn))
+    .reduce((sum, v) => sum + visitCharge(v), 0);
 
-// Everything the family is being asked for, in the order it blocks things. An
-// unsigned agreement stops every visit behind it; an unconnected card stops
-// every payment; a charge inside its window is the only one with a clock.
-export function needsYou(c) {
-  const items = [];
-  if (c.agreement.status === 'sent') {
-    items.push({ id: 'sign', label: 'Sign the care agreement', note: `Sent ${c.agreement.sentOn}` });
+export const lastVisit = (c) => allVisits(c).find((v) => v.status === 'paid');
+
+// What is waiting on the family, in the order it blocks things: terms stop every
+// visit behind them; a work order is the other way round and goes through on
+// its own unless they say something.
+export function waitingOnYou(c) {
+  const out = [];
+  for (const a of c.arrangements) {
+    const pen = pendingVersion(a);
+    if (pen) out.push({ kind: 'terms', arrangement: a, version: pen });
   }
-  if (!c.payment.connected) {
-    items.push({ id: 'pay', label: 'Add a payment method', note: 'Visits cannot be booked without one' });
+  for (const v of allVisits(c)) {
+    if (v.status === 'charging') out.push({ kind: 'work-order', visit: v });
   }
-  const charging = chargingVisit(c);
-  if (charging) {
-    items.push({
-      id: 'charge',
-      label: `${money(chargedFor(charging.hours, c.agreement.rate))} charges in ${charging.chargesInHours} h`,
-      note: `For the visit on ${charging.date}`,
-    });
-  }
-  return items;
+  return out;
 }
+
+// Why an arrangement cannot be ended right now: a visit she has already made
+// and not been paid for.
+export const unsettled = (a) => a.visits.filter((v) => v.status === 'awaiting' || v.status === 'charging' || v.status === 'disputed');
+
+// Dates are written the way people say them ("Sutra", "10. avgusta"), so to
+// order and group them they are read back into a day. The demo's today is
+// 11 August 2026.
+const TODAY = new Date(2026, 7, 11);
+const MONTHS = ['januar', 'februar', 'mart', 'april', 'maj', 'jun', 'jul', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'];
+// "10. avgusta": the genitive, as a date is said
+const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
+export function dayOf(text) {
+  const t = String(text).trim().toLowerCase();
+  const shift = { danas: 0, sutra: 1, juče: -1 }[t];
+  if (shift !== undefined) return new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + shift);
+  const [d, m, y] = t.split(' ');
+  const mi = GENITIVE.indexOf(m);
+  return mi === -1 ? new Date(0) : new Date(y ? Number(y) : TODAY.getFullYear(), mi, parseInt(d, 10));
+}
+export const monthOf = (text) => {
+  const d = dayOf(text);
+  return Math.abs(d - TODAY) <= 86400000 ? 'Ove nedelje' : `${MONTHS[d.getMonth()]} ${d.getFullYear()}.`;
+};
+
+// ── changing it ─────────────────────────────────────────────────────────────
+// Each takes the whole state and returns the next, so the screens can hand them
+// straight to the setter.
+
+const mapArrangement = (c, caregiverId, fn) => ({
+  ...c,
+  arrangements: c.arrangements.map((a) => (a.caregiver.id === caregiverId ? fn(a) : a)),
+});
+
+const mapVisit = (c, visitId, fn) => ({
+  ...c,
+  arrangements: c.arrangements.map((a) => ({
+    ...a,
+    visits: a.visits.map((v) => (v.id === visitId ? fn(v) : v)),
+  })),
+});
+
+// Asking costs nothing and commits nobody; she answers from her own board.
+export const askCaregiver = (caregiverId) => (c) =>
+  c.requests.some((r) => r.caregiverId === caregiverId)
+    ? c
+    : {
+        ...c,
+        requests: [
+          {
+            caregiverId,
+            status: 'pending',
+            requested: 'upravo',
+            detail: 'Još nije odgovorila. Javićemo vam u svakom slučaju.',
+            message: 'Tražimo redovnu pomoć za mamu. Da li biste mogli da dolazite?',
+          },
+          ...c.requests,
+        ],
+      };
+
+export const linkCard = (c) => ({
+  ...c,
+  payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: 'just now' },
+});
+
+// The proposed version takes over; the one it replaces is kept, marked replaced.
+export const agreeTerms = (caregiverId) => (c) =>
+  mapArrangement(c, caregiverId, (a) => ({
+    ...a,
+    endedOn: null,
+    since: a.versions.some((v) => v.status === 'active') ? a.since : 'danas',
+    versions: a.versions.map((v) =>
+      v.status === 'sent'
+        ? { ...v, status: 'active', agreedOn: 'danas' }
+        : v.status === 'active'
+          ? { ...v, status: 'replaced' }
+          : v
+    ),
+  }));
+
+export const declineTerms = (caregiverId) => (c) =>
+  mapArrangement(c, caregiverId, (a) => ({
+    ...a,
+    versions: a.versions.map((v) => (v.status === 'sent' ? { ...v, status: 'declined', declinedOn: 'danas' } : v)),
+  }));
+
+// Saying it is fine only brings the charge forward. Silence does the same thing
+// 24 hours later, which is the arrangement they signed up to.
+export const confirmVisit = (visitId) => (c) =>
+  mapVisit(c, visitId, (v) => ({ ...v, status: 'paid', chargedOn: 'upravo', confirmed: 'you' }));
+
+// A query on a plan or on a work order: nothing moves until the coordinator has
+// looked at it, and the caregiver is told not to come in the meantime.
+export const queryVisit = (visitId, reason) => (c) =>
+  mapVisit(c, visitId, (v) => ({ ...v, status: 'disputed', queriedFrom: v.status, queryReason: reason }));
+
+export const callOffVisit = (visitId, reason) => (c) =>
+  mapVisit(c, visitId, (v) => ({
+    ...v,
+    status: 'cancelled',
+    cancelledBy: 'you',
+    cancelReason: reason,
+    // inside the last hour she has held the time and cannot fill it
+    lateCharge: (v.dueInHours ?? Infinity) < LATE_HOURS,
+  }));
+
+// Only once nothing is left unsettled. A booked visit is called off with it and
+// its money goes back.
+export const endArrangement = (caregiverId) => (c) =>
+  mapArrangement(c, caregiverId, (a) => ({
+    ...a,
+    endedOn: 'danas',
+    versions: a.versions.map((v) =>
+      v.status === 'active' ? { ...v, status: 'ended' } : v.status === 'sent' ? { ...v, status: 'withdrawn' } : v
+    ),
+    visits: a.visits.map((v) =>
+      v.status === 'planned' ? { ...v, status: 'cancelled', cancelledBy: 'you', cancelReason: 'Saradnja je završena' } : v
+    ),
+  }));

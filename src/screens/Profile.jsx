@@ -1,5 +1,6 @@
 import { Pencil } from 'lucide-react';
 import { questionById } from '../data/flow';
+import { srField } from '../data/flow.sr';
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 
@@ -9,7 +10,7 @@ function fieldsOf(questionId, answers) {
   const q = questionById[questionId];
   const values = answers[questionId]?.values;
   if (!q?.fields || !values) return [];
-  return q.fields.map((f) => ({ label: f.label, value: values[f.id] || '—' }));
+  return q.fields.map((f) => ({ label: srField(q, f.id), value: values[f.id] || '—' }));
 }
 
 function Section({ title, rows, onEdit }) {
@@ -18,7 +19,7 @@ function Section({ title, rows, onEdit }) {
       <div className="panel-card-head">
         <p className="doc-section-title">{title}</p>
         {onEdit && (
-          <Button variant="secondary" iconOnly aria-label={`Edit ${title}`} onClick={onEdit}>
+          <Button variant="secondary" iconOnly aria-label={`Izmeni: ${title}`} onClick={onEdit}>
             <Pencil size={14} strokeWidth={1.75} />
           </Button>
         )}
@@ -44,36 +45,36 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant }) {
     <div className="view">
       <div className="view-head">
         <div className="view-head-text">
-          <h1 className="view-title">Profile</h1>
-          <p className="view-sub">Everything you’ve shared, in one place.</p>
+          <h1 className="view-title">Profil</h1>
+          <p className="view-sub">Sve što ste podelili, na jednom mestu.</p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
       <Section
-        title="Your account"
+        title="Vaš nalog"
         rows={[
-          { label: 'Name', value: user.name || '—' },
-          { label: 'Email', value: user.email || '—' },
+          { label: 'Ime', value: user.name || '—' },
+          { label: 'Imejl', value: user.email || '—' },
         ]}
       />
 
       {elderly.length > 0 ? (
         <>
-          <Section title="Care recipient" rows={elderly} onEdit={onGoToChat} />
+          <Section title="O kome brinemo" rows={elderly} onEdit={onGoToChat} />
           {contact.length > 0 && (
-            <Section title="Main contact" rows={contact} onEdit={onGoToChat} />
+            <Section title="Glavni kontakt" rows={contact} onEdit={onGoToChat} />
           )}
-          {goal.length > 0 && <Section title="What you’re hoping for" rows={goal} onEdit={onGoToChat} />}
+          {goal.length > 0 && <Section title="Čemu se nadate" rows={goal} onEdit={onGoToChat} />}
         </>
       ) : (
         <div className="empty">
-          <p className="locked-title">Nothing here yet</p>
+          <p className="locked-title">Ovde još nema ničega</p>
           <p className="locked-note">
-            Answer the questions in the chat and the profile fills itself in.
+            Odgovorite na pitanja u razgovoru i profil će se sam popuniti.
           </p>
           <Button variant="primary" onClick={onGoToChat}>
-            Go to the chat
+            Idi na razgovor
           </Button>
         </div>
       )}

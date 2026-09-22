@@ -15,15 +15,15 @@ import { money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 // nobody planned.
 
 const MOODS = [
-  { id: 'low', label: 'Low' },
-  { id: 'usual', label: 'As usual' },
-  { id: 'good', label: 'Good' },
+  { id: 'low', label: 'Loše' },
+  { id: 'usual', label: 'Kao i obično' },
+  { id: 'good', label: 'Dobro' },
 ];
 
 const AMOUNTS = [
-  { id: 'less', label: 'Less than usual' },
-  { id: 'usual', label: 'As usual' },
-  { id: 'more', label: 'More than usual' },
+  { id: 'less', label: 'Manje nego obično' },
+  { id: 'usual', label: 'Kao i obično' },
+  { id: 'more', label: 'Više nego obično' },
 ];
 
 function Choice({ options, value, onChange, name }) {
@@ -66,18 +66,18 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
   return (
     <>
       <p className="ag-lead">
-        {visit.date} · {visit.time} — {visit.hours} h planned, at the agreed {money(client.rate)}/h.
+        {visit.date} · {visit.time} — planirano {visit.hours} h, po dogovorenih {money(client.rate)}/h.
       </p>
       {visit.planNotes && (
         <p className="wo-plan-note">
           <ClipboardList size={13} strokeWidth={1.75} />
-          Planned: {visit.planNotes}
+          Planirano: {visit.planNotes}
         </p>
       )}
 
       <div className="wo-row">
         <label className="wo-field">
-          <span className="ag-label">Hours worked</span>
+          <span className="ag-label">Odrađeni sati</span>
           <div className="ag-rate">
             <input
               type="number"
@@ -90,12 +90,12 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           </div>
         </label>
         <label className="wo-field is-wide">
-          <span className="ag-label">What you did</span>
+          <span className="ag-label">Šta ste radili</span>
           <input
             type="text"
             className="wo-text"
             value={note}
-            placeholder="Morning routine, breakfast, short walk."
+            placeholder="Jutarnja rutina, doručak, kratka šetnja."
             onChange={(e) => setNote(e.target.value)}
           />
         </label>
@@ -103,33 +103,32 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       {overtime && (
         <p className="ag-hint">
           {worked > visit.hours
-            ? `More than the ${visit.hours} h held against ${client.family}'s card. The extra is charged when they confirm.`
-            : `Less than the ${visit.hours} h held — the difference is released back to ${client.family}.`}
+            ? `Više od ${visit.hours} h rezervisanih na kartici porodice. Razlika se naplaćuje kad potvrde.`
+            : `Manje od ${visit.hours} h rezervisanih — razlika se vraća porodici.`}
         </p>
       )}
 
-      <p className="ag-label">How was {client.elder.split(' ')[0]} today?</p>
-      <Choice options={MOODS} value={mood} onChange={setMood} name="Mood" />
+      <p className="ag-label">Kakva je bila danas?</p>
+      <Choice options={MOODS} value={mood} onChange={setMood} name="Raspoloženje" />
 
       <div className="wo-row">
         <div className="wo-field">
           <span className="ag-label">
-            <Utensils size={13} strokeWidth={1.75} /> Eating
+            <Utensils size={13} strokeWidth={1.75} /> Ishrana
           </span>
-          <Choice options={AMOUNTS} value={eating} onChange={setEating} name="Eating" />
+          <Choice options={AMOUNTS} value={eating} onChange={setEating} name="Ishrana" />
         </div>
         <div className="wo-field">
           <span className="ag-label">
-            <Footprints size={13} strokeWidth={1.75} /> Moving around
+            <Footprints size={13} strokeWidth={1.75} /> Kretanje
           </span>
-          <Choice options={AMOUNTS} value={moving} onChange={setMoving} name="Moving around" />
+          <Choice options={AMOUNTS} value={moving} onChange={setMoving} name="Kretanje" />
         </div>
       </div>
 
-      <p className="ag-label">What you got to</p>
+      <p className="ag-label">Šta ste stigli</p>
       <p className="ag-hint">
-        Ticked from the visit order — untick anything that did not happen, tick anything that
-        came up.
+        Označeno prema planu posete — skinite ono što se nije desilo, označite ono što je iskrslo.
       </p>
       <div className="ag-services">
         {client.services.map((id) => (
@@ -151,46 +150,46 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       {concernOpen ? (
         <div className="wo-concern">
           <span className="ag-label">
-            <AlertTriangle size={13} strokeWidth={1.75} /> Something worried me today
+            <AlertTriangle size={13} strokeWidth={1.75} /> Nešto me je danas zabrinulo
           </span>
           <textarea
             rows={2}
             className="wo-text"
             value={concern}
-            placeholder="What you noticed, in your own words. The family sees this."
+            placeholder="Šta ste primetili, svojim rečima. Porodica vidi ovo."
             onChange={(e) => setConcern(e.target.value)}
           />
         </div>
       ) : (
         <button type="button" className="wo-concern-open" onClick={() => setConcernOpen(true)}>
           <AlertTriangle size={13} strokeWidth={1.75} />
-          Something worried me today
+          Nešto me je danas zabrinulo
         </button>
       )}
 
       <p className="ag-hint">
-        Sending this starts {client.family}'s 24 hours. Nothing is asked of them — it charges
-        itself when the time is up, unless they raise something in that window.
+        Slanjem počinje 24 sata za porodicu. Od njih se ništa ne traži — naplata se izvrši sama kad
+        rok istekne, osim ako u tom roku nešto prijave.
       </p>
 
       <div className="bc-total wo-total">
         <p className="bc-line">
-          <span className="bc-line-label">Charged · {valid ? worked : 0} h</span>
+          <span className="bc-line-label">Naplaćuje se · {valid ? worked : 0} h</span>
           <span className="bc-line-value">{money(totals.charged)}</span>
         </p>
         <p className="bc-line">
-          <span className="bc-line-label">Service fee (10%)</span>
+          <span className="bc-line-label">Provizija (10%)</span>
           <span className="bc-line-value">−{money(totals.fee)}</span>
         </p>
         <p className="bc-line is-net">
-          <span className="bc-line-label">You receive</span>
+          <span className="bc-line-label">Vi dobijate</span>
           <span className="bc-line-value">{money(totals.net)}</span>
         </p>
       </div>
 
       <div className="panel-card-actions is-end">
         <Button variant="secondary" onClick={onCancel}>
-          Cancel
+          Otkaži
         </Button>
         <Button
           variant="primary"
@@ -208,7 +207,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           }
         >
           <Send size={14} strokeWidth={1.75} />
-          Send work order
+          Pošalji radni nalog
         </Button>
       </div>
     </>

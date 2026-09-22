@@ -2,15 +2,15 @@
 // estimates a level from the answers, the conversation then branches on it, and the
 // recommendation weighs it at 50% (see WEIGHTS below).
 export const CFS = {
-  1: { label: 'Very fit', blurb: 'Active, energetic and motivated. Exercises regularly and is among the fittest for their age.' },
-  2: { label: 'Fit', blurb: 'No active disease symptoms, but less fit than category 1. Active occasionally, for example seasonally.' },
-  3: { label: 'Managing well', blurb: 'Medical problems are well controlled. Not regularly active beyond routine walking.' },
-  4: { label: 'Vulnerable', blurb: 'Not dependent on others day to day, but symptoms often limit activities. Commonly “slowed up” or tired during the day.' },
-  5: { label: 'Mildly frail', blurb: 'More evident slowing. Needs help with errands, housework, transport and heavier chores; often with medication too.' },
-  6: { label: 'Moderately frail', blurb: 'Needs help with all outside activities and keeping house. Often has trouble with stairs, bathing and dressing.' },
-  7: { label: 'Severely frail', blurb: 'Completely dependent for personal care, from any cause. Stable and not at high risk of dying within six months.' },
-  8: { label: 'Very severely frail', blurb: 'Completely dependent and approaching end of life. Typically could not recover even from a minor illness.' },
-  9: { label: 'Terminally ill', blurb: 'Approaching end of life, with a life expectancy under six months, without other evident frailty.' },
+  1: { label: 'Veoma vitalna', blurb: 'Aktivna, energična i motivisana. Redovno vežba i među najvitalnijima je za svoje godine.' },
+  2: { label: 'Vitalna', blurb: 'Bez aktivnih simptoma bolesti, ali manje vitalna nego prva kategorija. Aktivna povremeno, npr. sezonski.' },
+  3: { label: 'Dobro se snalazi', blurb: 'Zdravstveni problemi su pod kontrolom. Nije redovno aktivna izvan uobičajenih šetnji.' },
+  4: { label: 'Ranjiva', blurb: 'Nije zavisna od drugih iz dana u dan, ali je simptomi često ograničavaju. Često „usporena" ili umorna tokom dana.' },
+  5: { label: 'Blago krhka', blurb: 'Usporavanje je vidljivije. Treba joj pomoć oko obaveza, kuće, prevoza i težih poslova; često i oko lekova.' },
+  6: { label: 'Umereno krhka', blurb: 'Treba joj pomoć oko svih aktivnosti van kuće i oko domaćinstva. Često ima problem sa stepenicama, kupanjem i oblačenjem.' },
+  7: { label: 'Izrazito krhka', blurb: 'Potpuno zavisna od drugih oko lične nege, iz bilo kog razloga. Stabilna i bez visokog rizika u narednih šest meseci.' },
+  8: { label: 'Veoma izrazito krhka', blurb: 'Potpuno zavisna i pri kraju života. Po pravilu se ne bi oporavila ni od lakše bolesti.' },
+  9: { label: 'Terminalno bolesna', blurb: 'Pri kraju života, sa očekivanim trajanjem ispod šest meseci, bez druge izražene krhkosti.' },
 };
 
 // Which branch of the conversation a level opens. Straight from the document.

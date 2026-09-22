@@ -9,20 +9,20 @@ export default function Plans({ entries, onOpenPlan, onGoToChat, onAskAssistant 
     <div className="view">
       <div className="view-head">
         <div className="view-head-text">
-          <h1 className="view-title">Care plans</h1>
-          <p className="view-sub">Every plan we’ve put together, newest first.</p>
+          <h1 className="view-title">Planovi nege</h1>
+          <p className="view-sub">Svaki plan koji smo napravili, od najnovijeg.</p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
       {!hasLive && (
         <div className="empty">
-          <p className="locked-title">No active plan</p>
+          <p className="locked-title">Nema aktivnog plana</p>
           <p className="locked-note">
-            Answer the questions in the chat and a new plan will appear here.
+            Odgovorite na pitanja u razgovoru i novi plan će se pojaviti ovde.
           </p>
           <Button variant="primary" onClick={onGoToChat}>
-            Go to the chat
+            Idi na razgovor
           </Button>
         </div>
       )}
@@ -53,7 +53,7 @@ export default function Plans({ entries, onOpenPlan, onGoToChat, onAskAssistant 
                 <ArrowUpRight size={14} strokeWidth={2} className="plan-row-go" aria-hidden="true" />
               </div>
               <p className="plan-row-meta">
-                {e.date} · {e.caregiverCount} caregivers
+                {e.date} · {e.caregiverCount} negovateljica
               </p>
               <p className="plan-row-summary">{e.summary}</p>
             </div>

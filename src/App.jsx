@@ -16,17 +16,24 @@ import PaywallModal from './components/PaywallModal';
 import PlanDetail from './screens/PlanDetail';
 import Immersive from './screens/Immersive';
 import ImmersiveConversation from './screens/ImmersiveConversation';
+import FamilyDrawer from './components/family/FamilyDrawer';
+import CaregiverPage from './screens/CaregiverPage';
+import VisitsPage from './screens/VisitsPage';
+import RequestsPage from './screens/RequestsPage';
+import Toast from './components/family/Toast';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import ApiKeyPanel from './components/ApiKeyPanel';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { statusCounts } from './data/bookings';
 import { care as seedCare } from './data/familyCare';
-import { caregivers } from './data/carePlan';
+import { buildPlan, caregivers } from './data/carePlan';
+import { applyChanges, describeChanges, planDiff } from './data/planEdits';
+import PlanEditor from './components/PlanEditor';
 import { planEntries, seedThreads } from './data/threads';
 
 const formatToday = () =>
-  new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  new Date().toLocaleDateString('sr-Latn-RS', { day: 'numeric', month: 'long', year: 'numeric' });
 
 export default function App() {
   const [phase, setPhase] = useState('register'); // register | app
@@ -61,6 +68,21 @@ export default function App() {
   // card that pays for it is set up in Settings.
   const [care, setCare] = useState(seedCare);
   const [run, setRun] = useState(0); // remounts the flow on restart
+  // The family's decisions open as a drawer from whichever page shows the thing
+  // they concern, and a short line afterwards says what happened.
+  const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
+  const [flash, setFlash] = useState(null);
+  const [openCaregiver, setOpenCaregiver] = useState(null);
+  const [editingPlan, setEditingPlan] = useState(false);
+  // The last change to the plan, kept so the plan can say what changed and take
+  // it back: what moved, which parts of the plan it rewrote, and the state from
+  // before it, for "Poništi".
+  const [planChange, setPlanChange] = useState(null);
+  const showCaregiver = (id) => {
+    setOpenCaregiver(id);
+    setDrawer(null);
+    setView('caregiver');
+  };
 
   const onPlan = useCallback((p) => setPlan(p), []);
   const onNote = useCallback((t) => setNotes((n) => (n.includes(t) ? n : [...n, t])), []);
@@ -73,10 +95,65 @@ export default function App() {
     []
   );
   const selectCaregiver = useCallback((c) => setPaywall({ caregiver: c }), []);
+  const say = (text) => setFlash({ text, at: Date.now() });
+
+  // A change to the plan, by hand or from the assistant: new answers, reconciled
+  // the way every answer is, and the plan built again from them. What changed
+  // is said in one line, so the plan quietly redrawing is not the only sign.
+  // Changes add up until the family says "U redu": the card at the top of the
+  // plan lists everything since, measured against the plan as it was before the
+  // first of them, and "Poništi" takes them all back.
+  const changePlan = ({ nextAnswers, nextNotes, source }) => {
+    const nextPlan = plan ? buildPlan(nextAnswers, nextNotes) : null;
+    const prev = planChange?.prev || { answers, notes, plan };
+    const desc = describeChanges(
+      prev.answers,
+      Object.keys({ ...prev.answers, ...nextAnswers })
+        .filter((id) => JSON.stringify(prev.answers[id]) !== JSON.stringify(nextAnswers[id]) && nextAnswers[id])
+        .map((id) => ({ questionId: id, answer: nextAnswers[id] }))
+    );
+    const diff = planDiff(prev.plan, nextPlan);
+    setPlanChange({
+      source: planChange && planChange.source !== source ? 'both' : source,
+      rows: desc.rows,
+      frailty: desc.frailty,
+      saved: nextNotes.filter((n) => !prev.notes.includes(n)),
+      recs: diff.recs,
+      letter: diff.letter,
+      touched: diff.touched,
+      at: Date.now(),
+      prev,
+    });
+    setAnswers(nextAnswers);
+    setNotes(nextNotes);
+    if (nextPlan) setPlan(nextPlan);
+  };
+
+  const editAnswers = (changes, { source = 'manual' } = {}) => {
+    const { answers: next } = applyChanges(answers, changes);
+    changePlan({ nextAnswers: next, nextNotes: notes, source });
+    say(changes.length === 1 ? 'Plan je izmenjen.' : `Plan je izmenjen — ${changes.length} odgovora.`);
+  };
+
+  const addNotes = (added) => {
+    const fresh = added.filter((t) => !notes.includes(t));
+    if (!fresh.length) return;
+    changePlan({ nextAnswers: answers, nextNotes: [...notes, ...fresh], source: 'assistant' });
+  };
+
+  const undoPlanChange = () => {
+    if (!planChange) return;
+    setAnswers(planChange.prev.answers);
+    setNotes(planChange.prev.notes);
+    setPlan(planChange.prev.plan);
+    setPlanChange(null);
+    say('Izmena je poništena.');
+  };
   const goToChat = () => setView('chat');
   const askAssistant = () => setRightPanel('copilot');
 
   const restart = () => {
+    setPlanChange(null);
     setAnswers({});
     setNotes([]);
     setPlan(null);
@@ -98,7 +175,7 @@ export default function App() {
       setThreads((t) => [
         {
           id: `thread-${Date.now()}`,
-          title: `Care plan for ${plan.firstName}`,
+          title: `Plan nege · ${plan.name}`,
           date: formatToday(),
           summary: plan.summary,
           answers,
@@ -158,10 +235,10 @@ export default function App() {
 
   // The live chat is named after whatever it has produced so far.
   const liveTitle = plan
-    ? `Care plan for ${plan.firstName}`
+    ? `Plan nege · ${plan.name}`
     : Object.keys(answers).length
-      ? 'New care plan'
-      : 'New chat';
+      ? 'Novi plan nege'
+      : 'Novi razgovor';
 
   // Requests only exist once the user has actually contacted someone.
   const hasBookings = unlocked;
@@ -212,6 +289,10 @@ export default function App() {
               onContinue={(u) => {
                 setUser(u);
                 setPhase('app');
+                // A family starts with Jovana, not with the questionnaire: the AI
+                // onboarding is the first thing after signing in, and the rest of
+                // the app is what it hands over to once the plan exists.
+                if (u.role !== 'caregiver') startVariant('ai');
               }}
             />
           </AnimatePresence>
@@ -225,8 +306,8 @@ export default function App() {
           >
             <ChatTopBar
               title={liveTitle}
-              subtitle={plan ? 'Updated just now' : 'In progress'}
-              artifactLabel={plan ? 'Care plan' : null}
+              subtitle={plan ? 'Upravo ažurirano' : 'U toku'}
+              artifactLabel={plan ? 'Plan nege' : null}
               onArtifacts={() => setRightPanel('plan')}
               onNewChat={newChat}
             />
@@ -270,13 +351,45 @@ export default function App() {
               {view === 'dashboard' && (
                 <Dashboard
                   care={care}
-                  onCare={setCare}
-                  hasBookings={hasBookings}
+                  user={user}
+                  onDrawer={setDrawer}
+                  onCaregiver={showCaregiver}
+                  onView={setView}
                   onAskAssistant={askAssistant}
                   onFindCaregiver={() => setView('find-caregiver')}
                 />
               )}
-              {view === 'find-caregiver' && <FindCaregiver onAskAssistant={askAssistant} />}
+              {view === 'caregiver' && (
+                <CaregiverPage
+                  key={openCaregiver}
+                  care={care}
+                  caregiverId={openCaregiver}
+                  onCare={setCare}
+                  onDrawer={setDrawer}
+                  onFlash={(text) => setFlash({ text, at: Date.now() })}
+                  onBack={() => setView('dashboard')}
+                />
+              )}
+              {view === 'visits' && (
+                <VisitsPage care={care} onDrawer={setDrawer} onBack={() => setView('dashboard')} />
+              )}
+              {view === 'requests' && (
+                <RequestsPage
+                  care={care}
+                  onCaregiver={showCaregiver}
+                  onFind={() => setView('find-caregiver')}
+                  onBack={() => setView('dashboard')}
+                />
+              )}
+              {view === 'find-caregiver' && (
+                <FindCaregiver
+                  care={care}
+                  onCare={setCare}
+                  onDrawer={setDrawer}
+                  onFlash={(text) => setFlash({ text, at: Date.now() })}
+                  onAskAssistant={askAssistant}
+                />
+              )}
               {view === 'plans' && (
                 <Plans
                   entries={entries}
@@ -293,6 +406,10 @@ export default function App() {
                   onSelectCaregiver={selectCaregiver}
                   onUnlock={() => setPaywall({ caregiver: null })}
                   onAskAssistant={askAssistant}
+                  onEdit={!openEntry.archived && plan ? () => setEditingPlan(true) : null}
+                  change={planChange}
+                  onUndoChange={undoPlanChange}
+                  onDismissChange={() => setPlanChange(null)}
                 />
               )}
               {view === 'profile' && (
@@ -333,6 +450,11 @@ export default function App() {
             view={view}
             plan={plan}
             unlocked={unlocked}
+            care={care}
+            apiKey={apiKey}
+            answers={answers}
+            onApplyChanges={(changes) => editAnswers(changes, { source: 'assistant' })}
+            onAddNotes={addNotes}
             onClose={() => setRightPanel(null)}
           />
         )}
@@ -404,6 +526,34 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {drawer && (
+          <FamilyDrawer
+            key={`${drawer.kind}-${drawer.caregiverId || drawer.visitId}`}
+            drawer={drawer}
+            care={care}
+            onCare={setCare}
+            onClose={() => setDrawer(null)}
+            onOpen={setDrawer}
+            onFlash={(text) => setFlash({ text, at: Date.now() })}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {editingPlan && plan && (
+          <PlanEditor
+            key="plan-editor"
+            answers={answers}
+            name={plan.firstName}
+            onApply={editAnswers}
+            onClose={() => setEditingPlan(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <Toast flash={flash} onDone={() => setFlash(null)} />
 
       <AnimatePresence>
         {paywall && plan && (

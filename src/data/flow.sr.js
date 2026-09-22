@@ -363,3 +363,26 @@ export const WHY_FOLLOW_UPS = [
     obrazlozenje: 'Od ovoga zavisi da li je dovoljna negovateljica, ili nam za insulin treba i medicinska sestra.',
   },
 ];
+
+// ── the words of an answer, in Serbian ──────────────────────────────────────
+// The rest of the app reads the flow's English option titles; everything the
+// family sees now reads these instead. Anything without a Serbian line falls
+// back to the English one rather than to nothing.
+
+export const srTitle = (q) => Q[q.id]?.title || q.title;
+export const srShort = (q) => Q[q.id]?.short || q.shortTitle || srTitle(q);
+export const srOption = (q, optionId) =>
+  Q[q.id]?.options?.[optionId] || q.options?.find((o) => o.id === optionId)?.title || optionId;
+export const srField = (q, fieldId) => Q[q.id]?.fields?.[fieldId] || q.fields?.find((f) => f.id === fieldId)?.label || fieldId;
+
+// the picked option(s) of an answer, as the family would read them
+export function srOptionTitles(q, answer) {
+  if (!q || !answer) return [];
+  if (q.type === 'single') return answer.optionId ? [srOption(q, answer.optionId)] : [];
+  if (q.type === 'multi') {
+    const titles = (answer.optionIds || []).map((id) => srOption(q, id));
+    if (answer.other?.trim()) titles.push(answer.other.trim());
+    return titles;
+  }
+  return [];
+}

@@ -33,12 +33,12 @@ export default function CarePlanCard({ plan, unlocked, onOpen, onSelectCaregiver
           <FileText size={14} strokeWidth={1.75} className="doc-icon" />
           <div className="doc-head-text">
             <p className="doc-eyebrow">
-              Care plan <span className="doc-meta">· {today}</span>
+              Plan nege <span className="doc-meta">· {today}</span>
             </p>
-            <p className="doc-title">Care plan for {plan.name}</p>
+            <p className="doc-title">Plan nege · {plan.name}</p>
           </div>
           <span className="doc-open">
-            Open <ArrowUpRight size={12} strokeWidth={2} />
+            Otvori <ArrowUpRight size={12} strokeWidth={2} />
           </span>
         </div>
 
@@ -58,7 +58,7 @@ export default function CarePlanCard({ plan, unlocked, onOpen, onSelectCaregiver
         </div>
 
         <p className="doc-section-title">
-          Top matches <span className="doc-count">of {caregivers.length}</span>
+          Najbolje se poklapaju <span className="doc-count">od {caregivers.length}</span>
         </p>
         {preview.map((c) => (
           <CaregiverRow key={c.id} caregiver={c} onSelect={onSelectCaregiver} />
@@ -72,11 +72,11 @@ export default function CarePlanCard({ plan, unlocked, onOpen, onSelectCaregiver
               onOpen();
             }}
           >
-            Open full care plan <ArrowUpRight size={12} strokeWidth={2} />
+            Otvori ceo plan nege <ArrowUpRight size={12} strokeWidth={2} />
           </Button>
           <span className="doc-cta-note">
-            Jovana’s message · {plan.recommendations.length} recommendations ·{' '}
-            {caregivers.length} caregivers
+            Jovanina poruka · {plan.recommendations.length} preporuke ·{' '}
+            {caregivers.length} negovateljica
           </span>
         </div>
       </div>
