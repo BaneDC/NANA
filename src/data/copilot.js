@@ -1,10 +1,8 @@
-import { statusCounts } from './bookings';
 import { firstName, waitingOnYou } from './familyCare';
 
 // The assistant panel is contextual: what it opens with, what it suggests and how
 // it answers all depend on the page it was opened from.
 export function copilotContext(view, { plan, unlocked, care } = {}) {
-  const counts = statusCounts();
 
   switch (view) {
     case 'dashboard':
@@ -16,7 +14,7 @@ export function copilotContext(view, { plan, unlocked, care } = {}) {
       const waiting = care ? waitingOnYou(care) : [];
       const terms = waiting.find((w) => w.kind === 'terms');
       const order = waiting.find((w) => w.kind === 'work-order');
-      const pending = care ? care.requests.filter((r) => r.status === 'pending').length : counts.pending;
+      const pending = care ? care.requests.filter((r) => r.status === 'pending').length : 0;
       const parts = [
         terms && `${firstName(terms.arrangement.caregiver.name)} je poslala nove uslove`,
         order && `radni nalog za ${order.visit.date} prolazi za ${order.visit.chargesInHours} h, osim ako nešto kažete`,

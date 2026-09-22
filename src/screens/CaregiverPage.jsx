@@ -116,7 +116,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
           <div className="view-head-text">
             <h1 className="view-title">{cg.name}</h1>
             <p className="view-sub">
-              {cg.area} · dolazi kod: {care.elder.name} · {ended ? `završeno ${a.endedOn}` : `od ${a.since}`}
+              {cg.area} · dolazi kod: {care.elder.name} · {ended ? `završeno ${a.endedOn}` : a.since ? `od ${a.since}` : 'ugovor još nije prihvaćen'}
             </p>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
       <section className="panel-card">
         <p className="doc-section-title">Ukratko</p>
         <div className="bc-lines ag-terms">
-          <Line label="Zajedno" value={ended ? `${a.since} – ${a.endedOn}` : `od ${a.since}`} />
+          <Line label="Zajedno" value={ended ? `${a.since || '—'} – ${a.endedOn}` : a.since ? `od ${a.since}` : 'još niste počeli'} />
           <Line label="Posete do sada" value={paid.length ? `${paid.length} · ${hoursSoFar} h` : 'još nijedna'} />
           <Line label="Naplaćeno do sada" value={money(chargedSoFar)} />
           <Line label="Poslednja poseta" value={paid[0]?.date || '—'} />

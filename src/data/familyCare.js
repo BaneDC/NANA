@@ -1,14 +1,8 @@
 import { SERVICE_FEE, money, serviceTitle, totalsFor } from './caregiverBoard';
-import { bookings } from './bookings';
 
 // The family's side of NANA Prime: everyone who has cared for their mother, the
-// terms each of them works under, and every visit and what it cost.
-//
-// One family (Milena, for her mother Zorka) and the caregivers they have had.
-// Vesna is the one coming now, and the story is mid-flight on purpose, so
-// that everything a family can be asked to do is on screen at once: she has
-// proposed new terms, sent a work order for yesterday, and has a visit booked
-// for tomorrow. Jelena came before her and the cooperation has ended.
+// terms each of them works under, and every visit and what it cost. It starts
+// empty (see familyStart) and fills with what the family and the caregivers do.
 //
 // A visit moves through the same states the billing prototype uses, in the
 // family's words:
@@ -32,224 +26,6 @@ export const LATE_HOURS = 1;
 
 export const MOOD_LABEL = { low: 'Loše', usual: 'Kao i obično', good: 'Dobro' };
 export const AMOUNT_LABEL = { less: 'Manje nego obično', usual: 'Kao i obično', more: 'Više nego obično' };
-
-const vesna = {
-  id: 'vesna',
-  name: 'Vesna Mitrović',
-  initials: 'VM',
-  phone: '+381 63 210 4471',
-  area: 'Vračar',
-  distance: '1,8 km od vas',
-  years: 12,
-  rating: 4.9,
-  reviews: 64,
-  bio: 'Diplomirana gerijatrijska sestra. Dvanaest godina sa porodicama koje brinu o roditelju kod kuće, najčešće u ranoj fazi demencije.',
-};
-
-const jelena = {
-  id: 'jelena',
-  name: 'Jelena Marković',
-  initials: 'JM',
-  phone: '+381 64 332 1809',
-  area: 'Zvezdara',
-  distance: '3,1 km od vas',
-  years: 6,
-  rating: 4.7,
-  reviews: 23,
-  bio: 'Šest godina u kućnoj nezi. Dolazila je tri jutra nedeljno dok nije prešla na stalni posao.',
-};
-
-// the report a caregiver writes after a visit, shared by the visits below
-const report = (done, note, mood, eating, moving, extra = {}) => ({ done, note, mood, eating, moving, ...extra });
-
-export const care = {
-  family: { name: 'Milena Ilić', relation: 'Daughter' },
-  elder: { name: 'Zorka Ilić', age: 86, area: 'Vračar' },
-
-  // Connected once and then left alone, which is the whole point of it: after
-  // this, a visit is paid for without anybody being asked anything.
-  payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: '11. juna' },
-
-  // Everyone the family has asked. Vesna said yes and became the arrangement
-  // above; the rest are still out, or said no and said why.
-  requests: bookings.map((b) => ({
-    ...b,
-    message: 'Tražimo redovnu pomoć za mamu, tri jutra nedeljno. Da li biste mogli da dolazite?',
-  })),
-
-  arrangements: [
-    {
-      caregiver: vesna,
-      since: '12. juna',
-      endedOn: null,
-      versions: [
-        {
-          version: 1,
-          status: 'active',
-          services: ['medication', 'meals', 'company', 'housekeeping'],
-          rate: 850,
-          hours: 12,
-          schedule: 'pon, sre, pet · 09:00–13:00',
-          sentOn: '11. juna',
-          agreedOn: '12. juna',
-        },
-        // Waiting on Milena. The one in force stays in force until she answers.
-        {
-          version: 2,
-          status: 'sent',
-          services: ['medication', 'meals', 'company', 'housekeeping', 'personal-care'],
-          rate: 900,
-          hours: 12,
-          schedule: 'pon, sre, pet · 09:00–13:00',
-          sentOn: 'Juče',
-          note: 'Zorka je nesigurna kad ulazi u kadu i izlazi iz nje, pa bih volela da pomažem i oko kupanja. To je posao medicinske sestre, zato cena raste.',
-        },
-      ],
-      visits: [
-        {
-          id: 'v-12aug',
-          date: 'Sutra',
-          time: '09:00–13:00',
-          hours: 4,
-          rate: 850,
-          services: ['medication', 'meals', 'company'],
-          notes: 'Podići recept u apoteci u Njegoševoj. Milena je tražila da je pozovete posle.',
-          status: 'planned',
-          sentOn: 'pre 2 dana',
-          dueInHours: 20,
-        },
-        {
-          id: 'v-10aug',
-          date: '10. avgusta',
-          time: '09:00–13:00',
-          hours: 4,
-          rate: 850,
-          services: ['medication', 'meals', 'company'],
-          notes: 'Podići recept u apoteci u Njegoševoj.',
-          report: report(
-            ['medication', 'meals', 'company'],
-            'Jutarnja rutina, skuvala za dva dana, kratka šetnja do parka.',
-            'good',
-            'usual',
-            'usual'
-          ),
-          status: 'charging',
-          sentOn: 'pre 2 sata',
-          chargesInHours: 22,
-        },
-        {
-          id: 'v-08aug',
-          date: '8. avgusta',
-          time: '09:00–13:00',
-          hours: 4,
-          rate: 850,
-          services: ['medication', 'meals', 'housekeeping'],
-          report: report(['medication', 'meals', 'housekeeping'], 'Apoteka, veš, ručak.', 'usual', 'usual', 'usual'),
-          status: 'paid',
-          chargedOn: '9. avgusta',
-          confirmed: 'auto',
-        },
-        {
-          id: 'v-06aug',
-          date: '6. avgusta',
-          time: '09:00–13:00',
-          hours: 4,
-          rate: 850,
-          services: ['medication', 'meals', 'company'],
-          report: report(
-            ['medication', 'meals'],
-            'Umorna celo jutro, nije htela da izađe. Jela je vrlo malo.',
-            'low',
-            'less',
-            'less',
-            { concern: 'Jede mnogo manje nego obično, treći put ove nedelje.' }
-          ),
-          status: 'paid',
-          chargedOn: '7. avgusta',
-          confirmed: 'you',
-        },
-        {
-          id: 'v-04aug',
-          date: '4. avgusta',
-          time: '09:00–13:00',
-          hours: 4,
-          rate: 850,
-          services: ['medication', 'meals', 'company'],
-          report: report(['medication', 'meals', 'company'], 'Kuvanje, nabavka, dug razgovor.', 'good', 'usual', 'usual'),
-          status: 'paid',
-          chargedOn: '5. avgusta',
-          confirmed: 'auto',
-        },
-        {
-          id: 'v-01aug',
-          date: '1. avgusta',
-          time: '09:00–13:00',
-          hours: 4,
-          rate: 850,
-          services: ['medication', 'meals', 'company'],
-          status: 'cancelled',
-          cancelledBy: 'you',
-          cancelReason: 'Nije nam potrebna',
-        },
-        {
-          id: 'v-30jul',
-          date: '30. jula',
-          time: '09:00–13:00',
-          hours: 4,
-          rate: 850,
-          services: ['medication', 'meals', 'housekeeping'],
-          report: report(['medication', 'meals', 'housekeeping'], 'Očistila kuhinju, supa za vikend.', 'usual', 'usual', 'usual'),
-          status: 'paid',
-          chargedOn: '31. jula',
-          confirmed: 'auto',
-        },
-      ],
-    },
-    {
-      caregiver: jelena,
-      since: '3. februara',
-      endedOn: '28. aprila',
-      versions: [
-        {
-          version: 1,
-          status: 'ended',
-          services: ['meals', 'company', 'errands'],
-          rate: 800,
-          hours: 9,
-          schedule: 'uto, čet, sub · 10:00–13:00',
-          sentOn: '1. februara',
-          agreedOn: '3. februara',
-        },
-      ],
-      visits: [
-        {
-          id: 'v-26apr',
-          date: '26. aprila',
-          time: '10:00–13:00',
-          hours: 3,
-          rate: 800,
-          services: ['meals', 'company'],
-          report: report(['meals', 'company'], 'Poslednja poseta. Zajednički ručak i dug oproštaj.', 'good', 'usual', 'usual'),
-          status: 'paid',
-          chargedOn: '27. aprila',
-          confirmed: 'auto',
-        },
-        {
-          id: 'v-24apr',
-          date: '24. aprila',
-          time: '10:00–13:00',
-          hours: 3,
-          rate: 800,
-          services: ['meals', 'errands'],
-          report: report(['meals', 'errands'], 'Pijaca, pa supa.', 'usual', 'usual', 'usual'),
-          status: 'paid',
-          chargedOn: '25. aprila',
-          confirmed: 'auto',
-        },
-      ],
-    },
-  ],
-};
 
 // ── reading it ──────────────────────────────────────────────────────────────
 
@@ -352,7 +128,7 @@ const mapVisit = (c, visitId, fn) => ({
 });
 
 // Asking costs nothing and commits nobody; she answers from her own board.
-export const askCaregiver = (caregiverId) => (c) =>
+export const askCaregiver = (caregiverId, message) => (c) =>
   c.requests.some((r) => r.caregiverId === caregiverId)
     ? c
     : {
@@ -363,7 +139,7 @@ export const askCaregiver = (caregiverId) => (c) =>
             status: 'pending',
             requested: 'upravo',
             detail: 'Još nije odgovorila. Javićemo vam u svakom slučaju.',
-            message: 'Tražimo redovnu pomoć za mamu. Da li biste mogli da dolazite?',
+            message: message || 'Da li biste mogli da dolazite?',
           },
           ...c.requests,
         ],
@@ -371,7 +147,7 @@ export const askCaregiver = (caregiverId) => (c) =>
 
 export const linkCard = (c) => ({
   ...c,
-  payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: 'just now' },
+  payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: 'danas' },
 });
 
 // The proposed version takes over; the one it replaces is kept, marked replaced.

@@ -1,7 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import Register from './screens/Register';
-import Chat from './screens/Chat';
 import ArchivedChat from './screens/ArchivedChat';
 import Dashboard from './screens/Dashboard';
 import Plans from './screens/Plans';
@@ -11,7 +10,7 @@ import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
 import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
-import CopilotPanel from './components/CopilotPanel';
+import Assistant, { useAssistantStore } from './components/CopilotPanel';
 import PaywallModal from './components/PaywallModal';
 import PlanDetail from './screens/PlanDetail';
 import Immersive from './screens/Immersive';
@@ -23,10 +22,11 @@ import RequestsPage from './screens/RequestsPage';
 import Toast from './components/family/Toast';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import ApiKeyPanel from './components/ApiKeyPanel';
+import Button from './components/Button';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { statusCounts } from './data/bookings';
-import { care as seedCare } from './data/familyCare';
+import { askCaregiver, firstName } from './data/familyCare';
+import { REPLY_AFTER_MS, VISIT_AFTER_MS, answerRequest, planFirstVisit, requestMessage, startCare, withAnswers } from './data/familyStart';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import PlanEditor from './components/PlanEditor';
@@ -66,7 +66,7 @@ export default function App() {
   const [notes, setNotes] = useState([]);
   // The arrangement with the caregiver, shared: the dashboard reads it and the
   // card that pays for it is set up in Settings.
-  const [care, setCare] = useState(seedCare);
+  const [care, setCare] = useState(() => startCare());
   const [run, setRun] = useState(0); // remounts the flow on restart
   // The family's decisions open as a drawer from whichever page shows the thing
   // they concern, and a short line afterwards says what happened.
@@ -96,6 +96,48 @@ export default function App() {
   );
   const selectCaregiver = useCallback((c) => setPaywall({ caregiver: c }), []);
   const say = (text) => setFlash({ text, at: Date.now() });
+
+  // The care state follows the answers: who she is, where, and what the plan
+  // says is needed, so a request always carries the plan as it is now.
+  useEffect(() => {
+    setCare((c) => withAnswers(c, answers, user));
+  }, [answers, user]);
+
+  // The caregivers' side of the story. A request gets an answer, and agreed
+  // terms get a first visit, a few seconds later, the way they would from the
+  // caregiver's board. Each is scheduled once.
+  const careRef = useRef(care);
+  careRef.current = care;
+  const scheduled = useRef(new Set());
+  const timers = useRef([]);
+  useEffect(() => {
+    const later = (key, ms, fn) => {
+      if (scheduled.current.has(key)) return;
+      scheduled.current.add(key);
+      timers.current.push(setTimeout(fn, ms));
+    };
+    for (const r of care.requests) {
+      if (r.status !== 'pending') continue;
+      later(`answer-${r.caregiverId}`, REPLY_AFTER_MS, () => {
+        const next = answerRequest(r.caregiverId)(careRef.current);
+        const done = next.requests.find((x) => x.caregiverId === r.caregiverId);
+        const name = caregivers.find((c) => c.id === r.caregiverId)?.name || '';
+        setCare(answerRequest(r.caregiverId));
+        say(
+          done?.status === 'declined'
+            ? `${firstName(name)} ne može da preuzme. ${done.detail}`
+            : `${firstName(name)} je prihvatila upit i poslala ugovor o nezi.`
+        );
+      });
+    }
+    for (const a of care.arrangements) {
+      if (a.endedOn || a.visits.length || !a.versions.some((v) => v.status === 'active')) continue;
+      later(`visit-${a.caregiver.id}`, VISIT_AFTER_MS, () => {
+        setCare(planFirstVisit(a.caregiver.id));
+        say(`${firstName(a.caregiver.name)} je zakazala prvu posetu za sutra.`);
+      });
+    }
+  }, [care]);
 
   // A change to the plan, by hand or from the assistant: new answers, reconciled
   // the way every answer is, and the plan built again from them. What changed
@@ -150,9 +192,28 @@ export default function App() {
     say('Izmena je poništena.');
   };
   const goToChat = () => setView('chat');
-  const askAssistant = () => setRightPanel('copilot');
+  // In Razgovor the assistant is the page itself, so it is not opened again beside it.
+  const askAssistant = () => (view === 'chat' ? null : setRightPanel('copilot'));
+  const assistant = useAssistantStore();
+  useEffect(() => {
+    if (view === 'chat') setRightPanel((p) => (p === 'copilot' ? null : p));
+  }, [view]);
+  const assistantAsk = (id) => {
+    setCare(askCaregiver(id, requestMessage(care)));
+    const c = caregivers.find((x) => x.id === id);
+    say(`Upit je poslat zajedno sa planom nege. ${firstName(c.name)} obično odgovori istog dana.`);
+  };
+  const openPage = (page) => {
+    if (page === 'plan') return openPlanPage('live');
+    setView({ 'my-care': 'dashboard' }[page] || page);
+  };
 
   const restart = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+    scheduled.current = new Set();
+    setCare(startCare());
+    assistant.reset();
     setPlanChange(null);
     setAnswers({});
     setNotes([]);
@@ -168,31 +229,10 @@ export default function App() {
     setPhase('register');
   };
 
-  // Starting a new chat files the current one away first — but only if it actually
-  // got somewhere, so an untouched thread does not clutter the history.
+  // A new conversation with the assistant; the plan and everything done stays.
   const newChat = () => {
-    if (plan) {
-      setThreads((t) => [
-        {
-          id: `thread-${Date.now()}`,
-          title: `Plan nege · ${plan.name}`,
-          date: formatToday(),
-          summary: plan.summary,
-          answers,
-          caregivers: caregivers.length,
-          messages: [],
-        },
-        ...t,
-      ]);
-    }
-    setAnswers({});
-    setNotes([]);
-    setPlan(null);
-    setRightPanel(null);
-    setActiveThread('live');
-    setChatListOpen(true);
+    assistant.reset();
     setView('chat');
-    setRun((r) => r + 1);
   };
 
   const selectThread = (id) => {
@@ -239,15 +279,8 @@ export default function App() {
   });
   const openEntry = entries.find((e) => e.id === selectedPlan) || entries[0];
 
-  // The live chat is named after whatever it has produced so far.
-  const liveTitle = plan
-    ? `Plan nege · ${plan.name}`
-    : Object.keys(answers).length
-      ? 'Novi plan nege'
-      : 'Novi razgovor';
-
-  // Requests only exist once the user has actually contacted someone.
-  const hasBookings = unlocked;
+  // The conversation in the nav: Jovana until the plan exists, the assistant after.
+  const liveTitle = plan ? 'Asistent' : 'Upoznavanje sa Jovanom';
 
   // The caregiver's side shares the shell and the components and nothing else:
   // no questionnaire, no care plan, no sidebar built for a family.
@@ -268,7 +301,7 @@ export default function App() {
           view={view}
           onView={setView}
           user={user}
-          badge={hasBookings ? statusCounts().pending : 0}
+          badge={care.requests.filter((r) => r.status === 'pending').length}
           threads={threads}
           activeThread={activeThread}
           liveTitle={liveTitle}
@@ -281,8 +314,6 @@ export default function App() {
           onSelectPlan={openPlanPage}
           planListOpen={planListOpen}
           onTogglePlanList={() => setPlanListOpen((v) => !v)}
-          variant={variant}
-          onVariant={startVariant}
           onRestart={restart}
         />
       )}
@@ -294,6 +325,7 @@ export default function App() {
               key={`register-${run}`}
               onContinue={(u) => {
                 setUser(u);
+                setCare(startCare(u));
                 setPhase('app');
                 // A family starts with Jovana, not with the questionnaire: the AI
                 // onboarding is the first thing after signing in, and the rest of
@@ -305,30 +337,49 @@ export default function App() {
         </div>
       ) : (
         <>
-          {/* the live chat stays mounted behind everything so its progress survives */}
-          <div
-            className="chat-container"
-            style={{ display: view === 'chat' && !openThread && !fullscreen ? 'flex' : 'none' }}
-          >
-            <ChatTopBar
-              title={liveTitle}
-              subtitle={plan ? 'Upravo ažurirano' : 'U toku'}
-              artifactLabel={plan ? 'Plan nege' : null}
-              onArtifacts={() => setRightPanel('plan')}
-              onNewChat={newChat}
-            />
-            <Chat
-              key={`chat-${run}`}
-              user={user}
-              answers={answers}
-              onAnswer={onAnswer}
-              plan={plan}
-              onPlan={onPlan}
-              unlocked={unlocked}
-              onOpenPlan={() => setRightPanel('plan')}
-              onSelectCaregiver={selectCaregiver}
-            />
-          </div>
+          {/* Razgovor: once the plan exists, the assistant, for anything; before
+              it, the way back into the conversation with Jovana. */}
+          {view === 'chat' && !openThread && !fullscreen && (
+            <div className="chat-container">
+              <ChatTopBar
+                title="Razgovor"
+                subtitle={plan ? `Asistent · ${plan.name}` : 'Upoznavanje sa Jovanom'}
+                artifactLabel={plan ? 'Plan nege' : null}
+                onArtifacts={() => openPlanPage('live')}
+                onNewChat={plan ? newChat : null}
+              />
+              {plan ? (
+                <Assistant
+                  inline
+                  view="chat"
+                  plan={plan}
+                  unlocked={unlocked}
+                  care={care}
+                  apiKey={apiKey}
+                  answers={answers}
+                  store={assistant}
+                  onApplyChanges={(changes) => editAnswers(changes, { source: 'assistant' })}
+                  onAddNotes={addNotes}
+                  onAskCaregiver={assistantAsk}
+                  onOpenPage={openPage}
+                />
+              ) : (
+                <div className="view">
+                  <section className="panel-card needs-you">
+                    <p className="doc-section-title">Upoznavanje nije završeno</p>
+                    <p className="fam-sub">
+                      Jovana pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.
+                    </p>
+                    <div className="panel-card-actions">
+                      <Button variant="primary" onClick={() => startVariant('ai')}>
+                        Nastavite razgovor
+                      </Button>
+                    </div>
+                  </section>
+                </div>
+              )}
+            </div>
+          )}
 
           {view === 'chat' && openThread && !fullscreen && (
             <div className="chat-container">
@@ -358,6 +409,8 @@ export default function App() {
                 <Dashboard
                   care={care}
                   user={user}
+                  plan={plan}
+                  onOpenPlan={() => openPlanPage('live')}
                   onDrawer={setDrawer}
                   onCaregiver={showCaregiver}
                   onView={setView}
@@ -451,7 +504,7 @@ export default function App() {
           />
         )}
         {rightPanel === 'copilot' && (
-          <CopilotPanel
+          <Assistant
             key="copilot-panel"
             view={view}
             plan={plan}
@@ -459,8 +512,11 @@ export default function App() {
             care={care}
             apiKey={apiKey}
             answers={answers}
+            store={assistant}
             onApplyChanges={(changes) => editAnswers(changes, { source: 'assistant' })}
             onAddNotes={addNotes}
+            onAskCaregiver={assistantAsk}
+            onOpenPage={openPage}
             onClose={() => setRightPanel(null)}
           />
         )}

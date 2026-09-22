@@ -50,7 +50,7 @@ input {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--surface-pane);
+  background: var(--surface-elevated);
   border-radius: var(--radius-3xl);
   box-shadow: var(--shadow-container);
   overflow: hidden;
@@ -123,7 +123,7 @@ input {
   flex-direction: column;
   align-items: center;
   padding: 8px 24px 12px;
-  background: var(--surface-pane);
+  background: var(--surface-elevated);
 }
 
 .chat-footer::before {
@@ -133,7 +133,7 @@ input {
   right: 0;
   bottom: 100%;
   height: 24px;
-  background: linear-gradient(180deg, rgba(250, 250, 250, 0), var(--surface-pane));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--surface-elevated));
   pointer-events: none;
 }
 
@@ -1177,12 +1177,12 @@ input {
 }
 
 .nav-item:hover {
-  background: var(--surface-2);
+  background: var(--nav-hover);
   color: var(--text-primary);
 }
 
 .nav-item.is-active {
-  background: var(--primary-subtle-highlight);
+  background: var(--nav-selected);
   color: var(--primary-highlight);
   font-weight: var(--font-medium);
 }
@@ -1215,12 +1215,12 @@ input {
   height: 24px;
   margin-right: 8px;
   border-radius: 6px;
-  color: var(--text-disabled);
+  color: var(--nav-text-muted);
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .nav-inline-btn:hover {
-  background: var(--surface-0);
+  background: var(--nav-selected);
   color: var(--primary-highlight);
 }
 
@@ -1236,7 +1236,7 @@ input {
   gap: 0;
   margin: 4px 0 8px;
   padding-left: var(--spacing-3);
-  border-left: 1px solid var(--border-subtle);
+  border-left: 1px solid var(--nav-line);
   margin-left: var(--spacing-4);
 }
 
@@ -1248,17 +1248,17 @@ input {
   padding: 8px var(--spacing-2);
   border-radius: var(--radius-lg);
   text-align: left;
-  color: var(--text-secondary);
+  color: var(--nav-text);
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .nav-sub-item:hover {
-  background: var(--surface-2);
+  background: var(--nav-hover);
   color: var(--text-primary);
 }
 
 .nav-sub-item.is-active {
-  background: var(--surface-2);
+  background: var(--nav-selected);
   color: var(--text-primary);
 }
 
@@ -1277,14 +1277,14 @@ input {
 .nav-sub-date {
   font-size: 11px;
   line-height: 14px;
-  color: var(--text-disabled);
+  color: var(--nav-text-muted);
 }
 
 .nav-sub-empty {
   padding: 8px var(--spacing-2);
   font-size: 11px;
   line-height: 14px;
-  color: var(--text-disabled);
+  color: var(--nav-text-muted);
 }
 
 .back-link {
@@ -1359,7 +1359,7 @@ input {
   gap: var(--spacing-2);
   padding: var(--spacing-2);
   border-radius: var(--radius-2xl);
-  background: var(--surface-2);
+  background: var(--nav-selected);
 }
 
 .nav-user-text {
@@ -2362,19 +2362,6 @@ input {
 
 
 /* ---------- Questionnaire variant switch (nav) ---------- */
-
-.nav-variant {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 var(--spacing-2);
-}
-
-.nav-variant-label {
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--text-disabled);
-}
 
 .segmented {
   display: flex;
@@ -6131,4 +6118,49 @@ textarea.wo-text {
   font-size: 11px;
   line-height: 16px;
   color: var(--text-secondary);
+}
+
+/* ── the assistant, beyond the plan ────────────────────────────────────────── */
+
+/* In Razgovor it is the page: the chat column's rhythm, a step tighter. */
+.chat-scroll .copilot-body.is-inline {
+  gap: var(--spacing-6);
+}
+
+.cp-offers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.cp-offer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.cp-offer-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cp-offer-name {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.cp-offer-meta {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.cp-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
 }

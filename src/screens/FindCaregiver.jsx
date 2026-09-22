@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Check, Phone, Search, Star } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import { arrangementOf, askCaregiver, firstName } from '../data/familyCare';
+import { requestMessage } from '../data/familyStart';
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 
@@ -42,8 +43,8 @@ export default function FindCaregiver({ care, onCare, onDrawer, onFlash, onAskAs
   }, [query, area, skill]);
 
   const ask = (c) => {
-    onCare(askCaregiver(c.id));
-    onFlash(`Upit je poslat. ${firstName(c.name)} odgovara sa svoje table — upit ništa ne košta.`);
+    onCare(askCaregiver(c.id, requestMessage(care)));
+    onFlash(`Upit je poslat zajedno sa planom nege. ${firstName(c.name)} obično odgovori istog dana.`);
   };
 
   const clear = () => {

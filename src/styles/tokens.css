@@ -46,8 +46,14 @@
   --surface-0: var(--color-white);
   --surface-2: var(--color-neutral-100);
   --surface-elevated: var(--color-white);
-  /* the main pane: a step under the white cards that sit on it */
-  --surface-pane: var(--color-neutral-50);
+  /* the side nav sits straight on the warm page ground, so it gets its own
+     scheme: warm tints for hover, white for what is selected, and text dark
+     enough to read on the peach */
+  --nav-text: var(--color-neutral-600);
+  --nav-text-muted: var(--color-neutral-500);
+  --nav-hover: rgba(254, 219, 206, 0.6);
+  --nav-selected: var(--color-white);
+  --nav-line: var(--color-primary-200);
   --surface-elevated-2: var(--color-white);
   --surface-elevated-3: var(--color-neutral-100);
   --surface-elevated-4: var(--color-neutral-200);

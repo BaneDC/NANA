@@ -1,4 +1,5 @@
-import { ArrowRight, CalendarClock, ChevronRight, Clock, Search } from 'lucide-react';
+import { ArrowRight, CalendarClock, Check, ChevronRight, Clock, FileText, Search } from 'lucide-react';
+import { caregivers } from '../data/carePlan';
 import {
   activeVersion,
   allVisits,
@@ -46,13 +47,20 @@ function SeeAll({ label, onClick }) {
   );
 }
 
-export default function Dashboard({ care, user, onDrawer, onCaregiver, onView, onAskAssistant, onFindCaregiver }) {
-  const elder = firstName(care.elder.name);
+const REQUEST_PILL = {
+  pending: { className: 'is-pending', label: 'Čeka odgovor' },
+  accepted: { className: 'is-accepted', label: 'Prihvatila' },
+  declined: { className: 'is-declined', label: 'Ne može' },
+};
+
+export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onView, onAskAssistant, onFindCaregiver, onOpenPlan }) {
+  const elder = care.elder.name ? firstName(care.elder.name) : null;
   const waiting = waitingOnYou(care);
   const coming = allVisits(care).filter((v) => v.status === 'planned');
   const last = lastVisit(care);
-  const count = (s) => care.requests.filter((r) => r.status === s).length;
-  const quiet = !waiting.length && !coming.length;
+  const quiet = care.arrangements.length > 0 && !waiting.length && !coming.length;
+  // nobody asked yet: the one thing to do is ask
+  const fresh = !care.arrangements.length && !care.requests.length;
 
   const hasTerms = waiting.some((w) => w.kind === 'terms');
   const hasOrder = waiting.some((w) => w.kind === 'work-order');
@@ -69,8 +77,9 @@ export default function Dashboard({ care, user, onDrawer, onCaregiver, onView, o
         <div className="view-head-text">
           <h1 className="view-title">Zdravo, {firstName(user?.name || care.family.name)}</h1>
           <p className="view-sub">
-            Nega · {care.elder.name}, {care.elder.area} ·{' '}
-            {care.payment.connected ? 'kartica je sačuvana' : 'kartica još nije dodata'}
+            {[care.elder.name && `Nega · ${care.elder.name}`, care.elder.area, care.payment.connected ? 'kartica je sačuvana' : 'kartica još nije dodata']
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         </div>
         <div className="view-head-actions">
@@ -81,6 +90,31 @@ export default function Dashboard({ care, user, onDrawer, onCaregiver, onView, o
           </Button>
         </div>
       </div>
+
+      {fresh && (
+        <Section
+          title="Sledeći korak"
+          className="needs-you"
+          sub={
+            plan
+              ? 'Plan nege je spreman. Pošaljite upit negovateljicama koje mu odgovaraju: upit šalje plan i ništa ne košta, a možete da pitate više njih.'
+              : 'Kad završite razgovor sa Jovanom, ovde će biti plan nege i negovateljice koje mu odgovaraju.'
+          }
+        >
+          <div className="panel-card-actions">
+            {plan && (
+              <Button variant="secondary" onClick={onOpenPlan}>
+                <FileText size={14} strokeWidth={1.75} />
+                Pogledaj plan
+              </Button>
+            )}
+            <Button variant="primary" onClick={onFindCaregiver} disabled={!plan}>
+              <Search size={14} strokeWidth={1.75} />
+              Pronađi negovateljicu
+            </Button>
+          </div>
+        </Section>
+      )}
 
       {quiet && (
         <div className="panel-card fam-quiet">
@@ -192,6 +226,7 @@ export default function Dashboard({ care, user, onDrawer, onCaregiver, onView, o
         </Section>
       )}
 
+      {care.arrangements.length > 0 && (
       <Section title={care.arrangements.length === 1 ? 'Vaša negovateljica' : 'Vaše negovateljice'}>
         <div className="fam-rows">
           {care.arrangements.map((a) => {
@@ -210,12 +245,14 @@ export default function Dashboard({ care, user, onDrawer, onCaregiver, onView, o
                 <span className="fam-row-main">
                   <span className="fam-row-title">
                     {a.caregiver.name}
-                    {pen && <span className="status-pill is-pending">Novi uslovi</span>}
+                    {pen && <span className="status-pill is-pending">{act ? 'Novi uslovi' : 'Ugovor čeka'}</span>}
                   </span>
                   <span className="fam-row-body">
                     {ended
                       ? `Završeno ${a.endedOn}`
-                      : `${a.caregiver.area} · od ${a.since}${act ? ` · ${money(act.rate)}/h` : ''}`}
+                      : a.since
+                        ? `${a.caregiver.area} · od ${a.since}${act ? ` · ${money(act.rate)}/h` : ''}`
+                        : `${a.caregiver.area} · čeka da prihvatite ugovor`}
                   </span>
                   {act && !ended && <ServiceChips ids={act.services} />}
                 </span>
@@ -229,15 +266,36 @@ export default function Dashboard({ care, user, onDrawer, onCaregiver, onView, o
         </div>
       </Section>
 
-      <Section
-        title="Vaši upiti"
-        action={<SeeAll label="Svi upiti" onClick={() => onView('requests')} />}
-      >
-        <p className="fam-sub is-flush">
-          Čeka odgovor: {count('pending')} · prihvaćeno: {count('accepted')} · odbijeno: {count('declined')}.
-          Upit ništa ne košta, i možete da pitate više negovateljica.
-        </p>
-      </Section>
+      )}
+
+      {care.requests.length > 0 && (
+        <Section
+          title="Vaši upiti"
+          action={<SeeAll label="Svi upiti" onClick={() => onView('requests')} />}
+        >
+          <div className="fam-rows">
+            {care.requests.map((r) => {
+              const c = caregivers.find((x) => x.id === r.caregiverId);
+              const pill = REQUEST_PILL[r.status];
+              return (
+                <div key={r.caregiverId} className="fam-row">
+                  <span className="cg-avatar">{c?.initials}</span>
+                  <div className="fam-row-main">
+                    <p className="fam-row-title">{c?.name}</p>
+                    <p className="fam-row-body">
+                      {r.status === 'pending' ? `Poslato ${r.requested}. ${r.detail}` : r.detail}
+                    </p>
+                  </div>
+                  <span className={`status-pill ${pill.className}`}>
+                    {r.status !== 'declined' && <Check size={12} strokeWidth={2} />}
+                    {pill.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      )}
     </div>
   );
 }

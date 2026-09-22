@@ -92,8 +92,6 @@ export default function AppNav({
   onSelectPlan,
   planListOpen,
   onTogglePlanList,
-  variant,
-  onVariant,
   onRestart,
 }) {
   const initials =
@@ -191,28 +189,6 @@ export default function AppNav({
       </div>
 
       <div className="nav-group nav-group-end">
-        {/* both questionnaire variants stay available — they write the same answers */}
-        <div className="nav-variant">
-          <span className="nav-variant-label">Upitnik</span>
-          <div className="segmented" role="group" aria-label="Vrsta upitnika">
-            {[
-              ['classic', 'Klasični'],
-              ['immersive', 'Imerzivni'],
-              ['ai', 'AI'],
-            ].map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                className={variant === id ? 'is-active' : ''}
-                onClick={() => onVariant(id)}
-                aria-pressed={variant === id}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {FOOTER_ITEMS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}

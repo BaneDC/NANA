@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Check } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';
 import { copilotContext } from '../data/copilot';
 import { createClient } from '../lib/claudeChat';
-import { askPlanCopilot, decided } from '../lib/planCopilot';
+import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
+import { caregivers } from '../data/carePlan';
 import { describeChanges } from '../data/planEdits';
 import SidePanel from './SidePanel';
 import ChatInput from './ChatInput';
@@ -58,34 +59,95 @@ function Proposal({ proposal, onApply, onDismiss }) {
   );
 }
 
-// Beside a finished care plan, with a key to talk to Claude with, the assistant
-// is real and can change the plan — see lib/planCopilot. Everywhere else it is
-// still the scripted guide it was.
-const PLAN_VIEWS = ['plans', 'plan-detail', 'chat'];
+// A request the assistant offered to send; the family sends it.
+function RequestOffer({ ids, care, onAsk }) {
+  return (
+    <div className="cp-proposal">
+      <p className="cp-proposal-title">Upit sa planom nege</p>
+      <div className="cp-offers">
+        {ids.map((id) => {
+          const c = caregivers.find((x) => x.id === id);
+          const sent = care?.requests.some((r) => r.caregiverId === id);
+          return (
+            <div key={id} className="cp-offer">
+              <span className="cg-avatar">{c.initials}</span>
+              <span className="cp-offer-text">
+                <span className="cp-offer-name">{c.name}</span>
+                <span className="cp-offer-meta">
+                  {c.area} · {c.rate}
+                </span>
+              </span>
+              {sent ? (
+                <span className="status-pill is-accepted">
+                  <Check size={12} strokeWidth={2} />
+                  Poslato
+                </span>
+              ) : (
+                <Button variant="primary" onClick={() => onAsk(id)}>
+                  <Send size={14} strokeWidth={1.75} />
+                  Pošalji upit
+                </Button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <p className="cp-proposal-hint">Upit ništa ne košta i nikoga ne obavezuje.</p>
+    </div>
+  );
+}
 
-// The assistant as a co-pilot: it opens against whatever page you were on and
-// keeps a separate thread per page, so switching views does not mix conversations.
-export default function CopilotPanel({ view, plan, unlocked, care, apiKey, answers, onApplyChanges, onAddNotes, onClose }) {
-  const live = Boolean(plan && apiKey && PLAN_VIEWS.includes(view));
-  const thread = live ? 'plan' : view;
-  const client = useMemo(() => (apiKey ? createClient(apiKey) : null), [apiKey]);
+// With a care plan and a key to talk to Claude with, the assistant is real:
+// it can change the plan, send requests and open pages — see lib/planCopilot.
+// Without them it is the scripted guide it was, one thread per page.
+//
+// The real one is one conversation, kept in App, so the same thread is there
+// whether it is open in Razgovor or beside a page.
+export function useAssistantStore() {
+  const [log, setLog] = useState([]);
   const history = useRef([]);
+  const reset = () => {
+    setLog([]);
+    history.current = [];
+  };
+  return { log, setLog, history, reset };
+}
+
+export function Assistant({
+  inline = false,
+  view,
+  plan,
+  unlocked,
+  care,
+  apiKey,
+  answers,
+  store,
+  onApplyChanges,
+  onAddNotes,
+  onAskCaregiver,
+  onOpenPage,
+  onClose,
+}) {
+  const live = Boolean(plan && apiKey);
+  const client = useMemo(() => (apiKey ? createClient(apiKey) : null), [apiKey]);
   const ctx = live
     ? {
-        label: 'Plan nege',
-        opening: 'Mogu da izmenim plan umesto vas. Recite mi šta je sada drugačije, i pokazaću vam tačno šta se menja pre nego što išta sačuvam.',
-        suggestions: ['Sada hoda uz hodalicu', 'Prošle nedelje je ponovo pala', 'Sada joj treba pomoć oko kupanja'],
+        label: inline ? 'Razgovor' : 'Plan nege',
+        opening: 'Tu sam za sve oko nege: mogu da izmenim plan, predložim negovateljice i pošaljem im upit, ili objasnim kako šta ide. Recite mi šta vam treba.',
+        suggestions: care?.requests.length
+          ? ['Šta sada čeka na mene?', 'Sada hoda uz hodalicu', 'Kako se plaća poseta?']
+          : ['Koja negovateljica joj najviše odgovara?', 'Sada hoda uz hodalicu', 'Kako ide dogovor sa negovateljicom?'],
       }
     : copilotContext(view, { plan, unlocked, care });
-  const [logByView, setLogByView] = useState({});
+  const [scripted, setScripted] = useState({});
   const [thinking, setThinking] = useState(false);
   const bodyRef = useRef(null);
   const replyIndex = useRef(0);
 
-  const log = logByView[thread] || [];
-  const push = (entry) => setLogByView((l) => ({ ...l, [thread]: [...(l[thread] || []), entry] }));
-  const patch = (id, fn) =>
-    setLogByView((l) => ({ ...l, [thread]: (l[thread] || []).map((m) => (m.id === id ? fn(m) : m)) }));
+  const log = live ? store.log : scripted[view] || [];
+  const push = (entry) =>
+    live ? store.setLog((l) => [...l, entry]) : setScripted((l) => ({ ...l, [view]: [...(l[view] || []), entry] }));
+  const patch = (id, fn) => store.setLog((l) => l.map((m) => (m.id === id ? fn(m) : m)));
 
   useEffect(() => {
     const el = bodyRef.current;
@@ -98,14 +160,16 @@ export default function CopilotPanel({ view, plan, unlocked, care, apiKey, answe
     setThinking(true);
     if (live) {
       try {
-        const r = await askPlanCopilot({ client, name: plan.firstName, answers, history: history.current, text });
-        history.current = r.history;
+        const r = await askPlanCopilot({ client, name: plan.firstName, answers, care, history: store.history.current, text });
+        store.history.current = r.history;
         if (r.notes.length) onAddNotes?.(r.notes);
         push({
           id: id + 1,
           role: 'assistant',
           text: r.said,
           saved: r.notes,
+          requests: r.requests,
+          pages: r.pages,
           proposal: r.changes.length
             ? { changes: r.changes, desc: describeChanges(answers, r.changes), status: 'open' }
             : null,
@@ -128,12 +192,91 @@ export default function CopilotPanel({ view, plan, unlocked, care, apiKey, answe
   const apply = (m) => {
     onApplyChanges(m.proposal.changes);
     patch(m.id, (x) => ({ ...x, proposal: { ...x.proposal, status: 'applied' } }));
-    history.current = decided(history.current, true);
+    store.history.current = decided(store.history.current, true);
   };
   const dismiss = (m) => {
     patch(m.id, (x) => ({ ...x, proposal: { ...x.proposal, status: 'dismissed' } }));
-    history.current = decided(history.current, false);
+    store.history.current = decided(store.history.current, false);
   };
+
+  const thread = (
+    <>
+      <p className="assistant-text">{ctx.opening}</p>
+
+      {log.length === 0 && (
+        <div className="copilot-suggestions">
+          {ctx.suggestions.map((s) => (
+            <button key={s} type="button" className="suggestion" onClick={() => send(s)}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {log.map((m) =>
+        m.role === 'user' ? (
+          <motion.div className="bubble-row" key={m.id} {...messageMotion}>
+            <div className="bubble">{m.text}</div>
+          </motion.div>
+        ) : (
+          <motion.div className="cp-reply" key={m.id} {...messageMotion}>
+            {m.text && <p className={`assistant-text${m.error ? ' is-error' : ''}`}>{m.text}</p>}
+            {m.saved?.length > 0 && (
+              <p className="cp-saved">
+                <Check size={12} strokeWidth={2} />
+                Sačuvano u planu: {m.saved.join(' · ')}
+              </p>
+            )}
+            {m.proposal && <Proposal proposal={m.proposal} onApply={() => apply(m)} onDismiss={() => dismiss(m)} />}
+            {m.requests?.length > 0 && <RequestOffer ids={m.requests} care={care} onAsk={onAskCaregiver} />}
+            {m.pages?.length > 0 && (
+              <div className="cp-pages">
+                {m.pages.map((pg) => (
+                  <Button key={pg} variant="secondary" onClick={() => onOpenPage(pg)}>
+                    {PAGES[pg]}
+                    <ArrowRight size={14} strokeWidth={1.75} />
+                  </Button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )
+      )}
+
+      <AnimatePresence>
+        {thinking && (
+          <motion.div
+            key="typing"
+            className="typing"
+            {...messageMotion}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+          >
+            <span />
+            <span />
+            <span />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+
+  const placeholder = live ? 'Pitajte ili recite šta se promenilo…' : 'Pitajte o ovoj stranici…';
+
+  if (inline) {
+    return (
+      <div className="chat">
+        <div className="chat-scroll" ref={bodyRef}>
+          <div className="chat-column copilot-body is-inline">{thread}</div>
+        </div>
+        <div className="chat-footer">
+          <div className="chat-column">
+            <ChatInput placeholder={placeholder} onSend={send} />
+            <p className="footer-note">NANA Prime može da pogreši. Proverite odgovore.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SidePanel
@@ -142,59 +285,15 @@ export default function CopilotPanel({ view, plan, unlocked, care, apiKey, answe
       onClose={onClose}
       footer={
         <div className="copilot-footer">
-          <ChatInput placeholder={live ? 'Recite mi šta se promenilo…' : 'Pitajte o ovoj stranici…'} onSend={send} />
+          <ChatInput placeholder={placeholder} onSend={send} />
         </div>
       }
     >
       <div className="copilot-body" ref={bodyRef}>
-        <p className="assistant-text">{ctx.opening}</p>
-
-        {log.length === 0 && (
-          <div className="copilot-suggestions">
-            {ctx.suggestions.map((s) => (
-              <button key={s} type="button" className="suggestion" onClick={() => send(s)}>
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {log.map((m) =>
-          m.role === 'user' ? (
-            <motion.div className="bubble-row" key={m.id} {...messageMotion}>
-              <div className="bubble">{m.text}</div>
-            </motion.div>
-          ) : (
-            <motion.div className="cp-reply" key={m.id} {...messageMotion}>
-              {m.text && <p className={`assistant-text${m.error ? ' is-error' : ''}`}>{m.text}</p>}
-              {m.saved?.length > 0 && (
-                <p className="cp-saved">
-                  <Check size={12} strokeWidth={2} />
-                  Sačuvano u planu: {m.saved.join(' · ')}
-                </p>
-              )}
-              {m.proposal && (
-                <Proposal proposal={m.proposal} onApply={() => apply(m)} onDismiss={() => dismiss(m)} />
-              )}
-            </motion.div>
-          )
-        )}
-
-        <AnimatePresence>
-          {thinking && (
-            <motion.div
-              key="typing"
-              className="typing"
-              {...messageMotion}
-              exit={{ opacity: 0, transition: { duration: 0.15 } }}
-            >
-              <span />
-              <span />
-              <span />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {thread}
       </div>
     </SidePanel>
   );
 }
+
+export default Assistant;
