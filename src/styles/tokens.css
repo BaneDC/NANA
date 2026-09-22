@@ -46,6 +46,8 @@
   --surface-0: var(--color-white);
   --surface-2: var(--color-neutral-100);
   --surface-elevated: var(--color-white);
+  /* the main pane: a step under the white cards that sit on it */
+  --surface-pane: var(--color-neutral-50);
   --surface-elevated-2: var(--color-white);
   --surface-elevated-3: var(--color-neutral-100);
   --surface-elevated-4: var(--color-neutral-200);
