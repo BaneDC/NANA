@@ -122,7 +122,7 @@ export default function AppNav({
         >
           <button
             type="button"
-            className={`nav-sub-item${activeThread === 'live' ? ' is-active' : ''}`}
+            className={`nav-sub-item${view === 'chat' && activeThread === 'live' ? ' is-active' : ''}`}
             onClick={() => onSelectThread('live')}
           >
             <span className="nav-sub-label">{liveTitle}</span>
@@ -132,7 +132,7 @@ export default function AppNav({
             <button
               key={t.id}
               type="button"
-              className={`nav-sub-item${activeThread === t.id ? ' is-active' : ''}`}
+              className={`nav-sub-item${view === 'chat' && activeThread === t.id ? ' is-active' : ''}`}
               onClick={() => onSelectThread(t.id)}
             >
               <span className="nav-sub-label">{t.title}</span>

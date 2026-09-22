@@ -1220,7 +1220,7 @@ input {
 }
 
 .nav-inline-btn:hover {
-  background: var(--nav-selected);
+  background: var(--nav-card);
   color: var(--primary-highlight);
 }
 
@@ -1359,7 +1359,7 @@ input {
   gap: var(--spacing-2);
   padding: var(--spacing-2);
   border-radius: var(--radius-2xl);
-  background: var(--nav-selected);
+  background: var(--nav-card);
 }
 
 .nav-user-text {

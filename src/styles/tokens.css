@@ -51,8 +51,12 @@
      enough to read on the peach */
   --nav-text: var(--color-neutral-600);
   --nav-text-muted: var(--color-neutral-500);
-  --nav-hover: rgba(254, 219, 206, 0.6);
-  --nav-selected: var(--color-white);
+  /* Selected and hover sit on the ground's own hue (16°), a step and half a
+     step darker: as deep as 10% black would go, without the grey it brings. */
+  --nav-hover: #f9e6de;
+  --nav-selected: #f4d9cf;
+  /* the user card and the inline buttons are objects on the ground, not states */
+  --nav-card: var(--color-white);
   --nav-line: var(--color-primary-200);
   --surface-elevated-2: var(--color-white);
   --surface-elevated-3: var(--color-neutral-100);
