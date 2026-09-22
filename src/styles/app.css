@@ -6164,3 +6164,59 @@ textarea.wo-text {
   flex-wrap: wrap;
   gap: var(--spacing-2);
 }
+
+/* ── the assistant, drawn by inline-chat-kit ───────────────────────────────── */
+
+/* The kit reads --ick- properties; these point it at NANA's own: its type,
+   its ink, white paper, and the warm primary where the kit marks something. */
+.nana-chat {
+  --ick-font-sans: var(--font-sans);
+  --ick-ink-rgb: 62 62 62;
+  --ick-paper-rgb: 255 255 255;
+  --ick-marker-rgb: 252 112 60;
+  /* the pane is white, like every other page */
+  --ick-page: var(--surface-elevated);
+  /* the approval reads as one of our cards: the same tint, border and radius
+     as the proposal above it, 16 outside for 12 of padding and a 4px pill */
+  --ick-approval-surface: var(--primary-subtle);
+  --ick-approval-pad: var(--spacing-3);
+  --ick-approval-radius: var(--radius-2xl);
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.nana-chat > * {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Our cards inside an answer keep the chat's measure. */
+.nana-chat .cp-proposal {
+  width: 100%;
+}
+
+/* The assistant's sentence when it comes with cards, set like the kit's prose. */
+.nana-chat-lead {
+  margin: 0;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: var(--text-primary);
+}
+
+.nana-chat [class*='ick-approval-'][data-decision],
+.nana-chat section[class*='ick-approval-'] {
+  outline: 1px solid var(--color-primary-300);
+  outline-offset: -1px;
+}
+
+/* The kit's primary button is glass; in NANA the one thing to press is the
+   warm primary, as everywhere else in the app. */
+.nana-chat [class*='ick-primary-'] {
+  background: var(--gradient-primary);
+  outline: 1px solid var(--primary);
+  box-shadow: var(--shadow-button);
+  color: var(--primary-foreground);
+}

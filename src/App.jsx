@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import Register from './screens/Register';
 import ArchivedChat from './screens/ArchivedChat';
@@ -10,7 +10,9 @@ import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
 import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
-import Assistant, { useAssistantStore } from './components/CopilotPanel';
+import KitAssistant, { ChatSource } from './components/KitAssistant';
+import { FileText, Plus, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import PaywallModal from './components/PaywallModal';
 import PlanDetail from './screens/PlanDetail';
 import Immersive from './screens/Immersive';
@@ -194,7 +196,10 @@ export default function App() {
   const goToChat = () => setView('chat');
   // In Razgovor the assistant is the page itself, so it is not opened again beside it.
   const askAssistant = () => (view === 'chat' ? null : setRightPanel('copilot'));
-  const assistant = useAssistantStore();
+  // The assistant's conversation: one, wherever it is open. <ChatSource> holds
+  // it and is remounted, under a new key, for a new conversation.
+  const [conversation, setConversation] = useState(0);
+  const chatCtx = useRef({});
   useEffect(() => {
     if (view === 'chat') setRightPanel((p) => (p === 'copilot' ? null : p));
   }, [view]);
@@ -208,12 +213,34 @@ export default function App() {
     setView({ 'my-care': 'dashboard' }[page] || page);
   };
 
+  chatCtx.current = {
+    plan,
+    answers,
+    care,
+    apiKey,
+    onAddNotes: addNotes,
+    onApplyChanges: (changes) => editAnswers(changes, { source: 'assistant' }),
+    onAskCaregiver: assistantAsk,
+    onOpenPage: openPage,
+  };
+  const chatActions = useMemo(
+    () => [
+      { id: 'plan', label: 'Plan nege', icon: <FileText size={16} strokeWidth={1.75} />, onClick: () => chatCtx.current.onOpenPage('plan') },
+      { id: 'new', label: 'Novi razgovor', icon: <Plus size={16} strokeWidth={2} />, onClick: () => setConversation((n) => n + 1) },
+    ],
+    []
+  );
+  const panelActions = useMemo(
+    () => [{ id: 'close', label: 'Zatvori panel', icon: <X size={16} strokeWidth={1.75} />, onClick: () => setRightPanel(null), pinned: true }],
+    []
+  );
+
   const restart = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
     scheduled.current = new Set();
     setCare(startCare());
-    assistant.reset();
+    setConversation((n) => n + 1);
     setPlanChange(null);
     setAnswers({});
     setNotes([]);
@@ -231,7 +258,7 @@ export default function App() {
 
   // A new conversation with the assistant; the plan and everything done stays.
   const newChat = () => {
-    assistant.reset();
+    setConversation((n) => n + 1);
     setView('chat');
   };
 
@@ -341,27 +368,11 @@ export default function App() {
               it, the way back into the conversation with Jovana. */}
           {view === 'chat' && !openThread && !fullscreen && (
             <div className="chat-container">
-              <ChatTopBar
-                title="Razgovor"
-                subtitle={plan ? `Asistent · ${plan.name}` : 'Upoznavanje sa Jovanom'}
-                artifactLabel={plan ? 'Plan nege' : null}
-                onArtifacts={() => openPlanPage('live')}
-                onNewChat={plan ? newChat : null}
-              />
               {plan ? (
-                <Assistant
-                  inline
-                  view="chat"
-                  plan={plan}
-                  unlocked={unlocked}
-                  care={care}
-                  apiKey={apiKey}
-                  answers={answers}
-                  store={assistant}
-                  onApplyChanges={(changes) => editAnswers(changes, { source: 'assistant' })}
-                  onAddNotes={addNotes}
-                  onAskCaregiver={assistantAsk}
-                  onOpenPage={openPage}
+                <KitAssistant
+                  ctx={chatCtx}
+                  title="Razgovor"
+                  actions={chatActions}
                 />
               ) : (
                 <div className="view">
@@ -504,21 +515,18 @@ export default function App() {
           />
         )}
         {rightPanel === 'copilot' && (
-          <Assistant
+          <motion.div
             key="copilot-panel"
-            view={view}
-            plan={plan}
-            unlocked={unlocked}
-            care={care}
-            apiKey={apiKey}
-            answers={answers}
-            store={assistant}
-            onApplyChanges={(changes) => editAnswers(changes, { source: 'assistant' })}
-            onAddNotes={addNotes}
-            onAskCaregiver={assistantAsk}
-            onOpenPage={openPage}
-            onClose={() => setRightPanel(null)}
-          />
+            className="sidebar-wrap"
+            initial={{ width: 0 }}
+            animate={{ width: 432 }}
+            exit={{ width: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 32 }}
+          >
+            <div className="sidebar is-chat">
+              <KitAssistant ctx={chatCtx} title="Asistent" actions={panelActions} />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -615,6 +623,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      <ChatSource key={`chat-${conversation}`} ctx={chatCtx} />
       <Toast flash={flash} onDone={() => setFlash(null)} />
 
       <AnimatePresence>
