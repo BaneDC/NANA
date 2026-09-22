@@ -213,6 +213,12 @@ export default function App() {
   // care plan itself, so the calm isn't broken just to reveal the result.
   const showImmersive = phase === 'app' && variant === 'immersive';
 
+  // Both of those variants take the whole window, so while one is up the shell
+  // under it is not painted at all. Covering it was not enough: they fade in over
+  // most of a second, and registering straight into the AI variant showed the nav
+  // and the empty chat through that fade before the conversation landed.
+  const fullscreen = phase === 'app' && (variant === 'ai' || variant === 'immersive');
+
   const startVariant = (next) => {
     setVariant(next);
     if (next === 'ai' && !apiKey) setAskingKey(true);
@@ -257,7 +263,7 @@ export default function App() {
 
   return (
     <div className="app">
-      {phase === 'app' && (
+      {phase === 'app' && !fullscreen && (
         <AppNav
           view={view}
           onView={setView}
@@ -302,7 +308,7 @@ export default function App() {
           {/* the live chat stays mounted behind everything so its progress survives */}
           <div
             className="chat-container"
-            style={{ display: view === 'chat' && !openThread ? 'flex' : 'none' }}
+            style={{ display: view === 'chat' && !openThread && !fullscreen ? 'flex' : 'none' }}
           >
             <ChatTopBar
               title={liveTitle}
@@ -324,7 +330,7 @@ export default function App() {
             />
           </div>
 
-          {view === 'chat' && openThread && (
+          {view === 'chat' && openThread && !fullscreen && (
             <div className="chat-container">
               <ChatTopBar
                 title={openThread.title}
@@ -346,7 +352,7 @@ export default function App() {
             </div>
           )}
 
-          {view !== 'chat' && (
+          {view !== 'chat' && !fullscreen && (
             <div className="chat-container">
               {view === 'dashboard' && (
                 <Dashboard

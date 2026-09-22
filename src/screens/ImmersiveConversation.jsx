@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
-import { remainingQuestions, systemPrompt } from '../data/conversation';
+import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregivers } from '../data/carePlan';
 import { planOverview } from '../data/carePlan.sr';
@@ -515,7 +515,7 @@ export default function ImmersiveConversation({
           onAssess: assess,
           onThinking: setThought,
         });
-        setSaid(spoken.trim());
+        setSaid(withoutLongDashes(spoken.trim()));
         history.current = result.messages;
         if (!result.messages.some((m) => m.role === 'assistant')) return;
         if (!remainingQuestions(result.answers).length) {

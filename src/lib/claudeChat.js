@@ -1,6 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { reconcile } from '../data/dependencies';
-import { MODEL, TOOLS, remainingQuestions, stateMessage, toAnswer } from '../data/conversation';
+import {
+  MODEL,
+  TOOLS,
+  remainingQuestions,
+  stateMessage,
+  toAnswer,
+  withoutLongDashes,
+} from '../data/conversation';
 import { frailtyOf } from '../data/frailty';
 
 const KEY_STORAGE = 'nana.anthropic-key';
@@ -42,16 +49,18 @@ const REQUEST = {
 // anything that is not a non-empty string counts as none, and can never draw an
 // empty "why" under a question.
 const reasonOf = (input) =>
-  typeof input?.obrazlozenje === 'string' && input.obrazlozenje.trim() ? input.obrazlozenje.trim() : null;
+  typeof input?.obrazlozenje === 'string' && input.obrazlozenje.trim()
+    ? withoutLongDashes(input.obrazlozenje.trim())
+    : null;
 
 // What she is thinking and still missing, from an `assess` that may be only half
 // written — so every field is checked for being there and being a string.
 const thinkingOf = (input) => ({
-  text: typeof input?.utisak === 'string' ? input.utisak.trim() : '',
+  text: typeof input?.utisak === 'string' ? withoutLongDashes(input.utisak.trim()) : '',
   missing: Array.isArray(input?.nepoznanice)
     ? input.nepoznanice
         .filter((u) => typeof u === 'string' && u.trim())
-        .map((u) => u.trim())
+        .map((u) => withoutLongDashes(u.trim()))
         .slice(0, 4)
     : [],
 });
@@ -160,7 +169,7 @@ export async function runTurn({
           }),
         });
       } else if (call.name === 'record_note') {
-        const text = call.input.tekst?.trim();
+        const text = withoutLongDashes(call.input.tekst?.trim());
         if (text) {
           collected.push(text);
           onNote?.(text);
@@ -201,7 +210,7 @@ export async function runTurn({
           });
         }
       } else if (call.name === 'follow_up') {
-        onFollowUp?.(call.input.predlozi || [], reasonOf(call.input));
+        onFollowUp?.((call.input.predlozi || []).map(withoutLongDashes), reasonOf(call.input));
         waiting = true;
         results.push({
           type: 'tool_result',
