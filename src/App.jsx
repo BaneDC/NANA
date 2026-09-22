@@ -212,6 +212,12 @@ export default function App() {
               onContinue={(u) => {
                 setUser(u);
                 setPhase('app');
+                // Registering lands straight in the AI conversation. That is the
+                // variant this build is here to show; classic and immersive stay
+                // one tap away in the nav, which is where someone comparing the
+                // three would look for them anyway. The caregiver's side has no
+                // questionnaire at all, so it keeps its own landing.
+                if (u.role !== 'caregiver') startVariant('ai');
               }}
             />
           </AnimatePresence>

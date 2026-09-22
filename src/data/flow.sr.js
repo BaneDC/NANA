@@ -117,7 +117,7 @@ export const Q = {
       transport: 'Prevoz do lekara',
       exercise: 'Da ostane fizički aktivna',
       prevention: 'Redovne kontrole i prevencija',
-      wellness: 'Wellness — masaža, fizioterapija',
+      wellness: 'Wellness - masaža, fizioterapija',
     },
     other: 'Nešto drugo što bi pomoglo',
   },
@@ -140,7 +140,7 @@ export const Q = {
       family: 'Porodica, kad stigne',
       neighbour: 'Komšinica ili prijateljica',
       paid: 'Neko plaćen privatno',
-      nobody: 'Niko — ne radi se',
+      nobody: 'Niko - ne radi se',
     },
   },
   'personal-care': {
@@ -162,7 +162,7 @@ export const Q = {
     options: {
       low: 'Ne naročito',
       medium: 'Razmišljam o tome',
-      high: 'Mnogo — deluje kao pitanje dana',
+      high: 'Mnogo - deluje kao pitanje dana',
     },
   },
   'bed-mobility': {
@@ -218,7 +218,7 @@ export const Q = {
       discharge: 'Vraća se kući iz bolnice',
       loneliness: 'Previše je sama',
       medication: 'Lekovi su postali teški za praćenje',
-      diagnosis: 'Dijagnoza — šlog, Parkinson, kancer',
+      diagnosis: 'Dijagnoza - šlog, Parkinson, kancer',
       'home-help': 'Kuća joj je postala prevelika',
       respite: 'Porodici treba predah',
       'daily-living': 'Svakodnevni život traži podršku',
@@ -252,7 +252,7 @@ export const STEP_INTRO = {
   'daily-life':
     'Hvala. Sada kada smo se upoznali, volela bih da razumem kako izgleda njihov svakodnevni dan.',
   support: 'Sad mi je slika jasna. Još par pitanja i preporuka će biti precizna.',
-  reason: 'Još jedna stvar, i ona je najvažnija — zašto ste nam se javili baš sada?',
+  reason: 'Još jedna stvar, i ona je najvažnija: zašto ste nam se javili baš sada?',
 };
 
 export const CFS_SR = {
@@ -280,7 +280,7 @@ export const STARTERS = [
   {
     id: 'changed',
     title: 'Nešto se promenilo i zabrinut sam',
-    sub: 'Pad, zbunjenost, loša nedelja — recite mi šta se desilo',
+    sub: 'Pad, zbunjenost, loša nedelja: recite mi šta se desilo',
   },
   {
     id: 'help',
@@ -315,25 +315,25 @@ export const WHY = {
   household:
     'Ako živi sama, negovateljica je često prva koja primeti promenu; ako živi sa nekim, sa njim dogovaramo ko šta preuzima.',
   'home-condition': 'Da znamo da li negovateljica prvo treba da sredi stan, pa tek onda da uđe u svakodnevnu rutinu.',
-  'daily-help': 'Po ovome procenjujemo koliko je poseta nedeljno stvarno potrebno — ni previše, ni premalo.',
-  'self-care': 'Ono što još može sama ne preuzimamo od nje, da to ne izgubi — pomažemo samo tamo gde treba.',
+  'daily-help': 'Po ovome procenjujemo koliko je poseta nedeljno stvarno potrebno, ni previše, ni premalo.',
+  'self-care': 'Ono što još može sama ne preuzimamo od nje, da to ne izgubi. Pomažemo samo tamo gde treba.',
   falls:
     'Posle jednog pada raste rizik od sledećeg; ako je padala, prvo proveravamo stan i kretanje, pa tek onda krećemo sa negom.',
   outdoors:
-    'Da znamo da li je usamljenost deo slike — tada negovateljica nije samo pomoć u kući, nego i društvo i razlog da izađe.',
+    'Da znamo da li je usamljenost deo slike, jer tada negovateljica nije samo pomoć u kući, nego i društvo i razlog da izađe.',
   slowing: 'Da znamo da li se stanje menja, i da li plan pravimo za danas ili za narednih nekoliko meseci.',
   'who-helps-now': 'Da znamo koga rasterećujemo, i šta ne sme da stane dok ne krenemo.',
   'personal-care':
-    'Za kupanje, premeštanje i inkontinenciju biramo negovateljicu koja je to već radila — to se ne uči na licu mesta.',
+    'Za kupanje, premeštanje i inkontinenciju biramo negovateljicu koja je to već radila, jer se to ne uči na licu mesta.',
   'fall-risk': 'Vaš osećaj je često tačniji od svakog upitnika; ako strahujete od pada, prevenciju stavljamo na prvo mesto.',
   'bed-mobility':
-    'Ko ne može sam da se okrene, mora redovno da se okreće i noću — to menja koliko često neko mora da bude uz nju.',
+    'Ko ne može sam da se okrene, mora redovno da se okreće i noću, a to menja koliko često neko mora da bude uz nju.',
   eating: 'Ako ima problem sa gutanjem, hrana se priprema drugačije i obrok traži nekoga ko zna kako.',
   'pressure-sores': 'Od ovoga zavisi da li je dovoljna negovateljica, ili treba da dolazi i medicinska sestra.',
   respiratory: 'Kiseonik i aparati za disanje traže nekoga ko je obučen da radi sa njima.',
   onset: 'Nagla promena traži brzu reakciju i često lekara, a postepena dugoročan plan.',
   hospitalisation:
-    'Prve nedelje posle bolnice su najosetljivije — tada prvo usklađujemo lekove i negu sa otpusnom listom.',
+    'Prve nedelje posle bolnice su najosetljivije, pa tada prvo usklađujemo lekove i negu sa otpusnom listom.',
 };
 
 // Follow-ups are where a reason matters most: the question was on no list, the
