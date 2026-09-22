@@ -11,6 +11,7 @@ import AppNav from './components/AppNav';
 import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { ChatSource } from './components/KitAssistant';
+import { demoAnswers, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { FileText, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PaywallModal from './components/PaywallModal';
@@ -37,16 +38,25 @@ import { planEntries, seedThreads } from './data/threads';
 const formatToday = () =>
   new Date().toLocaleDateString('sr-Latn-RS', { day: 'numeric', month: 'long', year: 'numeric' });
 
+// /?demo opens past the onboarding, on a finished plan — for trying the chat and
+// everything after it without talking the conversation through each time.
+const DEMO = wantsDemo();
+const demoStart = DEMO ? reconcile({}, demoAnswers).answers : null;
+
+// What registration already told us about the person writing, as the answer the
+// onboarding would otherwise ask for, so Jovana does not ask it again.
+const aboutYou = (u) => ({ values: { 'your-name': u.name, 'your-phone': u.phone } });
+
 export default function App() {
-  const [phase, setPhase] = useState('register'); // register | app
-  const [view, setView] = useState('chat');
+  const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
+  const [view, setView] = useState(DEMO ? 'plan-detail' : 'chat');
   // `role` is chosen at registration and decides which of the two applications
   // this is: the family's, or the caregiver's. Switching means starting over,
   // which is what the restart button is for.
-  const [user, setUser] = useState({ name: '', email: '', role: 'family' });
+  const [user, setUser] = useState(DEMO ? demoUser : { name: '', email: '', role: 'family' });
   // answers live here so the profile can read them without a second source of truth
-  const [answers, setAnswers] = useState({});
-  const [plan, setPlan] = useState(null);
+  const [answers, setAnswers] = useState(() => demoStart || {});
+  const [plan, setPlan] = useState(() => (DEMO ? buildPlan(demoStart, demoNotes) : null));
   const [unlocked, setUnlocked] = useState(false);
   // one slot on the right: the care plan or the assistant, never both
   const [rightPanel, setRightPanel] = useState(null); // null | 'plan' | 'copilot'
@@ -65,10 +75,10 @@ export default function App() {
   // set when Anthropic turned the key down, so the key screen can say why it is back
   const [keyRejected, setKeyRejected] = useState(false);
   // things the family said that no question covers — they reach the plan
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState(DEMO ? demoNotes : []);
   // The arrangement with the caregiver, shared: the dashboard reads it and the
   // card that pays for it is set up in Settings.
-  const [care, setCare] = useState(() => startCare());
+  const [care, setCare] = useState(() => startCare(DEMO ? demoUser : null));
   const [run, setRun] = useState(0); // remounts the flow on restart
   // The family's decisions open as a drawer from whichever page shows the thing
   // they concern, and a short line afterwards says what happened.
@@ -203,10 +213,19 @@ export default function App() {
   useEffect(() => {
     if (view === 'chat') setRightPanel((p) => (p === 'copilot' ? null : p));
   }, [view]);
+  // Writing to a caregiver goes through the one modal: the message can be
+  // written any time and is sent once the subscription is paid. Returns whether
+  // it went out now, so the assistant's card can say so.
+  const contactCaregiver = (c) => setPaywall({ caregiver: c });
   const assistantAsk = (id) => {
-    setCare(askCaregiver(id, requestMessage(care)));
     const c = caregivers.find((x) => x.id === id);
-    say(`Upit je poslat zajedno sa planom nege. ${firstName(c.name)} obično odgovori istog dana.`);
+    if (!unlocked) {
+      contactCaregiver(c);
+      return false;
+    }
+    setCare(askCaregiver(id, requestMessage(care)));
+    say(`Poruka je poslata zajedno sa planom nege. ${firstName(c.name)} obično odgovori istog dana.`);
+    return true;
   };
   const openPage = (page) => {
     if (page === 'plan') return openPlanPage('live');
@@ -353,6 +372,7 @@ export default function App() {
               onContinue={(u) => {
                 setUser(u);
                 setCare(startCare(u));
+                if (u.role !== 'caregiver') setAnswers((a) => ({ ...a, 'about-you': aboutYou(u) }));
                 setPhase('app');
                 // A family starts with Jovana, not with the questionnaire: the AI
                 // onboarding is the first thing after signing in, and the rest of
@@ -454,6 +474,7 @@ export default function App() {
               {view === 'find-caregiver' && (
                 <FindCaregiver
                   care={care}
+                  onContact={contactCaregiver}
                   onCare={setCare}
                   onDrawer={setDrawer}
                   onFlash={(text) => setFlash({ text, at: Date.now() })}
@@ -632,10 +653,19 @@ export default function App() {
             key="paywall"
             caregiver={paywall.caregiver}
             plan={plan}
+            unlocked={unlocked}
+            draft={requestMessage(care)}
+            alreadyAsked={Boolean(paywall.caregiver && care.requests.some((q) => q.caregiverId === paywall.caregiver.id))}
             onPay={() => {
               setUnlocked(true);
+              say('Pretplata je aktivna.');
+              // unlocking the plan has nothing left to do here; a message still has to be sent
+              if (!paywall.caregiver) setPaywall(null);
+            }}
+            onSend={(message) => {
+              setCare(askCaregiver(paywall.caregiver.id, message));
+              say(`Poruka je poslata zajedno sa planom nege. ${firstName(paywall.caregiver.name)} obično odgovori istog dana.`);
               setPaywall(null);
-              setRightPanel('plan');
             }}
             onClose={() => setPaywall(null)}
           />

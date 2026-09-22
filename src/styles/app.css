@@ -1852,13 +1852,23 @@ input {
 
 .register {
   flex: 1;
+  /* without it the column grows past the pane and the pane clips it, so the
+     form cannot scroll to its own top or bottom */
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* safe: a form taller than the window starts at its top instead of being cut */
+  justify-content: safe center;
   gap: var(--spacing-6);
   padding: 48px 24px;
+}
+
+/* a column taller than the pane scrolls; nothing in it is squeezed to fit,
+   which is what flattened the logo to nothing */
+.register > * {
+  flex-shrink: 0;
 }
 
 /* ---------- Photo carousel (M3 multi-browse) ---------- */
@@ -6377,4 +6387,221 @@ textarea.wo-text {
   font-size: var(--text-sm-size);
   line-height: var(--text-sm-leading);
   font-weight: var(--font-regular, 400);
+}
+
+/* ── registration ──────────────────────────────────────────────────────────── */
+
+.tf-required {
+  color: var(--primary-highlight);
+}
+
+.text-field .tf-hint {
+  padding: 0 var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.reg-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-3);
+}
+
+@media (max-width: 480px) {
+  .reg-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.text-field .tf-input select {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-primary);
+  padding-left: var(--spacing-1);
+  cursor: pointer;
+}
+
+.text-field .tf-input select.is-empty {
+  color: var(--text-secondary);
+}
+
+.text-field .tf-input input {
+  padding-left: var(--spacing-1);
+}
+
+.text-field .tf-trailing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+}
+
+.text-field .tf-trailing:hover {
+  color: var(--text-primary);
+  background: var(--surface-2);
+}
+
+/* the country code is its own small control inside the field */
+.text-field .tf-input.has-prefix {
+  padding-left: var(--spacing-1);
+}
+
+.text-field .tf-prefix {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  height: 100%;
+  padding: 0 var(--spacing-2);
+  border-right: 0.8px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.text-field .tf-prefix select {
+  flex: 0 0 auto;
+  padding: 0;
+}
+
+.reg-checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: 0 var(--spacing-1);
+}
+
+.reg-check {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.reg-check input {
+  position: absolute;
+  opacity: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.reg-box {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 0.8px solid var(--border-strong, var(--color-neutral-300));
+  border-radius: var(--radius-sm, 4px);
+  background: var(--surface-0);
+  color: var(--primary-foreground);
+}
+
+.reg-check.is-on .reg-box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.reg-check input:focus-visible + .reg-box {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.reg-legal,
+.reg-gdpr {
+  width: 100%;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.reg-legal {
+  text-align: center;
+}
+
+.reg-legal a {
+  color: var(--primary-highlight);
+}
+
+.reg-gdpr {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+  padding-top: var(--spacing-4);
+  border-top: 0.8px solid var(--border-subtle);
+}
+
+.reg-gdpr svg {
+  flex-shrink: 0;
+  color: var(--primary-highlight);
+}
+
+/* ── writing to a caregiver ────────────────────────────────────────────────── */
+
+.pw-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.pw-message .tf-label {
+  padding: 0 var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.pw-message textarea {
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 0.8px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+  font: inherit;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.pw-message textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* what the subscription opens, grouped under the one line that says why */
+.pw-gate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-2);
+}
+
+.pw-gate-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
 }

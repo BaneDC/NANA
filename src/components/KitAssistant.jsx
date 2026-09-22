@@ -270,8 +270,7 @@ function KitChat({ chat, ctx, title, actions, className }) {
             <SendRequestCard
               data={part.data}
               onSend={(id) => {
-                ctx.current.onAskCaregiver(id);
-                write({ ...part.data, sent: [...part.data.sent, id] });
+                if (ctx.current.onAskCaregiver(id)) write({ ...part.data, sent: [...part.data.sent, id] });
               }}
             />
           );

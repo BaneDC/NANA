@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Check, Phone, Search, Star } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
-import { arrangementOf, askCaregiver, firstName } from '../data/familyCare';
-import { requestMessage } from '../data/familyStart';
+import { arrangementOf } from '../data/familyCare';
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 
@@ -21,7 +20,7 @@ const REQUEST_PILL = {
 };
 const SKILLS = [...new Set(caregivers.flatMap((c) => c.tags))];
 
-export default function FindCaregiver({ care, onCare, onDrawer, onFlash, onAskAssistant }) {
+export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAskAssistant }) {
   const [query, setQuery] = useState('');
   const [area, setArea] = useState(null);
   const [skill, setSkill] = useState(null);
@@ -42,10 +41,8 @@ export default function FindCaregiver({ care, onCare, onDrawer, onFlash, onAskAs
     return found.sort((a, b) => b.match - a.match);
   }, [query, area, skill]);
 
-  const ask = (c) => {
-    onCare(askCaregiver(c.id, requestMessage(care)));
-    onFlash(`Upit je poslat zajedno sa planom nege. ${firstName(c.name)} obično odgovori istog dana.`);
-  };
+  // the message is written in the modal and sent once the subscription is paid
+  const ask = (c) => onContact(c);
 
   const clear = () => {
     setQuery('');
@@ -174,7 +171,7 @@ export default function FindCaregiver({ care, onCare, onDrawer, onFlash, onAskAs
                     </span>
                   ) : (
                     <Button variant="primary" onClick={() => ask(c)}>
-                      Pošalji upit
+                      Pošalji poruku
                     </Button>
                   )}
                 </div>

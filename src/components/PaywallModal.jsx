@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, FileText, Phone, X } from 'lucide-react';
+import { Check, FileText, Lock, Send, X } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
-import TextField from './TextField';
 import Button from './Button';
 
-// One modal, two ways in: tapping a caregiver to request their number, or unlocking
-// the recommendations. We ask for the user's own number because the introduction is
-// made by SMS — it doubles as the lead capture.
-export default function PaywallModal({ caregiver, plan, onPay, onClose }) {
-  const [phone, setPhone] = useState('');
-  const valid = phone.replace(/\D/g, '').length >= 8;
-
-  const pay = () => valid && onPay();
+// One modal, two ways in: writing to a caregiver, or unlocking the plan.
+//
+// The message is written first and sent only once the subscription is paid —
+// writing costs nothing, and someone who has already put their mother's needs
+// into words is not asked to do it again after paying. The family's number is
+// not asked for here: registration already has it.
+export default function PaywallModal({ caregiver, plan, unlocked, draft, alreadyAsked, onPay, onSend, onClose }) {
+  const [message, setMessage] = useState(draft || '');
+  const first = caregiver?.name.split(' ')[0];
+  const canSend = unlocked && message.trim().length > 0;
 
   return (
     <motion.div
@@ -44,44 +45,66 @@ export default function PaywallModal({ caregiver, plan, onPay, onClose }) {
             </span>
           )}
           <div>
-            <p className="doc-eyebrow">{caregiver ? 'Zatražite broj' : 'Ceo plan nege'}</p>
+            <p className="doc-eyebrow">{caregiver ? 'Poruka sa planom nege' : 'Ceo plan nege'}</p>
             <p className="doc-title">{caregiver ? caregiver.name : `Plan nege · ${plan.name}`}</p>
           </div>
         </div>
 
-        <p className="doc-p">
-          {caregiver
-            ? `Ostavite broj i potvrdićemo da je ${caregiver.name.split(' ')[0]} slobodna, pa vam poslati upoznavanje SMS-om — uz direktan broj svake negovateljice iz plana.`
-            : 'Ostavite broj i otključaćemo ceo plan — preporuke, predložena pomagala i direktan broj svake negovateljice koja odgovara.'}
-        </p>
+        {caregiver && alreadyAsked ? (
+          <p className="doc-p">Već ste poslali upit. {first} odgovara sa svoje table, a mi vam javljamo čim odgovori.</p>
+        ) : caregiver ? (
+          <>
+            <p className="doc-p">
+              Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.
+            </p>
+            <label className="pw-message">
+              <span className="tf-label">Poruka za negovateljicu</span>
+              <textarea
+                value={message}
+                rows={5}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Recite joj ukratko šta vam treba i kada."
+              />
+            </label>
+          </>
+        ) : (
+          <p className="doc-p">
+            Otključajte ceo plan: preporuke, predložena pomagala i poruke svakoj negovateljici koja odgovara.
+          </p>
+        )}
 
-        <TextField
-          label="Vaš broj telefona"
-          icon={Phone}
-          placeholder="+381 60 123 45 67"
-          value={phone}
-          onChange={setPhone}
-          onEnter={pay}
-        />
+        {!unlocked && (
+          <div className="pw-gate">
+            <p className="pw-gate-title">
+              <Lock size={12} strokeWidth={2} />
+              {caregiver ? 'Poruka se šalje posle pretplate' : 'Uz pretplatu'}
+            </p>
+            <ul className="paywall-list">
+              <li>
+                <Check size={12} strokeWidth={2.5} /> Poruke svim negovateljicama iz plana ({caregivers.length})
+              </li>
+              <li>
+                <Check size={12} strokeWidth={2.5} /> Preporuke lekara i predložena pomagala
+              </li>
+              <li>
+                <Check size={12} strokeWidth={2.5} /> Dostupnost potvrđuje naš tim
+              </li>
+            </ul>
+          </div>
+        )}
 
-        <ul className="paywall-list">
-          <li>
-            <Check size={12} strokeWidth={2.5} /> Direktni brojevi svih {caregivers.length}{' '}
-            negovateljica
-          </li>
-          <li>
-            <Check size={12} strokeWidth={2.5} /> Preporuke lekara i predložena pomagala
-          </li>
-          <li>
-            <Check size={12} strokeWidth={2.5} /> Dostupnost potvrđuje naš tim
-          </li>
-        </ul>
-
-        <Button variant="primary" size="lg" full disabled={!valid} onClick={pay}>
-          Pretplati se — 1.490 RSD mesečno
-        </Button>
+        {!unlocked ? (
+          <Button variant="primary" size="lg" full onClick={onPay}>
+            Pretplati se · 1.490 RSD mesečno
+          </Button>
+        ) : caregiver && !alreadyAsked ? (
+          <Button variant="primary" size="lg" full disabled={!canSend} onClick={() => onSend(message.trim())}>
+            <Send size={14} strokeWidth={1.75} />
+            Pošalji poruku
+          </Button>
+        ) : null}
         <Button variant="ghost" onClick={onClose}>
-          Možda kasnije
+          {unlocked && (alreadyAsked || !caregiver) ? 'Zatvori' : 'Možda kasnije'}
         </Button>
       </motion.div>
     </motion.div>
