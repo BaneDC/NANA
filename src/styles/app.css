@@ -6159,11 +6159,6 @@ textarea.wo-text {
   color: var(--text-secondary);
 }
 
-.cp-pages {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-2);
-}
 
 /* ── the assistant, drawn by inline-chat-kit ───────────────────────────────── */
 
@@ -6176,11 +6171,6 @@ textarea.wo-text {
   --ick-marker-rgb: 252 112 60;
   /* the pane is white, like every other page */
   --ick-page: var(--surface-elevated);
-  /* the approval reads as one of our cards: the same tint, border and radius
-     as the proposal above it, 16 outside for 12 of padding and a 4px pill */
-  --ick-approval-surface: var(--primary-subtle);
-  --ick-approval-pad: var(--spacing-3);
-  --ick-approval-radius: var(--radius-2xl);
   flex: 1;
   min-height: 0;
   height: 100%;
@@ -6193,10 +6183,6 @@ textarea.wo-text {
   min-height: 0;
 }
 
-/* Our cards inside an answer keep the chat's measure. */
-.nana-chat .cp-proposal {
-  width: 100%;
-}
 
 /* The assistant's sentence when it comes with cards, set like the kit's prose. */
 .nana-chat-lead {
@@ -6206,12 +6192,6 @@ textarea.wo-text {
   color: var(--text-primary);
 }
 
-.nana-chat [class*='ick-approval-'][data-decision],
-.nana-chat section[class*='ick-approval-'] {
-  outline: 1px solid var(--color-primary-300);
-  outline-offset: -1px;
-}
-
 /* The kit's primary button is glass; in NANA the one thing to press is the
    warm primary, as everywhere else in the app. */
 .nana-chat [class*='ick-primary-'] {
@@ -6219,4 +6199,155 @@ textarea.wo-text {
   outline: 1px solid var(--primary);
   box-shadow: var(--shadow-button);
   color: var(--primary-foreground);
+}
+
+/* NANA's cards inside the kit's answer, on the kit's own surfaces and corner
+   chain, so they sit beside its approval and questions as one system:
+   ground (40, 16 around) → card (24, 8 inside) → row (16, 8 inside) → chip (8). */
+.kc-ground {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--ick-nest-ground-pad);
+  border-radius: var(--ick-nest-ground);
+  background: var(--ick-ground);
+}
+
+.kc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ick-nest-pad);
+  padding: var(--ick-nest-pad);
+  border-radius: var(--ick-nest-card);
+  background: var(--ick-card);
+  box-shadow: var(--ick-shadow-1);
+}
+
+/* the title and the foot start on the rows' text column */
+.kc-title,
+.kc-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--ick-space-3);
+  margin: 0;
+  padding: var(--ick-nest-pad) var(--ick-nest-pad) 0;
+  font-size: var(--ick-text-md);
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ick-ink);
+}
+
+.kc-foot {
+  padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
+  font-size: var(--ick-text-sm);
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--ick-ink-faint);
+}
+
+.kc-ground[data-status='applied'] .kc-title {
+  color: var(--status-ok-fg);
+}
+
+.kc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ick-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kc-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ick-space-2);
+  padding: var(--ick-nest-pad);
+  border-radius: var(--ick-nest-row);
+  background: var(--ick-inset);
+}
+
+.kc-row.is-person {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ick-nest-pad);
+}
+
+.kc-row-label {
+  font-size: var(--ick-text-sm);
+  line-height: 16px;
+  color: var(--ick-ink-faint);
+}
+
+.kc-change,
+.kc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ick-space-2);
+  font-size: var(--ick-text-md);
+  line-height: 20px;
+}
+
+.kc-was {
+  color: var(--ick-ink-faint);
+  text-decoration: line-through;
+}
+
+.kc-now {
+  color: var(--ick-ink);
+}
+
+.kc-change svg {
+  color: var(--ick-ink-faint);
+}
+
+.kc-person {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--ick-text-md);
+  line-height: 20px;
+}
+
+/* the one mark: which answer came off and which went on */
+.kc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ick-space-2);
+  padding: var(--ick-space-2) var(--ick-nest-pad);
+  border-radius: var(--ick-nest-inner);
+  font-size: var(--ick-text-sm);
+  line-height: 16px;
+}
+
+.kc-chip.is-removed {
+  background: var(--status-no-bg);
+  color: var(--status-no-fg);
+}
+
+.kc-chip.is-added {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+}
+
+/* an avatar in a row: 8 in a 16 corner, 8 in */
+.kc-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ick-nest-inner);
+  background: var(--color-primary-200);
+  color: var(--color-primary-700);
+  font-size: var(--ick-text-sm);
+  font-weight: 500;
+}
+
+.kc-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ick-nest-pad);
 }

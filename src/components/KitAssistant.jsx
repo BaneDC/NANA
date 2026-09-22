@@ -7,7 +7,6 @@ import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
 import { describeChanges } from '../data/planEdits';
 import { caregivers } from '../data/carePlan';
 import { chatLabelsSr } from '../data/chatLabels.sr';
-import ChangeRows from './ChangeRows';
 
 // The assistant, drawn by inline-chat-kit. The kit owns the conversation's
 // look and motion; what is NANA's rides in the answer as custom parts — the
@@ -110,52 +109,88 @@ export function ChatSource({ ctx }) {
 // Their state lives in the part's data and is written back with updatePart, so
 // only the row they belong to redraws, and a remount keeps it.
 
+// Built on the kit's surfaces, like its own question and approval: a ground
+// holding a card holding inset rows, corners on the kit's one chain
+// (8 → 16 → 24 → 40), separated by surface and gap rather than by lines.
+function KitCard({ title, status, children, foot }) {
+  return (
+    <div className="kc-ground" data-status={status}>
+      <div className="kc-card">
+        <p className="kc-title">{title}</p>
+        {children}
+        {foot && <p className="kc-foot">{foot}</p>}
+      </div>
+    </div>
+  );
+}
+
 function PlanDiffCard({ data }) {
   const { desc, status } = data;
+  const title =
+    status === 'applied' ? (
+      <>
+        <Check size={14} strokeWidth={2} /> Primenjeno na plan
+      </>
+    ) : status === 'dismissed' ? (
+      'Nije primenjeno'
+    ) : (
+      'Predlažem ove izmene'
+    );
   return (
-    <div className={`cp-proposal is-${status === 'proposed' ? 'open' : status}`}>
-      <p className="cp-proposal-title">
-        {status === 'applied' ? (
+    <KitCard
+      title={title}
+      status={status}
+      foot={
+        desc.frailty && (
           <>
-            <Check size={14} strokeWidth={2} /> Primenjeno na plan
+            <AlertTriangle size={12} strokeWidth={2} />
+            Nivo krhkosti: {desc.frailty.before} → {desc.frailty.after}
           </>
-        ) : status === 'dismissed' ? (
-          'Nije primenjeno'
-        ) : (
-          'Predlažem ove izmene'
-        )}
-      </p>
-      <ChangeRows rows={desc.rows} stacked />
-      {desc.frailty && (
-        <p className="pc-frailty">
-          <AlertTriangle size={12} strokeWidth={2} />
-          Nivo krhkosti: {desc.frailty.before} → {desc.frailty.after}
-        </p>
-      )}
-    </div>
+        )
+      }
+    >
+      <ul className="kc-rows">
+        {desc.rows.map((r) => (
+          <li key={r.questionId} className="kc-row">
+            <span className="kc-row-label">{r.title}</span>
+            {r.added || r.removed ? (
+              <span className="kc-chips">
+                {r.removed.length > 0 && <span className="kc-chip is-removed">Više ne: {r.removed.join(', ')}</span>}
+                {r.added.length > 0 && <span className="kc-chip is-added">Sada i: {r.added.join(', ')}</span>}
+              </span>
+            ) : (
+              <span className="kc-change">
+                <span className="kc-was">{r.before}</span>
+                <ArrowRight size={12} strokeWidth={1.75} />
+                <span className="kc-now">{r.after}</span>
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </KitCard>
   );
 }
 
 function SendRequestCard({ data, onSend }) {
   return (
-    <div className="cp-proposal">
-      <p className="cp-proposal-title">Upit sa planom nege</p>
-      <div className="cp-offers">
+    <KitCard title="Upit sa planom nege" foot="Upit ništa ne košta i nikoga ne obavezuje.">
+      <ul className="kc-rows">
         {data.ids.map((id) => {
           const c = caregivers.find((x) => x.id === id);
           if (!c) return null;
           const sent = data.sent.includes(id);
           return (
-            <div key={id} className="cp-offer">
-              <span className="cg-avatar">{c.initials}</span>
-              <span className="cp-offer-text">
-                <span className="cp-offer-name">{c.name}</span>
-                <span className="cp-offer-meta">
+            <li key={id} className="kc-row is-person">
+              <span className="kc-avatar">{c.initials}</span>
+              <span className="kc-person">
+                <span className="kc-now">{c.name}</span>
+                <span className="kc-row-label">
                   {c.area} · {c.rate}
                 </span>
               </span>
               {sent ? (
-                <span className="status-pill is-accepted">
+                <span className="kc-chip is-added">
                   <Check size={12} strokeWidth={2} />
                   Poslato
                 </span>
@@ -164,18 +199,17 @@ function SendRequestCard({ data, onSend }) {
                   Pošalji upit
                 </KitButton>
               )}
-            </div>
+            </li>
           );
         })}
-      </div>
-      <p className="cp-proposal-hint">Upit ništa ne košta i nikoga ne obavezuje.</p>
-    </div>
+      </ul>
+    </KitCard>
   );
 }
 
 function OpenPageButtons({ data, onOpen }) {
   return (
-    <div className="cp-pages">
+    <div className="kc-pages">
       {data.pages.map((pg) => (
         <KitButton key={pg} variant="outline" iconRight={<ArrowRight size={14} strokeWidth={1.75} />} onClick={() => onOpen(pg)}>
           {PAGES[pg]}
