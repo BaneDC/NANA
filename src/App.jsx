@@ -10,7 +10,7 @@ import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
 import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
-import KitAssistant, { ChatSource } from './components/KitAssistant';
+import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress } from './lib/account';
 import { FileText, Plus, X } from 'lucide-react';
@@ -210,6 +210,9 @@ export default function App() {
   // The assistant's conversation: one, wherever it is open. <ChatSource> holds
   // it and is remounted, under a new key, for a new conversation.
   const [conversation, setConversation] = useState(0);
+  // what the chat has open beside it, drawn by the app rather than inside the
+  // conversation, so it is a pane of its own in the shell's right column
+  const [openPane, setOpenPane] = useState(null);
   const chatCtx = useRef({});
   useEffect(() => {
     if (view === 'chat') setRightPanel((p) => (p === 'copilot' ? null : p));
@@ -284,6 +287,7 @@ export default function App() {
     timers.current = [];
     scheduled.current = new Set();
     setCare(startCare());
+    setOpenPane(null);
     setConversation((n) => n + 1);
     setPlanChange(null);
     setAnswers({});
@@ -303,6 +307,7 @@ export default function App() {
   // A new conversation with the assistant; the plan and everything done stays.
   const newChat = () => {
     setConversation((n) => n + 1);
+    setOpenPane(null);
     setView('chat');
   };
 
@@ -431,6 +436,8 @@ export default function App() {
                   ctx={chatCtx}
                   title="Razgovor"
                   actions={chatActions}
+                  openPane={openPane}
+                  onOpenPane={setOpenPane}
                 />
               ) : (
                 <div className="view">
@@ -563,6 +570,9 @@ export default function App() {
       )}
 
       <AnimatePresence>
+        {view === 'chat' && openPane && (
+          <ChatPane key="chat-pane" openId={openPane} ctx={chatCtx} onClose={() => setOpenPane(null)} />
+        )}
         {rightPanel === 'plan' && plan && (
           <CaregiverSidebar
             key="plan-panel"

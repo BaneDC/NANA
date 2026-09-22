@@ -6673,3 +6673,36 @@ textarea.wo-text {
 .nana-pane.is-plan {
   gap: var(--spacing-4);
 }
+
+/* The chat's pane, in the shell's own column beside the conversation: the same
+   card as every other pane here, so it reads as a second surface rather than a
+   strip cut off the chat. */
+.chat-pane-wrap {
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-pane-wrap .chat-pane {
+  width: 420px;
+  height: 100%;
+  margin-left: 12px;
+  border-radius: var(--radius-3xl);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-container);
+}
+
+/* a caregiver's name in a card, pressed to open her beside the conversation */
+.kc-name-link {
+  align-self: flex-start;
+  color: var(--ick-ink);
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgb(62 62 62 / 0.25);
+}
+
+.kc-name-link:hover {
+  text-decoration-color: currentColor;
+}

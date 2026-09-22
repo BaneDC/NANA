@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { ChatExperience, useChatTurns } from 'inline-chat-kit';
+import { motion } from 'framer-motion';
+import { ArtifactPane, ChatExperience, useChatTurns } from 'inline-chat-kit';
 import 'inline-chat-kit/styles.css';
 import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';
 import { createClient } from '../lib/claudeChat';
@@ -191,7 +192,7 @@ function PlanDiffCard({ data, onDecide }) {
   );
 }
 
-function SendRequestCard({ data, onSend }) {
+function SendRequestCard({ data, onSend, onOpen }) {
   return (
     <KitCard title="Upit sa planom nege" foot="Upit ništa ne košta i nikoga ne obavezuje.">
       <ul className="kc-rows">
@@ -203,7 +204,13 @@ function SendRequestCard({ data, onSend }) {
             <li key={id} className="kc-row is-person">
               <span className="kc-avatar">{c.initials}</span>
               <span className="kc-person">
-                <span className="kc-now">{c.name}</span>
+                {onOpen ? (
+                  <button type="button" className="kc-name-link" onClick={() => onOpen(id)}>
+                    {c.name}
+                  </button>
+                ) : (
+                  <span className="kc-now">{c.name}</span>
+                )}
                 <span className="kc-row-label">
                   {c.area} · {c.rate}
                 </span>
@@ -240,19 +247,61 @@ function OpenPageButtons({ data, onOpen }) {
   );
 }
 
-// ── the chat ─────────────────────────────────────────────────────────────────
-
-export default function KitAssistant({ ctx, title, actions, className }) {
-  const chat = useSyncExternalStore(chatStore.subscribe, chatStore.get);
-  if (!chat) return null;
-  return <KitChat chat={chat} ctx={ctx} title={title} actions={actions} className={className} />;
+// The pane the host draws: the kit's own, in the app's right-hand column, so
+// what a card opens sits beside the conversation as its own surface.
+export function ChatPane({ openId, ctx, onClose }) {
+  const pane = paneFor(openId, ctx.current);
+  if (!pane) return null;
+  return (
+    <motion.div
+      className="chat-pane-wrap"
+      initial={{ width: 0, opacity: 0 }}
+      animate={{ width: 432, opacity: 1 }}
+      exit={{ width: 0, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 32 }}
+    >
+      <ArtifactPane
+        className="chat-pane"
+        title={pane.title}
+        meta={pane.meta}
+        onClose={onClose}
+        closeLabel={chatLabelsSr.pane.close}
+        expandLabel={chatLabelsSr.pane.expand}
+        collapseLabel={chatLabelsSr.pane.collapse}
+      >
+        {pane.children}
+      </ArtifactPane>
+    </motion.div>
+  );
 }
 
-function KitChat({ chat, ctx, title, actions, className }) {
+// ── the chat ─────────────────────────────────────────────────────────────────
+
+export default function KitAssistant({ ctx, title, actions, className, openPane, onOpenPane }) {
+  const chat = useSyncExternalStore(chatStore.subscribe, chatStore.get);
+  if (!chat) return null;
+  return (
+    <KitChat
+      chat={chat}
+      ctx={ctx}
+      title={title}
+      actions={actions}
+      className={className}
+      openPane={openPane}
+      onOpenPane={onOpenPane}
+    />
+  );
+}
+
+function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane }) {
+  // With a pane of its own the host draws it beside the chat, in the app's own
+  // column; without one the kit draws it inside the conversation, which is
+  // what the assistant in the side panel wants.
+  const hostPane = Boolean(onOpenPane);
   const { updatePart } = chat;
 
   const renderPart = useMemo(
-    () => (part, { turnId }) => {
+    () => (part, { turnId, openArtifact }) => {
       const write = (data) => updatePart(turnId, { kind: 'custom', id: part.id, data });
       switch (part.type) {
         case 'lead':
@@ -273,6 +322,7 @@ function KitChat({ chat, ctx, title, actions, className }) {
           return (
             <SendRequestCard
               data={part.data}
+              onOpen={(id) => openArtifact(`page:caregiver:${id}`)}
               onSend={(id) => {
                 if (ctx.current.onAskCaregiver(id)) write({ ...part.data, sent: [...part.data.sent, id] });
               }}
@@ -287,8 +337,8 @@ function KitChat({ chat, ctx, title, actions, className }) {
     [updatePart, ctx]
   );
 
-  // The pane beside the conversation, read from the family's state as it is
-  // now, so what opens is never a copy of when the answer was written.
+  // The pane's contents, read from the family's state as it is now, so what
+  // opens is never a copy of when the answer was written.
   const artifact = useCallback((openId) => paneFor(openId, ctx.current), [ctx]);
 
   const { plan, care } = ctx.current;
@@ -321,7 +371,10 @@ function KitChat({ chat, ctx, title, actions, className }) {
         title={title}
         actions={actions}
         placeholder={chatLabelsSr.input.placeholder}
-        artifact={artifact}
+        artifact={hostPane ? undefined : artifact}
+        pane={hostPane ? 'none' : 'inline'}
+        openArtifactId={hostPane ? openPane : undefined}
+        onOpenArtifactChange={onOpenPane}
         empty={empty}
       />
     </div>
