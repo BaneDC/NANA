@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, ChevronDown, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import Logo from '../components/Logo';
+import PhotoCarousel from '../components/PhotoCarousel';
 import SelectCard from '../components/SelectCard';
 import Button from '../components/Button';
 import { saveAccount, signIn } from '../lib/account';
@@ -326,6 +327,7 @@ export default function Register({ onContinue }) {
       exit={{ opacity: 0, y: -16, transition: { duration: 0.2, ease: 'easeIn' } }}
     >
       <Logo width={150} />
+      <PhotoCarousel />
       {mode === 'sign-up' ? (
         <SignUp onContinue={onContinue} onSignIn={() => setMode('sign-in')} />
       ) : (
