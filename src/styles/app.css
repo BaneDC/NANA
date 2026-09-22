@@ -6192,14 +6192,6 @@ textarea.wo-text {
   color: var(--text-primary);
 }
 
-/* The kit's primary button is glass; in NANA the one thing to press is the
-   warm primary, as everywhere else in the app. */
-.nana-chat [class*='ick-primary-'] {
-  background: var(--gradient-primary);
-  outline: 1px solid var(--primary);
-  box-shadow: var(--shadow-button);
-  color: var(--primary-foreground);
-}
 
 /* NANA's cards inside the kit's answer, on the kit's own surfaces and corner
    chain, so they sit beside its approval and questions as one system:
@@ -6350,4 +6342,39 @@ textarea.wo-text {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ick-nest-pad);
+}
+
+/* the answers sit on the card, under what they answer, and start on its column */
+.kc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ick-nest-pad);
+  padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
+}
+
+/* The question, once sent, as NANA's own bubble: a flat grey 16 with no glass,
+   no rim, no highlight and no shadow. */
+.nana-chat [class*='ick-surface-'][class*='ick-glass-'] {
+  --ick-input-fill: var(--surface-2);
+  --ick-input-text: var(--text-primary);
+  --ick-ink-glass: var(--text-primary);
+  --ick-ink-glass-strong: var(--text-primary);
+  --ick-ink-soft: var(--text-primary);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-2xl) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.nana-chat [class*='ick-surface-'][class*='ick-glass-']::before,
+.nana-chat [class*='ick-surface-'][class*='ick-glass-']::after {
+  display: none;
+}
+
+.nana-chat [class*='ick-surface-'][class*='ick-glass-'] [class*='ick-editor-'] {
+  color: var(--text-primary);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-regular, 400);
 }

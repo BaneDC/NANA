@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { ChatExperience, Button as KitButton, useChatTurns } from 'inline-chat-kit';
+import { ChatExperience, useChatTurns } from 'inline-chat-kit';
 import 'inline-chat-kit/styles.css';
 import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';
 import { createClient } from '../lib/claudeChat';
@@ -7,6 +7,7 @@ import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
 import { describeChanges } from '../data/planEdits';
 import { caregivers } from '../data/carePlan';
 import { chatLabelsSr } from '../data/chatLabels.sr';
+import Button from './Button';
 
 // The assistant, drawn by inline-chat-kit. The kit owns the conversation's
 // look and motion; what is NANA's rides in the answer as custom parts — the
@@ -79,13 +80,6 @@ export function ChatSource({ ctx }) {
         type: 'plan-diff',
         data: { changes: r.changes, desc: describeChanges(answers, r.changes), status: 'proposed' },
       };
-      yield {
-        kind: 'approval',
-        id: `ok-${turnId}`,
-        title: 'Da primenim ove izmene na plan?',
-        description: 'Ništa se ne menja dok ne primenite.',
-        choices: ['once', 'deny'],
-      };
     }
     if (r.requests.length) {
       yield { kind: 'custom', id: `req-${turnId}`, type: 'send-request', data: { ids: r.requests, sent: [] } };
@@ -112,19 +106,22 @@ export function ChatSource({ ctx }) {
 // Built on the kit's surfaces, like its own question and approval: a ground
 // holding a card holding inset rows, corners on the kit's one chain
 // (8 → 16 → 24 → 40), separated by surface and gap rather than by lines.
-function KitCard({ title, status, children, foot }) {
+function KitCard({ title, status, children, foot, actions }) {
   return (
     <div className="kc-ground" data-status={status}>
       <div className="kc-card">
         <p className="kc-title">{title}</p>
         {children}
         {foot && <p className="kc-foot">{foot}</p>}
+        {actions && <div className="kc-actions">{actions}</div>}
       </div>
     </div>
   );
 }
 
-function PlanDiffCard({ data }) {
+// The proposal and its question are one object, as the kit's own approval is:
+// what would change on the card, and the two answers on the same card.
+function PlanDiffCard({ data, onDecide }) {
   const { desc, status } = data;
   const title =
     status === 'applied' ? (
@@ -140,11 +137,29 @@ function PlanDiffCard({ data }) {
     <KitCard
       title={title}
       status={status}
-      foot={
-        desc.frailty && (
+      actions={
+        status === 'proposed' && (
           <>
-            <AlertTriangle size={12} strokeWidth={2} />
-            Nivo krhkosti: {desc.frailty.before} → {desc.frailty.after}
+            <Button variant="secondary" onClick={() => onDecide(false)}>
+              Ne sada
+            </Button>
+            <Button variant="primary" onClick={() => onDecide(true)}>
+              <Check size={14} strokeWidth={2} />
+              Primeni na plan
+            </Button>
+          </>
+        )
+      }
+      foot={
+        (desc.frailty || status === 'proposed') && (
+          <>
+            {desc.frailty && (
+              <>
+                <AlertTriangle size={12} strokeWidth={2} />
+                Nivo krhkosti: {desc.frailty.before} → {desc.frailty.after}.{' '}
+              </>
+            )}
+            {status === 'proposed' && 'Ništa se ne menja dok ne primenite.'}
           </>
         )
       }
@@ -195,9 +210,10 @@ function SendRequestCard({ data, onSend }) {
                   Poslato
                 </span>
               ) : (
-                <KitButton variant="primary" icon={<Send size={14} strokeWidth={1.75} />} onClick={() => onSend(id)}>
+                <Button variant="primary" onClick={() => onSend(id)}>
+                  <Send size={14} strokeWidth={1.75} />
                   Pošalji upit
-                </KitButton>
+                </Button>
               )}
             </li>
           );
@@ -211,9 +227,10 @@ function OpenPageButtons({ data, onOpen }) {
   return (
     <div className="kc-pages">
       {data.pages.map((pg) => (
-        <KitButton key={pg} variant="outline" iconRight={<ArrowRight size={14} strokeWidth={1.75} />} onClick={() => onOpen(pg)}>
+        <Button key={pg} variant="secondary" onClick={() => onOpen(pg)}>
           {PAGES[pg]}
-        </KitButton>
+          <ArrowRight size={14} strokeWidth={1.75} />
+        </Button>
       ))}
     </div>
   );
@@ -237,7 +254,17 @@ function KitChat({ chat, ctx, title, actions, className }) {
         case 'lead':
           return <p className="nana-chat-lead">{part.data.text}</p>;
         case 'plan-diff':
-          return <PlanDiffCard data={part.data} />;
+          return (
+            <PlanDiffCard
+              data={part.data}
+              onDecide={(applied) => {
+                if (applied) ctx.current.onApplyChanges(part.data.changes);
+                write({ ...part.data, status: applied ? 'applied' : 'dismissed' });
+                const h = chatStore.get().history;
+                h.current = decided(h.current, applied);
+              }}
+            />
+          );
         case 'send-request':
           return (
             <SendRequestCard
@@ -255,25 +282,6 @@ function KitChat({ chat, ctx, title, actions, className }) {
       }
     },
     [updatePart, ctx]
-  );
-
-  // The plan changes only on "Primeni na plan": the approval's decision is
-  // written back, the card above it says what happened, and the model hears it.
-  const chatRef = useRef(chat);
-  chatRef.current = chat;
-  const decide = useCallback(
-    (write, turnId, partId, decision) => {
-      write(turnId, { kind: 'approval', id: partId, decision });
-      const turn = chatRef.current.turns.find((t) => t.id === turnId);
-      const diff = turn?.parts.find((p) => p.kind === 'custom' && p.type === 'plan-diff');
-      if (!diff) return;
-      const applied = decision === 'once';
-      if (applied) ctx.current.onApplyChanges(diff.data.changes);
-      write(turnId, { kind: 'custom', id: diff.id, data: { ...diff.data, status: applied ? 'applied' : 'dismissed' } });
-      const h = chatRef.current.history;
-      h.current = decided(h.current, applied);
-    },
-    [ctx]
   );
 
   const { plan, care } = ctx.current;
@@ -297,7 +305,6 @@ function KitChat({ chat, ctx, title, actions, className }) {
       <ChatExperience
         chat={chat}
         renderPart={renderPart}
-        onDecideApproval={decide}
         labels={chatLabelsSr}
         headerActions={false}
         composerMenu={false}
