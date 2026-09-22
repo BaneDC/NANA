@@ -82,13 +82,15 @@ const REQUEST = {
 };
 
 // A way to the page something is on, when the family wants to look at it.
+// Said as what the button does, not as the page's name: a lone "Upiti" under
+// an answer does not say it takes you anywhere.
 export const PAGES = {
-  plan: 'Plan nege',
-  'my-care': 'Moja nega',
+  plan: 'Otvori plan nege',
+  'my-care': 'Idi na Moju negu',
   'find-caregiver': 'Pronađi negovateljicu',
-  visits: 'Sve posete',
-  requests: 'Upiti',
-  settings: 'Podešavanja',
+  visits: 'Pogledaj sve posete',
+  requests: 'Pogledaj upite',
+  settings: 'Otvori podešavanja',
 };
 const SHOW = {
   name: 'show_page',
