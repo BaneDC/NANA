@@ -8,6 +8,7 @@ import { describeChanges } from '../data/planEdits';
 import { caregivers } from '../data/carePlan';
 import { chatLabelsSr } from '../data/chatLabels.sr';
 import Button from './Button';
+import { paneFor, previewFor } from './ChatPanes';
 
 // The assistant, drawn by inline-chat-kit. The kit owns the conversation's
 // look and motion; what is NANA's rides in the answer as custom parts — the
@@ -84,8 +85,11 @@ export function ChatSource({ ctx }) {
     if (r.requests.length) {
       yield { kind: 'custom', id: `req-${turnId}`, type: 'send-request', data: { ids: r.requests, sent: [] } };
     }
-    if (r.pages.length) {
-      yield { kind: 'custom', id: `open-${turnId}`, type: 'open-page', data: { pages: r.pages } };
+    // A page the answer points to opens beside the conversation, not instead
+    // of it: each is the kit's artifact card, and pressing it opens the pane.
+    for (const page of r.pages) {
+      const preview = previewFor(page, ctx.current);
+      if (preview) yield { kind: 'artifact', id: `page:${page}`, preview: 'text', state: 'done', ...preview };
     }
   }, [ctx]);
 
@@ -283,6 +287,10 @@ function KitChat({ chat, ctx, title, actions, className }) {
     [updatePart, ctx]
   );
 
+  // The pane beside the conversation, read from the family's state as it is
+  // now, so what opens is never a copy of when the answer was written.
+  const artifact = useCallback((openId) => paneFor(openId, ctx.current), [ctx]);
+
   const { plan, care } = ctx.current;
   const empty = useMemo(
     () => ({
@@ -313,6 +321,7 @@ function KitChat({ chat, ctx, title, actions, className }) {
         title={title}
         actions={actions}
         placeholder={chatLabelsSr.input.placeholder}
+        artifact={artifact}
         empty={empty}
       />
     </div>

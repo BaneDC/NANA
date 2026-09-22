@@ -1,10 +1,9 @@
-import { Lock, Star } from 'lucide-react';
-import { MASKED_PHONE } from '../data/carePlan';
+import { Send, Star } from 'lucide-react';
 
-// One caregiver in the care plan. `caregiver.phone` only exists once the plan is
-// paid for — while it is missing the whole row is the paywall trigger.
+// One caregiver in the care plan. The family reaches her with a message, written
+// here and sent once the subscription is paid, so the whole row opens it.
 export default function CaregiverRow({ caregiver, onSelect, detailed }) {
-  const locked = !caregiver.phone;
+  const locked = true;
 
   const open = (e) => {
     e.stopPropagation();
@@ -49,15 +48,10 @@ export default function CaregiverRow({ caregiver, onSelect, detailed }) {
             ))}
           </div>
         )}
-        {caregiver.phone ? (
-          <a className="cg-phone is-open" href={`tel:${caregiver.phone.replace(/\s/g, '')}`}>
-            {caregiver.phone}
-          </a>
-        ) : (
+        {onSelect && (
           <span className="cg-phone">
-            <span className="cg-phone-mask">{MASKED_PHONE}</span>
-            <Lock size={12} strokeWidth={2} />
-            <span className="cg-phone-cta">Dobij broj</span>
+            <Send size={12} strokeWidth={2} />
+            <span className="cg-phone-cta">Pošalji poruku</span>
           </span>
         )}
       </div>

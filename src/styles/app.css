@@ -6654,3 +6654,15 @@ textarea.wo-text {
 .nana-chat [class*='ick-surface-']:not([class*='ick-glass-']) [data-placeholder]::before {
   color: var(--text-secondary);
 }
+
+/* What opens in the chat's pane: the app's own rows, stacked on the pane's
+   rhythm, the plan's letter and recommendations at the pane's width. */
+.nana-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.nana-pane.is-plan {
+  gap: var(--spacing-4);
+}

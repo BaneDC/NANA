@@ -242,6 +242,12 @@ export default function App() {
     onApplyChanges: (changes) => editAnswers(changes, { source: 'assistant' }),
     onAskCaregiver: assistantAsk,
     onOpenPage: openPage,
+    // for what opens in the chat's pane
+    unlocked,
+    planChange,
+    onContact: contactCaregiver,
+    onUnlock: () => setPaywall({ caregiver: null }),
+    onDrawer: setDrawer,
   };
   const chatActions = useMemo(
     () => [
@@ -660,6 +666,10 @@ export default function App() {
             onClose={() => setDrawer(null)}
             onOpen={setDrawer}
             onFlash={(text) => setFlash({ text, at: Date.now() })}
+            onContact={(c) => {
+              setDrawer(null);
+              contactCaregiver(c);
+            }}
           />
         )}
       </AnimatePresence>

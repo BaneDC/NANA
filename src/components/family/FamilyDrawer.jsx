@@ -10,7 +10,6 @@ import {
   activeVersion,
   agreeTerms,
   arrangementOf,
-  askCaregiver,
   callOffVisit,
   chargedFor,
   confirmVisit,
@@ -559,18 +558,15 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
 
 // ── someone they might ask ──────────────────────────────────────────────────
 
-function Profile({ care, caregiverId, onCare, onClose, onFlash }) {
+function Profile({ care, caregiverId, onContact, onClose }) {
   const c = caregivers.find((x) => x.id === caregiverId);
   if (!c) return null;
   const first = firstName(c.name);
   const asked = care.requests.find((r) => r.caregiverId === c.id);
   const coming = arrangementOf(care, c.id);
 
-  const ask = () => {
-    onCare(askCaregiver(c.id));
-    onFlash(`Upit je poslat. ${first} odgovara sa svoje table — upit ništa ne košta.`);
-    onClose();
-  };
+  // writing to her goes through the one modal, sent once the subscription is paid
+  const ask = () => onContact(c);
 
   return (
     <Modal eyebrow={`${c.area} · ${c.distance}`} title={c.name} wide onClose={onClose}>
@@ -632,7 +628,7 @@ function Profile({ care, caregiverId, onCare, onClose, onFlash }) {
               Ne sada
             </Button>
             <Button variant="primary" onClick={ask}>
-              Pošalji upit
+              Pošalji poruku
             </Button>
           </>
         )}
