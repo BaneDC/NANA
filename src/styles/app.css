@@ -6216,12 +6216,18 @@ textarea.wo-text {
 }
 
 
-/* The assistant's sentence when it comes with cards, set like the kit's prose. */
+/* The assistant's sentence when it comes with cards. It rides as a part, so
+   it takes the kit's prose rules itself: the answer column (the text line
+   inside the cards, 16 around a card + 16 into its rows), the measure and the
+   answer type. */
 .nana-chat-lead {
-  margin: 0;
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  color: var(--text-primary);
+  margin: 0 var(--ick-answer-column);
+  max-width: var(--ick-answer-measure);
+  font-family: var(--ick-font-sans);
+  font-size: var(--ick-answer-size);
+  line-height: var(--ick-answer-leading);
+  letter-spacing: var(--ick-answer-tracking);
+  color: var(--ick-ink);
 }
 
 
