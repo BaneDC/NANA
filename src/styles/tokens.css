@@ -51,10 +51,12 @@
      enough to read on the peach */
   --nav-text: var(--color-neutral-600);
   --nav-text-muted: var(--color-neutral-500);
-  /* Selected and hover sit on the ground's own hue (16°), a step and half a
-     step darker: as deep as 10% black would go, without the grey it brings. */
-  --nav-hover: #f9e6de;
-  --nav-selected: #f4d9cf;
+  /* Selected and hover sit on the ground's own hue, saturated rather than
+     greyed: selected is the palette's primary-200, hover half way to it. One
+     background, one ink: whatever is selected reads in the dark text. */
+  --nav-hover: #ffe8e0;
+  --nav-selected: var(--color-primary-200);
+  --nav-selected-text: var(--text-primary);
   /* the user card and the inline buttons are objects on the ground, not states */
   --nav-card: var(--color-white);
   --nav-line: var(--color-primary-200);

@@ -1183,7 +1183,7 @@ input {
 
 .nav-item.is-active {
   background: var(--nav-selected);
-  color: var(--primary-highlight);
+  color: var(--nav-selected-text);
   font-weight: var(--font-medium);
 }
 
@@ -1225,7 +1225,7 @@ input {
 }
 
 .nav-item.is-active .nav-inline-btn {
-  color: var(--primary-highlight);
+  color: var(--nav-selected-text);
 }
 
 /* ---------- Chat thread list ---------- */
@@ -1259,7 +1259,7 @@ input {
 
 .nav-sub-item.is-active {
   background: var(--nav-selected);
-  color: var(--text-primary);
+  color: var(--nav-selected-text);
 }
 
 .nav-sub-label {
@@ -6649,24 +6649,8 @@ textarea.wo-text {
   color: var(--text-primary);
 }
 
-/* The composer, where the family types: a white field with a border and the
-   app's card shadow, so it reads as an input at a glance rather than a faint
-   tint on white. Focus draws the primary border, as every field does. */
-.nana-chat [class*='ick-surface-']:not([class*='ick-glass-']) {
-  --ick-input-fill: var(--surface-0);
-  --ick-input-fill-hover: var(--surface-0);
-  box-shadow: var(--shadow-card), inset 0 0 0 1px var(--color-neutral-300);
-}
-
-.nana-chat [class*='ick-surface-']:not([class*='ick-glass-']):focus-within {
-  box-shadow: var(--shadow-card), inset 0 0 0 1px var(--primary);
-}
-
-.nana-chat [class*='ick-surface-']:not([class*='ick-glass-']) [class*='ick-editor-'] {
-  color: var(--text-primary);
-}
-
-/* the hint in the empty composer, dark enough to be read as one */
+/* The composer keeps the kit's own look; only its hint takes the app's
+   secondary text, dark enough to be read as a place to type. */
 .nana-chat [class*='ick-surface-']:not([class*='ick-glass-']) [data-placeholder]::before {
   color: var(--text-secondary);
 }
