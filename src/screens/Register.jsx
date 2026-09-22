@@ -7,7 +7,8 @@ import SelectCard from '../components/SelectCard';
 import Button from '../components/Button';
 import { saveAccount, signIn } from '../lib/account';
 
-// Registering, and signing back in. Everything asked here is kept with the
+// Registering, and signing back in. For now only the family's side signs up
+// here; the caregiver's is reached from the same shell once it is back. Everything asked here is kept with the
 // account and handed to the rest of the app, so nothing the family has already
 // said is asked again: their name and number go straight into the onboarding.
 
@@ -115,7 +116,10 @@ function Consent({ checked, onChange, children, required }) {
   );
 }
 
-function SignUp({ onContinue, onSignIn }) {
+// the role picker is hidden while only the family side is being shown
+const SHOW_ROLES = false;
+
+function SignUp({ onContinue, onSignIn, onDemo }) {
   const [role, setRole] = useState('family');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -166,6 +170,7 @@ function SignUp({ onContinue, onSignIn }) {
         <p>Polja označena zvezdicom su obavezna</p>
       </div>
 
+      {SHOW_ROLES && (
       <div className="form-card">
         <div className="role-choice">
           <p className="tf-label">Ovde sam kao</p>
@@ -181,6 +186,7 @@ function SignUp({ onContinue, onSignIn }) {
           ))}
         </div>
       </div>
+      )}
 
       <div className="form-card">
         <div className="reg-row">
@@ -273,12 +279,23 @@ function SignUp({ onContinue, onSignIn }) {
         <Button variant="ghost" size="lg" onClick={onSignIn}>
           Već imate nalog? Prijavite se
         </Button>
+        <DemoLink onDemo={onDemo} />
       </div>
     </>
   );
 }
 
-function SignIn({ onContinue, onSignUp }) {
+// Straight into the app on a finished plan, for trying the chat and everything
+// after the plan without running (and paying for) the onboarding each time.
+function DemoLink({ onDemo }) {
+  return (
+    <button type="button" className="reg-demo" onClick={onDemo}>
+      Za testiranje: otvori demo sa gotovim planom
+    </button>
+  );
+}
+
+function SignIn({ onContinue, onSignUp, onDemo }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [failed, setFailed] = useState(false);
@@ -312,12 +329,13 @@ function SignIn({ onContinue, onSignUp }) {
         <Button variant="ghost" size="lg" onClick={onSignUp}>
           Nemate nalog? Napravite ga
         </Button>
+        <DemoLink onDemo={onDemo} />
       </div>
     </>
   );
 }
 
-export default function Register({ onContinue }) {
+export default function Register({ onContinue, onDemo }) {
   const [mode, setMode] = useState('sign-up');
   return (
     <motion.div
@@ -329,9 +347,9 @@ export default function Register({ onContinue }) {
       <Logo width={150} />
       <PhotoCarousel />
       {mode === 'sign-up' ? (
-        <SignUp onContinue={onContinue} onSignIn={() => setMode('sign-in')} />
+        <SignUp onContinue={onContinue} onSignIn={() => setMode('sign-in')} onDemo={onDemo} />
       ) : (
-        <SignIn onContinue={onContinue} onSignUp={() => setMode('sign-up')} />
+        <SignIn onContinue={onContinue} onSignUp={() => setMode('sign-up')} onDemo={onDemo} />
       )}
     </motion.div>
   );

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, History, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
@@ -353,8 +353,6 @@ export default function ImmersiveConversation({
   const [dropped, setDropped] = useState(false);
   // what she is thinking and still missing, as `assess` streams in
   const [thought, setThought] = useState({ text: '', missing: [] });
-  // her thinking behind the current question, unfolded on request
-  const [cotOpen, setCotOpen] = useState(false);
   // every question she has asked and what was answered, for the side panel
   const [log, setLog] = useState([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -477,7 +475,6 @@ export default function ImmersiveConversation({
       setFollowUp(null);
       setWhy(null);
       setThought({ text: '', missing: [] });
-      setCotOpen(false);
       turnStarted.current = performance.now();
       setSaid('');
       setDraft('');
@@ -686,29 +683,23 @@ export default function ImmersiveConversation({
                 {SECTION[remaining[0]?.sekcija] || 'Skoro gotovo'}
               </motion.p>
 
-              {/* How she got to this question, folded — the way AI chats show
-                  reasoning. While she works it counts the seconds; once the
-                  question is up it says how long she took. Either way the same
-                  click opens the same plain text underneath. The row keeps its
-                  height when there is nothing to show, so the question never
-                  moves by it. */}
+              {/* How she got to this question, always open. While she works, a
+                  small ring turns beside the seconds and her reasoning fills in
+                  underneath as it streams; once the question is up the label
+                  says how long she took and the reasoning stays where it is.
+                  The row keeps its height when there is nothing to show, so the
+                  question never moves by it. */}
               <div className="imm-cot">
                 {(waiting || thought.text) && (
                   <>
-                    <button
-                      type="button"
-                      className={`imm-cot-toggle${waiting ? ' is-thinking' : ''}`}
-                      aria-expanded={cotOpen}
-                      aria-label={waiting ? 'Prikaži kako razmišlja' : 'Prikaži kako je došla do pitanja'}
-                      onClick={() => setCotOpen((v) => !v)}
-                    >
+                    <p className={`imm-cot-toggle${waiting ? ' is-thinking' : ''}`} aria-live="polite">
+                      {waiting && <span className="imm-cot-spinner" aria-hidden="true" />}
                       <span className={waiting ? 'imm-shimmer' : undefined}>
                         {waiting ? `Razmišljam… ${thoughtFor} s` : `Razmišljala sam ${thoughtFor} s`}
                       </span>
-                      <ChevronDown size={12} strokeWidth={1.75} />
-                    </button>
+                    </p>
                     <AnimatePresence initial={false}>
-                      {cotOpen && thought.text && (
+                      {thought.text && (
                         <motion.div
                           className="imm-cot-body"
                           initial={{ height: 0, opacity: 0 }}
@@ -716,7 +707,7 @@ export default function ImmersiveConversation({
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.3, ease: EASE_OUT }}
                         >
-                          <div className="imm-cot-text">
+                          <div className={`imm-cot-text${waiting ? ' is-live' : ''}`}>
                             <p>{thought.text}</p>
                             {thought.missing.length > 0 && (
                               <p className="imm-cot-missing">

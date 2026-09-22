@@ -30,3 +30,25 @@ export async function signIn(email, password) {
   if (!record || record.user.email.toLowerCase() !== email.trim().toLowerCase()) return null;
   return record.passwordHash === (await hash(password)) ? record.user : null;
 }
+
+// How far the family got, kept with the account: the answers and notes the plan
+// is built from, and whether the onboarding finished. Signing back in picks up
+// from there, so a finished onboarding is never run again.
+const progressKey = (email) => `nana.progress.${email.trim().toLowerCase()}`;
+
+export function saveProgress(email, progress) {
+  if (!email) return;
+  try {
+    localStorage.setItem(progressKey(email), JSON.stringify(progress));
+  } catch {
+    // not remembered, as above
+  }
+}
+
+export function loadProgress(email) {
+  try {
+    return JSON.parse(localStorage.getItem(progressKey(email)) || 'null');
+  } catch {
+    return null;
+  }
+}

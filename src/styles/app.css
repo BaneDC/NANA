@@ -3888,21 +3888,43 @@ input {
   transition: color 0.2s ease;
 }
 
-.imm-cot-toggle:hover {
-  color: #6d6157;
+/* A ring the size of the text's x-height, turning slowly: something moves
+   while she works, and it is quiet enough to sit beside a reasoning line. */
+.imm-cot-spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(138, 122, 109, 0.2);
+  border-top-color: #8a7a6d;
+  animation: imm-cot-spin 0.9s linear infinite;
 }
 
-/* while she works it is the only thing on the screen that moves */
-.imm-cot-toggle.is-thinking {
-  cursor: pointer;
+@keyframes imm-cot-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.imm-cot-toggle svg {
-  transition: transform 0.25s ease;
+/* while it streams, the rule beside the reasoning breathes with it */
+.imm-cot-text.is-live {
+  animation: imm-cot-breathe 1.6s ease-in-out infinite;
 }
 
-.imm-cot-toggle[aria-expanded='true'] svg {
-  transform: rotate(180deg);
+@keyframes imm-cot-breathe {
+  0%,
+  100% {
+    border-left-color: rgba(138, 122, 109, 0.2);
+  }
+  50% {
+    border-left-color: rgba(138, 122, 109, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-cot-spinner,
+  .imm-cot-text.is-live {
+    animation: none;
+  }
 }
 
 .imm-cot-body {
@@ -6603,5 +6625,17 @@ textarea.wo-text {
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.reg-demo {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.reg-demo:hover {
   color: var(--text-primary);
 }

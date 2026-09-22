@@ -12,6 +12,7 @@ import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoNotes, demoUser, wantsDemo } from './data/demoCase';
+import { loadProgress, saveProgress } from './lib/account';
 import { FileText, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PaywallModal from './components/PaywallModal';
@@ -49,7 +50,7 @@ const aboutYou = (u) => ({ values: { 'your-name': u.name, 'your-phone': u.phone 
 
 export default function App() {
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
-  const [view, setView] = useState(DEMO ? 'plan-detail' : 'chat');
+  const [view, setView] = useState(DEMO ? 'dashboard' : 'chat');
   // `role` is chosen at registration and decides which of the two applications
   // this is: the family's, or the caregiver's. Switching means starting over,
   // which is what the restart button is for.
@@ -254,6 +255,24 @@ export default function App() {
     []
   );
 
+  // The demo from the sign-in screen: the same finished case as /?demo.
+  const openDemo = () => {
+    const answersNow = reconcile({}, demoAnswers).answers;
+    setUser(demoUser);
+    setAnswers(answersNow);
+    setNotes(demoNotes);
+    setPlan(buildPlan(answersNow, demoNotes));
+    setCare(startCare(demoUser));
+    setView('dashboard');
+    setPhase('app');
+  };
+
+  // What the account has got to, kept so signing in again resumes it.
+  useEffect(() => {
+    if (phase !== 'app' || !user.email || user.role === 'caregiver' || user === demoUser) return;
+    saveProgress(user.email, { answers, notes, planDone: Boolean(plan) });
+  }, [phase, user, answers, notes, plan]);
+
   const restart = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
@@ -369,15 +388,28 @@ export default function App() {
           <AnimatePresence mode="wait">
             <Register
               key={`register-${run}`}
+              onDemo={openDemo}
               onContinue={(u) => {
                 setUser(u);
                 setCare(startCare(u));
-                if (u.role !== 'caregiver') setAnswers((a) => ({ ...a, 'about-you': aboutYou(u) }));
                 setPhase('app');
+                if (u.role === 'caregiver') return;
+                // Signing back in picks up where the account left off: a
+                // finished onboarding opens on Moja nega and is not run again.
+                const saved = loadProgress(u.email);
+                if (saved?.planDone) {
+                  setAnswers(saved.answers);
+                  setNotes(saved.notes || []);
+                  setPlan(buildPlan(saved.answers, saved.notes || []));
+                  setView('dashboard');
+                  return;
+                }
+                setAnswers({ ...(saved?.answers || {}), 'about-you': aboutYou(u) });
+                if (saved?.notes) setNotes(saved.notes);
                 // A family starts with Jovana, not with the questionnaire: the AI
                 // onboarding is the first thing after signing in, and the rest of
                 // the app is what it hands over to once the plan exists.
-                if (u.role !== 'caregiver') startVariant('ai');
+                startVariant('ai');
               }}
             />
           </AnimatePresence>
