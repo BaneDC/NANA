@@ -1,4 +1,4 @@
-import { MODEL, toAnswer, withoutLongDashes } from '../data/conversation';
+import { MODEL, THINKS, toAnswer, withoutLongDashes } from '../data/conversation';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { answerText, planQuestions } from '../data/planEdits';
@@ -196,9 +196,10 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
   const response = await client.beta.messages.create({
     model: MODEL,
     max_tokens: 16000,
-    // Thinking stays on: with it off this model can write a tool call as text,
-    // which here would be a proposal that never shows up.
-    thinking: { type: 'adaptive' },
+    // Thinking stays on where the model has it: with it off this model can
+    // write a tool call as text, which here would be a proposal that never
+    // shows up. The 4.5 models reject the field, so they go without.
+    ...(THINKS() ? { thinking: { type: 'adaptive' } } : {}),
     output_config: { effort: 'low' },
     // A declined request is re-run on the recommended fallback instead of
     // leaving the panel with nothing.

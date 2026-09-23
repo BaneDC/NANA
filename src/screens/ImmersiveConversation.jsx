@@ -38,19 +38,19 @@ const EASE_IN = [0.55, 0.06, 0.68, 0.19];
 
 const screen = {
   initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { staggerChildren: 0.04, delayChildren: 0.02 } },
+  animate: { opacity: 1, transition: { staggerChildren: 0.065, delayChildren: 0.05 } },
   exit: { opacity: 0, transition: { staggerChildren: 0.035, staggerDirection: -1 } },
 };
 const piece = {
   initial: { opacity: 0, y: 20, scale: 0.985 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.34, ease: EASE_OUT } },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: EASE_OUT } },
   exit: { opacity: 0, y: -12, scale: 1.01, transition: { duration: 0.3, ease: EASE_IN } },
 };
 const SETTLE = { type: 'spring', stiffness: 280, damping: 32 };
 
 const list = {
   initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { staggerChildren: 0.035 } },
+  animate: { opacity: 1, transition: { staggerChildren: 0.055 } },
   exit: { opacity: 0, transition: { staggerChildren: 0.03, staggerDirection: -1 } },
 };
 
@@ -59,23 +59,17 @@ const list = {
 // just text, so there is nothing left that *can* re-animate. The reveal is also
 // decoupled from the network — tokens arrive in lumps of several words, and
 // pacing off them made the text land in visible chunks.
-// A whole sentence reveals in about this long, however long it is: a fixed
-// per-character pace made a long line take three seconds on its own, on top of
-// the wait for the model. Short lines still get a readable minimum.
-const LINE_MS = 700;
-const CHAR_MS_MIN = 8;
-const CHAR_MS_MAX = 22;
+const CHAR_MS = 26;
 // How many characters at the write head are still resolving. They carry a blur
 // that clears as more arrive, so the line reads as coming into focus rather
 // than being stamped out. Purely CSS on ~7 spans — nothing animates once a
 // character has settled behind the head.
 const TAIL = 7;
 const HEAD_BLUR = 4.5;
-function useTypewriter(full) {
+function useTypewriter(full, ms = CHAR_MS) {
   const [typed, setTyped] = useState('');
   const fullRef = useRef(full);
   fullRef.current = full;
-  const ms = Math.min(CHAR_MS_MAX, Math.max(CHAR_MS_MIN, Math.round(LINE_MS / Math.max(full.length, 1))));
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -88,7 +82,7 @@ function useTypewriter(full) {
       });
     }, ms);
     return () => clearInterval(id);
-  }, [ms]);
+  }, []);
 
   return typed;
 }
@@ -162,7 +156,7 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
   const setValue = controlled ? onValue : setOwn;
 
   useEffect(() => {
-    if (autoFocus) setTimeout(() => ref.current?.focus({ preventScroll: true }), 250);
+    if (autoFocus) setTimeout(() => ref.current?.focus({ preventScroll: true }), 650);
   }, [autoFocus]);
 
   const send = () => {
