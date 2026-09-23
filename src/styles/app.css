@@ -2709,9 +2709,11 @@ input {
   background: var(--primary);
 }
 
+/* One under the other: side by side, the two rules read as columns of a table
+   and the shorter quote left a ragged hole beside the taller one. */
 .imm-plan-quotes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-4);
 }
 
