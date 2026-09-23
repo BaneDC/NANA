@@ -105,7 +105,7 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
         title="Vaš nalog"
         rows={[
           { label: 'Ime i prezime', value: user.name || '—' },
-          { label: 'Imejl', value: user.email || '—' },
+          { label: 'Email', value: user.email || '—' },
           { label: 'Telefon', value: user.phone || '—' },
         ]}
         onEdit={onSaveUser ? () => setEditing('account') : null}
@@ -138,7 +138,7 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
           title="Vaš nalog"
           fields={[
             { id: 'name', label: 'Ime i prezime', value: user.name || '' },
-            { id: 'email', label: 'Imejl', value: user.email || '', type: 'email' },
+            { id: 'email', label: 'Email', value: user.email || '', type: 'email' },
             { id: 'phone', label: 'Telefon', value: user.phone || '' },
           ]}
           onSave={(values) => {

@@ -34,7 +34,7 @@ export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
       </p>
 
       <label className="pw-message">
-        <span className="tf-label">Imejl adrese</span>
+        <span className="tf-label">Email adrese</span>
         <textarea
           rows={3}
           value={text}
@@ -54,7 +54,7 @@ export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
         </div>
       )}
       {wrong.length > 0 && (
-        <p className="ag-hint">Ovo ne liči na imejl adresu: {wrong.join(', ')}.</p>
+        <p className="ag-hint">Ovo ne liči na email adresu: {wrong.join(', ')}.</p>
       )}
 
       <label className="pw-message">
