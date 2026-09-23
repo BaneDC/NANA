@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, History, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
@@ -213,6 +213,7 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
 
 function Cards({ question, onPick, onSend, sr }) {
   const [ids, setIds] = useState([]);
+  const [one, setOne] = useState(null);
   const [typed, setTyped] = useState('');
 
   const label = (o) => sr.options?.[o.id] || o.title;
@@ -238,6 +239,7 @@ function Cards({ question, onPick, onSend, sr }) {
   );
 
   if (question.type === 'single') {
+    const chosen = question.options.find((o) => o.id === one);
     return (
       <>
         {hint}
@@ -248,8 +250,9 @@ function Cards({ question, onPick, onSend, sr }) {
               type="button"
               variants={piece}
               whileHover={{ y: -1 }}
-              className="imm-option"
-              onClick={() => onPick({ optionId: o.id }, label(o))}
+              className={`imm-option${one === o.id ? ' is-selected' : ''}`}
+              aria-pressed={one === o.id}
+              onClick={() => setOne(o.id)}
             >
               <span className="imm-letter">{letterFor(i)}</span>
               <span className="imm-option-text">
@@ -257,11 +260,21 @@ function Cards({ question, onPick, onSend, sr }) {
               </span>
             </motion.button>
           ))}
-          {/* one answer, so the composer sends on its own: the button lives in
-              the field, as it does everywhere else a single answer is given */}
           <motion.div className="imm-composer-slot" variants={piece}>
             <Composer placeholder="ili odgovorite svojim rečima…" onSend={onSend} />
           </motion.div>
+        </motion.div>
+        {/* Chosen, then sent: a card that answered on the first touch gave no
+            moment to change one's mind, and read as a misclick when it did. */}
+        <motion.div className="imm-actions" variants={piece}>
+          <Button
+            variant="primary"
+            size="lg"
+            disabled={!chosen}
+            onClick={() => chosen && onPick({ optionId: chosen.id }, label(chosen))}
+          >
+            Dalje
+          </Button>
         </motion.div>
       </>
     );
@@ -352,6 +365,8 @@ export default function ImmersiveConversation({
   const [dropped, setDropped] = useState(false);
   // what she is thinking and still missing, as `assess` streams in
   const [thought, setThought] = useState({ text: '', missing: [] });
+  // her reasoning after the question is up: folded, until someone asks for it
+  const [cotOpen, setCotOpen] = useState(false);
   // every question she has asked and what was answered, for the side panel
   const [log, setLog] = useState([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -474,6 +489,7 @@ export default function ImmersiveConversation({
       setFollowUp(null);
       setWhy(null);
       setThought({ text: '', missing: [] });
+      setCotOpen(false);
       turnStarted.current = performance.now();
       setSaid('');
       setDraft('');
@@ -693,23 +709,28 @@ export default function ImmersiveConversation({
                 {SECTION[remaining[0]?.sekcija] || 'Skoro gotovo'}
               </motion.p>
 
-              {/* How she got to this question, always open. While she works, a
-                  small ring turns beside the seconds and her reasoning fills in
-                  underneath as it streams; once the question is up the label
-                  says how long she took and the reasoning stays where it is.
-                  The row keeps its height when there is nothing to show, so the
-                  question never moves by it. */}
+              {/* How she got to this question. Open while she works, with a
+                  small ring turning beside the seconds and her reasoning
+                  filling in as it streams; once the question is up it folds
+                  away, because what is being answered is the question, not how
+                  it was arrived at. The row is still there to press. */}
               <div className="imm-cot">
                 {(waiting || thought.text) && (
                   <>
-                    <p className={`imm-cot-toggle${waiting ? ' is-thinking' : ''}`} aria-live="polite">
+                    <button
+                      type="button"
+                      className={`imm-cot-toggle${waiting ? ' is-thinking' : ''}`}
+                      aria-expanded={waiting || cotOpen}
+                      onClick={() => setCotOpen((v) => !v)}
+                    >
                       {waiting && <span className="imm-cot-spinner" aria-hidden="true" />}
                       <span className={waiting ? 'imm-shimmer' : undefined}>
                         {waiting ? `Razmišljam… ${thoughtFor} s` : `Razmišljala sam ${thoughtFor} s`}
                       </span>
-                    </p>
+                      {!waiting && <ChevronDown size={12} strokeWidth={1.75} />}
+                    </button>
                     <AnimatePresence initial={false}>
-                      {thought.text && (
+                      {(waiting || cotOpen) && thought.text && (
                         <motion.div
                           className="imm-cot-body"
                           initial={{ height: 0, opacity: 0 }}

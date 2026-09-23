@@ -12,10 +12,11 @@ import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoNotes, demoUser, wantsDemo } from './data/demoCase';
-import { loadProgress, saveProgress } from './lib/account';
+import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PaywallModal from './components/PaywallModal';
+import SharePlanModal from './components/SharePlanModal';
 import PlanDetail from './screens/PlanDetail';
 import Immersive from './screens/Immersive';
 import ImmersiveConversation from './screens/ImmersiveConversation';
@@ -228,6 +229,9 @@ export default function App() {
   // what the chat has open beside it, drawn by the app rather than inside the
   // conversation, so it is a pane of its own in the shell's right column
   const [openPane, setOpenPane] = useState(null);
+  // the plan sent to someone outside the app, and who it has gone to so far
+  const [sharing, setSharing] = useState(false);
+  const [sharedWith, setSharedWith] = useState([]);
   const chatCtx = useRef({});
   useEffect(() => {
     if (view === 'chat') setRightPanel((p) => (p === 'copilot' ? null : p));
@@ -266,6 +270,7 @@ export default function App() {
     onContact: contactCaregiver,
     onUnlock: () => setPaywall({ caregiver: null }),
     onDrawer: setDrawer,
+    onSharePlan: () => setSharing(true),
     // called, not read: `newChat` is defined further down
     onNewChat: () => newChat(),
   };
@@ -523,7 +528,6 @@ export default function App() {
                   care={care}
                   user={user}
                   plan={plan}
-                  onOpenPlan={() => openPlanPage('live')}
                   onDrawer={setDrawer}
                   onCaregiver={showCaregiver}
                   onView={setView}
@@ -580,6 +584,7 @@ export default function App() {
                   onUnlock={() => setPaywall({ caregiver: null })}
                   onAskAssistant={askAssistant}
                   onEdit={!openEntry.archived && plan ? () => setEditingPlan(true) : null}
+                  onShare={plan ? () => setSharing(true) : null}
                   change={planChange}
                   onUndoChange={undoPlanChange}
                   onDismissChange={() => setPlanChange(null)}
@@ -589,6 +594,13 @@ export default function App() {
                 <Profile
                   user={user}
                   answers={answers}
+                  onSaveUser={(patch) => {
+                    const next = { ...user, ...patch, name: patch.name ?? user.name };
+                    setUser(next);
+                    updateAccount(next);
+                    say('Podaci su sačuvani.');
+                  }}
+                  onEditAnswers={editAnswers}
                   onGoToChat={goToChat}
                   onAskAssistant={askAssistant}
                 />
@@ -728,6 +740,26 @@ export default function App() {
             name={plan.firstName}
             onApply={editAnswers}
             onClose={() => setEditingPlan(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {sharing && plan && (
+          <SharePlanModal
+            key="share-plan"
+            plan={plan}
+            sentTo={sharedWith}
+            onSend={(emails) => {
+              setSharedWith((list) => [...new Set([...list, ...emails])]);
+              setSharing(false);
+              say(
+                emails.length === 1
+                  ? `Plan je poslat na ${emails[0]}.`
+                  : `Plan je poslat na ${emails.length} adrese.`
+              );
+            }}
+            onClose={() => setSharing(false)}
           />
         )}
       </AnimatePresence>

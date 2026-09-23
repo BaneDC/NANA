@@ -20,6 +20,17 @@ export async function saveAccount(user, password) {
   return user;
 }
 
+// The account's own fields, changed from the profile. The password is not
+// touched: it is only ever here as a hash.
+export function updateAccount(user) {
+  try {
+    const record = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (record) localStorage.setItem(KEY, JSON.stringify({ ...record, user }));
+  } catch {
+    // not remembered, as above
+  }
+}
+
 export async function signIn(email, password) {
   let record = null;
   try {

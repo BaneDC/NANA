@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarClock, Check, ChevronRight, Clock, FileText, Search } from 'lucide-react';
+import { ArrowRight, CalendarClock, Check, ChevronRight, Clock, Search } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import {
   activeVersion,
@@ -53,7 +53,7 @@ const REQUEST_PILL = {
   declined: { className: 'is-declined', label: 'Ne može' },
 };
 
-export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onView, onAskAssistant, onFindCaregiver, onOpenPlan }) {
+export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onView, onAskAssistant, onFindCaregiver }) {
   const elder = care.elder.name ? firstName(care.elder.name) : null;
   const waiting = waitingOnYou(care);
   const coming = allVisits(care).filter((v) => v.status === 'planned');
@@ -84,10 +84,14 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
         </div>
         <div className="view-head-actions">
           <AskAssistant onClick={onAskAssistant} />
-          <Button variant="primary" onClick={onFindCaregiver}>
-            <Search size={14} strokeWidth={1.75} />
-            Pronađi negovateljicu
-          </Button>
+          {/* With nothing arranged yet there is one thing to do, and the card
+              below says it: two of the same button is a choice that is not one. */}
+          {!fresh && (
+            <Button variant="primary" onClick={onFindCaregiver}>
+              <Search size={14} strokeWidth={1.75} />
+              Pronađi negovateljicu
+            </Button>
+          )}
         </div>
       </div>
 
@@ -102,12 +106,6 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
           }
         >
           <div className="panel-card-actions">
-            {plan && (
-              <Button variant="secondary" onClick={onOpenPlan}>
-                <FileText size={14} strokeWidth={1.75} />
-                Pogledaj plan
-              </Button>
-            )}
             <Button variant="primary" onClick={onFindCaregiver} disabled={!plan}>
               <Search size={14} strokeWidth={1.75} />
               Pronađi negovateljicu

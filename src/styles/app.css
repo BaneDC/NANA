@@ -6752,3 +6752,19 @@ textarea.wo-text {
 .nana-chat [class*='ick-btn-'] {
   border-radius: var(--radius-lg);
 }
+
+/* the reasoning's row, once it folds: a chevron that turns with it */
+.imm-cot-toggle svg {
+  transition: transform 0.25s ease;
+}
+
+.imm-cot-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+/* the addresses a plan is about to go to, as they are typed */
+.share-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}

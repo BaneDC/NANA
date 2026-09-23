@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion';
-import { ArrowLeft, PenLine } from 'lucide-react';
+import { ArrowLeft, PenLine, Send } from 'lucide-react';
 import PlanContents from '../components/PlanContents';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
@@ -19,6 +19,7 @@ export default function PlanDetail({
   onUnlock,
   onAskAssistant,
   onEdit,
+  onShare,
   onUndoChange,
   onDismissChange,
 }) {
@@ -42,6 +43,12 @@ export default function PlanDetail({
             assistant what is different. Only the live plan can change. */}
         <div className="view-head-actions">
           <AskAssistant onClick={onAskAssistant} />
+          {onShare && (
+            <Button variant="secondary" onClick={onShare}>
+              <Send size={14} strokeWidth={1.75} />
+              Pošalji plan
+            </Button>
+          )}
           {onEdit && (
             <Button variant="secondary" onClick={onEdit}>
               <PenLine size={14} strokeWidth={1.75} />
