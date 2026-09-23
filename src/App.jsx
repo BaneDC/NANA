@@ -376,14 +376,19 @@ export default function App() {
 
   // The conversation in the nav: Jovana until the plan exists, the assistant after.
   // the conversations, as the nav lists them: what was asked first in each
-  const conversationEntries = conversations.map((c) => ({
-    id: c.id,
-    title: c.title || (plan ? 'Novi razgovor' : 'Upoznavanje sa Jovanom'),
-    date:
-      c.id === conversation
-        ? 'Trenutni'
-        : new Date(c.at).toLocaleTimeString('sr-Latn-RS', { hour: '2-digit', minute: '2-digit' }),
-  }));
+  // A conversation is listed once something has been said in it: an empty one
+  // is the page the family is looking at, and naming it in the nav says there
+  // is something to come back to when there is not.
+  const conversationEntries = conversations
+    .filter((c) => c.title)
+    .map((c) => ({
+      id: c.id,
+      title: c.title,
+      date:
+        c.id === conversation
+          ? 'Trenutni'
+          : new Date(c.at).toLocaleTimeString('sr-Latn-RS', { hour: '2-digit', minute: '2-digit' }),
+    }));
   const openConversation = (id) => {
     setConversation(id);
     setOpenPane(null);
