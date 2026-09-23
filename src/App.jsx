@@ -8,12 +8,13 @@ import FindCaregiver from './screens/FindCaregiver';
 import Profile from './screens/Profile';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
+import Logo from './components/Logo';
 import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
-import { FileText, Plus, X } from 'lucide-react';
+import { FileText, Menu, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PaywallModal from './components/PaywallModal';
 import SharePlanModal from './components/SharePlanModal';
@@ -92,6 +93,8 @@ export default function App() {
   // it back: what moved, which parts of the plan it rewrote, and the state from
   // before it, for "Poništi".
   const [planChange, setPlanChange] = useState(null);
+  // the nav, on a screen too narrow to keep it open beside the page
+  const [navOpen, setNavOpen] = useState(false);
   const showCaregiver = (id) => {
     setOpenCaregiver(id);
     setDrawer(null);
@@ -328,6 +331,32 @@ export default function App() {
     setPhase('register');
   };
 
+  // A second person to care for. The plan that exists is filed under the plans
+  // already made — it is still readable, just not the live one — and the
+  // conversation starts again for the new person. What registration told us
+  // about the caller is carried over; nothing else is.
+  const newPlan = () => {
+    if (plan) {
+      setThreads((t) => [
+        {
+          id: `p${Date.now()}`,
+          answers,
+          summary: plan.summary,
+          date: formatToday(),
+          caregivers: caregivers.length,
+        },
+        ...t,
+      ]);
+    }
+    setPlan(null);
+    setPlanChange(null);
+    setNotes([]);
+    setAnswers({ 'about-you': aboutYou(user) });
+    setSelectedPlan('live');
+    setOpenPane(null);
+    startVariant('ai');
+  };
+
   // A new conversation with the assistant; the plan and everything done stays.
   const newChat = () => {
     startConversation();
@@ -414,8 +443,32 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* On a phone there is no room for a nav beside the page, so it becomes a
+          drawer and this bar is what opens it. Above 900px the bar is not
+          drawn at all and the nav is a column again. */}
+      {phase === 'app' && !fullscreen && (
+        <div className="app-topbar">
+          <button
+            type="button"
+            className="app-topbar-btn"
+            onClick={() => setNavOpen(true)}
+            aria-label="Otvori meni"
+            aria-expanded={navOpen}
+          >
+            <Menu size={18} strokeWidth={1.75} />
+          </button>
+          <Logo width={96} />
+        </div>
+      )}
+
+      {phase === 'app' && !fullscreen && navOpen && (
+        <button type="button" className="nav-scrim" aria-label="Zatvori meni" onClick={() => setNavOpen(false)} />
+      )}
+
       {phase === 'app' && !fullscreen && (
         <AppNav
+          open={navOpen}
+          onClose={() => setNavOpen(false)}
           view={view}
           onView={setView}
           user={user}
@@ -570,8 +623,10 @@ export default function App() {
               {view === 'plans' && (
                 <Plans
                   entries={entries}
+                  change={planChange}
                   onOpenPlan={openPlanPage}
                   onGoToChat={goToChat}
+                  onNewPlan={newPlan}
                   onAskAssistant={askAssistant}
                 />
               )}
@@ -588,6 +643,7 @@ export default function App() {
                   change={planChange}
                   onUndoChange={undoPlanChange}
                   onDismissChange={() => setPlanChange(null)}
+                  onFindCaregivers={() => setView('find-caregiver')}
                 />
               )}
               {view === 'profile' && (

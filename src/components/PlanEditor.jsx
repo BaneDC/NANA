@@ -115,7 +115,7 @@ export default function PlanEditor({ answers, name, onApply, onClose }) {
 
   return (
     <Modal eyebrow={`Plan nege · ${name}`} title="Izmenite odgovore" wide onClose={onClose}>
-      <p className="ag-lead">
+      <p className="ag-lead pe-lead">
         Plan je napravljen iz ovih odgovora. Kad promenite jedan, plan se pravi iznova oko njega —
         preporuke i negovateljice prate izmenu.
       </p>

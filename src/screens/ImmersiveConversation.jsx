@@ -159,6 +159,16 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
     if (autoFocus) setTimeout(() => ref.current?.focus({ preventScroll: true }), 650);
   }, [autoFocus]);
 
+  // A long answer wraps rather than scrolling sideways out of sight: the field
+  // is a textarea one row tall that takes the height of what is in it. Measured
+  // from `auto` each time, or it could only ever grow.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
   const send = () => {
     const t = value.trim();
     if (!t) return;
@@ -192,13 +202,19 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
           <PenLine size={13} strokeWidth={1.75} />
         </span>
         <span className="imm-option-text">
-          <input
+          <textarea
             ref={ref}
-            type="text"
+            rows={1}
             value={value}
             placeholder={placeholder}
             onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && send()}
+            onKeyDown={(e) => {
+              // Enter still sends; Shift+Enter is the way to a second line.
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
           />
         </span>
         {withSend && value.trim() && (

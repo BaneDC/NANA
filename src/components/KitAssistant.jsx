@@ -68,7 +68,7 @@ export function ChatSource({ id, ctx, onTitle }) {
       });
     } catch (e) {
       console.error(e);
-      yield { kind: 'notice', id: `err-${turnId}`, tone: 'danger', text: e?.message || String(e) };
+      yield { kind: 'custom', id: `err-${turnId}`, type: 'note', data: { tone: 'danger', items: [e?.message || String(e)] } };
       return;
     }
     history.current = r.history;
@@ -79,7 +79,7 @@ export function ChatSource({ id, ctx, onTitle }) {
     else if (r.said) yield r.said;
     if (r.notes.length) {
       onAddNotes(r.notes);
-      yield { kind: 'notice', id: `notes-${turnId}`, text: `Sačuvano u planu: ${r.notes.join(' · ')}` };
+      yield { kind: 'custom', id: `notes-${turnId}`, type: 'note', data: { items: r.notes } };
     }
     if (r.changes.length) {
       yield {
@@ -204,6 +204,25 @@ function PlanDiffCard({ data, onDecide }) {
   );
 }
 
+// What the conversation itself has to say — what was written down, what failed.
+// The kit's own system line puts the sentence straight onto a sunken slab; in
+// NANA a grey ground never stands empty, it holds a white card, the same one
+// every other card in the answer is built on.
+function NoteCard({ data }) {
+  const danger = data.tone === 'danger';
+  return (
+    <KitCard title={danger ? 'Nešto nije uspelo' : 'Sačuvano u planu'} status={danger ? 'danger' : 'note'}>
+      <ul className="kc-rows">
+        {data.items.map((t) => (
+          <li key={t} className="kc-row">
+            <span className="kc-now">{t}</span>
+          </li>
+        ))}
+      </ul>
+    </KitCard>
+  );
+}
+
 function SendRequestCard({ data, onSend, onOpen }) {
   return (
     <KitCard title="Upit sa planom nege" foot="Upit ništa ne košta i nikoga ne obavezuje.">
@@ -319,6 +338,8 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
       switch (part.type) {
         case 'lead':
           return <p className="nana-chat-lead">{part.data.text}</p>;
+        case 'note':
+          return <NoteCard data={part.data} />;
         case 'plan-diff':
           return (
             <PlanDiffCard

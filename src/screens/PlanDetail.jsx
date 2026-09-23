@@ -22,6 +22,7 @@ export default function PlanDetail({
   onShare,
   onUndoChange,
   onDismissChange,
+  onFindCaregivers,
 }) {
   const { plan, title, date, status, archived } = entry;
   const shownChange = archived ? null : change;
@@ -40,19 +41,19 @@ export default function PlanDetail({
           </p>
         </div>
         {/* Two ways to change the plan, side by side: by hand, or by telling the
-            assistant what is different. Only the live plan can change. */}
+            assistant what is different. Only the live plan can change. Icons
+            alone here: three labelled buttons took the width the title needs,
+            and on a phone they wrapped under it. */}
         <div className="view-head-actions">
-          <AskAssistant onClick={onAskAssistant} />
+          <AskAssistant iconOnly onClick={onAskAssistant} />
           {onShare && (
-            <Button variant="secondary" onClick={onShare}>
+            <Button variant="secondary" iconOnly onClick={onShare} aria-label="Pošalji plan" title="Pošalji plan">
               <Send size={14} strokeWidth={1.75} />
-              Pošalji plan
             </Button>
           )}
           {onEdit && (
-            <Button variant="secondary" onClick={onEdit}>
+            <Button variant="secondary" iconOnly onClick={onEdit} aria-label="Izmeni plan" title="Izmeni plan">
               <PenLine size={14} strokeWidth={1.75} />
-              Izmeni plan
             </Button>
           )}
         </div>
@@ -77,6 +78,7 @@ export default function PlanDetail({
         change={shownChange}
         onSelectCaregiver={onSelectCaregiver}
         onUnlock={onUnlock}
+        onFindCaregivers={onFindCaregivers}
       />
 
       {archived && (

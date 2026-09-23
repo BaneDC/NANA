@@ -159,7 +159,7 @@ function SettingsPane({ care, unlocked, onUnlock }) {
 // The pane for an open id, or null for one this build does not know.
 export function paneFor(openId, ctx) {
   const [, kind, id] = String(openId).split(':');
-  const { plan, care, unlocked, planChange, onContact, onUnlock, onDrawer } = ctx;
+  const { plan, care, unlocked, planChange, onContact, onUnlock, onDrawer, onOpenPage } = ctx;
   switch (kind) {
     case 'plan':
       return plan
@@ -168,7 +168,14 @@ export function paneFor(openId, ctx) {
             meta: 'Aktivan',
             children: (
               <div className="nana-pane is-plan">
-                <PlanContents plan={plan} unlocked={unlocked} onSelectCaregiver={onContact} onUnlock={onUnlock} change={planChange} />
+                <PlanContents
+                  plan={plan}
+                  unlocked={unlocked}
+                  onSelectCaregiver={onContact}
+                  onUnlock={onUnlock}
+                  onFindCaregivers={() => onOpenPage('find-caregiver')}
+                  change={planChange}
+                />
               </div>
             ),
           }

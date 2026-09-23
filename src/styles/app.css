@@ -24,11 +24,49 @@ button {
   cursor: pointer;
 }
 
-input {
+input,
+textarea {
   font-family: inherit;
   border: none;
   outline: none;
   background: transparent;
+}
+
+/* ---------- Scrollbars ----------
+   Only while something is actually being scrolled. The track keeps its width at
+   all times so nothing reflows when the thumb appears; what changes is the
+   thumb's colour, faded in by `is-scrolling` (see lib/scrollbars.js) and out
+   again when the scrolling stops. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-color: transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s ease;
+}
+
+.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(76, 34, 18, 0.22);
+}
+
+/* Firefox has no thumb-only control, so it gets the same two states through
+   `scrollbar-color`. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.is-scrolling {
+  scrollbar-color: rgba(76, 34, 18, 0.22) transparent;
 }
 
 /* ---------- App shell ---------- */
@@ -1554,7 +1592,10 @@ input {
 }
 
 .plan-row-summary {
-  max-width: 62ch;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   margin-top: 8px;
   font-size: var(--text-xs-size);
   line-height: 18px;
@@ -2167,6 +2208,9 @@ input {
   position: absolute;
   right: var(--spacing-4);
   top: var(--spacing-3);
+  /* above the understanding dock: the dock's blur band reaches across the top
+     and was painting over this corner, which read as the control being cut off */
+  z-index: 4;
   display: flex;
   gap: var(--spacing-2);
 }
@@ -2996,12 +3040,43 @@ input {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  margin-bottom: var(--spacing-1);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .coordinator-head-text {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* The fold's own label, so the chevron is never the only thing saying what
+   pressing the head does. */
+.coordinator-fold {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--primary-subtle-foreground);
+}
+
+.coordinator-fold svg {
+  transition: transform 0.2s ease;
+}
+
+.coordinator-fold svg.is-open {
+  transform: rotate(180deg);
+}
+
+.coordinator-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  overflow: hidden;
 }
 
 .coordinator-name {
@@ -3029,6 +3104,29 @@ input {
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   color: var(--text-secondary);
+}
+
+/* ---------- The plan, grouped ----------
+   One rhythm for the whole document: 8px inside a group of rows, 12px from a
+   heading to what it heads, 32px between one group and the next. Everything on
+   the 4px grid, and the grouping readable from the spacing alone. */
+
+.plan-doc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.plan-sec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.plan-sec-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
 }
 
 /* ---------- Recommendation cards ---------- */
@@ -3093,13 +3191,6 @@ input {
   flex-shrink: 0;
   color: var(--primary-highlight);
   height: 1lh;
-}
-
-.rec-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-1);
 }
 
 /* ---------- Ask / adjust the plan ---------- */
@@ -3250,9 +3341,8 @@ input {
    ::-webkit- rules below entirely, and its `thin` is still an 11px slab — so
    these are scoped away from it rather than declared alongside. */
 @supports (-moz-appearance: none) {
-  .imm-review {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(151, 67, 36, 0.16) transparent;
+  .imm-review.is-scrolling {
+    scrollbar-color: rgba(151, 67, 36, 0.28) transparent;
   }
 }
 
@@ -3267,11 +3357,12 @@ input {
 }
 
 .imm-review::-webkit-scrollbar-thumb {
+  border: none;
   border-radius: 999px;
-  background: rgba(151, 67, 36, 0.16);
+  background: transparent;
 }
 
-.imm-review:hover::-webkit-scrollbar-thumb {
+.imm-review.is-scrolling::-webkit-scrollbar-thumb {
   background: rgba(151, 67, 36, 0.28);
 }
 
@@ -3600,6 +3691,7 @@ input {
 .imm-suggestions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--spacing-2);
 }
 
@@ -3608,7 +3700,7 @@ input {
    shadow, nothing under the finger. */
 .imm-suggestion {
   padding: var(--spacing-2) var(--spacing-3);
-  border-radius: 999px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.7);
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(8px);
@@ -3821,18 +3913,24 @@ input {
   border-color: rgba(253, 155, 119, 0.7);
 }
 
-.imm-option.is-composer input {
+.imm-option.is-composer textarea {
+  display: block;
   width: 100%;
+  /* it grows with what is typed, so nothing is ever scrolled out of sight */
+  max-height: 40vh;
+  resize: none;
+  overflow-y: auto;
   font-size: var(--text-sm-size);
   line-height: var(--text-sm-leading);
   font-weight: var(--font-medium);
   color: var(--color-primary-900);
 }
 
-.imm-option.is-composer input::placeholder {
+.imm-option.is-composer textarea::placeholder {
   font-weight: var(--font-normal);
   color: rgba(76, 34, 18, 0.42);
 }
+
 
 /* The send control is the shared Button — primary, icon-only. All that is left
    here is a size matching the badge on the other side of the card; the corner
@@ -4146,8 +4244,13 @@ input {
 }
 
 .board-col-body::-webkit-scrollbar-thumb {
+  border: none;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.12);
+  background: transparent;
+}
+
+.board-col-body.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .board-empty {
@@ -5170,6 +5273,23 @@ textarea.wo-text {
     right: var(--spacing-3);
     width: auto;
   }
+
+  /* There is no room beside the scale for a named control on a phone, so the
+     name comes off and the glyph keeps its box. The label stays for anyone
+     reading the page rather than looking at it. */
+  .imm-ctl.has-label {
+    width: 32px;
+    padding: 0;
+  }
+
+  .imm-ctl.has-label span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 /* Which kind of question this is: one answer, or as many as apply. Set above
@@ -5809,6 +5929,14 @@ textarea.wo-text {
   gap: var(--spacing-2);
 }
 
+/* Everything in the editor reads down one left edge: the section heading and
+   the sentence above it start where the rows' own labels start — the row's
+   12px of padding, plus the 1px its border takes. */
+.pe-section > .ag-label,
+.pe-lead {
+  padding-left: calc(var(--spacing-3) + 1px);
+}
+
 .pe-list {
   display: flex;
   flex-direction: column;
@@ -6229,6 +6357,13 @@ textarea.wo-text {
    its ink, white paper, and the warm primary where the kit marks something. */
 .nana-chat {
   --ick-font-sans: var(--font-sans);
+  /* One size for the whole conversation. The kit sets the prose at 12 and the
+     composer at 12 while the sent bubble carries the app's 14, so a question
+     and its answer were set in different type. All three are the app's body
+     size now, on the app's leading. */
+  --ick-answer-size: var(--text-sm-size);
+  --ick-answer-leading: var(--text-sm-leading);
+  --ick-composer-size: var(--text-sm-size);
   --ick-ink-rgb: 62 62 62;
   --ick-paper-rgb: 255 255 255;
   --ick-marker-rgb: 252 112 60;
@@ -6318,6 +6453,17 @@ textarea.wo-text {
 
 .kc-ground[data-status='applied'] .kc-title {
   color: var(--status-ok-fg);
+}
+
+.kc-ground[data-status='danger'] .kc-title {
+  color: var(--status-no-fg);
+}
+
+/* What was written down is not an action to take: the title is the quiet one
+   and the note itself carries the weight. */
+.kc-ground[data-status='note'] .kc-title {
+  font-weight: 400;
+  color: var(--ick-ink-faint);
 }
 
 .kc-rows {
@@ -6434,6 +6580,15 @@ textarea.wo-text {
   padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
 }
 
+/* Selecting an answer marked it — the kit's highlighter turns any selection
+   inside the prose into a saved highlight, with a menu and a counter in the
+   header. NANA has no use for either, and the kit has no switch, so there is
+   nothing to select. Copying the whole answer is still a button on it. */
+.nana-chat [class*='ick-answer-'] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* The question, once sent, as NANA's own bubble: flat primary with white
    text, the composer's corner, and no glass, rim, highlight or shadow. */
 .nana-chat [class*='ick-surface-'][class*='ick-glass-'] {
@@ -6453,6 +6608,11 @@ textarea.wo-text {
 .nana-chat [class*='ick-surface-'][class*='ick-glass-']::before,
 .nana-chat [class*='ick-surface-'][class*='ick-glass-']::after {
   display: none;
+}
+
+/* the composer's own leading, on the app's grid rather than the kit's ratio */
+.nana-chat [class*='ick-editor-'] {
+  line-height: var(--text-sm-leading);
 }
 
 .nana-chat [class*='ick-surface-'][class*='ick-glass-'] [class*='ick-editor-'] {
@@ -6767,4 +6927,128 @@ textarea.wo-text {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-2);
+}
+
+/* ---------- The nav on a narrow screen ----------
+   Above 900px the nav is a column beside the page and none of this applies.
+   Below it there is no room for both, so the nav becomes a drawer over the
+   page, opened from a bar that only exists at that width. */
+
+.app-topbar {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.app-topbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  color: var(--nav-text);
+}
+
+.app-topbar-btn:hover {
+  background: var(--nav-hover);
+}
+
+.nav-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(42, 42, 42, 0.3);
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 900px) {
+  .app {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .app-topbar,
+  .nav-scrim {
+    display: flex;
+  }
+
+  .app-nav {
+    position: fixed;
+    z-index: 31;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(280px, 84vw);
+    margin: 0;
+    padding: var(--spacing-4) var(--spacing-3);
+    background: var(--primary-subtle-highlight);
+    box-shadow: var(--shadow-container);
+    overflow-y: auto;
+    transform: translateX(-101%);
+    transition: transform 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .app-nav.is-open {
+    transform: none;
+  }
+
+  .chat-container {
+    border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
+  }
+}
+
+/* ---------- The pages on a narrow screen ----------
+   Last in the file for the same reason the nav block is: a media query adds no
+   specificity, so these have to come after the rules they replace. */
+
+@media (max-width: 640px) {
+  .view {
+    padding: var(--spacing-4) var(--spacing-4) var(--spacing-6);
+  }
+
+  /* the title takes the row and the actions drop under it rather than
+     squeezing it to a word and a half */
+  .view-head {
+    flex-wrap: wrap;
+  }
+
+  .view-head-actions {
+    flex-wrap: wrap;
+  }
+
+  /* a modal on a phone is the page: it takes the width it is given */
+  .modal {
+    max-width: none;
+  }
+
+  .drawer-backdrop {
+    padding: var(--spacing-2);
+  }
+}
+
+/* ---------- The chat's pane on a narrow screen ----------
+   Beside the conversation there is no room for it, so what a card opens covers
+   the conversation instead. The width is animated inline by the wrapper, which
+   is why it has to be overridden here. */
+
+@media (max-width: 900px) {
+  .chat-pane-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    width: auto !important;
+    height: auto;
+    padding: var(--spacing-2);
+    background: rgba(42, 42, 42, 0.3);
+    backdrop-filter: blur(2px);
+  }
+
+  .chat-pane-wrap .chat-pane {
+    width: 100%;
+    margin-left: 0;
+  }
 }
