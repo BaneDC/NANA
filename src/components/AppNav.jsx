@@ -1,3 +1,4 @@
+import { Children } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronDown,
@@ -23,6 +24,9 @@ const FOOTER_ITEMS = [
 
 // A nav row that folds a list of its own away — used by Chat and Care plans.
 function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd, children }) {
+  // An empty list still drew its rule and its margins, which read as a gap
+  // between this section and the next.
+  const hasItems = Children.toArray(children).length > 0;
   return (
     <>
       <div className={`nav-item has-action${active ? ' is-active' : ''}`}>
@@ -58,7 +62,7 @@ function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd,
       </div>
 
       <AnimatePresence initial={false}>
-        {open && (
+        {open && hasItems && (
           <motion.div
             key={`${id}-list`}
             initial={{ height: 0, opacity: 0 }}
