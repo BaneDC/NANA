@@ -564,7 +564,9 @@ export default function ImmersiveConversation({
           stage scrolls */}
       {/* Not on the blank first page: nothing has been said yet, so "Tek
           počinjemo" tells no one anything — and that page runs to the bottom
-          of the screen, where the scale sat on top of the emergency line. */}
+          of the screen, where the scale sat on top of the emergency line. Not
+          on the overview either: the plan is written, so how far along she was
+          is over, and the page under it is long enough to scroll. */}
       {stage !== 'open' && stage !== 'plan' && <UnderstandingPanel level={level} dropped={dropped} />}
 
       <HistoryPanel open={historyOpen} entries={log} onClose={() => setHistoryOpen(false)} />
@@ -789,9 +791,9 @@ export default function ImmersiveConversation({
 
           {stage === 'plan' && overview && (
             <motion.div key="plan" className="imm-screen is-wide is-plan" variants={screen} initial="initial" animate="animate" exit="exit">
-              <motion.div variants={piece}>
-                <UnderstandingPanel level={level} dropped={dropped} inline />
-              </motion.div>
+              <motion.p className="imm-count" variants={piece}>
+                Vaš plan podrške
+              </motion.p>
               {/* Jovana's closing sentence, revealed in place like every other
                   line of hers; this was the last one still grown a character
                   at a time and re-centred on each. The fallback used to be

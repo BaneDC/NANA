@@ -2083,12 +2083,6 @@ input {
   pointer-events: none;
 }
 
-/* On the overview it is read with the text, in the flow above the plan. */
-.imm-know-inline {
-  display: flex;
-  justify-content: center;
-  margin-bottom: var(--spacing-6);
-}
 
 /* no surface of its own: it sits on the gradient like the rest of the text */
 .imm-know {
