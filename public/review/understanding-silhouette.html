@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Koliko vas razumem — silueta</title>
+<style>
+  :root {
+    --primary: #fc703c;
+    --amber: #e0a35c;
+    --ink: #463d35;
+    --muted: #8a7a6d;
+    --empty: rgba(151, 67, 36, 0.20);
+    --font: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 32px 24px 64px;
+    font-family: var(--font);
+    color: var(--ink);
+    background: linear-gradient(180deg, #cbd8ed 0%, #f2e1dc 55%, #ffeeda 100%);
+    background-attachment: fixed;
+  }
+  header { max-width: 860px; margin: 0 auto 26px; text-align: center; }
+  h1 { margin: 0 0 8px; font-size: 22px; font-weight: 500; }
+  header p { margin: 0 auto; max-width: 640px; font-size: 14px; line-height: 21px; color: var(--muted); }
+
+  .controls {
+    position: sticky;
+    top: 12px;
+    z-index: 2;
+    max-width: 860px;
+    margin: 0 auto 32px;
+    padding: 14px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.62);
+    backdrop-filter: blur(12px);
+  }
+  input[type=range] { width: 240px; accent-color: var(--primary); }
+  .val { min-width: 34px; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .steps { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  button {
+    padding: 6px 11px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(70, 61, 53, 0.12);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  button:hover { background: #fff; }
+  button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+  label.toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+
+  .row { max-width: 1120px; margin: 0 auto; display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+  .card {
+    flex: 1 1 250px;
+    max-width: 268px;
+    padding: 22px 18px 18px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.42);
+    text-align: center;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 15px; font-weight: 500; }
+  .card p { margin: 0 0 14px; font-size: 12.5px; line-height: 18px; color: var(--muted); min-height: 90px; }
+  .stage { height: 210px; display: flex; align-items: flex-end; justify-content: center; }
+  .stage svg { height: 200px; }
+
+  /* the same figure at the size it would really sit in the dock */
+  .dock { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(70, 61, 53, 0.1); }
+  .dock-label { font-size: 11px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .dock svg { height: 64px; margin: 8px 0 6px; }
+  .dock-word { font-size: 13px; font-weight: 500; }
+
+  .fill-rect { transform-box: fill-box; transform-origin: bottom; transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1); }
+  .ghost { transition: transform 0.9s ease, opacity 0.9s ease; }
+  .soft { transition: opacity 0.9s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Koliko vas razumem</h1>
+  <p>
+    Silueta starije žene sa štapom, umesto pet crtica na vrhu ekrana. Prva kartica
+    je punjenje odozdo; ostale tri su tri načina da figura bude „neizoštrena" dok
+    je Jovana još ne poznaje. Povucite klizač ili idite kroz korake.
+  </p>
+</header>
+
+<div class="controls">
+  <input type="range" id="level" min="0" max="100" value="45">
+  <span class="val" id="val">45</span>
+  <span class="steps" id="steps"></span>
+  <label class="toggle"><input type="checkbox" id="dropped"> pala procena</label>
+</div>
+
+<div class="row" id="row"></div>
+
+<script>
+const STEPS = [
+  { from: 0, word: 'Tek počinjemo', at: 10 },
+  { from: 25, word: 'Upoznajemo se', at: 38 },
+  { from: 50, word: 'Slika se sklapa', at: 62 },
+  { from: 75, word: 'Skoro je jasno', at: 84 },
+  { from: 92, word: 'Znam dovoljno', at: 100 },
+];
+
+// The figure: an older woman in profile, stooped, leaning on a cane. Kept as a
+// flat list of shapes on purpose — a <g> inside a <clipPath> is ignored, so the
+// same markup has to work both as a drawing and as a clip.
+const TILT = 'translate(28,4) scale(0.5) rotate(-10 62 96)';
+const FIGURE = `
+  <circle cx="84" cy="42" r="11" transform="${TILT}"/>
+  <path transform="${TILT}" d="M60 26 C50 26 43 33 41 42 C40 47 40 50 41 53 C38 56 34 59 34 61 C34 63 39 64 42 65 C40 68 39 70 40 72 C41 74 43 74 45 74 C45 78 48 80 53 80 C62 80 72 74 78 64 C82 57 82 46 79 38 C76 30 69 26 60 26 Z"/>
+  <path d="M54 42 L64 42 L64 52 L54 52 Z"/>
+  <path d="M50 50 C44 58 43 76 45 94 L73 94 C77 78 79 58 67 49 Z"/>
+  <path d="M47 53 C38 62 31 78 29 96 L37 99 C39 84 44 68 52 58 Z"/>
+  <path d="M44 92 L74 92 C80 114 84 138 86 158 L33 158 C37 138 40 114 44 92 Z"/>
+  <path d="M48 156 L57 156 L56 184 L48 184 Z"/>
+  <path d="M63 156 L72 156 L71 184 L63 184 Z"/>
+  <path d="M40 184 C44 181 56 181 57 184 L57 190 L40 190 Z"/>
+  <path d="M55 184 C59 181 71 181 72 184 L72 190 L55 190 Z"/>
+  <path d="M28 99 L33 99 L31 190 L26 190 Z"/>
+  <path d="M19 95 C19 87 33 87 33 99 L28 99 C28 93 24 93 24 95 Z"/>`;
+
+const VARIANTS = [
+  {
+    id: 'fill',
+    title: 'Punjenje odozdo',
+    text: 'Cela figura stoji od početka, bleda, i puni se narandžastom odozdo naviše. Kad procena padne, nivo se vidno spusti.',
+    svg: (id) => `
+      <svg viewBox="0 0 120 200" aria-hidden="true">
+        <defs><clipPath id="clip-${id}">${FIGURE}</clipPath></defs>
+        <g fill="var(--empty)">${FIGURE}</g>
+        <g clip-path="url(#clip-${id})">
+          <rect class="fill-rect" data-fill x="0" y="0" width="120" height="200" fill="var(--primary)"/>
+        </g>
+      </svg>`,
+  },
+  {
+    id: 'blur',
+    title: 'Pravi blur, u SVG-u',
+    text: 'Isto zamućenje, ali ga računa sam SVG (feGaussianBlur), a ne CSS preko sitne rasterizovane slike. Zato je mekano, a ne zrnasto.',
+    svg: (id) => `
+      <svg viewBox="0 0 120 200" aria-hidden="true">
+        <defs>
+          <filter id="blur-${id}" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+            <feGaussianBlur data-blur stdDeviation="4"/>
+          </filter>
+        </defs>
+        <g data-soft class="soft" filter="url(#blur-${id})" fill="var(--ink)">${FIGURE}</g>
+      </svg>`,
+  },
+  {
+    id: 'ghost',
+    title: 'Dupla silueta',
+    text: 'Dve kopije jedna preko druge, razmaknute, koje se skupljaju u jednu kako razumevanje raste. Oko to čita kao „nije izoštreno", a ivice ostaju čiste.',
+    svg: (id) => `
+      <svg viewBox="0 0 120 200" aria-hidden="true">
+        <g data-ghost class="ghost" fill="var(--primary)" opacity="0.5">${FIGURE}</g>
+        <g data-ghost2 class="ghost" fill="var(--primary)" opacity="0.5">${FIGURE}</g>
+      </svg>`,
+  },
+  {
+    id: 'dots',
+    title: 'Tačkice',
+    text: 'Figura je rastresena u tačkice koje rastu i spajaju se u punu siluetu. Nikad ne izgleda pokvareno, a gustina sama govori koliko je Jovana saznala.',
+    svg: (id) => `
+      <svg viewBox="0 0 120 200" aria-hidden="true">
+        <defs>
+          <pattern id="dots-${id}" width="5" height="5" patternUnits="userSpaceOnUse">
+            <circle data-dot cx="2.5" cy="2.5" r="1" fill="var(--primary)"/>
+          </pattern>
+          <clipPath id="clipd-${id}">${FIGURE}</clipPath>
+        </defs>
+        <g clip-path="url(#clipd-${id})">
+          <rect x="0" y="0" width="120" height="200" fill="url(#dots-${id})"/>
+        </g>
+      </svg>`,
+  },
+];
+
+const row = document.getElementById('row');
+row.innerHTML = VARIANTS.map((v) => `
+  <div class="card" data-card="${v.id}">
+    <h2>${v.title}</h2>
+    <p>${v.text}</p>
+    <div class="stage">${v.svg(v.id + '-big')}</div>
+    <div class="dock">
+      <div class="dock-label">Koliko vas razumem</div>
+      ${v.svg(v.id + '-dock')}
+      <div class="dock-word" data-word></div>
+    </div>
+  </div>`).join('');
+
+const stepsEl = document.getElementById('steps');
+stepsEl.innerHTML = STEPS.map((s) => `<button data-level="${s.at}">${s.word}</button>`).join('');
+
+const range = document.getElementById('level');
+const val = document.getElementById('val');
+const droppedBox = document.getElementById('dropped');
+
+function render() {
+  const level = Number(range.value);
+  const k = level / 100;
+  const dropped = droppedBox.checked;
+  const tone = dropped ? 'var(--amber)' : 'var(--primary)';
+  const word = STEPS.filter((s) => level >= s.from).pop().word;
+  val.textContent = level;
+
+  document.querySelectorAll('[data-word]').forEach((w) => (w.textContent = word));
+
+  // fill: the orange rises through the figure
+  document.querySelectorAll('[data-fill]').forEach((r) => {
+    r.style.transform = `scaleY(${k})`;
+    r.setAttribute('fill', tone);
+  });
+
+  // blur: the filter does the softening, in vector, at full resolution
+  document.querySelectorAll('[data-blur]').forEach((b) => b.setAttribute('stdDeviation', (1 - k) * 4.5));
+  document.querySelectorAll('[data-soft]').forEach((g) => {
+    g.style.opacity = 0.35 + k * 0.65;
+    g.setAttribute('fill', dropped ? 'var(--amber)' : 'var(--ink)');
+  });
+
+  // ghost: two copies drifting together
+  const spread = (1 - k) * 7;
+  document.querySelectorAll('[data-ghost]').forEach((g) => {
+    g.style.transform = `translateX(${-spread}px)`;
+    g.setAttribute('fill', tone);
+  });
+  document.querySelectorAll('[data-ghost2]').forEach((g) => {
+    g.style.transform = `translateX(${spread}px)`;
+    g.setAttribute('fill', tone);
+  });
+
+  // dots: a 5x5 grid whose dot grows until the dots close into a solid figure
+  document.querySelectorAll('[data-dot]').forEach((d) => {
+    d.setAttribute('r', 0.45 + k * 3.1);
+    d.setAttribute('fill', tone);
+  });
+
+  document.querySelectorAll('.steps button').forEach((b) => {
+    b.classList.toggle('on', Number(b.dataset.level) === level);
+  });
+}
+
+range.addEventListener('input', render);
+droppedBox.addEventListener('change', render);
+stepsEl.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  range.value = b.dataset.level;
+  render();
+});
+render();
+</script>
+</body>
+</html>
