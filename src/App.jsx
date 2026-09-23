@@ -661,7 +661,6 @@ export default function App() {
             onNote={onNote}
             apiKey={apiKey}
             onPlan={onPlan}
-            onExit={() => setVariant('classic')}
             onFinish={() => {
               setVariant('classic');
               setSelectedPlan('live');

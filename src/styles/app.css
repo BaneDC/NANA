@@ -2072,10 +2072,15 @@ input {
 /* The page scrolls under the scale rather than into it: a band of blur that
    fades out downward, so a card passing beneath softens instead of colliding
    with the words. */
-.imm-know-dock::before {
+.imm-know::before {
   content: '';
   position: absolute;
-  inset: -16px 0 -40px;
+  /* only as wide as the scale: a band across the whole top blurred the
+     controls in the corner too */
+  inset: -16px -56px -40px;
+  /* behind the words: a positioned pseudo paints over them, and the blur took
+     the scale's own label with it */
+  z-index: -1;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
@@ -2179,6 +2184,15 @@ input {
   border: 1px solid rgba(255, 255, 255, 0.7);
   color: #6b5f55;
   transition: background 0.2s ease;
+}
+
+/* the one named control: the glyph keeps its 32px box, the label sits beside it */
+.imm-ctl.has-label {
+  width: auto;
+  gap: var(--spacing-2);
+  padding: 0 var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
 }
 
 .imm-ctl:hover {

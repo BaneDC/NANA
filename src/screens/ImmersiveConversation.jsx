@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, History, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, History, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
@@ -334,7 +334,6 @@ export default function ImmersiveConversation({
   onNote,
   apiKey,
   onPlan,
-  onExit,
   onFinish,
   onKeyRejected,
 }) {
@@ -587,17 +586,16 @@ export default function ImmersiveConversation({
               {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
             </button>
           )}
+          {/* Named rather than a bare glyph: it is the only control here now,
+              and "what have we said so far" is not a thing a clock face says. */}
           <button
             type="button"
-            className={`imm-ctl${historyOpen ? ' is-on' : ''}`}
+            className={`imm-ctl has-label${historyOpen ? ' is-on' : ''}`}
             onClick={() => setHistoryOpen((v) => !v)}
-            aria-label="Dosadašnji razgovor"
             aria-expanded={historyOpen}
           >
             <History size={15} strokeWidth={1.75} />
-          </button>
-          <button type="button" className="imm-ctl" onClick={onExit} aria-label="Klasični prikaz">
-            <LayoutList size={15} strokeWidth={1.75} />
+            <span>Istorija razgovora</span>
           </button>
         </div>
       </div>
