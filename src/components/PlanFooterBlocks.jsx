@@ -1,53 +1,11 @@
-import { useState } from 'react';
-import { Mail, MessageCircle, Phone, Plus } from 'lucide-react';
-import Button from './Button';
+import { Mail, MessageCircle, Phone } from 'lucide-react';
 
-// Two blocks the client's document ends on. Both are the same idea: the plan is not
-// a finished document handed down, it is a conversation the family can push back on.
-
-// "Ukoliko želite da postavite neko dodatno pitanje ili prilagodite neki segment
-// plana, slobodno ovde upišite" — the plan takes additions from the family.
-export function PlanAsk({ onAdd }) {
-  const [text, setText] = useState('');
-  const [added, setAdded] = useState([]);
-
-  const submit = () => {
-    const value = text.trim();
-    if (!value) return;
-    setAdded((a) => [...a, value]);
-    setText('');
-    onAdd?.(value);
-  };
-
-  return (
-    <div className="plan-ask">
-      <p className="rec-title">Želite nešto da dodate ili promenite?</p>
-      <p className="doc-p">
-        Ako želite nešto da pitate ili da prilagodite deo plana, napišite ovde i ja ću to
-        preuzeti.
-      </p>
-
-      {added.map((a, i) => (
-        <p className="plan-ask-added" key={i}>
-          <Plus size={13} strokeWidth={2} /> {a}
-        </p>
-      ))}
-
-      <div className="plan-ask-row">
-        <input
-          type="text"
-          value={text}
-          placeholder="Može li za početak samo pre podne?"
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-        />
-        <Button variant="secondary" disabled={!text.trim()} onClick={submit}>
-          <Plus size={13} strokeWidth={2} /> Dodaj u plan
-        </Button>
-      </div>
-    </div>
-  );
-}
+// How the plan ends: the plan is not a finished document handed down, it is a
+// conversation — and the coordinator is who you have that conversation with.
+//
+// The block that took an addition in a text field is gone. It collected what was
+// typed and did nothing with it; the assistant is where a change to the plan
+// actually reaches the plan.
 
 // "Od sada ne morate sve sami da organizujete." Reaching the coordinator is never
 // behind the paywall — the paywall is on caregiver numbers.

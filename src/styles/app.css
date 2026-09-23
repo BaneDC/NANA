@@ -3193,58 +3193,6 @@ textarea {
   height: 1lh;
 }
 
-/* ---------- Ask / adjust the plan ---------- */
-
-.plan-ask {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  padding: var(--spacing-4);
-  border-radius: var(--radius-2xl);
-  background: var(--surface-2);
-}
-
-.plan-ask-added {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-lg);
-  background: var(--surface-elevated);
-  box-shadow: var(--shadow-card);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-primary);
-}
-
-.plan-ask-added svg {
-  flex-shrink: 0;
-  color: var(--primary-highlight);
-}
-
-.plan-ask-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-1);
-}
-
-.plan-ask-row input {
-  flex: 1;
-  min-width: 0;
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-lg);
-  background: var(--surface-elevated);
-  box-shadow: var(--shadow-card);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-primary);
-}
-
-.plan-ask-row input::placeholder {
-  color: var(--text-disabled);
-}
-
 /* ---------- Reaching the coordinator ---------- */
 
 .coordinator-contact {
@@ -7008,6 +6956,20 @@ textarea.wo-text {
 @media (max-width: 640px) {
   .view {
     padding: var(--spacing-4) var(--spacing-4) var(--spacing-6);
+  }
+
+  /* A caregiver's row is a card on a phone: the avatar and what she does
+     across the top, and the two controls on a line of their own under it
+     rather than squeezed into a third of the width. */
+  .caregiver.is-wide {
+    flex-wrap: wrap;
+  }
+
+  .fam-find-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
   }
 
   /* the title takes the row and the actions drop under it rather than

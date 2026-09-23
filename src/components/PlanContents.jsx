@@ -2,13 +2,13 @@ import { Lock } from 'lucide-react';
 import { coordinator } from '../data/carePlan';
 import CoordinatorMessage from './CoordinatorMessage';
 import RecommendationCard from './RecommendationCard';
-import { CoordinatorContact, PlanAsk } from './PlanFooterBlocks';
+import { CoordinatorContact } from './PlanFooterBlocks';
 import Button from './Button';
 
 // The body of a care plan, in the order the client's document lays it out: the
 // coordinator's letter, then what we recommend — each saying why it is being
-// recommended for this person — then the two ways the family can push back on
-// the plan. Shared by the side panel and the full page so they never drift apart.
+// recommended for this person — then the way to reach the coordinator. Shared by
+// the side panel and the full page so they never drift apart.
 //
 // Three groups, and the spacing says so: 8px inside a card's list, 12px from a
 // heading to what it heads, 32px between one group and the next. The caregivers
@@ -88,12 +88,7 @@ export default function PlanContents({
         </div>
       </section>
 
-      {!archived && (
-        <section className="plan-sec-body">
-          <PlanAsk />
-          <CoordinatorContact coordinator={plan.coordinator || coordinator} />
-        </section>
-      )}
+      {!archived && <CoordinatorContact coordinator={plan.coordinator || coordinator} />}
     </div>
   );
 }
