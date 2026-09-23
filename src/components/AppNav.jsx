@@ -82,7 +82,6 @@ export default function AppNav({
   badge,
   threads,
   activeThread,
-  liveTitle,
   onSelectThread,
   onNewChat,
   chatListOpen,
@@ -120,14 +119,6 @@ export default function AppNav({
           onToggle={onToggleChatList}
           onAdd={onNewChat}
         >
-          <button
-            type="button"
-            className={`nav-sub-item${view === 'chat' && activeThread === 'live' ? ' is-active' : ''}`}
-            onClick={() => onSelectThread('live')}
-          >
-            <span className="nav-sub-label">{liveTitle}</span>
-            <span className="nav-sub-date">Trenutni</span>
-          </button>
           {threads.map((t) => (
             <button
               key={t.id}

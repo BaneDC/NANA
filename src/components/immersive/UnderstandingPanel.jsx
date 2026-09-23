@@ -25,13 +25,16 @@ const STEPS = [
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-export default function UnderstandingPanel({ level = 0, dropped }) {
+// `inline` is the overview's copy of it: once the plan is written the scale is
+// part of what is being read, not a heading over it, and a fixed row there is
+// one more thing the page has to scroll under.
+export default function UnderstandingPanel({ level = 0, dropped, inline }) {
   const word = STEPS.filter((s) => level >= s.from).pop().word;
 
   return (
     // The dock does the centring, so the pill's own transform is free for its
     // entrance — a translateX(-50%) on it would be overwritten by the animation.
-    <div className="imm-know-dock">
+    <div className={inline ? 'imm-know-inline' : 'imm-know-dock'}>
       <motion.div
         className={`imm-know${dropped ? ' is-dropped' : ''}`}
         initial={{ opacity: 0, y: -8 }}

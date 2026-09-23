@@ -21,16 +21,22 @@ import { paneFor, previewFor } from './ChatPanes';
 // family's state through `ctx`, a ref App refreshes every render, so the send
 // handler never goes stale and never has to change identity.
 
-// The live conversation is published here rather than lifted into App state:
-// the kit rewrites its turns on every keystroke and every streamed frame, and
-// only the chat itself should redraw for that, not the whole app around it.
+// Every conversation the family has open is published here rather than lifted
+// into App state: the kit rewrites its turns on every keystroke and every
+// streamed frame, and only the chat itself should redraw for that, not the
+// whole app around it. One entry per conversation, so switching back to an
+// earlier one finds it as it was left.
 function createChatStore() {
-  let current = null;
+  const chats = new Map();
   const listeners = new Set();
   return {
-    get: () => current,
-    set: (next) => {
-      current = next;
+    get: (id) => chats.get(id) || null,
+    set: (id, next) => {
+      chats.set(id, next);
+      listeners.forEach((l) => l());
+    },
+    drop: (id) => {
+      chats.delete(id);
       listeners.forEach((l) => l());
     },
     subscribe: (l) => {
@@ -41,7 +47,7 @@ function createChatStore() {
 }
 export const chatStore = createChatStore();
 
-export function ChatSource({ ctx }) {
+export function ChatSource({ id, ctx, onTitle }) {
   const history = useRef([]);
 
   const send = useCallback(async function* (message, { turnId }) {
@@ -96,11 +102,17 @@ export function ChatSource({ ctx }) {
 
   const chat = useChatTurns({ onSend: send, announcements: { responding: 'Stiže odgovor' } });
   const { turns, isStreaming } = chat;
+  // What the conversation is called in the nav: the first thing asked in it.
+  const first = turns.find((t) => t.user.trim())?.user.trim() || '';
   useEffect(() => {
-    chatStore.set({ ...chat, history });
+    onTitle?.(id, first);
+  }, [id, first, onTitle]);
+  useEffect(() => {
+    chatStore.set(id, { ...chat, history });
     // the hook's functions are stable; what changes is the turns
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [turns, isStreaming]);
+  }, [id, turns, isStreaming]);
+  useEffect(() => () => chatStore.drop(id), [id]);
   return null;
 }
 
@@ -277,8 +289,9 @@ export function ChatPane({ openId, ctx, onClose }) {
 
 // ── the chat ─────────────────────────────────────────────────────────────────
 
-export default function KitAssistant({ ctx, title, actions, className, openPane, onOpenPane }) {
-  const chat = useSyncExternalStore(chatStore.subscribe, chatStore.get);
+export default function KitAssistant({ id, ctx, title, actions, className, openPane, onOpenPane }) {
+  const get = useCallback(() => chatStore.get(id), [id]);
+  const chat = useSyncExternalStore(chatStore.subscribe, get);
   if (!chat) return null;
   return (
     <KitChat
@@ -313,7 +326,7 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
               onDecide={(applied) => {
                 if (applied) ctx.current.onApplyChanges(part.data.changes);
                 write({ ...part.data, status: applied ? 'applied' : 'dismissed' });
-                const h = chatStore.get().history;
+                const h = chat.history;
                 h.current = decided(h.current, applied);
               }}
             />

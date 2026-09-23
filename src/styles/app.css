@@ -2069,6 +2069,27 @@ input {
   pointer-events: none;
 }
 
+/* The page scrolls under the scale rather than into it: a band of blur that
+   fades out downward, so a card passing beneath softens instead of colliding
+   with the words. */
+.imm-know-dock::before {
+  content: '';
+  position: absolute;
+  inset: -16px 0 -40px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  pointer-events: none;
+}
+
+/* On the overview it is read with the text, in the flow above the plan. */
+.imm-know-inline {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-6);
+}
+
 /* no surface of its own: it sits on the gradient like the rest of the text */
 .imm-know {
   position: relative;
@@ -6207,6 +6228,10 @@ textarea.wo-text {
      the section's: 8 in from a 24 edge takes 16 (8 + 16 = 24), the app's card
      corner. The kit's own 24 inset under a 40 corner came out rounder than the
      section around it. */
+  /* The corner chain reaches the composer too: an 8 button inside 8 of
+     padding makes a 16 box, the app's own card corner. The kit's buttons are
+     pills; here they take the app's 8. */
+  --ick-input-radius: var(--radius-2xl);
   --ick-artifact-pane-inset: var(--spacing-2);
   --ick-artifact-pane-radius: var(--radius-2xl);
   --ick-artifact-pane-pad: var(--spacing-4);
@@ -6407,8 +6432,8 @@ textarea.wo-text {
   --ick-ink-glass: var(--primary-foreground);
   --ick-ink-glass-strong: var(--primary-foreground);
   --ick-ink-soft: var(--primary-foreground);
-  padding: var(--spacing-3) var(--spacing-4);
-  /* the same corner as the composer it was typed into */
+  /* the same padding and corner as the composer it was typed into */
+  padding: var(--ick-space-4);
   border-radius: var(--ick-input-radius) !important;
   box-shadow: none !important;
   -webkit-backdrop-filter: none;
@@ -6705,4 +6730,15 @@ textarea.wo-text {
 
 .kc-name-link:hover {
   text-decoration-color: currentColor;
+}
+
+/* The composer sets its own --ick-input-radius on its root, so the app's is
+   repointed there rather than on the chat around it. */
+.nana-chat [class*='ick-root-'] {
+  --ick-input-radius: var(--radius-2xl);
+}
+
+/* the send, stop and attach glyphs: the app's button corner, not pills */
+.nana-chat [class*='ick-btn-'] {
+  border-radius: var(--radius-lg);
 }
