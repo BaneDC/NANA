@@ -2,7 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { reconcile } from '../data/dependencies';
 import {
   MODEL,
-  THINKS,
+  SYSTEM_TURNS,
+  TUNING,
   TOOLS,
   remainingQuestions,
   stateMessage,
@@ -38,8 +39,8 @@ export function createClient(apiKey) {
 // let tool calls arrive as plain text — the turn succeeds, the call never runs,
 // nothing errors, and in a loop that text poisons later turns. For a design
 // that hangs entirely on tool use that is the worst available bug; `low` effort
-// is the cheap lever. The 4.5 models have no adaptive thinking and reject the
-// field, so for those it simply is not sent.
+// is the cheap lever. The 4.5 models have neither, and reject both fields, so
+// for those they simply are not sent.
 //
 // The tools are the same every turn and the prompt above them is long, so both
 // are cached: what changes each turn is the state message under the
@@ -51,8 +52,7 @@ const cachedTools = TOOLS.map((tool, i) =>
 const REQUEST = {
   model: MODEL,
   max_tokens: 8000,
-  ...(THINKS() ? { thinking: { type: 'adaptive' } } : {}),
-  output_config: { effort: 'low' },
+  ...TUNING(),
   tools: cachedTools,
 };
 
@@ -108,8 +108,16 @@ export async function runTurn({
       // Anthropic's recommended fallback rather than handing us a dead turn.
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-      messages: [...history, { role: 'system', content: stateMessage(working, collected) }],
+      // The prompt is cached; what changes every turn is the state under it,
+      // which goes as its own uncached block, or as a system message where the
+      // model takes one.
+      system: [
+        { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
+        ...(SYSTEM_TURNS() ? [] : [{ type: 'text', text: stateMessage(working, collected) }]),
+      ],
+      messages: SYSTEM_TURNS()
+        ? [...history, { role: 'system', content: stateMessage(working, collected) }]
+        : history,
     });
 
     stream.on('text', (delta) => onText(delta));

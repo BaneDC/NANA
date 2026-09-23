@@ -19,9 +19,17 @@ import { Q, STEP_INTRO, WHY, WHY_FOLLOW_UPS } from './flow.sr';
 // tried against a real key.
 export const MODEL = import.meta.env?.VITE_ONBOARDING_MODEL || 'claude-sonnet-5';
 
-// Adaptive thinking is a 4.6-and-later shape; the 4.5 models reject it with a
-// 400, so a request for one goes without.
-export const THINKS = (model = MODEL) => !/-4-5(-|$)/.test(model);
+// Adaptive thinking and the effort dial are 4.6-and-later shapes; the 4.5
+// models reject both with a 400 ("This model does not support the effort
+// parameter"), so a request for one carries neither.
+// A system-role message mid-conversation is another 4.6-and-later shape: the
+// 4.5 models refuse it ("role 'system' is not supported on this model"). What
+// it carries — the questions still to ask — then rides at the end of the
+// system prompt instead, after the cached part of it.
+export const SYSTEM_TURNS = (model = MODEL) => !/-4-5(-|$)/.test(model);
+
+export const TUNING = (model = MODEL) =>
+  /-4-5(-|$)/.test(model) ? {} : { thinking: { type: 'adaptive' }, output_config: { effort: 'low' } };
 
 // What is still to be asked, given everything answered so far. Recomputed every
 // turn because the frailty band decides which questions exist at all.
