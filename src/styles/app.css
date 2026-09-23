@@ -6528,15 +6528,6 @@ textarea.wo-text {
   padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
 }
 
-/* Selecting an answer marked it — the kit's highlighter turns any selection
-   inside the prose into a saved highlight, with a menu and a counter in the
-   header. NANA has no use for either, and the kit has no switch, so there is
-   nothing to select. Copying the whole answer is still a button on it. */
-.nana-chat [class*='ick-answer-'] {
-  -webkit-user-select: none;
-  user-select: none;
-}
-
 /* The question, once sent, as NANA's own bubble: flat primary with white
    text, the composer's corner, and no glass, rim, highlight or shadow. */
 .nana-chat [class*='ick-surface-'][class*='ick-glass-'] {

@@ -100,7 +100,13 @@ export function ChatSource({ id, ctx, onTitle }) {
     }
   }, [ctx]);
 
-  const chat = useChatTurns({ onSend: send, announcements: { responding: 'Stiže odgovor' } });
+  // `at-send` is what a docked composer needs: the box at the bottom is always
+  // there, so the next thing can be typed while this answer is still arriving.
+  const chat = useChatTurns({
+    onSend: send,
+    nextTurn: 'at-send',
+    announcements: { responding: 'Stiže odgovor' },
+  });
   const { turns, isStreaming } = chat;
   // What the conversation is called in the nav: the first thing asked in it.
   const first = turns.find((t) => t.user.trim())?.user.trim() || '';
@@ -400,7 +406,11 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
         headerActions={false}
         composerMenu={false}
         cursor={false}
-        selectionToggle={false}
+        // the composer stays at the bottom of the view, the way a chat is read
+        composer="docked"
+        // no marking an answer: no marker layer, no saved highlights, nothing
+        // over the text in the tab order
+        highlights={false}
         theme="light"
         title={title}
         actions={actions}
