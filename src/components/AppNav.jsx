@@ -1,3 +1,4 @@
+import { Children } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronDown,
@@ -23,6 +24,9 @@ const FOOTER_ITEMS = [
 
 // A nav row that folds a list of its own away — used by Chat and Care plans.
 function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd, children }) {
+  // An empty list still drew its rule and its margins, which read as a gap
+  // between this section and the next.
+  const hasItems = Children.toArray(children).length > 0;
   return (
     <>
       <div className={`nav-item has-action${active ? ' is-active' : ''}`}>
@@ -58,7 +62,7 @@ function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd,
       </div>
 
       <AnimatePresence initial={false}>
-        {open && (
+        {open && hasItems && (
           <motion.div
             key={`${id}-list`}
             initial={{ height: 0, opacity: 0 }}
@@ -82,7 +86,6 @@ export default function AppNav({
   badge,
   threads,
   activeThread,
-  liveTitle,
   onSelectThread,
   onNewChat,
   chatListOpen,
@@ -93,7 +96,15 @@ export default function AppNav({
   planListOpen,
   onTogglePlanList,
   onRestart,
+  open,
+  onClose,
 }) {
+  // On a phone the nav is a drawer over the page, so anything that navigates
+  // also closes it — otherwise the page it opened is behind the nav.
+  const go = (fn) => (...args) => {
+    fn?.(...args);
+    onClose?.();
+  };
   const initials =
     user.name
       .split(' ')
@@ -104,7 +115,7 @@ export default function AppNav({
       .toUpperCase() || 'NP';
 
   return (
-    <nav className="app-nav">
+    <nav className={`app-nav${open ? ' is-open' : ''}`}>
       <div className="nav-head">
         <Logo width={110} />
       </div>
@@ -115,25 +126,17 @@ export default function AppNav({
           label="Razgovor"
           icon={MessageSquare}
           active={view === 'chat'}
-          onOpen={() => onView('chat')}
+          onOpen={go(() => onView('chat'))}
           open={chatListOpen}
           onToggle={onToggleChatList}
-          onAdd={onNewChat}
+          onAdd={go(onNewChat)}
         >
-          <button
-            type="button"
-            className={`nav-sub-item${view === 'chat' && activeThread === 'live' ? ' is-active' : ''}`}
-            onClick={() => onSelectThread('live')}
-          >
-            <span className="nav-sub-label">{liveTitle}</span>
-            <span className="nav-sub-date">Trenutni</span>
-          </button>
           {threads.map((t) => (
             <button
               key={t.id}
               type="button"
               className={`nav-sub-item${view === 'chat' && activeThread === t.id ? ' is-active' : ''}`}
-              onClick={() => onSelectThread(t.id)}
+              onClick={go(() => onSelectThread(t.id))}
             >
               <span className="nav-sub-label">{t.title}</span>
               <span className="nav-sub-date">{t.date}</span>
@@ -144,7 +147,7 @@ export default function AppNav({
         <button
           type="button"
           className={`nav-item${HOME_VIEWS.includes(view) ? ' is-active' : ''}`}
-          onClick={() => onView('dashboard')}
+          onClick={go(() => onView('dashboard'))}
           aria-current={HOME_VIEWS.includes(view) ? 'page' : undefined}
         >
           <LayoutDashboard size={16} strokeWidth={1.75} />
@@ -155,7 +158,7 @@ export default function AppNav({
         <button
           type="button"
           className={`nav-item${view === 'find-caregiver' ? ' is-active' : ''}`}
-          onClick={() => onView('find-caregiver')}
+          onClick={go(() => onView('find-caregiver'))}
           aria-current={view === 'find-caregiver' ? 'page' : undefined}
         >
           <Search size={16} strokeWidth={1.75} />
@@ -167,7 +170,7 @@ export default function AppNav({
           label="Planovi nege"
           icon={FileText}
           active={view === 'plans' || view === 'plan-detail'}
-          onOpen={() => onView('plans')}
+          onOpen={go(() => onView('plans'))}
           open={planListOpen}
           onToggle={onTogglePlanList}
         >
@@ -179,7 +182,7 @@ export default function AppNav({
               className={`nav-sub-item${
                 view === 'plan-detail' && selectedPlan === e.id ? ' is-active' : ''
               }`}
-              onClick={() => onSelectPlan(e.id)}
+              onClick={go(() => onSelectPlan(e.id))}
             >
               <span className="nav-sub-label">{e.title}</span>
               <span className="nav-sub-date">{e.archived ? e.date : 'Aktivan'}</span>
@@ -194,7 +197,7 @@ export default function AppNav({
             key={id}
             type="button"
             className={`nav-item${view === id ? ' is-active' : ''}`}
-            onClick={() => onView(id)}
+            onClick={go(() => onView(id))}
             aria-current={view === id ? 'page' : undefined}
           >
             <Icon size={16} strokeWidth={1.75} />

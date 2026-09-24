@@ -1,4 +1,4 @@
-import { MODEL, toAnswer, withoutLongDashes } from '../data/conversation';
+import { MODEL, SYSTEM_TURNS, TUNING, toAnswer, withoutLongDashes } from '../data/conversation';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { answerText, planQuestions } from '../data/planEdits';
@@ -192,21 +192,25 @@ function toChange(entry, answers) {
  */
 export async function askPlanCopilot({ client, name, answers, care, history, text }) {
   const messages = [...history, { role: 'user', content: text }];
+  // what she is working from: the questions and where the family stands
+  const state = [catalog(answers), care ? situation(care) : null].filter(Boolean).join('\n\n');
 
   const response = await client.beta.messages.create({
     model: MODEL,
     max_tokens: 16000,
-    // Thinking stays on: with it off this model can write a tool call as text,
-    // which here would be a proposal that never shows up.
-    thinking: { type: 'adaptive' },
-    output_config: { effort: 'low' },
+    // Thinking stays on where the model has it: with it off this model can
+    // write a tool call as text, which here would be a proposal that never
+    // shows up. The 4.5 models reject the field and the effort dial with it.
+    ...TUNING(),
     // A declined request is re-run on the recommended fallback instead of
     // leaving the panel with nothing.
     betas: ['server-side-fallback-2026-07-01'],
     fallbacks: 'default',
-    system: system(name),
+    system: SYSTEM_TURNS()
+      ? system(name)
+      : [{ type: 'text', text: system(name) }, { type: 'text', text: state }],
     tools: [PROPOSE, NOTE, REQUEST, SHOW],
-    messages: [...messages, { role: 'system', content: [catalog(answers), care ? situation(care) : null].filter(Boolean).join('\n\n') }],
+    messages: SYSTEM_TURNS() ? [...messages, { role: 'system', content: state }] : messages,
   });
 
   if (response.stop_reason === 'refusal') {

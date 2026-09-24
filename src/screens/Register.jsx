@@ -197,7 +197,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             <Input value={lastName} onChange={setLastName} placeholder="Ilić" autoComplete="family-name" />
           </Field>
         </div>
-        <Field label="Imejl" required>
+        <Field label="Email" required>
           <Input value={email} onChange={setEmail} type="email" placeholder="milena@mail.com" autoComplete="email" />
         </Field>
         <Field label="Broj telefona" required>
@@ -248,7 +248,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             Potvrđujem da su podaci tačni
           </Consent>
           <Consent checked={newsletter} onChange={setNewsletter}>
-            Želim da primam novosti i posebne ponude imejlom
+            Želim da primam novosti i posebne ponude na email
           </Consent>
         </div>
       </div>
@@ -312,13 +312,13 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     <>
       <div className="welcome">
         <h1>Prijavite se</h1>
-        <p>Imejlom i lozinkom kojima ste napravili nalog</p>
+        <p>Email adresom i lozinkom kojima ste napravili nalog</p>
       </div>
       <div className="form-card">
-        <Field label="Imejl" required>
+        <Field label="Email" required>
           <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="milena@mail.com" autoComplete="email" />
         </Field>
-        <Field label="Lozinka" required hint={failed ? 'Imejl ili lozinka nisu tačni.' : null}>
+        <Field label="Lozinka" required hint={failed ? 'Email ili lozinka nisu tačni.' : null}>
           <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} onEnter={submit} placeholder="Vaša lozinka" />
         </Field>
       </div>

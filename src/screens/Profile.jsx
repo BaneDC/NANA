@@ -1,7 +1,9 @@
-import { Pencil } from 'lucide-react';
+import { useState } from 'react';
+import { Check, Pencil } from 'lucide-react';
 import { questionById } from '../data/flow';
-import { srField } from '../data/flow.sr';
+import { srField, srTitle } from '../data/flow.sr';
 import Button from '../components/Button';
+import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
 
 // Reads straight from the questionnaire answers, so the profile is whatever the
@@ -36,10 +38,58 @@ function Section({ title, rows, onEdit }) {
   );
 }
 
-export default function Profile({ user, answers, onGoToChat, onAskAssistant }) {
+// Editing it by hand, rather than telling the assistant to. The account's own
+// fields are the account's; everything else is an answer the plan is built
+// from, so saving one goes through the same change the plan shows.
+function FieldEditor({ title, fields, onSave, onClose }) {
+  const [values, setValues] = useState(() => Object.fromEntries(fields.map((f) => [f.id, f.value])));
+  const complete = fields.every((f) => f.optional || String(values[f.id] || '').trim());
+
+  return (
+    <Modal eyebrow="Profil" title={title} onClose={onClose}>
+      <div className="pe-fields">
+        {fields.map((f) => (
+          <label key={f.id} className="wo-field">
+            <span className="ag-label">{f.label}</span>
+            <input
+              className="wo-text is-line"
+              type={f.type || 'text'}
+              value={values[f.id] || ''}
+              placeholder={f.placeholder}
+              onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))}
+            />
+          </label>
+        ))}
+      </div>
+      <div className="panel-card-actions is-end">
+        <Button variant="secondary" onClick={onClose}>
+          Otkaži
+        </Button>
+        <Button variant="primary" disabled={!complete} onClick={() => onSave(values)}>
+          <Check size={14} strokeWidth={2} />
+          Sačuvaj
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+export default function Profile({ user, answers, onGoToChat, onAskAssistant, onSaveUser, onEditAnswers }) {
   const elderly = fieldsOf('about-person', answers);
   const contact = fieldsOf('about-you', answers);
   const goal = fieldsOf('family-goal', answers);
+  // 'account', or the id of the question being edited
+  const [editing, setEditing] = useState(null);
+
+  const questionFields = (id) => {
+    const q = questionById[id];
+    const values = answers[id]?.values || {};
+    return q.fields.map((f) => ({ id: f.id, label: srField(q, f.id), value: values[f.id] || '', placeholder: f.placeholder, optional: f.optional }));
+  };
+  const saveQuestion = (id) => (values) => {
+    onEditAnswers([{ questionId: id, answer: { values } }]);
+    setEditing(null);
+  };
 
   return (
     <div className="view">
@@ -54,18 +104,22 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant }) {
       <Section
         title="Vaš nalog"
         rows={[
-          { label: 'Ime', value: user.name || '—' },
-          { label: 'Imejl', value: user.email || '—' },
+          { label: 'Ime i prezime', value: user.name || '—' },
+          { label: 'Email', value: user.email || '—' },
+          { label: 'Telefon', value: user.phone || '—' },
         ]}
+        onEdit={onSaveUser ? () => setEditing('account') : null}
       />
 
       {elderly.length > 0 ? (
         <>
-          <Section title="O kome brinemo" rows={elderly} onEdit={onGoToChat} />
+          <Section title="O kome brinemo" rows={elderly} onEdit={() => setEditing('about-person')} />
           {contact.length > 0 && (
-            <Section title="Glavni kontakt" rows={contact} onEdit={onGoToChat} />
+            <Section title="Glavni kontakt" rows={contact} onEdit={() => setEditing('about-you')} />
           )}
-          {goal.length > 0 && <Section title="Čemu se nadate" rows={goal} onEdit={onGoToChat} />}
+          {goal.length > 0 && (
+            <Section title="Čemu se nadate" rows={goal} onEdit={() => setEditing('family-goal')} />
+          )}
         </>
       ) : (
         <div className="empty">
@@ -77,6 +131,31 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant }) {
             Idi na razgovor
           </Button>
         </div>
+      )}
+
+      {editing === 'account' && (
+        <FieldEditor
+          title="Vaš nalog"
+          fields={[
+            { id: 'name', label: 'Ime i prezime', value: user.name || '' },
+            { id: 'email', label: 'Email', value: user.email || '', type: 'email' },
+            { id: 'phone', label: 'Telefon', value: user.phone || '' },
+          ]}
+          onSave={(values) => {
+            onSaveUser(values);
+            setEditing(null);
+          }}
+          onClose={() => setEditing(null)}
+        />
+      )}
+
+      {editing && editing !== 'account' && (
+        <FieldEditor
+          title={srTitle(questionById[editing])}
+          fields={questionFields(editing)}
+          onSave={saveQuestion(editing)}
+          onClose={() => setEditing(null)}
+        />
       )}
     </div>
   );

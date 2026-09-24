@@ -1,8 +1,8 @@
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Plus } from 'lucide-react';
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 
-export default function Plans({ entries, onOpenPlan, onGoToChat, onAskAssistant }) {
+export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPlan, onAskAssistant }) {
   const hasLive = entries.some((e) => !e.archived);
 
   return (
@@ -12,7 +12,17 @@ export default function Plans({ entries, onOpenPlan, onGoToChat, onAskAssistant 
           <h1 className="view-title">Planovi nege</h1>
           <p className="view-sub">Svaki plan koji smo napravili, od najnovijeg.</p>
         </div>
-        <AskAssistant onClick={onAskAssistant} />
+        <div className="view-head-actions">
+          <AskAssistant iconOnly onClick={onAskAssistant} />
+          {/* One plan is one person. A second parent, a partner's mother: that is
+              a new plan, not an edit of this one. */}
+          {onNewPlan && (
+            <Button variant="primary" onClick={onNewPlan}>
+              <Plus size={14} strokeWidth={2} />
+              Novi plan
+            </Button>
+          )}
+        </div>
       </div>
 
       {!hasLive && (
@@ -47,6 +57,9 @@ export default function Plans({ entries, onOpenPlan, onGoToChat, onAskAssistant 
             <div className="plan-row-main">
               <div className="plan-row-top">
                 <span className="plan-row-title">{e.title}</span>
+                {/* A change made in the chat is applied to the plan but not yet
+                    seen here; the row says so until it is opened and confirmed. */}
+                {!e.archived && change && <span className="status-pill is-attention">Izmenjeno</span>}
                 <span className={`status-pill is-${e.archived ? 'muted' : 'accepted'}`}>
                   {e.status}
                 </span>

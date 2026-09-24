@@ -1,12 +1,20 @@
-import { Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { caregiversFor } from '../data/carePlan';
 import CaregiverRow from './CaregiverRow';
 import Button from './Button';
 
 // One recommendation, in the shape the client's document sketched: what we suggest,
-// *why we suggest it for this person*, who would do it, and soft actions. No
-// "book now" — the client's note on that was unambiguous.
-export default function RecommendationCard({ rec, unlocked, changed, changeKey, onSelectCaregiver, onAction }) {
+// *why we suggest it for this person*, and who would do it. No "book now" — the
+// client's note on that was unambiguous — and no soft actions either: "Neka Jovana
+// ovo organizuje" promised a hand-off the app does not have yet.
+export default function RecommendationCard({
+  rec,
+  unlocked,
+  changed,
+  changeKey,
+  onSelectCaregiver,
+  onFindCaregivers,
+}) {
   return (
     // keyed by the change, so the highlight plays again for a second change
     <div className={`rec-card${changed ? ' is-changed' : ''}`} key={changed ? changeKey : 'rec'}>
@@ -21,10 +29,16 @@ export default function RecommendationCard({ rec, unlocked, changed, changeKey, 
       {rec.kind === 'caregivers' && (
         <div className="rec-providers">
           {caregiversFor(unlocked)
-            .slice(0, 3)
+            .slice(0, 5)
             .map((c) => (
               <CaregiverRow key={c.id} caregiver={c} onSelect={onSelectCaregiver} />
             ))}
+          {onFindCaregivers && (
+            <Button variant="secondary" full onClick={onFindCaregivers}>
+              Pogledajte još negovateljica
+              <ArrowRight size={14} strokeWidth={1.75} />
+            </Button>
+          )}
         </div>
       )}
 
@@ -38,14 +52,6 @@ export default function RecommendationCard({ rec, unlocked, changed, changeKey, 
           ))}
         </ul>
       )}
-
-      <div className="rec-actions">
-        {rec.actions.map((label, i) => (
-          <Button key={label} variant={i === 0 ? 'primary' : 'secondary'} onClick={() => onAction?.(rec, label)}>
-            {label}
-          </Button>
-        ))}
-      </div>
     </div>
   );
 }

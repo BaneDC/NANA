@@ -8,14 +8,16 @@ import FindCaregiver from './screens/FindCaregiver';
 import Profile from './screens/Profile';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
+import Logo from './components/Logo';
 import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
-import KitAssistant, { ChatSource } from './components/KitAssistant';
+import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoNotes, demoUser, wantsDemo } from './data/demoCase';
-import { loadProgress, saveProgress } from './lib/account';
-import { FileText, Plus, X } from 'lucide-react';
+import { loadProgress, saveProgress, updateAccount } from './lib/account';
+import { FileText, Menu, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PaywallModal from './components/PaywallModal';
+import SharePlanModal from './components/SharePlanModal';
 import PlanDetail from './screens/PlanDetail';
 import Immersive from './screens/Immersive';
 import ImmersiveConversation from './screens/ImmersiveConversation';
@@ -91,6 +93,8 @@ export default function App() {
   // it back: what moved, which parts of the plan it rewrote, and the state from
   // before it, for "Poništi".
   const [planChange, setPlanChange] = useState(null);
+  // the nav, on a screen too narrow to keep it open beside the page
+  const [navOpen, setNavOpen] = useState(false);
   const showCaregiver = (id) => {
     setOpenCaregiver(id);
     setDrawer(null);
@@ -209,7 +213,28 @@ export default function App() {
   const askAssistant = () => (view === 'chat' ? null : setRightPanel('copilot'));
   // The assistant's conversation: one, wherever it is open. <ChatSource> holds
   // it and is remounted, under a new key, for a new conversation.
-  const [conversation, setConversation] = useState(0);
+  // Every conversation stays: each keeps its own live chat, and the nav lists
+  // them so an earlier one can be opened again as it was left.
+  const [conversations, setConversations] = useState(() => [{ id: 'c1', title: '', at: Date.now() }]);
+  const [conversation, setConversation] = useState('c1');
+  const convSeq = useRef(1);
+  const titleConversation = useCallback(
+    (id, title) => setConversations((list) => list.map((c) => (c.id === id && c.title !== title ? { ...c, title } : c))),
+    []
+  );
+  const startConversation = () => {
+    convSeq.current += 1;
+    const id = `c${convSeq.current}`;
+    setConversations((list) => [...list, { id, title: '', at: Date.now() }]);
+    setConversation(id);
+    return id;
+  };
+  // what the chat has open beside it, drawn by the app rather than inside the
+  // conversation, so it is a pane of its own in the shell's right column
+  const [openPane, setOpenPane] = useState(null);
+  // the plan sent to someone outside the app, and who it has gone to so far
+  const [sharing, setSharing] = useState(false);
+  const [sharedWith, setSharedWith] = useState([]);
   const chatCtx = useRef({});
   useEffect(() => {
     if (view === 'chat') setRightPanel((p) => (p === 'copilot' ? null : p));
@@ -248,11 +273,14 @@ export default function App() {
     onContact: contactCaregiver,
     onUnlock: () => setPaywall({ caregiver: null }),
     onDrawer: setDrawer,
+    onSharePlan: () => setSharing(true),
+    // called, not read: `newChat` is defined further down
+    onNewChat: () => newChat(),
   };
   const chatActions = useMemo(
     () => [
       { id: 'plan', label: 'Plan nege', icon: <FileText size={16} strokeWidth={1.75} />, onClick: () => chatCtx.current.onOpenPage('plan') },
-      { id: 'new', label: 'Novi razgovor', icon: <Plus size={16} strokeWidth={2} />, onClick: () => setConversation((n) => n + 1) },
+      { id: 'new', label: 'Novi razgovor', icon: <Plus size={16} strokeWidth={2} />, onClick: () => chatCtx.current.onNewChat() },
     ],
     []
   );
@@ -284,7 +312,10 @@ export default function App() {
     timers.current = [];
     scheduled.current = new Set();
     setCare(startCare());
-    setConversation((n) => n + 1);
+    setOpenPane(null);
+    convSeq.current += 1;
+    setConversations([{ id: `c${convSeq.current}`, title: '', at: Date.now() }]);
+    setConversation(`c${convSeq.current}`);
     setPlanChange(null);
     setAnswers({});
     setNotes([]);
@@ -300,9 +331,36 @@ export default function App() {
     setPhase('register');
   };
 
+  // A second person to care for. The plan that exists is filed under the plans
+  // already made — it is still readable, just not the live one — and the
+  // conversation starts again for the new person. What registration told us
+  // about the caller is carried over; nothing else is.
+  const newPlan = () => {
+    if (plan) {
+      setThreads((t) => [
+        {
+          id: `p${Date.now()}`,
+          answers,
+          summary: plan.summary,
+          date: formatToday(),
+          caregivers: caregivers.length,
+        },
+        ...t,
+      ]);
+    }
+    setPlan(null);
+    setPlanChange(null);
+    setNotes([]);
+    setAnswers({ 'about-you': aboutYou(user) });
+    setSelectedPlan('live');
+    setOpenPane(null);
+    startVariant('ai');
+  };
+
   // A new conversation with the assistant; the plan and everything done stays.
   const newChat = () => {
-    setConversation((n) => n + 1);
+    startConversation();
+    setOpenPane(null);
     setView('chat');
   };
 
@@ -351,7 +409,25 @@ export default function App() {
   const openEntry = entries.find((e) => e.id === selectedPlan) || entries[0];
 
   // The conversation in the nav: Jovana until the plan exists, the assistant after.
-  const liveTitle = plan ? 'Asistent' : 'Upoznavanje sa Jovanom';
+  // the conversations, as the nav lists them: what was asked first in each
+  // A conversation is listed once something has been said in it: an empty one
+  // is the page the family is looking at, and naming it in the nav says there
+  // is something to come back to when there is not.
+  const conversationEntries = conversations
+    .filter((c) => c.title)
+    .map((c) => ({
+      id: c.id,
+      title: c.title,
+      date:
+        c.id === conversation
+          ? 'Trenutni'
+          : new Date(c.at).toLocaleTimeString('sr-Latn-RS', { hour: '2-digit', minute: '2-digit' }),
+    }));
+  const openConversation = (id) => {
+    setConversation(id);
+    setOpenPane(null);
+    setView('chat');
+  };
 
   // The caregiver's side shares the shell and the components and nothing else:
   // no questionnaire, no care plan, no sidebar built for a family.
@@ -367,16 +443,39 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* On a phone there is no room for a nav beside the page, so it becomes a
+          drawer and this bar is what opens it. Above 900px the bar is not
+          drawn at all and the nav is a column again. */}
+      {phase === 'app' && !fullscreen && (
+        <div className="app-topbar">
+          <button
+            type="button"
+            className="app-topbar-btn"
+            onClick={() => setNavOpen(true)}
+            aria-label="Otvori meni"
+            aria-expanded={navOpen}
+          >
+            <Menu size={18} strokeWidth={1.75} />
+          </button>
+          <Logo width={96} />
+        </div>
+      )}
+
+      {phase === 'app' && !fullscreen && navOpen && (
+        <button type="button" className="nav-scrim" aria-label="Zatvori meni" onClick={() => setNavOpen(false)} />
+      )}
+
       {phase === 'app' && !fullscreen && (
         <AppNav
+          open={navOpen}
+          onClose={() => setNavOpen(false)}
           view={view}
           onView={setView}
           user={user}
           badge={care.requests.filter((r) => r.status === 'pending').length}
-          threads={threads}
-          activeThread={activeThread}
-          liveTitle={liveTitle}
-          onSelectThread={selectThread}
+          threads={conversationEntries}
+          activeThread={conversation}
+          onSelectThread={openConversation}
           onNewChat={newChat}
           chatListOpen={chatListOpen}
           onToggleChatList={() => setChatListOpen((v) => !v)}
@@ -428,9 +527,12 @@ export default function App() {
             <div className="chat-container">
               {plan ? (
                 <KitAssistant
+                  id={conversation}
                   ctx={chatCtx}
                   title="Razgovor"
                   actions={chatActions}
+                  openPane={openPane}
+                  onOpenPane={setOpenPane}
                 />
               ) : (
                 <div className="view">
@@ -479,7 +581,6 @@ export default function App() {
                   care={care}
                   user={user}
                   plan={plan}
-                  onOpenPlan={() => openPlanPage('live')}
                   onDrawer={setDrawer}
                   onCaregiver={showCaregiver}
                   onView={setView}
@@ -522,8 +623,10 @@ export default function App() {
               {view === 'plans' && (
                 <Plans
                   entries={entries}
+                  change={planChange}
                   onOpenPlan={openPlanPage}
                   onGoToChat={goToChat}
+                  onNewPlan={newPlan}
                   onAskAssistant={askAssistant}
                 />
               )}
@@ -536,15 +639,24 @@ export default function App() {
                   onUnlock={() => setPaywall({ caregiver: null })}
                   onAskAssistant={askAssistant}
                   onEdit={!openEntry.archived && plan ? () => setEditingPlan(true) : null}
+                  onShare={plan ? () => setSharing(true) : null}
                   change={planChange}
                   onUndoChange={undoPlanChange}
                   onDismissChange={() => setPlanChange(null)}
+                  onFindCaregivers={() => setView('find-caregiver')}
                 />
               )}
               {view === 'profile' && (
                 <Profile
                   user={user}
                   answers={answers}
+                  onSaveUser={(patch) => {
+                    const next = { ...user, ...patch, name: patch.name ?? user.name };
+                    setUser(next);
+                    updateAccount(next);
+                    say('Podaci su sačuvani.');
+                  }}
+                  onEditAnswers={editAnswers}
                   onGoToChat={goToChat}
                   onAskAssistant={askAssistant}
                 />
@@ -563,6 +675,9 @@ export default function App() {
       )}
 
       <AnimatePresence>
+        {view === 'chat' && openPane && (
+          <ChatPane key="chat-pane" openId={openPane} ctx={chatCtx} onClose={() => setOpenPane(null)} />
+        )}
         {rightPanel === 'plan' && plan && (
           <CaregiverSidebar
             key="plan-panel"
@@ -583,7 +698,7 @@ export default function App() {
             transition={{ type: 'spring', stiffness: 260, damping: 32 }}
           >
             <div className="sidebar is-chat">
-              <KitAssistant ctx={chatCtx} title="Asistent" actions={panelActions} />
+              <KitAssistant id={conversation} ctx={chatCtx} title="Asistent" actions={panelActions} />
             </div>
           </motion.div>
         )}
@@ -619,7 +734,6 @@ export default function App() {
             onNote={onNote}
             apiKey={apiKey}
             onPlan={onPlan}
-            onExit={() => setVariant('classic')}
             onFinish={() => {
               setVariant('classic');
               setSelectedPlan('live');
@@ -686,7 +800,29 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <ChatSource key={`chat-${conversation}`} ctx={chatCtx} />
+      <AnimatePresence>
+        {sharing && plan && (
+          <SharePlanModal
+            key="share-plan"
+            plan={plan}
+            sentTo={sharedWith}
+            onSend={(emails) => {
+              setSharedWith((list) => [...new Set([...list, ...emails])]);
+              setSharing(false);
+              say(
+                emails.length === 1
+                  ? `Plan je poslat na ${emails[0]}.`
+                  : `Plan je poslat na ${emails.length} adrese.`
+              );
+            }}
+            onClose={() => setSharing(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {conversations.map((c) => (
+        <ChatSource key={c.id} id={c.id} ctx={chatCtx} onTitle={titleConversation} />
+      ))}
       <Toast flash={flash} onDone={() => setFlash(null)} />
 
       <AnimatePresence>

@@ -11,7 +11,25 @@ import { Q, STEP_INTRO, WHY, WHY_FOLLOW_UPS } from './flow.sr';
 // care plan all read those ids. A model free to invent options would produce
 // answers that score nothing and a plan built on nothing.
 
-export const MODEL = 'claude-opus-5';
+// The onboarding is not a reasoning job: read a message, file the answers,
+// pick the next question from a list, write two sentences. Opus spent ten
+// seconds a question on that. Sonnet 5 does the same work several times
+// faster and keeps the Serbian; `VITE_ONBOARDING_MODEL` switches it without a
+// code change, which is how Haiku 4.5 ('claude-haiku-4-5-20251001') gets
+// tried against a real key.
+export const MODEL = import.meta.env?.VITE_ONBOARDING_MODEL || 'claude-sonnet-5';
+
+// Adaptive thinking and the effort dial are 4.6-and-later shapes; the 4.5
+// models reject both with a 400 ("This model does not support the effort
+// parameter"), so a request for one carries neither.
+// A system-role message mid-conversation is another 4.6-and-later shape: the
+// 4.5 models refuse it ("role 'system' is not supported on this model"). What
+// it carries — the questions still to ask — then rides at the end of the
+// system prompt instead, after the cached part of it.
+export const SYSTEM_TURNS = (model = MODEL) => !/-4-5(-|$)/.test(model);
+
+export const TUNING = (model = MODEL) =>
+  /-4-5(-|$)/.test(model) ? {} : { thinking: { type: 'adaptive' }, output_config: { effort: 'low' } };
 
 // What is still to be asked, given everything answered so far. Recomputed every
 // turn because the frailty band decides which questions exist at all.
@@ -271,7 +289,8 @@ Ako je napisao malo ili ništa, samo kreni od prvog pitanja.
 1. Pročitaj šta je stvarno rekao, celu poruku, i tek onda gledaj listu pitanja.
 2. Zabeleži sve što se može zabeležiti: \`record_answers\` za sve na šta je odgovorio, makar usput i drugim rečima, i \`record_note\` za sve važno što ne pripada nijednom pitanju. Ovo ide pre nego što bilo šta pitaš. Ono što ne zabeležiš, nestaje.
 3. Pozovi \`assess\`: koliko sada razumeš osobu o kojoj se radi i šta ti još fali.
-4. Tek onda pitaj sledeće.
+4. Pitaj sledeće, u istoj poruci.
+Sve četiri stvari idu u jednoj tvojoj poruci: rečenica koju čovek čita, pa \`record_answers\` i \`record_note\` ako ima šta, pa \`assess\`, pa \`ask\` ili \`follow_up\`. Ne čekaj odgovor alata da bi pitao, jer svaki novi krug je sekunde koje čovek gleda u prazno.
 U svojoj rečenici pomeni konkretan detalj iz onoga što je upravo rekao: ime, mesto, broj, ono što ga muči. Ne uopšteno „razumem vas", nego znak da si pročitala baš to.
 Ako je napisao nešto što menja sliku a ti nisi sigurna kako, pitaj o tome preko \`follow_up\` umesto da nastaviš niz listu.
 
@@ -284,7 +303,7 @@ Kada čovek kaže nešto važno što ne pripada nijednom pitanju, zabeleži to p
 Pitanja tipa \`inputs\` nemaju kartice: čovek odgovara jednom rečenicom, a ti iz nje izvučeš polja. „Bogdan, sin, 063 555 210" je ime, srodstvo i telefon. Ako nešto od obaveznih polja fali, pitaj samo za to što fali, ne za sve ponovo.
 Kada iz onoga što je čovek napisao možeš da popuniš neko pitanje, odmah to zabeležiš preko \`record_answers\`, pa i kada jednom rečenicom odgovori na više njih. „Pala je dvaput prošle godine i više ne može da kuva" su dva odgovora, ne jedan.
 Nikad ne pitaš ono što već znaš.
-Čovek vidi koliko je razumeš, kroz broj koji šalješ u \`assess\`, i uz njega kratku belešku \`utisak\`, koju pišeš njemu. Zato \`assess\` pozivaš pre nego što napišeš pitanje. Broj je tvoja iskrena procena, ne ohrabrenje: ako ti je nešto zamaglilo sliku, neka padne. \`utisak\` je jedino što čovek sazna o tome šta si razumela i šta ti još treba, pa neka bude konkretan.
+Čovek vidi koliko je razumeš, kroz broj koji šalješ u \`assess\`, i uz njega kratku belešku \`utisak\`, koju pišeš njemu. \`assess\` ide u istoj poruci, pre \`ask\`. Broj je tvoja iskrena procena, ne ohrabrenje: ako ti je nešto zamaglilo sliku, neka padne. \`utisak\` je jedino što čovek sazna o tome šta si razumela i šta ti još treba, pa neka bude konkretan.
 Ako je odgovor nejasan, pitaj da razjasniš umesto da nagađaš. Ako je jasan, ne traži potvrdu.
 Ako podatak deluje nemoguće ili u šali, na primer 120 godina ili grad na drugom kraju sveta, nemoj ga zabeležiti, ali nemoj ni stati. Reci mirno šta ti ne štima i pitaj preko \`follow_up\`. Čovek možda testira aplikaciju, možda je pogrešio, možda misli ozbiljno; u sva tri slučaja razgovor ide dalje.
 Svaki tvoj potez se završava tako što nešto pitaš, kroz \`ask\` ili \`follow_up\`. Beleženje i procena nisu potez; bez pitanja čovek ostaje pred praznim ekranom.

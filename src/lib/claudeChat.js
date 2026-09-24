@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { reconcile } from '../data/dependencies';
 import {
   MODEL,
+  SYSTEM_TURNS,
+  TUNING,
   TOOLS,
   remainingQuestions,
   stateMessage,
@@ -33,16 +35,25 @@ export function createClient(apiKey) {
   return new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 }
 
-// Thinking stays ON, deliberately. Disabling it on this model lets tool calls
-// arrive as plain text — the turn succeeds, the call never runs, nothing errors,
-// and in a loop that text poisons later turns. For a design that hangs entirely
-// on tool use that is the worst available bug; `low` effort is the cheap lever.
+// Thinking stays ON where the model has it, deliberately. Disabling it on Opus
+// let tool calls arrive as plain text — the turn succeeds, the call never runs,
+// nothing errors, and in a loop that text poisons later turns. For a design
+// that hangs entirely on tool use that is the worst available bug; `low` effort
+// is the cheap lever. The 4.5 models have neither, and reject both fields, so
+// for those they simply are not sent.
+//
+// The tools are the same every turn and the prompt above them is long, so both
+// are cached: what changes each turn is the state message under the
+// conversation, which sits after the cached prefix.
+const cachedTools = TOOLS.map((tool, i) =>
+  i === TOOLS.length - 1 ? { ...tool, cache_control: { type: 'ephemeral' } } : tool
+);
+
 const REQUEST = {
   model: MODEL,
   max_tokens: 8000,
-  thinking: { type: 'adaptive' },
-  output_config: { effort: 'low' },
-  tools: TOOLS,
+  ...TUNING(),
+  tools: cachedTools,
 };
 
 // `obrazlozenje` is optional by design — most questions come without one — so
@@ -97,8 +108,16 @@ export async function runTurn({
       // Anthropic's recommended fallback rather than handing us a dead turn.
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      system,
-      messages: [...history, { role: 'system', content: stateMessage(working, collected) }],
+      // The prompt is cached; what changes every turn is the state under it,
+      // which goes as its own uncached block, or as a system message where the
+      // model takes one.
+      system: [
+        { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
+        ...(SYSTEM_TURNS() ? [] : [{ type: 'text', text: stateMessage(working, collected) }]),
+      ],
+      messages: SYSTEM_TURNS()
+        ? [...history, { role: 'system', content: stateMessage(working, collected) }]
+        : history,
     });
 
     stream.on('text', (delta) => onText(delta));
@@ -183,13 +202,17 @@ export async function runTurn({
         onAssess?.({ level, reason: thinking.text, unknowns: thinking.missing });
         // the finished call too, in case the streamed copy stopped short of the end
         onThinking?.(thinking);
-        // Says what to do next, because `assess` is the one tool that reads like
-        // a whole turn's work without being one. A turn that only records and
-        // assesses ends with nothing on screen to answer.
+        // Only says what to do next when the question is not already in this
+        // same message. Saying it unconditionally is what made every question
+        // cost two model calls: the model answered the instruction it had just
+        // been given instead of ending the turn it had already finished.
+        const asksToo = calls.some((c) => c.name === 'ask' || c.name === 'follow_up');
         results.push({
           type: 'tool_result',
           tool_use_id: call.id,
-          content: 'Zabeleženo. Sada napiši rečenicu korisniku i pozovi `ask` ili `follow_up`.',
+          content: asksToo
+            ? 'Zabeleženo.'
+            : 'Zabeleženo. Sada napiši rečenicu korisniku i pozovi `ask` ili `follow_up`.',
         });
       } else if (call.name === 'ask') {
         const id = call.input.questionId;

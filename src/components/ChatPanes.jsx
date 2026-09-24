@@ -158,8 +158,8 @@ function SettingsPane({ care, unlocked, onUnlock }) {
 
 // The pane for an open id, or null for one this build does not know.
 export function paneFor(openId, ctx) {
-  const kind = String(openId).split(':')[1];
-  const { plan, care, unlocked, planChange, onContact, onUnlock, onDrawer } = ctx;
+  const [, kind, id] = String(openId).split(':');
+  const { plan, care, unlocked, planChange, onContact, onUnlock, onDrawer, onOpenPage } = ctx;
   switch (kind) {
     case 'plan':
       return plan
@@ -168,7 +168,14 @@ export function paneFor(openId, ctx) {
             meta: 'Aktivan',
             children: (
               <div className="nana-pane is-plan">
-                <PlanContents plan={plan} unlocked={unlocked} onSelectCaregiver={onContact} onUnlock={onUnlock} change={planChange} />
+                <PlanContents
+                  plan={plan}
+                  unlocked={unlocked}
+                  onSelectCaregiver={onContact}
+                  onUnlock={onUnlock}
+                  onFindCaregivers={() => onOpenPage('find-caregiver')}
+                  change={planChange}
+                />
               </div>
             ),
           }
@@ -183,6 +190,58 @@ export function paneFor(openId, ctx) {
       return { title: 'Negovateljice za vas', meta: `${caregivers.length}`, children: <div className="nana-pane"><CaregiversPane care={care} onContact={onContact} /></div> };
     case 'settings':
       return { title: 'Pretplata i plaćanje', children: <div className="nana-pane"><SettingsPane care={care} unlocked={unlocked} onUnlock={onUnlock} /></div> };
+    case 'caregiver': {
+      const c = caregivers.find((x) => x.id === id);
+      if (!c) return null;
+      const asked = care.requests.find((r) => r.caregiverId === c.id);
+      return {
+        title: c.name,
+        meta: `${c.area} · ${c.distance}`,
+        children: (
+          <div className="nana-pane">
+            <p className="fam-row-body">
+              <Star size={11} strokeWidth={2} className="cg-star" /> {c.rating} ({c.reviews}) · {c.years} god. iskustva · {c.rate}
+            </p>
+            <p className="fam-quote">{c.bio}</p>
+            <p className="ag-label">Čime se bavi</p>
+            <div className="ag-services">
+              {c.tags.map((t) => (
+                <span key={t} className="svc is-set">
+                  <Check size={13} strokeWidth={2.5} />
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div className="bc-lines ag-terms">
+              <p className="bc-line">
+                <span className="bc-line-label">Dolazi</span>
+                <span className="bc-line-value">
+                  {c.days} · {c.slot}
+                </span>
+              </p>
+              <p className="bc-line">
+                <span className="bc-line-label">Noćne smene</span>
+                <span className="bc-line-value">{c.nightShift ? 'Da' : 'Ne'}</span>
+              </p>
+              <p className="bc-line">
+                <span className="bc-line-label">Jezici</span>
+                <span className="bc-line-value">{c.languages.join(', ')}</span>
+              </p>
+            </div>
+            {asked ? (
+              <p className="fam-sub is-flush">{asked.detail}</p>
+            ) : (
+              <div className="panel-card-actions">
+                <Button variant="primary" onClick={() => onContact(c)}>
+                  <Send size={14} strokeWidth={1.75} />
+                  Pošalji poruku
+                </Button>
+              </div>
+            )}
+          </div>
+        ),
+      };
+    }
     default:
       return null;
   }

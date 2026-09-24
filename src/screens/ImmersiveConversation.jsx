@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ArrowUp, ArrowUpRight, History, LayoutList, PenLine, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
@@ -159,6 +159,16 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
     if (autoFocus) setTimeout(() => ref.current?.focus({ preventScroll: true }), 650);
   }, [autoFocus]);
 
+  // A long answer wraps rather than scrolling sideways out of sight: the field
+  // is a textarea one row tall that takes the height of what is in it. Measured
+  // from `auto` each time, or it could only ever grow.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
   const send = () => {
     const t = value.trim();
     if (!t) return;
@@ -192,13 +202,19 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
           <PenLine size={13} strokeWidth={1.75} />
         </span>
         <span className="imm-option-text">
-          <input
+          <textarea
             ref={ref}
-            type="text"
+            rows={1}
             value={value}
             placeholder={placeholder}
             onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && send()}
+            onKeyDown={(e) => {
+              // Enter still sends; Shift+Enter is the way to a second line.
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
           />
         </span>
         {withSend && value.trim() && (
@@ -213,6 +229,7 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
 
 function Cards({ question, onPick, onSend, sr }) {
   const [ids, setIds] = useState([]);
+  const [one, setOne] = useState(null);
   const [typed, setTyped] = useState('');
 
   const label = (o) => sr.options?.[o.id] || o.title;
@@ -238,6 +255,7 @@ function Cards({ question, onPick, onSend, sr }) {
   );
 
   if (question.type === 'single') {
+    const chosen = question.options.find((o) => o.id === one);
     return (
       <>
         {hint}
@@ -248,8 +266,9 @@ function Cards({ question, onPick, onSend, sr }) {
               type="button"
               variants={piece}
               whileHover={{ y: -1 }}
-              className="imm-option"
-              onClick={() => onPick({ optionId: o.id }, label(o))}
+              className={`imm-option${one === o.id ? ' is-selected' : ''}`}
+              aria-pressed={one === o.id}
+              onClick={() => setOne(o.id)}
             >
               <span className="imm-letter">{letterFor(i)}</span>
               <span className="imm-option-text">
@@ -257,11 +276,21 @@ function Cards({ question, onPick, onSend, sr }) {
               </span>
             </motion.button>
           ))}
-          {/* one answer, so the composer sends on its own: the button lives in
-              the field, as it does everywhere else a single answer is given */}
           <motion.div className="imm-composer-slot" variants={piece}>
             <Composer placeholder="ili odgovorite svojim rečima…" onSend={onSend} />
           </motion.div>
+        </motion.div>
+        {/* Chosen, then sent: a card that answered on the first touch gave no
+            moment to change one's mind, and read as a misclick when it did. */}
+        <motion.div className="imm-actions" variants={piece}>
+          <Button
+            variant="primary"
+            size="lg"
+            disabled={!chosen}
+            onClick={() => chosen && onPick({ optionId: chosen.id }, label(chosen))}
+          >
+            Dalje
+          </Button>
         </motion.div>
       </>
     );
@@ -334,7 +363,6 @@ export default function ImmersiveConversation({
   onNote,
   apiKey,
   onPlan,
-  onExit,
   onFinish,
   onKeyRejected,
 }) {
@@ -353,6 +381,8 @@ export default function ImmersiveConversation({
   const [dropped, setDropped] = useState(false);
   // what she is thinking and still missing, as `assess` streams in
   const [thought, setThought] = useState({ text: '', missing: [] });
+  // her reasoning after the question is up: folded, until someone asks for it
+  const [cotOpen, setCotOpen] = useState(false);
   // every question she has asked and what was answered, for the side panel
   const [log, setLog] = useState([]);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -475,6 +505,7 @@ export default function ImmersiveConversation({
       setFollowUp(null);
       setWhy(null);
       setThought({ text: '', missing: [] });
+      setCotOpen(false);
       turnStarted.current = performance.now();
       setSaid('');
       setDraft('');
@@ -490,6 +521,10 @@ export default function ImmersiveConversation({
         // turn is finished, and then it is typed out at a fixed layout. The
         // wait is not empty: that is what the thinking indicator is for.
         let spoken = '';
+        // Her sentence goes up as soon as she has finished writing it, while
+        // she is still working out what to ask. It used to wait for the whole
+        // turn, which put a written sentence behind a second model call.
+        let shown = 0;
         const result = await runTurn({
           client,
           system,
@@ -498,6 +533,12 @@ export default function ImmersiveConversation({
           notes: seedNotes,
           onText: (delta) => {
             spoken += delta;
+            // at a sentence's end, so the line re-wraps once at most
+            const end = spoken.search(/[.!?…](\s|$)(?![\s\S]*[.!?…](\s|$))/);
+            if (end > shown) {
+              shown = end + 1;
+              setSaid(withoutLongDashes(spoken.slice(0, shown).trim()));
+            }
           },
           onAnswer,
           onNote,
@@ -564,8 +605,10 @@ export default function ImmersiveConversation({
           stage scrolls */}
       {/* Not on the blank first page: nothing has been said yet, so "Tek
           počinjemo" tells no one anything — and that page runs to the bottom
-          of the screen, where the scale sat on top of the emergency line. */}
-      {stage !== 'open' && <UnderstandingPanel level={level} dropped={dropped} />}
+          of the screen, where the scale sat on top of the emergency line. Not
+          on the overview either: the plan is written, so how far along she was
+          is over, and the page under it is long enough to scroll. */}
+      {stage !== 'open' && stage !== 'plan' && <UnderstandingPanel level={level} dropped={dropped} />}
 
       <HistoryPanel open={historyOpen} entries={log} onClose={() => setHistoryOpen(false)} />
 
@@ -585,17 +628,16 @@ export default function ImmersiveConversation({
               {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
             </button>
           )}
+          {/* Named rather than a bare glyph: it is the only control here now,
+              and "what have we said so far" is not a thing a clock face says. */}
           <button
             type="button"
-            className={`imm-ctl${historyOpen ? ' is-on' : ''}`}
+            className={`imm-ctl has-label${historyOpen ? ' is-on' : ''}`}
             onClick={() => setHistoryOpen((v) => !v)}
-            aria-label="Dosadašnji razgovor"
             aria-expanded={historyOpen}
           >
             <History size={15} strokeWidth={1.75} />
-          </button>
-          <button type="button" className="imm-ctl" onClick={onExit} aria-label="Klasični prikaz">
-            <LayoutList size={15} strokeWidth={1.75} />
+            <span>Istorija razgovora</span>
           </button>
         </div>
       </div>
@@ -683,23 +725,28 @@ export default function ImmersiveConversation({
                 {SECTION[remaining[0]?.sekcija] || 'Skoro gotovo'}
               </motion.p>
 
-              {/* How she got to this question, always open. While she works, a
-                  small ring turns beside the seconds and her reasoning fills in
-                  underneath as it streams; once the question is up the label
-                  says how long she took and the reasoning stays where it is.
-                  The row keeps its height when there is nothing to show, so the
-                  question never moves by it. */}
+              {/* How she got to this question. Open while she works, with a
+                  small ring turning beside the seconds and her reasoning
+                  filling in as it streams; once the question is up it folds
+                  away, because what is being answered is the question, not how
+                  it was arrived at. The row is still there to press. */}
               <div className="imm-cot">
                 {(waiting || thought.text) && (
                   <>
-                    <p className={`imm-cot-toggle${waiting ? ' is-thinking' : ''}`} aria-live="polite">
+                    <button
+                      type="button"
+                      className={`imm-cot-toggle${waiting ? ' is-thinking' : ''}`}
+                      aria-expanded={waiting || cotOpen}
+                      onClick={() => setCotOpen((v) => !v)}
+                    >
                       {waiting && <span className="imm-cot-spinner" aria-hidden="true" />}
                       <span className={waiting ? 'imm-shimmer' : undefined}>
                         {waiting ? `Razmišljam… ${thoughtFor} s` : `Razmišljala sam ${thoughtFor} s`}
                       </span>
-                    </p>
+                      {!waiting && <ChevronDown size={12} strokeWidth={1.75} />}
+                    </button>
                     <AnimatePresence initial={false}>
-                      {thought.text && (
+                      {(waiting || cotOpen) && thought.text && (
                         <motion.div
                           className="imm-cot-body"
                           initial={{ height: 0, opacity: 0 }}
