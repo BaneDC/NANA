@@ -1854,11 +1854,14 @@ textarea {
   width: 100%;
 }
 
+/* Only where the X sits: it keeps the square `.ci-btn` is, so the close on this
+   dialog reads as the same button as the one in every drawer's head. `width:
+   auto` used to collapse it around the icon, and it came out a bare glyph
+   beside buttons that are not. */
 .modal-close {
   position: absolute;
   top: var(--spacing-3);
   right: var(--spacing-3);
-  width: auto;
 }
 
 .modal-head {
