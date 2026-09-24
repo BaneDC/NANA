@@ -10,8 +10,13 @@ import Button from './Button';
 // writing costs nothing, and someone who has already put their mother's needs
 // into words is not asked to do it again after paying. The family's number is
 // not asked for here: registration already has it.
-export default function PaywallModal({ caregiver, plan, unlocked, draft, alreadyAsked, onPay, onSend, onClose }) {
-  const [message, setMessage] = useState(draft || '');
+//
+// The field starts empty. It used to open with a request written from the plan,
+// which read as ours rather than theirs: a family looking at a stranger's name
+// was handed a paragraph to send under it, and the first thing most of them did
+// was select all and delete. The placeholder says what belongs there instead.
+export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, onPay, onSend, onClose }) {
+  const [message, setMessage] = useState('');
   const first = caregiver?.name.split(' ')[0];
   const canSend = unlocked && message.trim().length > 0;
 

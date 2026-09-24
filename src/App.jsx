@@ -832,7 +832,6 @@ export default function App() {
             caregiver={paywall.caregiver}
             plan={plan}
             unlocked={unlocked}
-            draft={requestMessage(care)}
             alreadyAsked={Boolean(paywall.caregiver && care.requests.some((q) => q.caregiverId === paywall.caregiver.id))}
             onPay={() => {
               setUnlocked(true);
