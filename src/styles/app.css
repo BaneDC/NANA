@@ -2808,7 +2808,8 @@ textarea {
 }
 
 .imm-plan-notes li::before {
-  content: '—';
+  /* short dash: the house voice keeps long dashes off the screen, marker or not */
+  content: '-';
   position: absolute;
   left: 0;
   color: #b3a397;
