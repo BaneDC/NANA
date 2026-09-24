@@ -72,11 +72,11 @@ export function ChatSource({ id, ctx, onTitle }) {
       return;
     }
     history.current = r.history;
-    // The kit draws parts in one block above the answer's prose, so when there
-    // are cards the sentence rides as the first part, to be read before them.
-    const cards = r.changes.length || r.requests.length || r.pages.length;
-    if (r.said && cards) yield { kind: 'custom', id: `say-${turnId}`, type: 'lead', data: { text: r.said } };
-    else if (r.said) yield r.said;
+    // The sentence goes as the answer's own prose, and the cards after it. The
+    // kit stamps each part with how much prose had arrived when it did, so the
+    // order it is sent in is the order on screen — which also means the answer
+    // keeps its markdown and its copy/regenerate row.
+    if (r.said) yield r.said;
     if (r.notes.length) {
       onAddNotes(r.notes);
       yield { kind: 'custom', id: `notes-${turnId}`, type: 'note', data: { items: r.notes } };
@@ -342,8 +342,6 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
     () => (part, { turnId, openArtifact }) => {
       const write = (data) => updatePart(turnId, { kind: 'custom', id: part.id, data });
       switch (part.type) {
-        case 'lead':
-          return <p className="nana-chat-lead">{part.data.text}</p>;
         case 'note':
           return <NoteCard data={part.data} />;
         case 'plan-diff':
@@ -408,6 +406,8 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
         cursor={false}
         // the composer stays at the bottom of the view, the way a chat is read
         composer="docked"
+        // as tall as the card it sits in, not as tall as the window
+        fill="container"
         // no marking an answer: no marker layer, no saved highlights, nothing
         // over the text in the tab order
         highlights={false}

@@ -6344,30 +6344,6 @@ textarea.wo-text {
   min-height: 0;
 }
 
-/* The kit's page is `100dvh` — it expects to be the window. Here it is a card
-   inside the shell, inset 12px top and bottom, so a window-height page ran 24px
-   past the card and the card's `overflow: hidden` cut it off. With the composer
-   docked at the bottom that cut lands on the composer. It takes the height it
-   is actually given instead. */
-.nana-chat [class*='ick-page-'] {
-  height: 100%;
-  min-height: 0;
-}
-
-
-/* The assistant's sentence when it comes with cards. It rides as a part, so
-   it takes the kit's prose rules itself: the answer column (the text line
-   inside the cards, 16 around a card + 16 into its rows), the measure and the
-   answer type. */
-.nana-chat-lead {
-  margin: 0 var(--ick-answer-column);
-  max-width: var(--ick-answer-measure);
-  font-family: var(--ick-font-sans);
-  font-size: var(--ick-answer-size);
-  line-height: var(--ick-answer-leading);
-  letter-spacing: var(--ick-answer-tracking);
-  color: var(--ick-ink);
-}
 
 
 /* NANA's cards inside the kit's answer, on the kit's own surfaces and corner
