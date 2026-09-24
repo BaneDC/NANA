@@ -21,9 +21,9 @@ const letterFor = (i) => String.fromCharCode(97 + i);
 // still goes to the console for whoever is debugging it.
 function errorText(e) {
   console.error(e);
-  if (e?.status === 429) return 'Previše zahteva odjednom — sačekajte par sekundi i pošaljite ponovo.';
-  if (e?.status === 529 || e?.status === 503) return 'Claude je trenutno preopterećen — pokušajte ponovo za minut.';
-  if (e?.name === 'APIConnectionError') return 'Nema veze sa Anthropic-om — proverite internet i pošaljite ponovo.';
+  if (e?.status === 429) return 'Previše zahteva odjednom, sačekajte par sekundi i pošaljite ponovo.';
+  if (e?.status === 529 || e?.status === 503) return 'Claude je trenutno preopterećen, pokušajte ponovo za minut.';
+  if (e?.name === 'APIConnectionError') return 'Nema veze sa Anthropic-om, proverite internet i pošaljite ponovo.';
   if (e?.status) return `Poziv nije uspeo (${e.status}): ${e.error?.error?.message || e.message}`;
   return e?.message || String(e);
 }
@@ -614,7 +614,7 @@ export default function ImmersiveConversation({
                 Recite mi svojim rečima šta se dešava.
               </motion.h1>
               <motion.p className="imm-subtitle" variants={piece}>
-                O kome se radi, šta vas brine, šta ste već probali — kako god vam je lakše.
+                O kome se radi, šta vas brine, šta ste već probali, kako god vam je lakše.
                 Ostalo ću pitati usput.
               </motion.p>
               <motion.div className="imm-write" variants={piece}>
@@ -667,7 +667,7 @@ export default function ImmersiveConversation({
               {/* A chat is the wrong channel for an emergency, and saying so is
                   cheap. Better here than discovered at the wrong moment. */}
               <motion.p className="imm-urgent" variants={piece}>
-                Ako je hitno — pala je, ne može da diše, ne prepoznaje vas — nemojte pisati meni.
+                Ako je hitno (pala je, ne može da diše, ne prepoznaje vas), nemojte pisati meni.
                 Zovite <strong>194</strong>.
               </motion.p>
             </motion.div>
@@ -819,7 +819,7 @@ export default function ImmersiveConversation({
               {srFrailty && (
                 <motion.div className="imm-scale" variants={piece}>
                   <motion.p className="imm-scale-name" variants={piece}>
-                    Klinička skala krhkosti — nivo {srFrailty.level} od 9:{' '}
+                    Klinička skala krhkosti, nivo {srFrailty.level} od 9:{' '}
                     <strong>{srFrailty.label}</strong>
                   </motion.p>
                   <motion.div className="imm-cfs" variants={list}>
@@ -836,14 +836,14 @@ export default function ImmersiveConversation({
                     ))}
                   </motion.div>
                   <motion.p className="imm-scale-ends" variants={piece}>
-                    <span>1 — potpuno samostalna</span>
-                    <span>9 — na kraju života</span>
+                    <span>1 - potpuno samostalna</span>
+                    <span>9 - na kraju života</span>
                   </motion.p>
                   <motion.p className="imm-scale-blurb" variants={piece}>
                     {srFrailty.blurb}
                   </motion.p>
                   <motion.p className="imm-scale-note" variants={piece}>
-                    Procena je iz vaših odgovora i služi da uskladimo podršku — nije
+                    Procena je iz vaših odgovora i služi da uskladimo podršku. Nije
                     dijagnoza i ne zamenjuje lekara.
                   </motion.p>
                 </motion.div>

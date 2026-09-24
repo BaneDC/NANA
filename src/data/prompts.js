@@ -30,7 +30,7 @@ export const FIELD_HINTS = {
   age: 'Otprilike je u redu ako niste sigurni.',
   city: 'Da nađemo negovateljice u blizini.',
   'your-name': 'Vas ćemo obaveštavati o svemu.',
-  relation: 'Ćerka, sin, komšinica — šta god odgovara.',
+  relation: 'Ćerka, sin, komšinica, šta god odgovara.',
   'your-phone': 'Ovde stiže upoznavanje sa negovateljicom.',
   goal: 'Svojim rečima. Od ovoga zavisi sve što predlažemo.',
   worry: 'Nije obavezno, ali obično nam kaže najviše.',

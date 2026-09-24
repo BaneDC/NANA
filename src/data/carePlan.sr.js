@@ -89,7 +89,7 @@ const ROLE_DOES = {
   light: 'Neko ko joj pravi društvo, izvodi je napolje i pomaže da ostane aktivna.',
   moderate: 'Redovne posete za kuću, obroke i svakodnevne obaveze.',
   high: 'Pomoć oko lične nege, a sprečavanje padova je prvo na listi.',
-  severe: 'Nega na nivou medicinske sestre — sama negovateljica ovde ne bi bila dovoljna.',
+  severe: 'Nega na nivou medicinske sestre, sama negovateljica ovde ne bi bila dovoljna.',
   palliative: 'Medicinska sestra, dostava lekova i podrška za celu porodicu.',
 };
 
@@ -118,7 +118,7 @@ export function planOverview(answers, notes = []) {
   const story = [];
   if (reasonId) {
     story.push(
-      `${REASON[reasonId] || REASON['daily-living']} — ${
+      `${REASON[reasonId] || REASON['daily-living']}, ${
         ONSET[answers.onset?.optionId] || 'traje već neko vreme'
       }.${HOSPITAL[answers.hospitalisation?.optionId] || ''}`
     );

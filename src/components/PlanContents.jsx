@@ -60,7 +60,7 @@ export default function PlanContents({ plan, unlocked, onSelectCaregiver, onUnlo
             <p className="locked-title">Još {locked.length} preporuke u punom planu</p>
             <p className="locked-note">
               Koje preglede kod lekara zakazati, promene koje stan čine bezbednijim i šta postoji u
-              blizini{archived ? '.' : ' — i direktan broj svake negovateljice.'}
+              blizini{archived ? '.' : ', i direktan broj svake negovateljice.'}
             </p>
             <Button variant="primary" size="lg" onClick={onUnlock}>
               <Lock size={12} strokeWidth={2} /> Pretplatite se za ceo plan
