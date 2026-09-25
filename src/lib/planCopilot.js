@@ -1,5 +1,6 @@
 import { MODEL, SYSTEM_TURNS, TUNING, toAnswer, withoutLongDashes } from '../data/conversation';
 import { questionById } from '../data/flow';
+import { isLoadBearing } from '../data/dependencies';
 import { frailtyOf } from '../data/frailty';
 import { answerText, planQuestions } from '../data/planEdits';
 import { srField, srOption, srTitle } from '../data/flow.sr';
@@ -108,6 +109,8 @@ const system = (name) =>
     'Besides the plan you can help with the rest of their care: say how things work (a request costs nothing; terms must be agreed before anything is booked; a visit is reserved on their card and charged after the work order unless they query it), offer to send requests with `propose_request`, and point them to a page with `show_page`. Anything that moves money or agrees terms they do on the page themselves.',
     'The plan is not free text: it is built from their answers to the onboarding questions, and the recommendations and caregivers follow from those answers. To change the plan, call `propose_changes` with the answers that should now be different. The app shows the proposal and they apply it with a button — never say a change is made, say what you are proposing.',
     'One thing said often touches more than one question — what they still manage alone and where they need hands-on help, how they get around and whether they can go out alone. Look at every question it bears on and propose all of them in one call.',
+    'Some answers carry the rest of the plan: the ones marked `carriesPlan` in the catalog set how much help she needs overall, and that decides which questions the plan asks at all and which caregivers fit. When what they tell you changes one of those, do not propose it on what they said alone. Ask first — one or two short questions about what else has changed around it, the ones whose answers you would need to fill in the rest — and propose the whole set once they answer. This is the only reason to ask rather than propose; for everything else, propose.',
+    'Asking means asking: end the turn with the question and call nothing. Do not ask and propose in the same message.',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
     'Keep replies to one to three short sentences. Reply in the language they write in.',
   ].join('\n\n');
@@ -122,6 +125,7 @@ function catalog(answers) {
       section: s.title,
       question: srTitle(q),
       type: q.type,
+      ...(isLoadBearing(q.id) ? { carriesPlan: true } : {}),
       ...(q.type === 'inputs'
         ? { fields: q.fields.map((f) => ({ id: f.id, label: srField(q, f.id) })) }
         : { options: q.options.map((o) => ({ id: o.id, label: srOption(q, o.id) })), ...(q.allowOther ? { allowsOther: true } : {}) }),

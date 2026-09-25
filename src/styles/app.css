@@ -855,6 +855,31 @@ textarea {
   min-width: 0;
 }
 
+/* One fact per row, down the card. Two columns put "Ime i prezime" beside
+   "Email" and "Telefon" alone under them, so the eye had to find where the
+   next label was on every card; stacked, there is one place to look and the
+   long answers ("Da ostane kod kuće i bude bezbedna.") get the whole width. */
+.facts.is-stacked {
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0;
+  border: 0;
+}
+
+.facts.is-stacked .fact {
+  padding: var(--spacing-3) 0;
+  border-top: 1px solid var(--card-line);
+}
+
+.facts.is-stacked .fact:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.facts.is-stacked .fact:last-child {
+  padding-bottom: 0;
+}
+
 .fact-label {
   font-size: 11px;
   line-height: 14px;
@@ -1252,7 +1277,7 @@ textarea {
   width: 24px;
   height: 24px;
   margin-right: 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-lg);
   color: var(--nav-text-muted);
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -5913,6 +5938,16 @@ textarea.wo-text {
   border-color: var(--color-primary-300);
 }
 
+/* An answer the rest of the plan hangs on: read here, changed in the chat. */
+.pe-row.is-locked {
+  cursor: default;
+  background: var(--surface-2);
+}
+
+.pe-row.is-locked:hover {
+  border-color: var(--border-subtle);
+}
+
 .pe-q {
   flex-shrink: 0;
   width: 136px;
@@ -6994,5 +7029,121 @@ textarea.wo-text {
   .chat-pane-wrap .chat-pane {
     width: 100%;
     margin-left: 0;
+  }
+}
+
+/* ---------- Caregiver tasks, cookies, the second factor ---------- */
+
+/* One task: a card that fills in when it is chosen, like `.svc`, but with room
+   for the line saying what it covers. Two across where there is width for it. */
+.ct-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.ct-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-2);
+}
+
+.ct-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-0);
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ct-item:hover {
+  border-color: var(--color-primary-300);
+}
+
+.ct-item.is-on {
+  border-color: var(--primary);
+  background: var(--primary-subtle);
+}
+
+/* 4 in an 8 corner, 20 square: the box a tick sits in */
+.ct-box {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-0);
+  color: var(--primary-foreground);
+}
+
+.ct-item.is-on .ct-box {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.ct-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ct-title {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.ct-item.is-on .ct-title {
+  color: var(--primary-subtle-foreground);
+}
+
+.ct-note {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+/* a choice of two or three, side by side */
+.set-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+/* A row that says what is on without offering to turn it off. It keeps the
+   switch so the list reads as one thing, and takes the cursor away. */
+.toggle-row.is-fixed {
+  cursor: default;
+}
+
+.toggle-row.is-fixed .switch {
+  opacity: 0.55;
+}
+
+/* the steps of a setup, numbered rather than ticked */
+.paywall-list.is-steps {
+  list-style: decimal;
+  padding-left: var(--spacing-4);
+  gap: var(--spacing-2);
+}
+
+.paywall-list.is-steps li {
+  display: list-item;
+}
+
+@media (max-width: 640px) {
+  .ct-list {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { AlertTriangle, Check, PenLine } from 'lucide-react';
+import { AlertTriangle, Check, PenLine, Sparkles } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
 import { toAnswer } from '../data/conversation';
+import { isLoadBearing } from '../data/dependencies';
 import { answerText, describeChanges, planQuestions } from '../data/planEdits';
 import { Q, srField, srOption, srShort, srTitle } from '../data/flow.sr';
 
@@ -109,7 +110,7 @@ function AnswerEditor({ q, answer, answers, onSave, onCancel }) {
   );
 }
 
-export default function PlanEditor({ answers, name, onApply, onClose }) {
+export default function PlanEditor({ answers, name, onApply, onAskAssistant, onClose }) {
   const [editing, setEditing] = useState(null);
   const sections = planQuestions(answers);
 
@@ -118,6 +119,10 @@ export default function PlanEditor({ answers, name, onApply, onClose }) {
       <p className="ag-lead pe-lead">
         Plan je napravljen iz ovih odgovora. Kad promenite jedan, plan se pravi iznova oko njega,
         preporuke i negovateljice prate izmenu.
+      </p>
+      <p className="ag-hint pe-lead">
+        Ovde menjate odgovore koji stoje sami za sebe. Oni od kojih zavisi ostatak plana idu kroz
+        asistenta: on pita šta se još promenilo i predloži sve zajedno.
       </p>
 
       {sections.map((s) => (
@@ -140,6 +145,16 @@ export default function PlanEditor({ answers, name, onApply, onClose }) {
                     onClose();
                   }}
                 />
+              ) : isLoadBearing(q.id) ? (
+                // Changing this one moves the frailty level, and the level
+                // decides which questions the plan asks at all — so it is not a
+                // field to overwrite. The assistant takes it, asks what the
+                // change opens up, and proposes the whole set.
+                <div key={q.id} className="pe-row is-locked">
+                  <span className="pe-q">{srShort(q)}</span>
+                  <span className={`pe-a${answer ? '' : ' is-empty'}`}>{answerText(q, answer)}</span>
+                  <span className="status-pill is-muted">Kroz asistenta</span>
+                </div>
               ) : (
                 <button key={q.id} type="button" className="pe-row" onClick={() => setEditing(q.id)}>
                   <span className="pe-q">{srShort(q)}</span>
@@ -152,7 +167,15 @@ export default function PlanEditor({ answers, name, onApply, onClose }) {
         </section>
       ))}
 
+      {/* One way out for all of them, rather than the same button on every
+          locked row. */}
       <div className="panel-card-actions is-end">
+        {onAskAssistant && (
+          <Button variant="secondary" onClick={onAskAssistant}>
+            <Sparkles size={14} strokeWidth={1.75} />
+            Pitajte asistenta
+          </Button>
+        )}
         <Button variant="primary" onClick={onClose}>
           Gotovo
         </Button>

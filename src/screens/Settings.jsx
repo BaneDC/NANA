@@ -1,18 +1,34 @@
 import { useState } from 'react';
-import { Check, CreditCard, ShieldCheck } from 'lucide-react';
+import { Check, Cookie, CreditCard, Globe, Pencil, Shield, ShieldCheck } from 'lucide-react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
-import { chargingVisit, heldNow, money, paidThisMonth, visitCharge } from '../data/familyCare';
+import CaregiverTasksEditor from '../components/CaregiverTasksEditor';
+import { chargingVisit, heldNow, money, paidThisMonth, visitCharge, serviceTitle } from '../data/familyCare';
+import { tasksOf } from '../data/caregiverTasks';
 
-function Toggle({ label, hint, on, onChange }) {
+// What the account remembers besides the person: kept on the user record, so
+// signing back in finds it as it was left.
+const LANGUAGES = [
+  { id: 'sr', label: 'Srpski' },
+  { id: 'en', label: 'English' },
+];
+
+const COOKIE_KINDS = [
+  { id: 'needed', label: 'Neophodni', hint: 'Prijava i bezbednost. Bez njih sajt ne radi.', fixed: true },
+  { id: 'analytics', label: 'Analitika', hint: 'Koliko se koja stranica koristi, bez imena.' },
+  { id: 'marketing', label: 'Marketing', hint: 'Merenje oglasa i preporuka.' },
+];
+
+function Toggle({ label, hint, on, onChange, fixed }) {
   return (
     <button
       type="button"
-      className="toggle-row"
-      onClick={() => onChange(!on)}
+      className={`toggle-row${fixed ? ' is-fixed' : ''}`}
+      onClick={() => !fixed && onChange(!on)}
       role="switch"
       aria-checked={on}
+      aria-disabled={fixed || undefined}
     >
       <span className="toggle-text">
         <span className="tip-title">{label}</span>
@@ -25,7 +41,88 @@ function Toggle({ label, hint, on, onChange }) {
   );
 }
 
-export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
+// Which cookies are allowed. The necessary ones are shown but cannot be turned
+// off — a switch that does nothing is worse than a sentence saying why.
+function CookieModal({ cookies, onSave, onClose }) {
+  const [draft, setDraft] = useState({ analytics: cookies.analytics, marketing: cookies.marketing });
+
+  return (
+    <Modal eyebrow="Privatnost" title="Podešavanja kolačića" onClose={onClose}>
+      <p className="doc-p">
+        Izbor važi i za nanaprime.com. Možete ga promeniti kad god želite, odavde.
+      </p>
+      <div className="toggle-list">
+        {COOKIE_KINDS.map((k) => (
+          <Toggle
+            key={k.id}
+            label={k.label}
+            hint={k.hint}
+            fixed={k.fixed}
+            on={k.fixed ? true : draft[k.id]}
+            onChange={(v) => setDraft((d) => ({ ...d, [k.id]: v }))}
+          />
+        ))}
+      </div>
+      <div className="panel-card-actions is-end">
+        <Button variant="secondary" onClick={() => onSave({ analytics: false, marketing: false })}>
+          Samo neophodni
+        </Button>
+        <Button variant="primary" onClick={() => onSave(draft)}>
+          <Check size={14} strokeWidth={2} />
+          Sačuvaj izbor
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+// Turning the second factor on. The setup key comes from the server, and there
+// is no server yet — so the step that would show it says so plainly rather than
+// printing something that looks like a real key.
+function TwoFactorModal({ onDone, onClose }) {
+  const [code, setCode] = useState('');
+  const ready = /^\d{6}$/.test(code.trim());
+
+  return (
+    <Modal eyebrow="Bezbednost" title="Uključite dvofaktorsku prijavu" onClose={onClose}>
+      <p className="doc-p">
+        Uz lozinku tražiće se i šestocifreni kod iz aplikacije na vašem telefonu (Google
+        Authenticator, 1Password, Authy — bilo koja).
+      </p>
+      <ol className="paywall-list is-steps">
+        <li>Otvorite aplikaciju za kodove na telefonu.</li>
+        <li>Dodajte nalog i unesite ključ koji ćemo prikazati ovde.</li>
+        <li>Prepišite šestocifreni kod koji se pojavi.</li>
+      </ol>
+      <p className="ag-hint">
+        Ključ stiže sa servera, a server još nije povezan — ovaj korak radi tek kad bude.
+      </p>
+      <label className="pw-message">
+        <span className="tf-label">Kod iz aplikacije</span>
+        <input
+          className="wo-text is-line"
+          type="text"
+          inputMode="numeric"
+          maxLength={6}
+          value={code}
+          placeholder="123456"
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+        />
+      </label>
+      <div className="panel-card-actions is-end">
+        <Button variant="secondary" onClick={onClose}>
+          Otkaži
+        </Button>
+        <Button variant="primary" disabled={!ready} onClick={onDone}>
+          <Shield size={14} strokeWidth={1.75} />
+          Uključi
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+export default function Settings({ unlocked, care, user, onCare, onSaveUser, onAskAssistant }) {
   const [prefs, setPrefs] = useState({
     replies: true,
     schedule: true,
@@ -34,6 +131,14 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
   });
   const set = (key) => (v) => setPrefs((p) => ({ ...p, [key]: v }));
   const [cardOpen, setCardOpen] = useState(false);
+  const [tasksOpen, setTasksOpen] = useState(false);
+  const [cookiesOpen, setCookiesOpen] = useState(false);
+  const [twoFactorOpen, setTwoFactorOpen] = useState(false);
+
+  const tasks = tasksOf(care);
+  const cookies = user?.cookies || { analytics: true, marketing: false };
+  const twoFactor = Boolean(user?.twoFactor);
+  const language = user?.language || 'sr';
 
   const { payment } = care;
   const charging = chargingVisit(care);
@@ -56,6 +161,44 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
           <p className="view-sub">Obaveštenja, pretplata i nalog.</p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
+      </div>
+
+      {/* What the caregiver is asked to do. The plan proposes it from the
+          answers; this is where the family says otherwise without touching the
+          answers the plan is built from. */}
+      <div className="panel-card">
+        <div className="panel-card-head">
+          <p className="doc-section-title">Zadaci negovateljice</p>
+          <span className="status-pill is-muted">{tasks.length} izabrano</span>
+          <Button variant="secondary" iconOnly aria-label="Izmeni zadatke" title="Izmeni zadatke" onClick={() => setTasksOpen(true)}>
+            <Pencil size={14} strokeWidth={1.75} />
+          </Button>
+        </div>
+        <p className="tip-body">
+          Ovo stoji u svakom upitu koji pošaljete i u uslovima koje negovateljica ponudi.
+        </p>
+        <div className="ag-services">
+          {tasks.map((id) => (
+            <span key={id} className="svc is-set">
+              <Check size={13} strokeWidth={2.5} />
+              {serviceTitle(id)}
+            </span>
+          ))}
+        </div>
+        {care?.tasks?.priority && (
+          <div className="bc-lines ag-terms">
+            <p className="bc-line">
+              <span className="bc-line-label">Najvažnije</span>
+              <span className="bc-line-value">{care.tasks.priority}</span>
+            </p>
+            {care.tasks.special && (
+              <p className="bc-line">
+                <span className="bc-line-label">Posebni zahtevi</span>
+                <span className="bc-line-value">{care.tasks.special}</span>
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="panel-card">
@@ -180,6 +323,83 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
         )}
       </div>
 
+      {/* Language, cookies and the second factor: the account's own settings,
+          the three the old platform kept together. */}
+      <div className="panel-card">
+        <div className="panel-card-head">
+          <p className="doc-section-title">
+            <Globe size={14} strokeWidth={1.75} />
+            Jezik
+          </p>
+        </div>
+        <p className="tip-body">Jezik aplikacije i poruka koje vam šaljemo.</p>
+        <div className="set-choice">
+          {LANGUAGES.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              className={`svc${language === l.id ? ' is-on' : ''}`}
+              aria-pressed={language === l.id}
+              onClick={() => onSaveUser({ language: l.id })}
+            >
+              {language === l.id && <Check size={13} strokeWidth={2.5} />}
+              {l.label}
+            </button>
+          ))}
+        </div>
+        {language !== 'sr' && (
+          <p className="ag-hint">Prevod još nije napravljen — za sada je izbor samo zapamćen.</p>
+        )}
+      </div>
+
+      <div className="panel-card">
+        <div className="panel-card-head">
+          <p className="doc-section-title">
+            <Cookie size={14} strokeWidth={1.75} />
+            Kolačići
+          </p>
+          <span className="status-pill is-muted">
+            {[cookies.analytics && 'analitika', cookies.marketing && 'marketing'].filter(Boolean).join(', ') ||
+              'samo neophodni'}
+          </span>
+        </div>
+        <p className="tip-body">
+          Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.
+        </p>
+        <div className="panel-card-actions">
+          <Button variant="secondary" onClick={() => setCookiesOpen(true)}>
+            Podešavanja kolačića
+          </Button>
+        </div>
+      </div>
+
+      <div className="panel-card">
+        <div className="panel-card-head">
+          <p className="doc-section-title">
+            <Shield size={14} strokeWidth={1.75} />
+            Dvofaktorska prijava
+          </p>
+          <span className={`status-pill is-${twoFactor ? 'accepted' : 'muted'}`}>
+            {twoFactor ? 'Uključena' : 'Isključena'}
+          </span>
+        </div>
+        <p className="tip-body">
+          Uz lozinku traži se i šestocifreni kod iz aplikacije na vašem telefonu.
+        </p>
+        <div className="panel-card-actions">
+          {twoFactor ? (
+            <Button variant="secondary" onClick={() => onSaveUser({ twoFactor: false })}>
+              Isključi
+            </Button>
+          ) : (
+            <Button variant="primary" onClick={() => setTwoFactorOpen(true)}>
+              <Shield size={14} strokeWidth={1.75} />
+              Uključi
+            </Button>
+          )}
+        </div>
+      </div>
+
       <div className="panel-card">
         <p className="doc-section-title">Nalog</p>
         <p className="tip-body">
@@ -190,6 +410,38 @@ export default function Settings({ unlocked, care, onCare, onAskAssistant }) {
           <Button variant="ghost">Obriši nalog</Button>
         </div>
       </div>
+
+      {tasksOpen && (
+        <CaregiverTasksEditor
+          care={care}
+          onClose={() => setTasksOpen(false)}
+          onSave={(tasks) => {
+            onCare((c) => ({ ...c, tasks, need: { ...c.need, services: tasks.services } }));
+            setTasksOpen(false);
+          }}
+        />
+      )}
+
+      {cookiesOpen && (
+        <CookieModal
+          cookies={cookies}
+          onSave={(next) => {
+            onSaveUser({ cookies: next });
+            setCookiesOpen(false);
+          }}
+          onClose={() => setCookiesOpen(false)}
+        />
+      )}
+
+      {twoFactorOpen && (
+        <TwoFactorModal
+          onDone={() => {
+            onSaveUser({ twoFactor: true });
+            setTwoFactorOpen(false);
+          }}
+          onClose={() => setTwoFactorOpen(false)}
+        />
+      )}
 
       {cardOpen && (
         <Modal eyebrow="Plaćanje" title="Dodajte karticu" onClose={() => setCardOpen(false)}>

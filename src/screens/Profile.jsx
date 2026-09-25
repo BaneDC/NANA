@@ -26,7 +26,7 @@ function Section({ title, rows, onEdit }) {
           </Button>
         )}
       </div>
-      <div className="facts">
+      <div className="facts is-stacked">
         {rows.map((r) => (
           <div className="fact" key={r.label}>
             <span className="fact-label">{r.label}</span>

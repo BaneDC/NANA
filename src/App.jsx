@@ -114,6 +114,15 @@ export default function App() {
   const selectCaregiver = useCallback((c) => setPaywall({ caregiver: c }), []);
   const say = (text) => setFlash({ text, at: Date.now() });
 
+  // The account's own fields, changed from the profile or from settings. One
+  // place, because both write the same record.
+  const saveUser = (patch) => {
+    const next = { ...user, ...patch, name: patch.name ?? user.name };
+    setUser(next);
+    updateAccount(next);
+    say('Podaci su sačuvani.');
+  };
+
   // The care state follows the answers: who she is, where, and what the plan
   // says is needed, so a request always carries the plan as it is now.
   useEffect(() => {
@@ -650,12 +659,7 @@ export default function App() {
                 <Profile
                   user={user}
                   answers={answers}
-                  onSaveUser={(patch) => {
-                    const next = { ...user, ...patch, name: patch.name ?? user.name };
-                    setUser(next);
-                    updateAccount(next);
-                    say('Podaci su sačuvani.');
-                  }}
+                  onSaveUser={saveUser}
                   onEditAnswers={editAnswers}
                   onGoToChat={goToChat}
                   onAskAssistant={askAssistant}
@@ -665,7 +669,9 @@ export default function App() {
                 <Settings
                   unlocked={unlocked}
                   care={care}
+                  user={user}
                   onCare={setCare}
+                  onSaveUser={saveUser}
                   onAskAssistant={askAssistant}
                 />
               )}
@@ -795,6 +801,10 @@ export default function App() {
             answers={answers}
             name={plan.firstName}
             onApply={editAnswers}
+            onAskAssistant={() => {
+              setEditingPlan(false);
+              askAssistant();
+            }}
             onClose={() => setEditingPlan(false)}
           />
         )}

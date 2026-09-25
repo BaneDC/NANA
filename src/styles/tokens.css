@@ -112,9 +112,23 @@
   --chip-px: 8px;
   --input-size: 36px;
 
-  /* ---- effects ---- */
-  --shadow-card: 0px 1px 1.5px rgba(0, 0, 0, 0.1), 0px 1px 1px rgba(0, 0, 0, 0.06);
-  --shadow-container: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06);
+  /* ---- effects ----
+     A card is drawn by its edge first and its shadow second. The old pair was
+     1px of blur straight down and nothing else, which on a warm ground read as
+     a line under the card rather than a card: no left edge, no right edge, no
+     top. The hairline is a `0 0 0 1px` ring, so it costs no layout — a real
+     border would move every card by a pixel — and it is the primary's own
+     brown at low alpha rather than grey, because the page under it is warm.
+     The shadow behind it is softer and wider, to lift rather than underline. */
+  --card-line: rgba(76, 34, 18, 0.09);
+  --shadow-card:
+    0 0 0 1px var(--card-line),
+    0 1px 2px rgba(76, 34, 18, 0.04),
+    0 4px 10px -2px rgba(76, 34, 18, 0.05);
+  --shadow-container:
+    0 0 0 1px var(--card-line),
+    0 1px 3px rgba(76, 34, 18, 0.05),
+    0 8px 24px -6px rgba(76, 34, 18, 0.08);
   --shadow-button:
     0px 8px 2px rgba(0, 0, 0, 0),
     0px 5px 2px rgba(0, 0, 0, 0.01),

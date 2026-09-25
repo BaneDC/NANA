@@ -73,7 +73,10 @@ export function withAnswers(care, answers, user) {
     ...care,
     family: { name: you['your-name'] || user?.name || care.family.name, relation: you.relation || care.family.relation },
     elder: { name: person.name || care.elder.name, area: (person.city || care.elder.area).split(',')[0].trim() },
-    need: needFrom(answers),
+    // What the plan asks for follows the answers, unless the family has said
+    // otherwise in Settings; then their list is the one every request and every
+    // agreement carries.
+    need: { ...needFrom(answers), ...(care.tasks?.services ? { services: care.tasks.services } : {}) },
   };
 }
 
