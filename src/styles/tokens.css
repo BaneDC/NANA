@@ -88,7 +88,11 @@
   --spacing-8: 32px;
   --spacing-10: 40px;
 
-  /* ---- radius ---- */
+  /* ---- radius ----
+     Four steps for surfaces, and `sm` for what a surface's own padding derives:
+     a 16 box with 12 of padding holds a 4. Nothing else is on the scale — a 20
+     or a 6 is a value somebody typed, not a decision. */
+  --radius-sm: 4px;
   --radius-lg: 8px;
   --radius-2xl: 16px;
   --radius-3xl: 24px;

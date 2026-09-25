@@ -237,7 +237,7 @@ textarea {
 .answers-summary-count {
   flex-shrink: 0;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   background: var(--surface-2);
   font-size: 11px;
   line-height: 12px;
@@ -625,7 +625,7 @@ textarea {
 .chat-input {
   width: 100%;
   background: var(--surface-0);
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
   padding: var(--spacing-3);
   display: flex;
@@ -795,7 +795,7 @@ textarea {
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   background: var(--primary-subtle-highlight);
   color: var(--primary-highlight);
   font-size: 11px;
@@ -909,7 +909,7 @@ textarea {
 
 .doc-count {
   padding: 0 8px;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   background: var(--surface-2);
   font-size: 11px;
   font-weight: var(--font-normal);
@@ -1004,7 +1004,7 @@ textarea {
   margin-left: auto;
   flex-shrink: 0;
   padding: 0 8px;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   background: var(--primary-subtle);
   color: var(--primary-highlight);
   font-size: 11px;
@@ -1042,7 +1042,7 @@ textarea {
 
 .cg-tag {
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   background: var(--surface-2);
   font-size: 11px;
   line-height: 12px;
@@ -1407,7 +1407,7 @@ textarea {
   margin-left: auto;
   min-width: 16px;
   padding: 0 4px;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   background: var(--primary);
   color: var(--primary-foreground);
   font-size: 11px;
@@ -1649,7 +1649,7 @@ textarea {
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   font-size: 11px;
   line-height: 12px;
   font-weight: var(--font-medium);
@@ -2609,7 +2609,7 @@ textarea {
 .cfs-step {
   flex: 1;
   padding: 8px 0;
-  border-radius: 6px;
+  border-radius: var(--chip-radius);
   background: var(--surface-2);
   color: var(--text-disabled);
   font-size: 11px;
@@ -3062,7 +3062,7 @@ textarea {
   flex-direction: column;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-3xl);
   background: var(--primary-subtle);
 }
 
@@ -3166,7 +3166,7 @@ textarea {
   flex-direction: column;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-3xl);
   background: var(--surface-elevated);
   box-shadow: var(--shadow-card);
 }
@@ -3230,7 +3230,7 @@ textarea {
   flex-direction: column;
   gap: var(--spacing-2);
   padding: var(--spacing-4);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-3xl);
   background: var(--surface-elevated);
   box-shadow: var(--shadow-card);
 }
@@ -5114,7 +5114,7 @@ textarea.wo-text {
   align-items: flex-start;
   gap: var(--spacing-3);
   padding: var(--spacing-3);
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
 }
 
 .caregiver.is-wide .cg-main {
@@ -5908,11 +5908,11 @@ textarea.wo-text {
 }
 
 /* Everything in the editor reads down one left edge: the section heading and
-   the sentence above it start where the rows' own labels start — the row's
-   12px of padding, plus the 1px its border takes. */
+   the sentence above it start where the rows' own labels start, on the row's
+   12px of padding. */
 .pe-section > .ag-label,
 .pe-lead {
-  padding-left: calc(var(--spacing-3) + 1px);
+  padding-left: var(--spacing-3);
 }
 
 .pe-list {
@@ -5921,21 +5921,24 @@ textarea.wo-text {
   gap: var(--spacing-2);
 }
 
+/* The line is a ring rather than a border, so the row's text starts at exactly
+   12 from the edge and the headings above it can line up on the same 12. A
+   border would push it to 13 and take the whole column off the grid. */
 .pe-row {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
   width: 100%;
   padding: var(--spacing-3);
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-2xl);
   background: var(--surface-0);
+  box-shadow: 0 0 0 1px var(--card-line);
   text-align: left;
-  transition: border-color 0.15s ease;
+  transition: box-shadow 0.15s ease;
 }
 
 .pe-row:hover {
-  border-color: var(--color-primary-300);
+  box-shadow: 0 0 0 1px var(--color-primary-300);
 }
 
 /* An answer the rest of the plan hangs on: read here, changed in the chat. */
@@ -5945,7 +5948,7 @@ textarea.wo-text {
 }
 
 .pe-row.is-locked:hover {
-  border-color: var(--border-subtle);
+  box-shadow: 0 0 0 1px var(--card-line);
 }
 
 .pe-q {
@@ -5985,7 +5988,7 @@ textarea.wo-text {
   gap: var(--spacing-3);
   padding: var(--spacing-4);
   border: 1px solid var(--color-primary-300);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-3xl);
   background: var(--primary-subtle);
 }
 
@@ -6705,7 +6708,7 @@ textarea.wo-text {
   width: 16px;
   height: 16px;
   border: 0.8px solid var(--border-strong, var(--color-neutral-300));
-  border-radius: var(--radius-sm, 4px);
+  border-radius: var(--radius-sm);
   background: var(--surface-0);
   color: var(--primary-foreground);
 }
@@ -7077,9 +7080,8 @@ textarea.wo-text {
   justify-content: center;
   width: 20px;
   height: 20px;
-  margin-top: 1px;
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: var(--surface-0);
   color: var(--primary-foreground);
 }
@@ -7094,7 +7096,7 @@ textarea.wo-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--spacing-1);
 }
 
 .ct-title {
