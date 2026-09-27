@@ -853,21 +853,6 @@ textarea {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.caregiver.is-clickable {
-  cursor: pointer;
-}
-
-.caregiver.is-clickable:hover,
-.caregiver.is-clickable:focus-visible {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 2px 10px rgba(252, 112, 60, 0.14);
-}
-
-.caregiver.is-clickable:hover .cg-phone-cta {
-  text-decoration: underline;
-}
-
 /* the old #fff1ec on a grey card was all but invisible — this holds up on white */
 .cg-avatar {
   flex-shrink: 0;
@@ -930,11 +915,8 @@ textarea {
   color: var(--text-secondary);
 }
 
-.cg-star {
-  flex-shrink: 0;
-  color: var(--primary);
-}
-
+/* the longer form on Pronađi negovateljicu: what she says about herself, and
+   what she does */
 .cg-bio {
   margin-top: 4px;
   font-size: var(--text-xs-size);
@@ -958,44 +940,12 @@ textarea {
   color: var(--text-secondary);
 }
 
-.cg-phone {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-primary);
-}
-
-.cg-phone svg {
-  color: var(--text-secondary);
-}
-
-.cg-phone-cta {
-  color: var(--primary-highlight);
-}
-
-.cg-phone.is-open {
-  color: var(--primary-highlight);
-  font-weight: var(--font-medium);
-  text-decoration: none;
+.cg-star {
+  flex-shrink: 0;
+  color: var(--primary);
 }
 
 /* ---------- Paywall ---------- */
-
-/* placeholder shown in place of a number the client never received */
-.cg-phone-mask {
-  color: var(--text-disabled);
-  letter-spacing: 0.5px;
-  user-select: none;
-}
-
-.doc-tips {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
 
 .tip-title {
   font-size: var(--text-xs-size);
@@ -1050,19 +1000,6 @@ textarea {
 
 /* ---------- Assistant panel ---------- */
 
-.copilot-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.copilot-suggestions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-
 .suggestion {
   max-width: 100%;
   padding: 8px var(--spacing-3);
@@ -1080,12 +1017,6 @@ textarea {
   border-color: var(--primary);
   background: var(--primary-subtle);
   color: var(--primary-highlight);
-}
-
-.copilot-footer {
-  flex-shrink: 0;
-  padding: var(--spacing-3) var(--spacing-4) var(--spacing-4);
-  border-top: 1px solid var(--border-subtle);
 }
 
 .sidebar-body {
@@ -1458,7 +1389,6 @@ textarea {
 }
 
 /* cards are white with the sm shadow; grey is reserved for containers */
-.booking,
 .plan-row {
   display: flex;
   align-items: flex-start;
@@ -1534,21 +1464,6 @@ textarea {
   font-size: var(--text-xs-size);
   line-height: 18px;
   color: var(--text-secondary);
-}
-
-.booking-detail {
-  margin-top: 8px;
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.booking-detail.is-reason {
-  color: var(--status-no-fg);
-}
-
-.booking-actions {
-  margin-top: 4px;
 }
 
 .status-pill {
@@ -2326,46 +2241,6 @@ textarea {
   color: #7d6f63;
 }
 
-.imm-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-  padding: var(--spacing-3) var(--spacing-4) var(--spacing-3);
-  border-radius: var(--radius-2xl);
-  background: rgba(255, 255, 255, 0.52);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
-  text-align: left;
-  transition: border-color 0.25s ease, background 0.25s ease;
-  cursor: text;
-}
-
-.imm-field:focus-within {
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(253, 155, 119, 0.7);
-}
-
-.imm-field-label {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: #8a7a6d;
-}
-
-.imm-field input {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  color: #463d35;
-  caret-color: var(--primary);
-}
-
-.imm-field input::placeholder {
-  color: #a99a8c;
-}
-
 .imm-actions {
   margin-top: var(--spacing-6);
   display: flex;
@@ -2380,31 +2255,6 @@ textarea {
 }
 
 /* ---------- Questionnaire variant switch (nav) ---------- */
-
-.segmented {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: var(--radius-lg);
-  background: var(--surface-2);
-}
-
-.segmented button {
-  flex: 1;
-  padding: 4px 0;
-  border-radius: 4px;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-secondary);
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.segmented button.is-active {
-  background: var(--surface-elevated);
-  color: var(--text-primary);
-  font-weight: var(--font-medium);
-  box-shadow: var(--shadow-card);
-}
 
 /* one field on its own screen */
 .imm-single-field {
@@ -2449,43 +2299,6 @@ textarea {
   font-size: var(--text-sm-size);
   line-height: 24px;
   color: #6d6157;
-}
-
-.imm-facts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-2);
-  width: 100%;
-  margin-top: var(--spacing-6);
-}
-
-.imm-fact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--spacing-3) var(--spacing-3);
-  border-radius: var(--radius-2xl);
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  text-align: left;
-  min-width: 0;
-}
-
-.imm-fact-label {
-  font-size: 10px;
-  line-height: 14px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #a2917f;
-}
-
-.imm-fact-value {
-  font-size: var(--text-xs-size);
-  line-height: 17px;
-  font-weight: var(--font-medium);
-  color: #463d35;
 }
 
 .imm-plan-note {
@@ -3272,52 +3085,6 @@ textarea {
   color: var(--status-wait-fg);
 }
 
-/* the answer cards Claude puts on screen when it calls `ask` */
-.conv-answer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.conv-answer .select-card {
-  width: 100%;
-}
-
-.conv-error {
-  display: flex;
-  gap: var(--spacing-2);
-  padding: var(--spacing-3);
-  border-radius: var(--radius-2xl);
-  background: var(--status-no-bg);
-}
-
-.conv-error > svg {
-  flex-shrink: 0;
-  color: var(--status-no-fg);
-  height: 1lh;
-}
-
-.conv-error-title {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--status-no-fg);
-}
-
-.conv-error-note {
-  margin-top: 4px;
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.conv-error-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-3);
-}
-
 /* ---------- Immersive AI conversation ---------- */
 
 /* the API-key gate has to sit over the fullscreen variant, not behind it */
@@ -3369,40 +3136,6 @@ textarea {
   justify-content: flex-end;
 }
 
-/* collapsed state — a quiet offer, not a second composer */
-.imm-write-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-4);
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  color: var(--color-primary-800);
-  opacity: 0.6;
-  transition: opacity 0.2s ease, background 0.2s ease;
-}
-
-.imm-write-toggle:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.45);
-}
-
-.imm-skip {
-  margin-top: var(--spacing-3);
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  color: var(--color-primary-800);
-  opacity: 0.5;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.imm-skip:hover {
-  opacity: 0.85;
-}
-
 /* soft chips Jovana can offer alongside her own follow-up question */
 .imm-suggestions {
   display: flex;
@@ -3438,29 +3171,6 @@ textarea {
   background: rgba(255, 244, 238, 0.95);
   border-color: var(--primary);
   box-shadow: 0 1px 2px rgba(76, 34, 18, 0.05);
-}
-
-/* an input rendered as one of the glass cards */
-.imm-option.is-field {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  cursor: text;
-}
-
-.imm-field-name {
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--color-primary-800);
-  opacity: 0.6;
-}
-
-.imm-option.is-field input {
-  width: 100%;
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--color-primary-900);
 }
 
 .imm-error {
@@ -4502,15 +4212,6 @@ textarea.wo-text {
   gap: var(--spacing-2);
 }
 
-.modal-title {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  /* the close button sits over this corner */
-  padding-right: var(--spacing-8);
-  margin-bottom: var(--spacing-1);
-}
-
 /* Actions pushed to the trailing edge — where a dialog's confirm belongs, and
    where the eye already is after reading a row that ends in a status. The
    unmodified class stays left-aligned for the panels in the family's app. */
@@ -4599,63 +4300,6 @@ textarea.wo-text {
   color: var(--color-primary-700);
 }
 
-.needs-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  list-style: none;
-}
-
-.needs-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  padding: var(--spacing-3) var(--spacing-3);
-  background: var(--surface-0);
-  border-radius: var(--radius-2xl);
-}
-
-.needs-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.needs-label {
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.needs-note {
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--text-disabled);
-}
-
-.cg-head {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-}
-
-.cg-head .cg-name {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.cg-head .cg-phone {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  flex-shrink: 0;
-}
-
 /* a charge inside its window can be stopped from the row itself */
 .visit .panel-card-actions {
   margin-top: var(--spacing-2);
@@ -4697,41 +4341,7 @@ textarea.wo-text {
   color: var(--text-primary);
 }
 
-.visit-list.is-earlier {
-  padding-top: var(--spacing-2);
-}
-
 /* ---------- Family: a report that has just arrived ---------- */
-
-/* Set apart from the settled visits below it, without being an alarm: this is
-   news about someone's mother, not a problem. Tinted, bordered, and the whole
-   card opens. */
-.report-card {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-3);
-  width: 100%;
-  padding: var(--spacing-3);
-  border: 1px solid var(--color-primary-300);
-  border-radius: var(--radius-2xl);
-  background: var(--primary-subtle);
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.report-card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 4px 14px rgba(76, 34, 18, 0.08);
-}
-
-.report-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 
 .report-top {
   display: flex;
@@ -4739,30 +4349,11 @@ textarea.wo-text {
   gap: var(--spacing-2);
 }
 
-.report-when {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.report-note {
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
 .report-meta {
   margin-top: var(--spacing-1);
   font-size: 11px;
   line-height: 16px;
   color: var(--color-primary-700);
-}
-
-.report-open {
-  flex-shrink: 0;
-  align-self: center;
-  color: var(--color-primary-600);
 }
 
 /* the report, read against what was planned for it */
@@ -5751,108 +5342,6 @@ textarea.wo-text {
   gap: var(--spacing-2);
 }
 
-.cp-reply {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.assistant-text.is-error {
-  color: var(--status-no-fg);
-}
-
-.cp-proposal {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-  padding: var(--spacing-3);
-  border: 1px solid var(--color-primary-300);
-  border-radius: var(--radius-2xl);
-  background: var(--primary-subtle);
-}
-
-.cp-proposal.is-applied {
-  border-color: var(--border-subtle);
-  background: var(--surface-0);
-}
-
-.cp-proposal.is-dismissed {
-  border-color: var(--border-subtle);
-  background: var(--surface-2);
-  opacity: 0.72;
-}
-
-.cp-proposal-title {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--color-primary-700);
-}
-
-.cp-proposal.is-applied .cp-proposal-title {
-  color: var(--status-ok-fg);
-}
-
-.cp-proposal-rows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  list-style: none;
-}
-
-.cp-proposal-rows li {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
-
-.cp-proposal-q {
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--text-secondary);
-}
-
-.cp-proposal-change {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-2);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-}
-
-.cp-was {
-  color: var(--text-disabled);
-  text-decoration: line-through;
-}
-
-.cp-now {
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.cp-proposal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-2);
-}
-
-.cp-proposal-change.is-list {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-1);
-  color: var(--text-secondary);
-}
-
-.cp-saved {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--status-ok-fg);
-}
-
 /* ── what just changed in the plan ─────────────────────────────────────────── */
 
 .pc-banner {
@@ -6021,60 +5510,7 @@ textarea.wo-text {
   gap: var(--spacing-1);
 }
 
-.cp-proposal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-}
-
-.cp-proposal .pc-row {
-  background: var(--surface-0);
-}
-
-.cp-proposal-hint {
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--text-secondary);
-}
-
 /* ── the assistant, beyond the plan ────────────────────────────────────────── */
-
-/* In Razgovor it is the page: the chat column's rhythm, a step tighter. */
-.chat-scroll .copilot-body.is-inline {
-  gap: var(--spacing-6);
-}
-
-.cp-offers {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.cp-offer {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-}
-
-.cp-offer-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.cp-offer-name {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.cp-offer-meta {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-secondary);
-}
 
 /* ── the assistant, drawn by inline-chat-kit ───────────────────────────────── */
 
@@ -6711,10 +6147,15 @@ textarea.wo-text {
   }
 
   /* A caregiver's row is a card on a phone: the avatar and what she does
-     across the top, and the two controls on a line of their own under it
-     rather than squeezed into a third of the width. */
+     across the top, and the controls on a line of their own under it rather
+     than squeezed into a third of the width. */
+  .caregiver,
   .caregiver.is-wide {
     flex-wrap: wrap;
+  }
+
+  .caregiver > .btn {
+    width: 100%;
   }
 
   .fam-find-actions {
