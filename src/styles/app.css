@@ -175,14 +175,6 @@ textarea {
   pointer-events: none;
 }
 
-.footer-note {
-  margin-top: var(--spacing-2);
-  text-align: center;
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--text-disabled);
-}
-
 /* ---------- Logo ---------- */
 
 .logo {
@@ -622,45 +614,6 @@ textarea {
 
 /* ---------- Chat input ---------- */
 
-.chat-input {
-  width: 100%;
-  background: var(--surface-0);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
-  padding: var(--spacing-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  transition: opacity 0.2s ease;
-}
-
-.chat-input.is-disabled {
-  opacity: 0.65;
-}
-
-.ci-text {
-  padding-left: var(--spacing-1);
-}
-
-.ci-text input {
-  width: 100%;
-  padding: 8px 0;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-primary);
-  caret-color: var(--primary);
-}
-
-.ci-text input::placeholder {
-  color: var(--text-secondary);
-}
-
-.ci-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .ci-btn {
   width: 28px;
   height: 28px;
@@ -788,27 +741,6 @@ textarea {
   min-width: 0;
 }
 
-/* the persistent "this opens" affordance in the document header */
-.doc-open {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: var(--chip-radius);
-  background: var(--primary-subtle-highlight);
-  color: var(--primary-highlight);
-  font-size: 11px;
-  line-height: 14px;
-  font-weight: var(--font-medium);
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.doc:hover .doc-open {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
 .doc-icon {
   flex-shrink: 0;
   color: var(--primary);
@@ -905,29 +837,6 @@ textarea {
   line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
-}
-
-.doc-count {
-  padding: 0 8px;
-  border-radius: var(--chip-radius);
-  background: var(--surface-2);
-  font-size: 11px;
-  font-weight: var(--font-normal);
-  color: var(--text-secondary);
-}
-
-.doc-more-cta {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: var(--spacing-3);
-}
-
-.doc-cta-note {
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--text-disabled);
 }
 
 /* ---------- Caregiver ---------- */
@@ -2158,7 +2067,6 @@ textarea {
   pointer-events: none;
 }
 
-
 /* no surface of its own: it sits on the gradient like the rest of the text */
 .imm-know {
   position: relative;
@@ -2231,7 +2139,6 @@ textarea {
 .imm-screen.is-plan {
   padding-top: 76px;
 }
-
 
 .imm-ctls {
   position: absolute;
@@ -2472,7 +2379,6 @@ textarea {
   justify-content: space-between;
 }
 
-
 /* ---------- Questionnaire variant switch (nav) ---------- */
 
 .segmented {
@@ -2600,12 +2506,6 @@ textarea {
 
 /* ---------- Frailty scale ---------- */
 
-.cfs-scale {
-  display: flex;
-  gap: 4px;
-  margin-top: var(--spacing-2);
-}
-
 .cfs-step {
   flex: 1;
   padding: 8px 0;
@@ -2627,13 +2527,6 @@ textarea {
   background: var(--primary);
   color: var(--primary-foreground);
   font-weight: var(--font-medium);
-}
-
-.cfs-note {
-  margin-top: var(--spacing-2);
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--text-disabled);
 }
 
 /* the same scale, inside the immersive variant */
@@ -2880,53 +2773,11 @@ textarea {
 
 /* ---------- Review: everything you told us, before the plan ---------- */
 
-.review-card {
-  gap: var(--spacing-4);
-}
-
-.review-head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-  padding: 0 var(--spacing-1);
-}
-
-.review-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.review-group-title {
-  padding: 0 var(--spacing-1);
-  font-size: 11px;
-  line-height: 16px;
-  font-weight: var(--font-medium);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-disabled);
-}
-
 .review-row {
   border-radius: var(--radius-2xl);
   background: var(--surface-elevated);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-}
-
-.review-row-main {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-3);
-}
-
-.review-row-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
 }
 
 .review-label {
@@ -2940,120 +2791,7 @@ textarea {
   color: var(--text-secondary);
 }
 
-/* the marker on answers that decide which questions come later */
-.review-linked {
-  display: inline-flex;
-  color: var(--primary-highlight);
-}
-
-.review-chips {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-1);
-}
-
-/* the review is the one place an answer has to be readable in full — chips here
-   wrap onto a second line instead of being cut off mid-word */
-.review-chips .chip {
-  max-width: 100%;
-  height: auto;
-  min-height: var(--chip-size);
-  padding-top: 4px;
-  padding-bottom: 4px;
-  white-space: normal;
-}
-
-.review-warning {
-  overflow: hidden;
-}
-
-.review-warning-inner {
-  display: flex;
-  gap: var(--spacing-2);
-  margin: 0 var(--spacing-2) var(--spacing-2);
-  padding: var(--spacing-3);
-  border-radius: var(--radius-lg);
-  background: var(--status-wait-bg);
-}
-
-.review-warning-icon {
-  flex-shrink: 0;
-  color: var(--status-wait-fg);
-  height: 1lh;
-}
-
-.review-warning-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
-
-.review-warning-title {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--status-wait-fg);
-}
-
-.review-warning-note {
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.review-warning-actions {
-  display: flex;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-1);
-}
-
-.review-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
 /* ---------- "That changed the picture" notice ---------- */
-
-.flow-change {
-  display: flex;
-  gap: var(--spacing-2);
-  padding: var(--spacing-3);
-  border-radius: var(--radius-2xl);
-  background: var(--primary-subtle);
-  box-shadow: var(--shadow-card);
-}
-
-.flow-change-icon {
-  flex-shrink: 0;
-  color: var(--primary-highlight);
-  height: 1lh;
-}
-
-.flow-change-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
-
-.flow-change-title {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.flow-change-note {
-  font-size: var(--text-xs-size);
-  line-height: 18px;
-  color: var(--text-secondary);
-}
-
-.flow-change-note strong {
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
 
 /* ---------- Coordinator's message ---------- */
 
@@ -3844,7 +3582,6 @@ textarea {
   color: #7d6f63;
 }
 
-
 /* One gap between what Jovana says and what can be answered, whether the
    question has a subtitle or not. */
 .imm-screen.is-conversation .imm-answer {
@@ -3908,7 +3645,6 @@ textarea {
   font-weight: var(--font-normal);
   color: rgba(76, 34, 18, 0.42);
 }
-
 
 /* The send control is the shared Button — primary, icon-only. All that is left
    here is a size matching the badge on the other side of the card; the corner
@@ -4282,7 +4018,6 @@ textarea {
 .bc-name:hover {
   color: var(--primary-subtle-foreground);
 }
-
 
 .bc-meta {
   font-size: 11px;
@@ -6341,7 +6076,6 @@ textarea.wo-text {
   color: var(--text-secondary);
 }
 
-
 /* ── the assistant, drawn by inline-chat-kit ───────────────────────────────── */
 
 /* The kit reads --ick- properties; these point it at NANA's own: its type,
@@ -6382,8 +6116,6 @@ textarea.wo-text {
   flex: 1;
   min-height: 0;
 }
-
-
 
 /* NANA's cards inside the kit's answer, on the kit's own surfaces and corner
    chain, so they sit beside its approval and questions as one system:
