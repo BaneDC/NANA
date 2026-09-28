@@ -190,7 +190,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
               </ul>
               <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>
               <div className="panel-card-actions">
-                <Button variant="secondary" onClick={() => setCancelling(true)}>
+                <Button variant="primary" onClick={() => setCancelling(true)}>
                   Otkaži pretplatu
                 </Button>
               </div>
@@ -254,7 +254,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
                 </p>
               </div>
               <div className="panel-card-actions">
-                <Button variant="secondary" onClick={() => setCardOpen(true)}>
+                <Button variant="primary" onClick={() => setCardOpen(true)}>
                   <CreditCard size={14} strokeWidth={1.75} />
                   Promeni karticu
                 </Button>
@@ -288,7 +288,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           </div>
           <p className="tip-body">Promenite lozinku kojom se prijavljujete.</p>
           <div className="panel-card-actions">
-            <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
+            <Button variant="primary" onClick={() => setPasswordOpen(true)}>
               Promenite lozinku
             </Button>
           </div>
@@ -311,7 +311,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           </p>
           <div className="panel-card-actions">
             {twoFactor ? (
-              <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
+              <Button variant="primary" onClick={() => setTwoFactorOff(true)}>
                 Isključi
               </Button>
             ) : (
@@ -406,7 +406,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
             })}
           </div>
           <div className="panel-card-actions">
-            <Button variant="secondary" onClick={() => setCookiesOpen(true)}>
+            <Button variant="primary" onClick={() => setCookiesOpen(true)}>
               Podešavanja kolačića
             </Button>
           </div>
@@ -422,7 +422,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           {/* Deleting is the one thing here that cannot be undone, so it is the
               one button that is red. */}
           <div className="panel-card-actions">
-            <Button variant="secondary">Preuzmi moje podatke</Button>
+            <Button variant="primary">Preuzmi moje podatke</Button>
             <Button variant="danger">
               <Trash2 size={14} strokeWidth={1.75} />
               Obriši nalog
