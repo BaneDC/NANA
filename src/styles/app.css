@@ -6307,9 +6307,8 @@ button.svc:hover {
     border-radius: 0 var(--radius-3xl) var(--radius-3xl) 0;
   }
 
-  /* flush with the screen's left edge, so no corner there */
   .chat-container {
-    border-radius: 0 var(--radius-3xl) 0 0;
+    border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
   }
 }
 
@@ -6395,6 +6394,31 @@ button.svc:hover {
     border-radius: 0;
     box-shadow: none;
   }
+}
+
+/* ---------- Settings, in groups ----------
+   The same three steps as the care plan: 8px between the cards of a group, 12
+   from a group's title to its cards, 32 from one group to the next (the view's
+   own 12 plus 20 here). */
+
+.set-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.set-group + .set-group {
+  margin-top: 20px;
+}
+
+.set-group-title {
+  margin-bottom: var(--spacing-1);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }
 
 /* ---------- Settings: cookies, the second factor ---------- */

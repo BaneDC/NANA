@@ -150,275 +150,286 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
     setCardOpen(false);
   };
 
+  // Four groups, each under its own title, in the order people come looking:
+  // what they pay, how the account is kept safe, how the app talks to them, and
+  // what is kept about them.
   return (
     <div className="view">
       <div className="view-head">
         <div className="view-head-text">
           <h1 className="view-title">Podešavanja</h1>
-          <p className="view-sub">Obaveštenja, pretplata i nalog.</p>
+          <p className="view-sub">Plaćanje, bezbednost, jezik i obaveštenja, privatnost.</p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
-      <div className="panel-card">
-        <p className="doc-section-title">
-          <Bell size={14} strokeWidth={1.75} />
-          Obaveštenja
-        </p>
-        <div className="toggle-list">
-          <Toggle
-            label="Mesečni pregled"
-            hint="Jednom mesečno, kratak pregled poseta tog meseca"
-            on={prefs.digest}
-            onChange={set('digest')}
-          />
-          <Toggle
-            label="Novosti"
-            hint="Povremene vesti o NANA Prime"
-            on={prefs.marketing}
-            onChange={set('marketing')}
-          />
-        </div>
-      </div>
-
-      {/* Set up once and then never thought about again, which is exactly why
-          it belongs here and not on the dashboard. */}
-      <div className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">
-            <CreditCard size={14} strokeWidth={1.75} />
-            Način plaćanja
-          </p>
-          {payment.connected ? (
-            <span className="status-pill is-accepted">
-              <ShieldCheck size={12} strokeWidth={2} />
-              {payment.brand} ···· {payment.last4}
+      <section className="set-group">
+        <h2 className="set-group-title">Plaćanje</h2>
+        {/* Started and stopped from here. It used to be startable only from the
+            dialog on the care plan, which is where somebody runs into the
+            paywall — not where they go looking for what they pay for. */}
+        <div className="panel-card">
+          <div className="panel-card-head">
+            <p className="doc-section-title">
+              <Crown size={14} strokeWidth={1.75} />
+              Pretplata
+            </p>
+            <span className={`status-pill is-${unlocked ? 'accepted' : 'muted'}`}>
+              {unlocked ? 'Aktivna' : 'Niste pretplaćeni'}
             </span>
+          </div>
+          {unlocked ? (
+            <>
+              <ul className="paywall-list">
+                <li>
+                  <Check size={12} strokeWidth={2.5} /> Kontakti negovateljica
+                </li>
+                <li>
+                  <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
+                </li>
+              </ul>
+              <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>
+              <div className="panel-card-actions">
+                <Button variant="secondary" onClick={() => setCancelling(true)}>
+                  Otkaži pretplatu
+                </Button>
+              </div>
+            </>
           ) : (
-            <span className="status-pill is-declined">Nije podešeno</span>
+            <>
+              <p className="tip-body">
+                Otključava brojeve negovateljica, preporuke lekara i predložena pomagala.
+                {' '}
+                {priceLine(user?.country)}.
+              </p>
+              <div className="panel-card-actions">
+                <Button variant="primary" onClick={onSubscribe}>
+                  Pretplatite se
+                </Button>
+              </div>
+            </>
           )}
         </div>
-
-        {payment.connected ? (
-          <>
-            <p className="tip-body">
-              Dodato {payment.connectedOn}. Svaka poseta se naplaćuje 24 sata pošto negovateljica
-              pošalje izveštaj — od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite
-              sa stranice Moja nega.
+        {/* Set up once and then never thought about again, which is exactly why
+            it belongs here and not on the dashboard. */}
+        <div className="panel-card">
+          <div className="panel-card-head">
+            <p className="doc-section-title">
+              <CreditCard size={14} strokeWidth={1.75} />
+              Način plaćanja
             </p>
-            <div className="bc-lines ag-terms">
-              <p className="bc-line">
-                <span className="bc-line-label">Rezervisano za zakazane posete</span>
-                <span className="bc-line-value">{money(heldNow(care))}</span>
-              </p>
-              <p className="bc-line">
-                <span className="bc-line-label">Naplaćuje se sada</span>
-                <span className="bc-line-value">
-                  {charging
-                    ? `${money(visitCharge(charging))} · za ${charging.chargesInHours} h`
-                    : 'Ništa'}
-                </span>
-              </p>
-              <p className="bc-line">
-                <span className="bc-line-label">Naplaćeno u avgustu</span>
-                <span className="bc-line-value">{money(paidThisMonth(care))}</span>
-              </p>
-            </div>
-            <div className="panel-card-actions">
-              <Button variant="secondary" onClick={() => setCardOpen(true)}>
-                <CreditCard size={14} strokeWidth={1.75} />
-                Promeni karticu
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="tip-body">
-              Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže.
-              Dodaje se preko Stripe-a — mi nikad ne vidimo broj.
-            </p>
-            <div className="panel-card-actions">
-              <Button variant="primary" onClick={() => setCardOpen(true)}>
-                <CreditCard size={14} strokeWidth={1.75} />
-                Dodaj karticu
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
+            {payment.connected ? (
+              <span className="status-pill is-accepted">
+                <ShieldCheck size={12} strokeWidth={2} />
+                {payment.brand} ···· {payment.last4}
+              </span>
+            ) : (
+              <span className="status-pill is-declined">Nije podešeno</span>
+            )}
+          </div>
 
-      {/* Started and stopped from here. It used to be startable only from the
-          dialog on the care plan, which is where somebody runs into the
-          paywall — not where they go looking for what they pay for. */}
-      <div className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">
-            <Crown size={14} strokeWidth={1.75} />
-            Pretplata
-          </p>
-          <span className={`status-pill is-${unlocked ? 'accepted' : 'muted'}`}>
-            {unlocked ? 'Aktivna' : 'Niste pretplaćeni'}
-          </span>
-        </div>
-        {unlocked ? (
-          <>
-            <ul className="paywall-list">
-              <li>
-                <Check size={12} strokeWidth={2.5} /> Kontakti negovateljica
-              </li>
-              <li>
-                <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
-              </li>
-            </ul>
-            <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>
-            <div className="panel-card-actions">
-              <Button variant="secondary" onClick={() => setCancelling(true)}>
-                Otkaži pretplatu
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="tip-body">
-              Otključava brojeve negovateljica, preporuke lekara i predložena pomagala.
-              {' '}
-              {priceLine(user?.country)}.
-            </p>
-            <div className="panel-card-actions">
-              <Button variant="primary" onClick={onSubscribe}>
-                Pretplatite se
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Language, cookies and the second factor: the account's own settings,
-          the three the old platform kept together. */}
-      <div className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">
-            <Globe size={14} strokeWidth={1.75} />
-            Jezik
-          </p>
-        </div>
-        <p className="tip-body">Jezik aplikacije i poruka koje vam šaljemo.</p>
-        <div className="set-choice">
-          {LANGUAGES.map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              className={`svc${language === l.id ? ' is-on' : ''}`}
-              aria-pressed={language === l.id}
-              onClick={() => onSaveUser({ language: l.id })}
-            >
-              {language === l.id && <Check size={13} strokeWidth={2.5} />}
-              {l.label}
-            </button>
-          ))}
-        </div>
-        {language !== 'sr' && (
-          <p className="ag-hint">Prevod još nije napravljen — za sada je izbor samo zapamćen.</p>
-        )}
-      </div>
-
-      <div className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">
-            <Cookie size={14} strokeWidth={1.75} />
-            Kolačići
-          </p>
-        </div>
-        <p className="tip-body">
-          Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.
-        </p>
-        {/* Every group and where it stands, in words. Rows rather than chips:
-            a chip here is the same shape as the ones that are pressed
-            elsewhere, and this is a reading of the state, not a control. */}
-        <div className="bc-lines ag-terms">
-          {COOKIE_GROUPS.map((g) => {
-            const on = g.fixed || cookies[g.id];
-            return (
-              <p className="bc-line" key={g.id}>
-                <span className="bc-line-label">{g.label}</span>
-                <span className={`bc-line-value${on ? '' : ' is-off'}`}>
-                  {on ? 'Uključeno' : 'Isključeno'}
-                  {g.fixed ? ' · uvek' : ''}
-                </span>
+          {payment.connected ? (
+            <>
+              <p className="tip-body">
+                Dodato {payment.connectedOn}. Svaka poseta se naplaćuje 24 sata pošto negovateljica
+                pošalje izveštaj — od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite
+                sa stranice Moja nega.
               </p>
-            );
-          })}
-        </div>
-        <div className="panel-card-actions">
-          <Button variant="secondary" onClick={() => setCookiesOpen(true)}>
-            Podešavanja kolačića
-          </Button>
-        </div>
-      </div>
-
-      <div className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">
-            <Shield size={14} strokeWidth={1.75} />
-            Dvofaktorska prijava
-          </p>
-          <span className={`status-pill is-${twoFactor ? 'accepted' : 'muted'}`}>
-            {twoFactor ? 'Uključena' : 'Isključena'}
-          </span>
-        </div>
-        <p className="tip-body">
-          Uz lozinku traži se i šestocifreni kod iz aplikacije na vašem telefonu.
-          {twoFactor && user?.backupCodesLeft
-            ? ` Ostalo vam je ${user.backupCodesLeft} rezervnih kodova.`
-            : ''}
-        </p>
-        <div className="panel-card-actions">
-          {twoFactor ? (
-            <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
-              Isključi
-            </Button>
+              <div className="bc-lines ag-terms">
+                <p className="bc-line">
+                  <span className="bc-line-label">Rezervisano za zakazane posete</span>
+                  <span className="bc-line-value">{money(heldNow(care))}</span>
+                </p>
+                <p className="bc-line">
+                  <span className="bc-line-label">Naplaćuje se sada</span>
+                  <span className="bc-line-value">
+                    {charging
+                      ? `${money(visitCharge(charging))} · za ${charging.chargesInHours} h`
+                      : 'Ništa'}
+                  </span>
+                </p>
+                <p className="bc-line">
+                  <span className="bc-line-label">Naplaćeno u avgustu</span>
+                  <span className="bc-line-value">{money(paidThisMonth(care))}</span>
+                </p>
+              </div>
+              <div className="panel-card-actions">
+                <Button variant="secondary" onClick={() => setCardOpen(true)}>
+                  <CreditCard size={14} strokeWidth={1.75} />
+                  Promeni karticu
+                </Button>
+              </div>
+            </>
           ) : (
-            <Button variant="primary" onClick={() => setTwoFactorOpen(true)}>
+            <>
+              <p className="tip-body">
+                Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže.
+                Dodaje se preko Stripe-a — mi nikad ne vidimo broj.
+              </p>
+              <div className="panel-card-actions">
+                <Button variant="primary" onClick={() => setCardOpen(true)}>
+                  <CreditCard size={14} strokeWidth={1.75} />
+                  Dodaj karticu
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
+      <section className="set-group">
+        <h2 className="set-group-title">Bezbednost</h2>
+        <div className="panel-card">
+          <div className="panel-card-head">
+            <p className="doc-section-title">
+              <KeyRound size={14} strokeWidth={1.75} />
+              Lozinka
+            </p>
+          </div>
+          <p className="tip-body">Promenite lozinku kojom se prijavljujete.</p>
+          <div className="panel-card-actions">
+            <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
+              Promenite lozinku
+            </Button>
+          </div>
+        </div>
+        <div className="panel-card">
+          <div className="panel-card-head">
+            <p className="doc-section-title">
               <Shield size={14} strokeWidth={1.75} />
-              Uključi
-            </Button>
+              Dvofaktorska prijava
+            </p>
+            <span className={`status-pill is-${twoFactor ? 'accepted' : 'muted'}`}>
+              {twoFactor ? 'Uključena' : 'Isključena'}
+            </span>
+          </div>
+          <p className="tip-body">
+            Uz lozinku traži se i šestocifreni kod iz aplikacije na vašem telefonu.
+            {twoFactor && user?.backupCodesLeft
+              ? ` Ostalo vam je ${user.backupCodesLeft} rezervnih kodova.`
+              : ''}
+          </p>
+          <div className="panel-card-actions">
+            {twoFactor ? (
+              <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
+                Isključi
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={() => setTwoFactorOpen(true)}>
+                <Shield size={14} strokeWidth={1.75} />
+                Uključi
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="set-group">
+        <h2 className="set-group-title">Opšte</h2>
+        {/* Language, cookies and the second factor: the account's own settings,
+            the three the old platform kept together. */}
+        <div className="panel-card">
+          <div className="panel-card-head">
+            <p className="doc-section-title">
+              <Globe size={14} strokeWidth={1.75} />
+              Jezik
+            </p>
+          </div>
+          <p className="tip-body">Jezik aplikacije i poruka koje vam šaljemo.</p>
+          <div className="set-choice">
+            {LANGUAGES.map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                className={`svc${language === l.id ? ' is-on' : ''}`}
+                aria-pressed={language === l.id}
+                onClick={() => onSaveUser({ language: l.id })}
+              >
+                {language === l.id && <Check size={13} strokeWidth={2.5} />}
+                {l.label}
+              </button>
+            ))}
+          </div>
+          {language !== 'sr' && (
+            <p className="ag-hint">Prevod još nije napravljen — za sada je izbor samo zapamćen.</p>
           )}
         </div>
-      </div>
-
-      <div className="panel-card">
-        <div className="panel-card-head">
+        <div className="panel-card">
           <p className="doc-section-title">
-            <KeyRound size={14} strokeWidth={1.75} />
-            Lozinka
+            <Bell size={14} strokeWidth={1.75} />
+            Obaveštenja
           </p>
+          <div className="toggle-list">
+            <Toggle
+              label="Mesečni pregled"
+              hint="Jednom mesečno, kratak pregled poseta tog meseca"
+              on={prefs.digest}
+              onChange={set('digest')}
+            />
+            <Toggle
+              label="Novosti"
+              hint="Povremene vesti o NANA Prime"
+              on={prefs.marketing}
+              onChange={set('marketing')}
+            />
+          </div>
         </div>
-        <p className="tip-body">Promenite lozinku kojom se prijavljujete.</p>
-        <div className="panel-card-actions">
-          <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
-            Promenite lozinku
-          </Button>
-        </div>
-      </div>
+      </section>
 
-      <div className="panel-card">
-        <p className="doc-section-title">
-          <UserRound size={14} strokeWidth={1.75} />
-          Nalog
-        </p>
-        <p className="tip-body">
-          Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.
-        </p>
-        {/* Deleting is the one thing here that cannot be undone, so it is the
-            one button that is red. */}
-        <div className="panel-card-actions">
-          <Button variant="secondary">Preuzmi moje podatke</Button>
-          <Button variant="danger">
-            <Trash2 size={14} strokeWidth={1.75} />
-            Obriši nalog
-          </Button>
+      <section className="set-group">
+        <h2 className="set-group-title">Privatnost i nalog</h2>
+        <div className="panel-card">
+          <div className="panel-card-head">
+            <p className="doc-section-title">
+              <Cookie size={14} strokeWidth={1.75} />
+              Kolačići
+            </p>
+          </div>
+          <p className="tip-body">
+            Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.
+          </p>
+          {/* Every group and where it stands, in words. Rows rather than chips:
+              a chip here is the same shape as the ones that are pressed
+              elsewhere, and this is a reading of the state, not a control. */}
+          <div className="bc-lines ag-terms">
+            {COOKIE_GROUPS.map((g) => {
+              const on = g.fixed || cookies[g.id];
+              return (
+                <p className="bc-line" key={g.id}>
+                  <span className="bc-line-label">{g.label}</span>
+                  <span className={`bc-line-value${on ? '' : ' is-off'}`}>
+                    {on ? 'Uključeno' : 'Isključeno'}
+                    {g.fixed ? ' · uvek' : ''}
+                  </span>
+                </p>
+              );
+            })}
+          </div>
+          <div className="panel-card-actions">
+            <Button variant="secondary" onClick={() => setCookiesOpen(true)}>
+              Podešavanja kolačića
+            </Button>
+          </div>
         </div>
-      </div>
+        <div className="panel-card">
+          <p className="doc-section-title">
+            <UserRound size={14} strokeWidth={1.75} />
+            Nalog
+          </p>
+          <p className="tip-body">
+            Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.
+          </p>
+          {/* Deleting is the one thing here that cannot be undone, so it is the
+              one button that is red. */}
+          <div className="panel-card-actions">
+            <Button variant="secondary">Preuzmi moje podatke</Button>
+            <Button variant="danger">
+              <Trash2 size={14} strokeWidth={1.75} />
+              Obriši nalog
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {cookiesOpen && (
         <CookieSettings
