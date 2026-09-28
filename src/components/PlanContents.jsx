@@ -10,8 +10,8 @@ import Button from './Button';
 // recommended for this person — then the way to reach the coordinator. Shared by
 // the side panel and the full page so they never drift apart.
 //
-// Three groups, and the spacing says so: 8px inside a card's list, 12px from a
-// heading to what it heads, 32px between one group and the next. The caregivers
+// Three groups, and the spacing says so: 8px between the cards, 12px from the
+// group's title to them, 32px between one group and the next (docs/patterns.md). The caregivers
 // live inside the recommendation that proposes them — a second full list under
 // the plan was the same names again, with nothing new to say.
 export default function PlanContents({
@@ -32,10 +32,9 @@ export default function PlanContents({
         <CoordinatorMessage letter={plan.letter} changed={Boolean(change?.letter)} changeKey={change?.at} />
       )}
 
-      <section className="plan-sec">
-        <p className="doc-section-title">Šta preporučujemo</p>
+      <section className="section">
+        <p className="section-title">Šta preporučujemo</p>
 
-        <div className="plan-sec-body">
           {open.map((rec) => (
             <RecommendationCard
               key={rec.id}
@@ -87,7 +86,6 @@ export default function PlanContents({
               </div>
             </div>
           )}
-        </div>
       </section>
 
       {!archived && <CoordinatorContact coordinator={plan.coordinator || coordinator} />}

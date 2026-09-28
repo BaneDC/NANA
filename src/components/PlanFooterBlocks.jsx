@@ -11,8 +11,8 @@ import { Mail, MessageCircle, Phone } from 'lucide-react';
 // behind the paywall — the paywall is on caregiver numbers.
 export function CoordinatorContact({ coordinator }) {
   return (
-    <div className="coordinator-contact">
-      <p className="rec-title">Ako želite da se direktno javite koordinatorki</p>
+    <div className="panel-card">
+      <p className="doc-section-title">Ako želite da se direktno javite koordinatorki</p>
       <div className="contact-rows">
         <a className="contact-row" href={`https://wa.me/${coordinator.whatsapp.replace(/\D/g, '')}`}>
           <MessageCircle size={14} strokeWidth={1.75} />

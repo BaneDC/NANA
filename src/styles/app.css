@@ -827,44 +827,50 @@ textarea {
 }
 
 .fact-label {
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--text-disabled);
-}
-
-.fact-value {
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--text-secondary);
 }
 
+/* free text, so it wraps: an answer cut off with an ellipsis is not an answer */
+.fact-value {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+/* A card's title — the one size every card's title is (docs/patterns.md). */
 .doc-section-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: var(--spacing-1);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
 }
 
+/* a label inside a card, over the part it names: "Zašto ovo preporučujemo" */
+.card-label {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+}
+
 /* ---------- Caregiver ---------- */
 
+/* inside a card, a caregiver is a row: white, a hairline, 8 corners, 12 in */
 .caregiver {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-2);
-  padding: var(--spacing-2);
-  border: 1px solid transparent;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  background: var(--surface-elevated);
-  box-shadow: var(--shadow-card);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  background: var(--surface-0);
 }
 
 /* the old #fff1ec on a grey card was all but invisible — this holds up on white */
@@ -908,22 +914,10 @@ textarea {
   color: var(--text-primary);
 }
 
-.cg-match {
-  margin-left: auto;
-  flex-shrink: 0;
-  padding: 0 8px;
-  border-radius: var(--chip-radius);
-  background: var(--primary-subtle);
-  color: var(--primary-highlight);
-  font-size: 11px;
-  line-height: 14px;
-}
-
+/* a line of text with the star in it, not a row of two items: as a flex row the
+   whole text wrapped under the star and left it alone on a line */
 .cg-meta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  display: block;
   font-size: 11px;
   line-height: 16px;
   color: var(--text-secondary);
@@ -955,7 +949,9 @@ textarea {
 }
 
 .cg-star {
-  flex-shrink: 0;
+  display: inline-block;
+  margin-right: 4px;
+  vertical-align: -1px;
   color: var(--primary);
 }
 
@@ -1204,15 +1200,22 @@ textarea {
   color: var(--nav-text-muted);
 }
 
+/* one way back, above the page's title */
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   margin-bottom: 4px;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
   color: var(--text-secondary);
   transition: color 0.15s ease;
+}
+
+/* on its own line above a page's head: 4px to the title, like inside it */
+.view > .back-link {
+  align-self: flex-start;
+  margin-bottom: -8px;
 }
 
 .back-link:hover {
@@ -1409,7 +1412,7 @@ textarea {
   gap: var(--spacing-2);
   padding: var(--spacing-3);
   border: 1px solid transparent;
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-3xl);
   background: var(--surface-elevated);
   box-shadow: var(--shadow-card);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -1524,6 +1527,29 @@ textarea {
   background: var(--surface-elevated);
   border-radius: var(--radius-3xl);
   box-shadow: var(--shadow-card);
+}
+
+/* A group of cards under a title, where a page has more than one group (the
+   plan's recommendations, settings). The title is quiet — it names the group,
+   the cards are what is read: 12px, secondary, as written, never capitals.
+   8 between the cards, 12 from the title to them, 32 from one group to the
+   next (the view's 12 plus 20). */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.view > .section + .section {
+  margin-top: 20px;
+}
+
+.section-title {
+  margin-bottom: var(--spacing-1);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
 }
 
 .panel-card-head {
@@ -2695,15 +2721,6 @@ textarea {
 
 /* ---------- Coordinator's message ---------- */
 
-.coordinator-note {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  padding: var(--spacing-4);
-  border-radius: var(--radius-3xl);
-  background: var(--primary-subtle);
-}
-
 .coordinator-head {
   display: flex;
   align-items: center;
@@ -2785,45 +2802,7 @@ textarea {
   gap: var(--spacing-8);
 }
 
-.plan-sec {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-}
-
-.plan-sec-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
 /* ---------- Recommendation cards ---------- */
-
-.rec-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  padding: var(--spacing-4);
-  border-radius: var(--radius-3xl);
-  background: var(--surface-elevated);
-  box-shadow: var(--shadow-card);
-}
-
-.rec-title {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.rec-why-label {
-  font-size: 11px;
-  line-height: 16px;
-  font-weight: var(--font-medium);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-disabled);
-}
 
 .rec-why {
   font-size: var(--text-xs-size);
@@ -2971,16 +2950,6 @@ textarea {
 
 /* ---------- Reaching the coordinator ---------- */
 
-.coordinator-contact {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  padding: var(--spacing-4);
-  border-radius: var(--radius-3xl);
-  background: var(--surface-elevated);
-  box-shadow: var(--shadow-card);
-}
-
 .contact-rows {
   display: flex;
   flex-direction: column;
@@ -2992,15 +2961,16 @@ textarea {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-3);
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  background: var(--surface-2);
+  background: var(--surface-0);
   text-decoration: none;
-  transition: background 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 
 .contact-row:hover {
-  background: var(--primary-subtle-highlight);
+  border-color: var(--color-primary-300);
 }
 
 .contact-row svg {
@@ -3742,11 +3712,9 @@ textarea {
 
 .cg-topbar-role {
   flex: 1;
-  font-size: 11px;
-  line-height: 16px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-disabled);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
 }
 
 .cg-topbar-user {
@@ -3971,7 +3939,7 @@ textarea {
 
 .bc-line-label {
   flex-shrink: 0;
-  color: var(--text-disabled);
+  color: var(--text-secondary);
 }
 
 .bc-line-value {
@@ -4064,10 +4032,12 @@ textarea {
   color: var(--text-primary);
 }
 
+/* a hint under a control: the same as a field's hint (.tf-hint), 12px and
+   readable — 11px in the disabled grey fell under 3:1 on white */
 .ag-hint {
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--text-disabled);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
 }
 
 .ag-services {
@@ -4416,13 +4386,15 @@ button.svc:hover {
 
 /* The only panel on the page that is asking for something. It is tinted
    because everything else here is a statement and this is a queue. */
-.panel-card.needs-you {
+/* The attention card: what waits on the family, Jovana's letter, a change to
+   the plan. One tint, one hairline, no shadow — and the ink that goes with it. */
+.panel-card.is-attention {
   background: var(--primary-subtle);
   box-shadow: none;
   border: 1px solid var(--color-primary-200);
 }
 
-.needs-you .doc-section-title {
+.is-attention .doc-section-title {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
@@ -4540,11 +4512,15 @@ button.svc:hover {
 /* the browse row carries an action, so it needs the width and a middle column.
    The avatar belongs beside the name, not floating halfway down a three-line
    block; only the action centres. */
+/* on a page of her own, she is a card like every other card */
 .caregiver.is-wide {
   align-items: flex-start;
   gap: var(--spacing-3);
-  padding: var(--spacing-3);
-  border-radius: var(--radius-2xl);
+  padding: var(--spacing-4);
+  border: 0;
+  border-radius: var(--radius-3xl);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-card);
 }
 
 .caregiver.is-wide .cg-main {
@@ -4847,7 +4823,7 @@ button.svc:hover {
   text-align: left;
 }
 
-.needs-you .fam-row {
+.is-attention .fam-row {
   border-color: var(--color-primary-200);
 }
 
@@ -4888,14 +4864,24 @@ button.svc:hover {
   line-height: 12px;
 }
 
+/* A row's title is a step under the card's (12 to its 14), so a card full of
+   rows still reads as one card. Where the row is itself a card — a request, a
+   caregiver on a page of her own — its title is the card's size. */
 .fam-row-title {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
+}
+
+.panel-card > .fam-request-head .fam-row-title,
+.fam-request .fam-row-title,
+.caregiver.is-wide .cg-name {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
 }
 
 .fam-row-title > .status-pill {
@@ -5038,21 +5024,6 @@ button.svc:hover {
   font-size: var(--text-xs-size);
   line-height: 18px;
   box-shadow: var(--shadow-container);
-}
-
-.fam-back {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  margin-bottom: calc(-1 * var(--spacing-2));
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-secondary);
-}
-
-.fam-back:hover {
-  color: var(--text-primary);
 }
 
 .fam-person {
@@ -5261,6 +5232,11 @@ button.svc:hover {
     flex-wrap: wrap;
   }
 
+  /* a row's action drops under it and takes the width, as a caregiver's does */
+  .fam-row > .btn {
+    width: 100%;
+  }
+
   .fam-flow {
     grid-template-columns: 1fr;
   }
@@ -5435,9 +5411,6 @@ button.svc:hover {
 
 .pc-banner {
   gap: var(--spacing-3);
-  border: 1px solid var(--color-primary-300);
-  background: var(--primary-subtle);
-  box-shadow: none;
 }
 
 .pc-banner-head {
@@ -5560,13 +5533,6 @@ button.svc:hover {
 
 /* a part of the plan that the last change rewrote: marked, and lit once as it
    arrives so the eye finds it */
-.rec-title-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-}
-
-.rec-title-row > .status-pill,
 .coordinator-head > .status-pill {
   margin-left: auto;
 }
@@ -6360,6 +6326,18 @@ button.svc:hover {
   }
 }
 
+/* On a phone a card's actions fill the card's width between them, so each is a
+   target a thumb can find; a dialog's footer keeps its own order (.is-end). */
+@media (max-width: 640px) {
+  .panel-card-actions:not(.is-end) {
+    flex-wrap: wrap;
+  }
+
+  .panel-card-actions:not(.is-end) > .btn {
+    flex: 1 1 auto;
+  }
+}
+
 /* ---------- The chat's pane and the side panel on a narrow screen ----------
    Beside the conversation there is no room for them, so what a card opens, the
    care plan and the assistant cover the page instead. The width is animated inline by the wrapper, which
@@ -6394,31 +6372,6 @@ button.svc:hover {
     border-radius: 0;
     box-shadow: none;
   }
-}
-
-/* ---------- Settings, in groups ----------
-   The same three steps as the care plan: 8px between the cards of a group, 12
-   from a group's title to its cards, 32 from one group to the next (the view's
-   own 12 plus 20 here). */
-
-.set-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.set-group + .set-group {
-  margin-top: 20px;
-}
-
-/* as written, not in capitals; a step above the cards' own 12px titles so the
-   two levels do not read as one */
-.set-group-title {
-  margin-bottom: var(--spacing-1);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
 }
 
 /* ---------- Settings: cookies, the second factor ---------- */

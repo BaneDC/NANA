@@ -548,7 +548,7 @@ export default function App() {
                 />
               ) : (
                 <div className="view">
-                  <section className="panel-card needs-you">
+                  <section className="panel-card is-attention">
                     <p className="doc-section-title">Upoznavanje nije završeno</p>
                     <p className="fam-sub">
                       Jovana pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.

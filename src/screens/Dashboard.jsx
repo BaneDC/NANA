@@ -98,7 +98,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
       {fresh && (
         <Section
           title="Sledeći korak"
-          className="needs-you"
+          className="is-attention"
           sub={
             plan
               ? 'Plan nege je spreman. Pošaljite upit negovateljicama koje mu odgovaraju: upit šalje plan i ništa ne košta, a možete da pitate više njih.'
@@ -121,7 +121,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
       )}
 
       {waiting.length > 0 && (
-        <Section title="Čeka na vas" sub={waitNote} className="needs-you">
+        <Section title="Čeka na vas" sub={waitNote} className="is-attention">
           <div className="fam-rows">
             {waiting.map((w) =>
               w.kind === 'terms' ? (

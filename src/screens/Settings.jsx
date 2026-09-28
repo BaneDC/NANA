@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, Cookie, CreditCard, Crown, Globe, KeyRound, Shield, ShieldCheck, Trash2, UserRound } from 'lucide-react';
+import { Check, CreditCard, Shield, ShieldCheck, Trash2 } from 'lucide-react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
@@ -163,15 +163,14 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
-      <section className="set-group">
-        <h2 className="set-group-title">Plaćanje</h2>
+      <section className="section">
+        <h2 className="section-title">Plaćanje</h2>
         {/* Started and stopped from here. It used to be startable only from the
             dialog on the care plan, which is where somebody runs into the
             paywall — not where they go looking for what they pay for. */}
         <div className="panel-card">
           <div className="panel-card-head">
             <p className="doc-section-title">
-              <Crown size={14} strokeWidth={1.75} />
               Pretplata
             </p>
             <span className={`status-pill is-${unlocked ? 'accepted' : 'muted'}`}>
@@ -218,7 +217,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         <div className="panel-card">
           <div className="panel-card-head">
             <p className="doc-section-title">
-              <CreditCard size={14} strokeWidth={1.75} />
               Način plaćanja
             </p>
             {payment.connected ? (
@@ -280,12 +278,11 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         </div>
       </section>
 
-      <section className="set-group">
-        <h2 className="set-group-title">Bezbednost</h2>
+      <section className="section">
+        <h2 className="section-title">Bezbednost</h2>
         <div className="panel-card">
           <div className="panel-card-head">
             <p className="doc-section-title">
-              <KeyRound size={14} strokeWidth={1.75} />
               Lozinka
             </p>
           </div>
@@ -299,7 +296,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         <div className="panel-card">
           <div className="panel-card-head">
             <p className="doc-section-title">
-              <Shield size={14} strokeWidth={1.75} />
               Dvofaktorska prijava
             </p>
             <span className={`status-pill is-${twoFactor ? 'accepted' : 'muted'}`}>
@@ -327,14 +323,13 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         </div>
       </section>
 
-      <section className="set-group">
-        <h2 className="set-group-title">Opšte</h2>
+      <section className="section">
+        <h2 className="section-title">Opšte</h2>
         {/* Language, cookies and the second factor: the account's own settings,
             the three the old platform kept together. */}
         <div className="panel-card">
           <div className="panel-card-head">
             <p className="doc-section-title">
-              <Globe size={14} strokeWidth={1.75} />
               Jezik
             </p>
           </div>
@@ -359,7 +354,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         </div>
         <div className="panel-card">
           <p className="doc-section-title">
-            <Bell size={14} strokeWidth={1.75} />
             Obaveštenja
           </p>
           <div className="toggle-list">
@@ -379,12 +373,11 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         </div>
       </section>
 
-      <section className="set-group">
-        <h2 className="set-group-title">Privatnost i nalog</h2>
+      <section className="section">
+        <h2 className="section-title">Privatnost i nalog</h2>
         <div className="panel-card">
           <div className="panel-card-head">
             <p className="doc-section-title">
-              <Cookie size={14} strokeWidth={1.75} />
               Kolačići
             </p>
           </div>
@@ -416,7 +409,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         </div>
         <div className="panel-card">
           <p className="doc-section-title">
-            <UserRound size={14} strokeWidth={1.75} />
             Nalog
           </p>
           <p className="tip-body">

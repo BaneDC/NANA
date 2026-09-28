@@ -105,7 +105,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
 
   return (
     <div className="view">
-      <button type="button" className="fam-back" onClick={onBack}>
+      <button type="button" className="back-link" onClick={onBack}>
         <ArrowLeft size={14} strokeWidth={1.75} />
         Moja nega
       </button>
@@ -130,7 +130,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
         )}
       </div>
 
-      <section className={`panel-card${next.label ? ' needs-you' : ''}`}>
+      <section className={`panel-card${next.label ? ' is-attention' : ''}`}>
         <p className="doc-section-title">{next.eyebrow}</p>
         <p className="fam-next">{next.copy}</p>
         {next.label && (

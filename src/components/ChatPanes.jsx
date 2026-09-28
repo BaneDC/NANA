@@ -51,7 +51,7 @@ function CarePane({ care, onDrawer }) {
   }
   return (
     <>
-      {waiting.length > 0 && <p className="doc-section-title">Čeka na vas</p>}
+      {waiting.length > 0 && <p className="section-title">Čeka na vas</p>}
       <div className="fam-rows">
         {waiting.map((w) =>
           w.kind === 'terms' ? (
@@ -80,7 +80,7 @@ function CarePane({ care, onDrawer }) {
           )
         )}
       </div>
-      {coming.length > 0 && <p className="doc-section-title">Predstoji</p>}
+      {coming.length > 0 && <p className="section-title">Predstoji</p>}
       <div className="fam-rows">
         {coming.map((v) => (
           <VisitRow key={v.id} visit={v} showWho onDrawer={onDrawer} />

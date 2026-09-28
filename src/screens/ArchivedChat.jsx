@@ -60,7 +60,7 @@ export default function ArchivedChat({ thread, user, onNewChat }) {
 
                 <p className="doc-p">{thread.summary}</p>
 
-                <div className="facts">
+                <div className="facts is-stacked">
                   {plan.facts.map((f) => (
                     <div className="fact" key={f.label}>
                       <span className="fact-label">{f.label}</span>

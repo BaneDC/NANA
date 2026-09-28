@@ -32,7 +32,7 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
 
   return (
     <div className="view">
-      <button type="button" className="fam-back" onClick={onBack}>
+      <button type="button" className="back-link" onClick={onBack}>
         <ArrowLeft size={14} strokeWidth={1.75} />
         Moja nega
       </button>

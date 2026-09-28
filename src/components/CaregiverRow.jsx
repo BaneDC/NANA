@@ -15,7 +15,7 @@ export default function CaregiverRow({ caregiver, onSelect }) {
       <div className="cg-main">
         <div className="cg-top">
           <span className="cg-name">{caregiver.name}</span>
-          <span className="cg-match">{caregiver.match}% poklapanje</span>
+          <span className="status-pill is-attention">Poklapanje · {caregiver.match}%</span>
         </div>
         <div className="cg-meta">
           <Star size={11} strokeWidth={2} className="cg-star" />

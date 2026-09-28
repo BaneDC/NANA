@@ -14,7 +14,7 @@ export default function CoordinatorMessage({ letter, changed, changeKey }) {
   const [open, setOpen] = useState(true);
 
   return (
-    <div className={`coordinator-note${changed ? ' is-changed' : ''}`} key={changed ? changeKey : 'letter'}>
+    <div className={`panel-card is-attention coordinator-note${changed ? ' is-changed' : ''}`} key={changed ? changeKey : 'letter'}>
       <button
         type="button"
         className="coordinator-head"

@@ -21,13 +21,13 @@ export default function RecommendationCard({
 }) {
   return (
     // keyed by the change, so the highlight plays again for a second change
-    <div className={`rec-card${changed ? ' is-changed' : ''}`} key={changed ? changeKey : 'rec'}>
-      <div className="rec-title-row">
-        <p className="rec-title">{rec.title}</p>
+    <div className={`panel-card rec-card${changed ? ' is-changed' : ''}`} key={changed ? changeKey : 'rec'}>
+      <div className="panel-card-head">
+        <p className="doc-section-title">{rec.title}</p>
         {changed && <span className="status-pill is-attention">Izmenjeno</span>}
       </div>
 
-      <p className="rec-why-label">Zašto ovo preporučujemo</p>
+      <p className="card-label">Zašto ovo preporučujemo</p>
       <p className="rec-why">{rec.why}</p>
 
       {rec.kind === 'caregivers' && (
@@ -38,10 +38,12 @@ export default function RecommendationCard({
               <CaregiverRow key={c.id} caregiver={c} onSelect={onSelectCaregiver} />
             ))}
           {onFindCaregivers && (
-            <Button variant="secondary" full onClick={onFindCaregivers}>
-              Pogledajte još negovateljica
-              <ArrowRight size={14} strokeWidth={1.75} />
-            </Button>
+            <div className="panel-card-actions">
+              <Button variant="secondary" onClick={onFindCaregivers}>
+                Pogledajte još negovateljica
+                <ArrowRight size={14} strokeWidth={1.75} />
+              </Button>
+            </div>
           )}
         </div>
       )}
@@ -104,10 +106,12 @@ function Offer({ rec, bookable }) {
             Jovana je dobila zahtev i javiće vam se danas {ordering ? 'sa danom isporuke' : 'sa terminom'}.
           </p>
         ) : (
-          <Button variant="primary" full onClick={() => setSent(true)}>
-            <Icon size={14} strokeWidth={1.75} />
-            Neka Jovana {ordering ? 'naruči' : 'zakaže'}
-          </Button>
+          <div className="panel-card-actions">
+            <Button variant="primary" onClick={() => setSent(true)}>
+              <Icon size={14} strokeWidth={1.75} />
+              Neka Jovana {ordering ? 'naruči' : 'zakaže'}
+            </Button>
+          </div>
         ))}
     </div>
   );
