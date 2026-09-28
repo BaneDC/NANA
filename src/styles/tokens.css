@@ -66,6 +66,7 @@
   --surface-transparent: rgba(255, 255, 255, 0.35);
 
   --border-subtle: var(--color-neutral-200);
+  --input-line: var(--color-neutral-300);
 
   /* ---- semantic: status (from the Tailwind config colour scales) ---- */
   --status-ok-bg: #f0fdf4;

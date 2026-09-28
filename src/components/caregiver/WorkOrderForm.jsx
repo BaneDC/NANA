@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, Check, ClipboardList, Send, Utensils, Footprints } from 'lucide-react';
 import Button from '../Button';
+import { Field, Input, TextArea } from '../TextField';
 import { money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 
 // The work order is the visit's report and its invoice in one, because they are
@@ -76,29 +77,12 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       )}
 
       <div className="wo-row">
-        <label className="wo-field">
-          <span className="ag-label">Odrađeni sati</span>
-          <div className="ag-rate">
-            <input
-              type="number"
-              inputMode="decimal"
-              step="0.5"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-            />
-            <span className="ag-rate-suffix">h</span>
-          </div>
-        </label>
-        <label className="wo-field is-wide">
-          <span className="ag-label">Šta ste radili</span>
-          <input
-            type="text"
-            className="wo-text"
-            value={note}
-            placeholder="Jutarnja rutina, doručak, kratka šetnja."
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </label>
+        <Field label="Odrađeni sati" className="is-short">
+          <Input type="number" inputMode="decimal" step="0.5" value={hours} onChange={setHours} suffix="h" />
+        </Field>
+        <Field label="Šta ste radili" className="is-wide">
+          <Input type="text" value={note} placeholder="Jutarnja rutina, doručak, kratka šetnja." onChange={setNote} />
+        </Field>
       </div>
       {overtime && (
         <p className="ag-hint">
@@ -152,12 +136,12 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           <span className="ag-label">
             <AlertTriangle size={13} strokeWidth={1.75} /> Nešto me je danas zabrinulo
           </span>
-          <textarea
+          <TextArea
             rows={2}
-            className="wo-text"
             value={concern}
             placeholder="Šta ste primetili, svojim rečima. Porodica vidi ovo."
-            onChange={(e) => setConcern(e.target.value)}
+            aria-label="Nešto me je danas zabrinulo"
+            onChange={setConcern}
           />
         </div>
       ) : (

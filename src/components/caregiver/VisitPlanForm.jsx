@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, Send } from 'lucide-react';
 import Button from '../Button';
+import { Field, Input, TextArea } from '../TextField';
 import { hoursIn, money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 
 // The visit order: what is meant to happen, written before going. It sits
@@ -33,26 +34,12 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
       </p>
 
       <div className="wo-row">
-        <label className="wo-field is-wide">
-          <span className="ag-label">Dan</span>
-          <input
-            type="text"
-            className="wo-text"
-            value={date}
-            placeholder="četvrtak, 14. avgusta"
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </label>
-        <label className="wo-field">
-          <span className="ag-label">Vreme</span>
-          <input
-            type="text"
-            className="wo-text is-time"
-            value={time}
-            placeholder="09:00–13:00"
-            onChange={(e) => setTime(e.target.value)}
-          />
-        </label>
+        <Field label="Dan" className="is-wide">
+          <Input type="text" value={date} placeholder="četvrtak, 14. avgusta" onChange={setDate} />
+        </Field>
+        <Field label="Vreme" className="is-short">
+          <Input type="text" value={time} placeholder="09:00–13:00" onChange={setTime} />
+        </Field>
       </div>
       <p className="ag-hint">
         {hours
@@ -80,16 +67,14 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
         ))}
       </div>
 
-      <label className="wo-field">
-        <span className="ag-label">Šta treba zapamtiti</span>
-        <textarea
+      <Field label="Šta treba zapamtiti">
+        <TextArea
           rows={2}
-          className="wo-text"
           value={notes}
           placeholder="Recept za podizanje, nešto što je porodica tražila, nešto što treba proveriti."
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={setNotes}
         />
-      </label>
+      </Field>
 
       <div className="panel-card-actions is-end">
         <Button variant="secondary" onClick={onCancel}>

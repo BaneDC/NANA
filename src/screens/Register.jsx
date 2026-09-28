@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, ChevronDown, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Check, ShieldCheck } from 'lucide-react';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
 import SelectCard from '../components/SelectCard';
 import Button from '../components/Button';
+import { Field, Input, Password, Select } from '../components/TextField';
 import { saveAccount, signIn } from '../lib/account';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -28,16 +29,16 @@ const ROLES = [
 ];
 
 const COUNTRIES = [
-  { id: 'RS', flag: '🇷🇸', code: '+381' },
-  { id: 'FI', flag: '🇫🇮', code: '+358' },
-  { id: 'HR', flag: '🇭🇷', code: '+385' },
-  { id: 'BA', flag: '🇧🇦', code: '+387' },
-  { id: 'ME', flag: '🇲🇪', code: '+382' },
-  { id: 'MK', flag: '🇲🇰', code: '+389' },
-  { id: 'SI', flag: '🇸🇮', code: '+386' },
-  { id: 'DE', flag: '🇩🇪', code: '+49' },
-  { id: 'AT', flag: '🇦🇹', code: '+43' },
-  { id: 'CH', flag: '🇨🇭', code: '+41' },
+  { id: 'RS', name: 'Srbija', flag: '🇷🇸', code: '+381' },
+  { id: 'FI', name: 'Finska', flag: '🇫🇮', code: '+358' },
+  { id: 'HR', name: 'Hrvatska', flag: '🇭🇷', code: '+385' },
+  { id: 'BA', name: 'Bosna i Hercegovina', flag: '🇧🇦', code: '+387' },
+  { id: 'ME', name: 'Crna Gora', flag: '🇲🇪', code: '+382' },
+  { id: 'MK', name: 'Severna Makedonija', flag: '🇲🇰', code: '+389' },
+  { id: 'SI', name: 'Slovenija', flag: '🇸🇮', code: '+386' },
+  { id: 'DE', name: 'Nemačka', flag: '🇩🇪', code: '+49' },
+  { id: 'AT', name: 'Austrija', flag: '🇦🇹', code: '+43' },
+  { id: 'CH', name: 'Švajcarska', flag: '🇨🇭', code: '+41' },
 ];
 
 const SOURCES = [
@@ -49,57 +50,17 @@ const SOURCES = [
   'Drugo',
 ];
 
+// the list shows where the code is from; the closed field only needs the code
+const COUNTRY_OPTIONS = COUNTRIES.map((c) => ({
+  value: c.id,
+  label: c.name,
+  icon: c.flag,
+  meta: c.code,
+  display: `${c.flag} ${c.code}`,
+}));
+const SOURCE_OPTIONS = SOURCES.map((s) => ({ value: s, label: s }));
+
 const MIN_PASSWORD = 8;
-
-function Field({ label, required, children, hint }) {
-  return (
-    <label className="text-field">
-      <span className="tf-label">
-        {label}
-        {required && <span className="tf-required"> *</span>}
-      </span>
-      {children}
-      {hint && <span className="tf-hint">{hint}</span>}
-    </label>
-  );
-}
-
-function Input({ value, onChange, onEnter, ...rest }) {
-  return (
-    <span className="tf-input">
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && onEnter?.()}
-        {...rest}
-      />
-    </span>
-  );
-}
-
-function Password({ value, onChange, onEnter, placeholder = 'Najmanje 8 karaktera' }) {
-  const [shown, setShown] = useState(false);
-  return (
-    <span className="tf-input">
-      <input
-        type={shown ? 'text' : 'password'}
-        value={value}
-        placeholder={placeholder}
-        autoComplete="new-password"
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && onEnter?.()}
-      />
-      <button
-        type="button"
-        className="tf-trailing"
-        onClick={() => setShown((s) => !s)}
-        aria-label={shown ? 'Sakrij lozinku' : 'Prikaži lozinku'}
-      >
-        {shown ? <EyeOff size={14} strokeWidth={1.75} /> : <Eye size={14} strokeWidth={1.75} />}
-      </button>
-    </span>
-  );
-}
 
 function Consent({ checked, onChange, children, required }) {
   return (
@@ -200,44 +161,31 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
         <Field label="Email" required>
           <Input value={email} onChange={setEmail} type="email" placeholder="milena@mail.com" autoComplete="email" />
         </Field>
-        <Field label="Broj telefona" required>
+        <Field label="Broj telefona" required as="div" labelId="reg-phone">
           <span className="tf-input has-prefix">
-            <span className="tf-prefix">
-              <select value={country} onChange={(e) => setCountry(e.target.value)} aria-label="Država">
-                {COUNTRIES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.flag} {c.code}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={12} strokeWidth={1.75} />
-            </span>
+            <Select
+              bare
+              className="tf-prefix"
+              value={country}
+              onChange={setCountry}
+              ariaLabel="Pozivni broj države"
+              options={COUNTRY_OPTIONS}
+            />
             <input
               type="tel"
               value={phone}
               placeholder="64 123 4567"
               autoComplete="tel-national"
+              aria-labelledby="reg-phone"
               onChange={(e) => setPhone(e.target.value)}
             />
           </span>
         </Field>
         <Field label="Lozinka" required hint={password && password.length < MIN_PASSWORD ? `Još ${MIN_PASSWORD - password.length} karaktera` : null}>
-          <Password value={password} onChange={setPassword} onEnter={submit} />
+          <Password value={password} onChange={setPassword} onEnter={submit} placeholder="Najmanje 8 karaktera" autoComplete="new-password" />
         </Field>
-        <Field label="Kako ste čuli za nas?" required>
-          <span className="tf-input">
-            <select className={source ? '' : 'is-empty'} value={source} onChange={(e) => setSource(e.target.value)}>
-              <option value="" disabled>
-                Izaberite
-              </option>
-              {SOURCES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} strokeWidth={1.75} className="tf-icon" />
-          </span>
+        <Field label="Kako ste čuli za nas?" required as="div" labelId="reg-source">
+          <Select value={source} onChange={setSource} labelledBy="reg-source" options={SOURCE_OPTIONS} />
         </Field>
 
         <div className="reg-checks">

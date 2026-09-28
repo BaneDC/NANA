@@ -3,6 +3,7 @@ import { Check, ChevronLeft, ChevronRight, Phone, Search, Star } from 'lucide-re
 import { caregivers } from '../data/carePlan';
 import { arrangementOf } from '../data/familyCare';
 import Button from '../components/Button';
+import { Field, Input } from '../components/TextField';
 import AskAssistant from '../components/AskAssistant';
 
 // Browsing for someone, as its own page rather than a button on one screen.
@@ -68,15 +69,16 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
           which is the plan's job — the list is already ordered by how well each
           one fits it, and a family narrowing it by hand was undoing that. */}
       <div className="panel-card">
-        <label className="find-search">
-          <Search size={14} strokeWidth={1.75} />
-          <input
-            type="text"
+        <Field>
+          <Input
+            icon={Search}
+            type="search"
             value={query}
             placeholder="Ime, ili šta vam treba — demencija, obroci, noćne smene…"
-            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Pretraga negovateljica"
+            onChange={setQuery}
           />
-        </label>
+        </Field>
       </div>
 
       <div className="find-count">

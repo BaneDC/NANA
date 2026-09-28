@@ -4,6 +4,7 @@ import { questionById } from '../data/flow';
 import { srField, srTitle } from '../data/flow.sr';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
+import { Field, Input } from '../components/TextField';
 import AskAssistant from '../components/AskAssistant';
 
 // Reads straight from the questionnaire answers, so the profile is whatever the
@@ -49,16 +50,14 @@ function FieldEditor({ title, fields, onSave, onClose }) {
     <Modal eyebrow="Profil" title={title} onClose={onClose}>
       <div className="pe-fields">
         {fields.map((f) => (
-          <label key={f.id} className="wo-field">
-            <span className="ag-label">{f.label}</span>
-            <input
-              className="wo-text is-line"
+          <Field key={f.id} label={f.label}>
+            <Input
               type={f.type || 'text'}
               value={values[f.id] || ''}
               placeholder={f.placeholder}
-              onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))}
+              onChange={(value) => setValues((v) => ({ ...v, [f.id]: value }))}
             />
-          </label>
+          </Field>
         ))}
       </div>
       <div className="panel-card-actions is-end">

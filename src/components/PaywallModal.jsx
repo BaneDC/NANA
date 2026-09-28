@@ -4,6 +4,7 @@ import { Check, FileText, Lock, Send, X } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import { perMonth, planEvery, planPrice, planSaving, planTitle, plansFor } from '../data/plans';
 import Button from './Button';
+import { Field, TextArea } from './TextField';
 
 // The plans, when there is more than one to choose from. Each card says the
 // three things somebody compares: what it is called, what it costs, and what
@@ -107,15 +108,14 @@ export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, 
             <p className="doc-p">
               Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.
             </p>
-            <label className="pw-message">
-              <span className="tf-label">Poruka za negovateljicu</span>
-              <textarea
+            <Field label="Poruka za negovateljicu">
+              <TextArea
                 value={message}
                 rows={5}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={setMessage}
                 placeholder="Recite joj ukratko šta vam treba i kada."
               />
-            </label>
+            </Field>
           </>
         ) : (
           <p className="doc-p">
@@ -134,7 +134,7 @@ export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, 
                 <Check size={12} strokeWidth={2.5} /> Poruke svim negovateljicama iz plana ({caregivers.length})
               </li>
               <li>
-                <Check size={12} strokeWidth={2.5} /> Preporuke lekara i predložena pomagala
+                <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
               </li>
               <li>
                 <Check size={12} strokeWidth={2.5} /> Dostupnost potvrđuje naš tim

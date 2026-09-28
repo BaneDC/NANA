@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, Check, PenLine, Sparkles } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
+import { Field, Input } from './TextField';
 import { toAnswer } from '../data/conversation';
 import { isLoadBearing } from '../data/dependencies';
 import { answerText, describeChanges, planQuestions } from '../data/planEdits';
@@ -39,16 +40,14 @@ function AnswerEditor({ q, answer, answers, onSave, onCancel }) {
       {q.type === 'inputs' && (
         <div className="pe-fields">
           {q.fields.map((f) => (
-            <label key={f.id} className="wo-field">
-              <span className="ag-label">{srField(q, f.id)}</span>
-              <input
-                className="wo-text is-line"
+            <Field key={f.id} label={srField(q, f.id)}>
+              <Input
                 type="text"
                 value={draft.values[f.id] || ''}
                 placeholder={f.placeholder}
-                onChange={(e) => setDraft((d) => ({ values: { ...d.values, [f.id]: e.target.value } }))}
+                onChange={(value) => setDraft((d) => ({ values: { ...d.values, [f.id]: value } }))}
               />
-            </label>
+            </Field>
           ))}
         </div>
       )}
@@ -73,12 +72,12 @@ function AnswerEditor({ q, answer, answers, onSave, onCancel }) {
             })}
           </div>
           {q.type === 'multi' && q.allowOther && (
-            <input
-              className="wo-text is-line"
+            <Input
               type="text"
               value={draft.other}
               placeholder="Nešto drugo, svojim rečima"
-              onChange={(e) => setDraft((d) => ({ ...d, other: e.target.value }))}
+              aria-label="Nešto drugo"
+              onChange={(value) => setDraft((d) => ({ ...d, other: value }))}
             />
           )}
         </>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, Send } from 'lucide-react';
 import Button from '../Button';
+import { Field, Input } from '../TextField';
 import { DEFAULT_RATE, SERVICES, money, totalsFor } from '../../data/caregiverBoard';
 
 // The agreement, the first and only time it is built: which services, and one
@@ -44,17 +45,9 @@ export default function AgreementForm({ client, onSend, onCancel }) {
         Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.
       </p>
 
-      <p className="ag-label">Cena po satu</p>
-      <div className="ag-rate">
-        <input
-          type="number"
-          inputMode="numeric"
-          value={rate}
-          onChange={(e) => setRate(e.target.value)}
-          aria-label="Cena po satu u dinarima"
-        />
-        <span className="ag-rate-suffix">RSD / h</span>
-      </div>
+      <Field label="Cena po satu" className="is-short">
+        <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="RSD / h" />
+      </Field>
       {valid && (
         <p className="ag-hint">
           Za {client.hours} h nedeljno to je {money(weekly)} nedeljno,{' '}

@@ -1,6 +1,7 @@
 import { questionById } from './flow';
 import { frailtyOf } from './frailty';
 import { CFS_SR, srOptionTitles } from './flow.sr';
+import { aidsFor, visitsFor } from './partners';
 
 // Matched caregivers. `match` is the fake relevance score the assistant "computed"
 // from the questionnaire — it exists to sell the AI framing in the prototype.
@@ -420,8 +421,10 @@ export function buildPlan(answers, notes = []) {
         ? ['lična nega', 'obroci', 'lekovi']
         : ['kuća', 'obroci', 'obaveze'];
 
-  // Recommendations, in the document's card shape: a title, why it is being
-  // recommended for this person specifically, who would do it, and soft actions.
+  // Recommendations, in the document's card shape: a title, and why it is being
+  // recommended for this person specifically. Then either who would do it, what a
+  // partner charges for it (and less when the coordinator books it), or — for what
+  // is advice rather than a purchase — just the list.
   const recommendations = [
     {
       id: 'caregiver',
@@ -440,34 +443,41 @@ export function buildPlan(answers, notes = []) {
           (needs.length ? needs.slice(0, 4) : defaultNeeds).map(lower)
         )}. A vi biste znali da je neko uz nju svakog dana.` + (worry ? ' To je i najdirektniji odgovor na ono što vas brine.' : ''),
       providers: 'caregivers',
-      actions: ['Neka Jovana ovo organizuje', 'Hoću prvo da porazgovaramo'],
     },
     {
       id: 'medical',
-      kind: 'list',
+      kind: 'offer',
       locked: true,
-      title: reasonId === 'fall' ? 'Procena medicinske sestre, pa pregled kod lekara' : 'Pregled kod lekara',
+      title: reasonId === 'fall' ? 'Procena posle pada, pa pregled kod lekara' : 'Pregled kod lekara',
       why: 'Više stvari se dešava istovremeno, a jedan pregled koji zajedno gleda lekove, kretanje i pamćenje kaže nam više nego tri odvojena.',
-      items: actions,
-      actions: ['Neka Jovana zakaže', 'Imam pitanje'],
+      partner: 'medigroup',
+      items: visitsFor(reasonId),
     },
     {
-      id: 'equipment',
+      id: 'aids',
+      kind: 'offer',
+      locked: true,
+      title: 'Pomagala',
+      why:
+        mobilityId === 'bed'
+          ? 'Uglavnom leži, pa su joj potrebni dušek koji štiti kožu i nešto za šta može da se pridrži.'
+          : mobility && mobilityId !== 'independent'
+            ? `Kreće se ${lower(mobility)}, a pravo pomagalo joj vraća sigurnost u koracima.`
+            : 'Dve stvari koje štite od pada u kupatilu i pokazuju kako je pritisak iz dana u dan.',
+      partner: 'oslonac',
+      items: aidsFor(mobilityId),
+    },
+    {
+      id: 'home',
       kind: 'list',
       locked: true,
       title: 'Male promene u stanu',
-      why:
-        mobilityId === 'bed'
-          ? 'Uglavnom leži, pa stan treba prilagoditi tome, a ne obrnuto.'
-          : mobility && mobilityId !== 'independent'
-            ? `Kreće se ${lower(mobility)}, pa stan može da radi uz to, a ne protiv toga.`
-            : 'Nekoliko jeftinih promena sada sprečava da se mali posrtaj pretvori u pad.',
+      why: 'Nekoliko jeftinih promena sada sprečava da se mali posrtaj pretvori u pad.',
       items: [
         'Rukohvati i protivklizna podloga u kupatilu',
-        'Nedeljna kutijica za lekove koju puni negovateljica',
-        'Merač pritiska za nadlakticu',
+        'Noćno svetlo na putu do kupatila',
+        'Skloniti tepihe i kablove sa prolaza',
       ],
-      actions: ['Neka Jovana ovo organizuje', 'Sačuvaj za kasnije'],
     },
     {
       id: 'local',
@@ -476,7 +486,6 @@ export function buildPlan(answers, notes = []) {
       title: `Još mogućnosti u blizini${city ? ` · ${city.split(',')[0]}` : ''}`,
       why: 'Nega nisu samo posete. Ovo su stvari u blizini koje joj daju razlog da izađe iz stana.',
       items: ['Gradski bazen', 'Klub penzionera', 'Jutarnja grupa u dnevnom centru'],
-      actions: ['Neka Jovana to istraži'],
     },
   ];
 

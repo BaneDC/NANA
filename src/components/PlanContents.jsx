@@ -41,6 +41,7 @@ export default function PlanContents({
               key={rec.id}
               rec={rec}
               unlocked={unlocked}
+              bookable={!archived}
               changed={Boolean(change?.recs.includes(rec.id))}
               changeKey={change?.at}
               onSelectCaregiver={onSelectCaregiver}
@@ -57,6 +58,7 @@ export default function PlanContents({
                 key={rec.id}
                 rec={rec}
                 unlocked
+                bookable={!archived}
                 changed={Boolean(change?.recs.includes(rec.id))}
                 changeKey={change?.at}
                 onSelectCaregiver={onSelectCaregiver}
@@ -76,8 +78,8 @@ export default function PlanContents({
                 </span>
                 <p className="locked-title">Još {locked.length} preporuke u punom planu</p>
                 <p className="locked-note">
-                  Koje preglede kod lekara zakazati, promene koje stan čine bezbednijim i šta postoji u
-                  blizini{archived ? '.' : ', i direktan broj svake negovateljice.'}
+                  Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Jovana, promene
+                  koje stan čine bezbednijim{archived ? '.' : ', i direktan broj svake negovateljice.'}
                 </p>
                 <Button variant="primary" size="lg" onClick={onUnlock}>
                   <Lock size={12} strokeWidth={2} /> Pretplatite se za ceo plan

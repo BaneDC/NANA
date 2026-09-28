@@ -3,6 +3,7 @@ import { AlertTriangle, Check, CreditCard, Frown, Meh, Smile, Star } from 'lucid
 import { caregivers } from '../../data/carePlan';
 import Modal from '../Modal';
 import Button from '../Button';
+import { Field, TextArea } from '../TextField';
 import {
   AMOUNT_LABEL,
   LATE_HOURS,
@@ -313,17 +314,15 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
               </button>
             ))}
           </div>
-          <label className="wo-field">
-            <span className="ag-label">Vašim rečima</span>
-            <textarea
+          <Field label="Vašim rečima">
+            <TextArea
               rows={3}
-              className="wo-text"
               value={text}
               autoFocus
               placeholder="Šta ste primetili, i šta ste očekivali umesto toga."
-              onChange={(e) => setText(e.target.value)}
+              onChange={setText}
             />
-          </label>
+          </Field>
           <p className="ag-hint">Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.</p>
         </>
       )}
@@ -407,17 +406,15 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
 
       {mode === 'query' && (
         <>
-          <label className="wo-field">
-            <span className="ag-label">Šta nije u redu sa planom</span>
-            <textarea
+          <Field label="Šta nije u redu sa planom">
+            <TextArea
               rows={3}
-              className="wo-text"
               value={text}
               autoFocus
               placeholder="Dan, sati, šta će raditi…"
-              onChange={(e) => setText(e.target.value)}
+              onChange={setText}
             />
-          </label>
+          </Field>
           <p className="ag-hint">
             Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok
             se ne reši. Čita koordinatorka, ne negovateljica.
@@ -442,16 +439,16 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
             ))}
           </div>
           {reason === OTHER && (
-            <label className="wo-field">
-              <textarea
+            <Field>
+              <TextArea
                 rows={2}
-                className="wo-text"
                 value={other}
                 autoFocus
                 placeholder="U par reči"
-                onChange={(e) => setOther(e.target.value)}
+                aria-label="Drugi razlog"
+                onChange={setOther}
               />
-            </label>
+            </Field>
           )}
           <p className="ag-hint">
             {late

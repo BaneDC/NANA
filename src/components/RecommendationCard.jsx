@@ -1,15 +1,19 @@
-import { ArrowRight, Check } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, CalendarCheck, Check, Package } from 'lucide-react';
 import { caregiversFor } from '../data/carePlan';
+import { PARTNERS, discounted, rsd } from '../data/partners';
 import CaregiverRow from './CaregiverRow';
 import Button from './Button';
 
 // One recommendation, in the shape the client's document sketched: what we suggest,
-// *why we suggest it for this person*, and who would do it. No "book now" — the
-// client's note on that was unambiguous — and no soft actions either: "Neka Jovana
-// ovo organizuje" promised a hand-off the app does not have yet.
+// *why we suggest it for this person*, and who would do it. Where a partner does
+// it, the card shows their price and the lower one the family pays when Jovana
+// books it — that difference is the reason to go through us — and a single action
+// that hands it to her.
 export default function RecommendationCard({
   rec,
   unlocked,
+  bookable = true,
   changed,
   changeKey,
   onSelectCaregiver,
@@ -42,6 +46,8 @@ export default function RecommendationCard({
         </div>
       )}
 
+      {rec.kind === 'offer' && <Offer rec={rec} bookable={unlocked && bookable} />}
+
       {rec.kind === 'list' && (
         <ul className="rec-list">
           {rec.items.map((item) => (
@@ -52,6 +58,57 @@ export default function RecommendationCard({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+// A partner's price list. Every row shows what the partner charges and what the
+// family pays through Jovana, so the saving is read row by row, not worked out.
+function Offer({ rec, bookable }) {
+  const partner = PARTNERS[rec.partner];
+  const [sent, setSent] = useState(false);
+  const ordering = rec.id === 'aids';
+  const Icon = ordering ? Package : CalendarCheck;
+
+  return (
+    <div className="rec-offer">
+      <div className="rec-partner">
+        {partner.logo ? (
+          <img className="rec-partner-logo" src={partner.logo} alt={partner.name} />
+        ) : (
+          <span className="rec-partner-name">{partner.name}</span>
+        )}
+        {partner.what && <span className="rec-partner-what">{partner.what}</span>}
+        <span className="status-pill is-accepted">−{partner.discount}% preko Jovane</span>
+      </div>
+
+      <ul className="rec-prices">
+        {rec.items.map((item) => (
+          <li key={item.title} className="rec-price">
+            <span className="rec-price-what">
+              <span className="rec-price-title">{item.title}</span>
+              {item.who && <span className="rec-price-who">{item.who}</span>}
+            </span>
+            <span className="rec-price-amount">
+              <s aria-label={`Redovna cena ${rsd(item.price)}`}>{rsd(item.price)}</s>
+              <span>{rsd(discounted(item.price, partner.discount))}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {bookable &&
+        (sent ? (
+          <p className="rec-sent" role="status">
+            <Check size={14} strokeWidth={2} />
+            Jovana je dobila zahtev i javiće vam se danas {ordering ? 'sa danom isporuke' : 'sa terminom'}.
+          </p>
+        ) : (
+          <Button variant="primary" full onClick={() => setSent(true)}>
+            <Icon size={14} strokeWidth={1.75} />
+            Neka Jovana {ordering ? 'naruči' : 'zakaže'}
+          </Button>
+        ))}
     </div>
   );
 }

@@ -704,9 +704,9 @@ export default function App() {
           <motion.div
             key="copilot-panel"
             className="sidebar-wrap"
-            initial={{ width: 0 }}
-            animate={{ width: 432 }}
-            exit={{ width: 0 }}
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 432, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 32 }}
           >
             <div className="sidebar is-chat">

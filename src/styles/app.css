@@ -1861,7 +1861,10 @@ textarea {
   gap: var(--spacing-2);
 }
 
-/* ---------- Text field (register inputs) ---------- */
+/* ---------- Text field ----------
+   The one field, everywhere (components/TextField.jsx). Its edge is a full pixel
+   of neutral-300: the 0.8px neutral-200 it had read on the grey sign-in card and
+   vanished on a white modal. */
 
 .text-field {
   display: flex;
@@ -1885,7 +1888,7 @@ textarea {
   height: var(--input-size);
   width: 100%;
   background: var(--surface-0);
-  border: 0.8px solid var(--border-subtle);
+  border: 1px solid var(--input-line);
   border-radius: var(--radius-lg);
   padding: var(--spacing-2) var(--spacing-3) var(--spacing-2) var(--spacing-2);
   transition: border-color 0.18s ease;
@@ -1909,9 +1912,77 @@ textarea {
   caret-color: var(--primary);
 }
 
-.text-field input::placeholder {
+
+.text-field input::placeholder,
+.text-field textarea::placeholder {
   color: var(--text-secondary);
 }
+
+.text-field .tf-icon {
+  margin-left: var(--spacing-1);
+}
+
+/* a unit after the number: "h", "RSD / h" */
+.text-field .tf-suffix {
+  flex-shrink: 0;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+/* nobody nudges an hourly rate by one, and the arrows fight the shape */
+.text-field input[type='number'] {
+  appearance: textfield;
+}
+
+.text-field input::-webkit-outer-spin-button,
+.text-field input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.text-field input[type='search']::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* several lines: the same box, grown to its rows */
+.text-field .tf-input.is-area {
+  height: auto;
+  align-items: stretch;
+  padding: var(--spacing-2) var(--spacing-3);
+}
+
+.text-field textarea {
+  flex: 1;
+  min-width: 0;
+  resize: vertical;
+  font: inherit;
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-primary);
+  caret-color: var(--primary);
+}
+
+/* side by side in a form row: the long one takes what is left, a number or a
+   time only what it needs */
+.wo-row > .text-field {
+  width: auto;
+  min-width: 0;
+}
+
+.wo-row > .text-field.is-wide {
+  flex: 1;
+}
+
+.text-field.is-short {
+  width: auto;
+  align-self: flex-start;
+}
+
+.text-field.is-short .tf-input {
+  width: 160px;
+}
+
 
 /* ---------- Immersive questionnaire ---------- */
 
@@ -2786,6 +2857,114 @@ textarea {
 .rec-list svg {
   flex-shrink: 0;
   color: var(--primary-highlight);
+  height: 1lh;
+}
+
+/* a partner's price list inside a recommendation: who, what each thing costs,
+   and what it costs through Jovana. Rows are split by hairlines rather than put
+   in cards of their own, so the card stays one surface. */
+.rec-offer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-1);
+}
+
+.rec-partner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  min-width: 0;
+}
+
+.rec-partner-logo {
+  display: block;
+  height: 20px;
+  width: auto;
+  border-radius: var(--radius-sm);
+}
+
+.rec-partner-name {
+  font-size: var(--text-sm-size);
+  line-height: 20px;
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.rec-partner-what {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.rec-prices {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.rec-price {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) 0;
+  border-top: 1px solid var(--card-line);
+}
+
+.rec-price:last-child {
+  border-bottom: 1px solid var(--card-line);
+}
+
+.rec-price-what,
+.rec-price-amount {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+}
+
+.rec-price-what {
+  min-width: 0;
+}
+
+.rec-price-title {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.rec-price-who {
+  color: var(--text-secondary);
+}
+
+.rec-price-amount {
+  flex-shrink: 0;
+  align-items: flex-end;
+  white-space: nowrap;
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.rec-price-amount s {
+  font-weight: 400;
+  color: var(--text-disabled);
+}
+
+.rec-sent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--status-ok-fg);
+}
+
+.rec-sent svg {
+  flex-shrink: 0;
   height: 1lh;
 }
 
@@ -3929,44 +4108,6 @@ button.svc:hover {
   font-weight: var(--font-medium);
 }
 
-.ag-rate {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  align-self: flex-start;
-  height: var(--input-size);
-  padding: 0 var(--spacing-3);
-  border: 0.8px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--surface-0);
-  transition: border-color 0.18s ease;
-}
-
-.ag-rate:focus-within {
-  border-color: var(--primary);
-}
-
-.ag-rate input {
-  width: 72px;
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-/* the spinner arrows fight the shape and nobody nudges an hourly rate by one */
-.ag-rate input::-webkit-outer-spin-button,
-.ag-rate input::-webkit-inner-spin-button {
-  appearance: none;
-  margin: 0;
-}
-
-.ag-rate-suffix {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-disabled);
-}
-
 .ag-terms {
   margin-top: var(--spacing-2);
 }
@@ -4122,34 +4263,6 @@ button.svc:hover {
   margin-top: 0;
 }
 
-.wo-text {
-  width: 100%;
-  height: var(--input-size);
-  padding: 0 var(--spacing-3);
-  border: 0.8px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--surface-0);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  color: var(--text-primary);
-  transition: border-color 0.18s ease;
-}
-
-textarea.wo-text {
-  height: auto;
-  padding: var(--spacing-2) var(--spacing-3);
-  resize: vertical;
-  font-family: inherit;
-}
-
-.wo-text:focus {
-  border-color: var(--primary);
-}
-
-.wo-text::placeholder {
-  color: var(--text-disabled);
-}
-
 .wo-choice {
   display: flex;
   flex-wrap: wrap;
@@ -4285,12 +4398,6 @@ textarea.wo-text {
   padding-top: var(--spacing-3);
 }
 
-/* A time range is six characters and a dash; it does not need the width of a
-   sentence next to the day it belongs to. */
-.wo-text.is-time {
-  width: 130px;
-}
-
 /* What the visit was supposed to be, carried into the report of what it was. */
 .wo-plan-note {
   display: flex;
@@ -4415,31 +4522,6 @@ textarea.wo-text {
 }
 
 /* ---------- Find a caregiver ---------- */
-
-.find-search {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  height: var(--input-size);
-  padding: 0 var(--spacing-3);
-  border: 0.8px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--surface-0);
-  color: var(--text-disabled);
-  transition: border-color 0.18s ease;
-}
-
-.find-search:focus-within {
-  border-color: var(--primary);
-}
-
-.find-search input {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  color: var(--text-primary);
-}
 
 .find-count {
   display: flex;
@@ -5352,11 +5434,6 @@ textarea.wo-text {
   gap: var(--spacing-3);
 }
 
-.wo-text.is-line {
-  height: 36px;
-  padding: 0 var(--spacing-3);
-}
-
 .pe-editor-actions {
   display: flex;
   justify-content: flex-end;
@@ -5776,7 +5853,7 @@ textarea.wo-text {
   color: var(--primary-foreground);
   font-size: var(--text-sm-size);
   line-height: var(--text-sm-leading);
-  font-weight: var(--font-regular, 400);
+  font-weight: 400;
 }
 
 /* ── registration ──────────────────────────────────────────────────────────── */
@@ -5804,24 +5881,6 @@ textarea.wo-text {
   }
 }
 
-.text-field .tf-input select {
-  flex: 1;
-  min-width: 0;
-  appearance: none;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: var(--text-primary);
-  padding-left: var(--spacing-1);
-  cursor: pointer;
-}
-
-.text-field .tf-input select.is-empty {
-  color: var(--text-secondary);
-}
-
 .text-field .tf-input input {
   padding-left: var(--spacing-1);
 }
@@ -5843,24 +5902,155 @@ textarea.wo-text {
 
 /* the country code is its own small control inside the field */
 .text-field .tf-input.has-prefix {
-  padding-left: var(--spacing-1);
+  padding-left: 0;
 }
 
 .text-field .tf-prefix {
-  position: relative;
   flex: 0 0 auto;
   display: flex;
+  align-self: stretch;
+  margin: calc(var(--spacing-2) * -1) 0;
+  border-right: 1px solid var(--input-line);
+}
+
+/* ---------- Select ----------
+   Our dropdown (TextField.jsx). Closed it is the field; open, a card under it:
+   16 corners around 8 of padding around 8-cornered rows. */
+
+.tf-select-wrap {
+  position: relative;
+}
+
+.text-field .tf-input.tf-select-wrap {
+  padding: 0;
+}
+
+.tf-select {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
   align-items: center;
-  gap: var(--spacing-1);
-  height: 100%;
-  padding: 0 var(--spacing-2);
-  border-right: 0.8px solid var(--border-subtle);
+  gap: var(--spacing-2);
+  padding: 0 var(--spacing-3);
+  border-radius: inherit;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tf-prefix .tf-select {
+  padding: 0 var(--spacing-2) 0 var(--spacing-3);
+}
+
+.tf-select-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tf-select.is-empty .tf-select-value {
   color: var(--text-secondary);
 }
 
-.text-field .tf-prefix select {
-  flex: 0 0 auto;
-  padding: 0;
+.tf-select-chevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform 0.18s ease;
+}
+
+.tf-select[aria-expanded='true'] .tf-select-chevron {
+  transform: rotate(180deg);
+}
+
+.tf-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + var(--spacing-1));
+  left: 0;
+  min-width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-2);
+  list-style: none;
+  background: var(--surface-elevated);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-container);
+  outline: none;
+}
+
+.tf-menu.is-up {
+  top: auto;
+  bottom: calc(100% + var(--spacing-1));
+}
+
+/* the country list says which country, so it needs more than the code's width */
+.tf-prefix .tf-menu {
+  min-width: 280px;
+}
+
+.tf-option {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  min-height: 36px;
+  padding: var(--spacing-2);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.tf-option.is-active {
+  background: var(--surface-2);
+}
+
+.tf-option[aria-selected='true'] {
+  font-weight: var(--font-medium);
+}
+
+.tf-option-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.tf-option-meta {
+  color: var(--text-secondary);
+}
+
+.tf-option-check {
+  flex-shrink: 0;
+  visibility: hidden;
+  color: var(--primary-highlight);
+}
+
+.tf-option[aria-selected='true'] .tf-option-check {
+  visibility: visible;
+}
+
+@media (pointer: coarse) {
+  /* the same 16px as the fields around it */
+  .tf-select {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .tf-option {
+    font-size: var(--text-sm-size);
+    line-height: var(--text-sm-leading);
+  }
+
+  .tf-option {
+    min-height: 44px;
+  }
 }
 
 .reg-checks {
@@ -5943,38 +6133,6 @@ textarea.wo-text {
 }
 
 /* ── writing to a caregiver ────────────────────────────────────────────────── */
-
-.pw-message {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
-
-.pw-message .tf-label {
-  padding: 0 var(--spacing-3);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.pw-message textarea {
-  width: 100%;
-  padding: var(--spacing-3);
-  border: 0.8px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--surface-0);
-  font: inherit;
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  color: var(--text-primary);
-  resize: vertical;
-}
-
-.pw-message textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-}
 
 /* what the subscription opens, grouped under the one line that says why */
 .pw-gate {
@@ -6153,8 +6311,14 @@ textarea.wo-text {
     transform: none;
   }
 
+  /* it slides out of the screen's left edge, so it has no corners there */
+  .app-nav {
+    border-radius: 0 var(--radius-3xl) var(--radius-3xl) 0;
+  }
+
+  /* flush with the screen's left edge, so no corner there */
   .chat-container {
-    border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
+    border-radius: 0 var(--radius-3xl) 0 0;
   }
 }
 
@@ -6206,13 +6370,14 @@ textarea.wo-text {
   }
 }
 
-/* ---------- The chat's pane on a narrow screen ----------
-   Beside the conversation there is no room for it, so what a card opens covers
-   the conversation instead. The width is animated inline by the wrapper, which
+/* ---------- The chat's pane and the side panel on a narrow screen ----------
+   Beside the conversation there is no room for them, so what a card opens, the
+   care plan and the assistant cover the page instead. The width is animated inline by the wrapper, which
    is why it has to be overridden here. */
 
 @media (max-width: 900px) {
-  .chat-pane-wrap {
+  .chat-pane-wrap,
+  .sidebar-wrap {
     position: fixed;
     inset: 0;
     z-index: 35;
@@ -6223,92 +6388,25 @@ textarea.wo-text {
     backdrop-filter: blur(2px);
   }
 
-  .chat-pane-wrap .chat-pane {
+  .chat-pane-wrap .chat-pane,
+  .sidebar-wrap .sidebar {
     width: 100%;
     margin-left: 0;
   }
+
+  /* On a phone the assistant and the plan are the page: edge to edge, and no
+     rounded corner against the edge of the screen. */
+  .sidebar-wrap {
+    padding: 0;
+  }
+
+  .sidebar-wrap .sidebar {
+    border-radius: 0;
+    box-shadow: none;
+  }
 }
 
-/* ---------- Caregiver tasks, cookies, the second factor ---------- */
-
-/* One task: a card that fills in when it is chosen, like `.svc`, but with room
-   for the line saying what it covers. Two across where there is width for it. */
-.ct-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.ct-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--spacing-2);
-}
-
-.ct-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-3);
-  padding: var(--spacing-3);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-2xl);
-  background: var(--surface-0);
-  text-align: left;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.ct-item:hover {
-  border-color: var(--color-primary-300);
-}
-
-.ct-item.is-on {
-  border-color: var(--primary);
-  background: var(--primary-subtle);
-}
-
-/* 4 in an 8 corner, 20 square: the box a tick sits in */
-.ct-box {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--surface-0);
-  color: var(--primary-foreground);
-}
-
-.ct-item.is-on .ct-box {
-  border-color: var(--primary);
-  background: var(--primary);
-}
-
-.ct-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
-
-.ct-title {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.ct-item.is-on .ct-title {
-  color: var(--primary-subtle-foreground);
-}
-
-.ct-note {
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--text-secondary);
-}
+/* ---------- Settings: cookies, the second factor ---------- */
 
 /* a choice of two or three, side by side */
 .set-choice {
@@ -6336,12 +6434,6 @@ textarea.wo-text {
 
 .paywall-list.is-steps li {
   display: list-item;
-}
-
-@media (max-width: 640px) {
-  .ct-list {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ---------- The plans, where there is more than one ---------- */
@@ -6476,13 +6568,37 @@ textarea.wo-text {
    scrolls between them. */
 
 @media (max-width: 640px) {
+  /* The bars are the page's own sky, not white panels on it: no tint and no
+     line, only a blur that fades out toward the question, so what scrolls under
+     softens without the bar ever showing an edge. */
   .imm-know-dock {
     top: 0;
     padding: var(--spacing-3) var(--spacing-3) var(--spacing-2);
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  .imm-know-dock::before,
+  .imm-actions::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  .imm-know-dock::before {
+    top: 0;
+    bottom: -24px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  }
+
+  .imm-actions::before {
+    top: -24px;
+    bottom: 0;
+    -webkit-mask-image: linear-gradient(to top, #000 65%, transparent 100%);
+    mask-image: linear-gradient(to top, #000 65%, transparent 100%);
   }
 
   /* the bar is the band now, so the blur that used to stand in for one goes */
@@ -6515,10 +6631,6 @@ textarea.wo-text {
     margin-top: 0;
     padding: var(--spacing-3) var(--spacing-4);
     padding-bottom: calc(var(--spacing-3) + env(safe-area-inset-bottom, 0px));
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    border-top: 1px solid rgba(255, 255, 255, 0.6);
   }
 
   /* one button takes the bar; two keep their ends */
@@ -6843,5 +6955,108 @@ textarea.wo-text {
   .tf-digit {
     width: 40px;
     height: 48px;
+  }
+}
+
+/* ---------- The onboarding's questions on a phone ----------
+   26px questions took three lines and pushed the answers under the fold. At 20
+   the question and its first options share the screen. */
+
+@media (max-width: 640px) {
+  .imm-title {
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .imm-intro-text {
+    font-size: 22px;
+    line-height: 32px;
+  }
+
+  .imm-title + .imm-options,
+  .imm-title + .imm-write,
+  .imm-title + .imm-answer,
+  .imm-title + .imm-composer-slot,
+  .imm-title + .imm-actions {
+    margin-top: 20px;
+  }
+}
+
+/* ---------- Buttons under a finger ----------
+   44px is the smallest a tap target should be (Apple's HIG, WCAG 2.5.5). With a
+   mouse the compact sizes stay; on a touch screen every button grows to it,
+   ours and the chat kit's alike (the kit has no touch size of its own yet —
+   docs/kit-issues.md). */
+
+@media (pointer: coarse) {
+  /* a field is tapped as much as a button is, so it grows with them */
+  :root {
+    --button-size: 44px;
+    --input-size: 44px;
+  }
+
+  .btn.lg {
+    height: 48px;
+  }
+
+  .btn.icon-only,
+  .ci-btn,
+  .imm-ctl,
+  .imm-send.btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .pager-page {
+    min-width: 44px;
+    height: 44px;
+  }
+
+  /* a line of text that opens: the target grows, the line does not move */
+  .imm-cot-toggle {
+    height: 44px;
+    margin: -12px 0;
+  }
+
+  /* Every field is 16px under a finger. Below that iOS zooms the page in on
+     focus and leaves it zoomed, the layout slid off to one side. Important
+     because each field sets its own size, and none of them may win here. */
+  input:not([type='checkbox']):not([type='radio']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  .ick-theme {
+    --ick-control-m: 44px;
+  }
+
+  .app-topbar-btn,
+  .nav-inline-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* rows and choices keep their padding and grow to the target */
+  .nav-item,
+  .nav-item-main,
+  .contact-row,
+  .coordinator-head,
+  .svc {
+    min-height: 44px;
+  }
+
+  /* A link in a line of text: the target reaches past the words so the line
+     around it does not have to move. */
+  .back-link,
+  .fam-name-link {
+    position: relative;
+  }
+
+  .back-link::after,
+  .fam-name-link::after {
+    content: '';
+    position: absolute;
+    inset: -14px -4px;
   }
 }

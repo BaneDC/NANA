@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup from '../components/TwoFactorSetup';
+import { Field, Password } from '../components/TextField';
 import { chargingVisit, heldNow, money, paidThisMonth, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword } from '../lib/account';
@@ -87,40 +88,23 @@ function PasswordModal({ email, onDone, onClose }) {
     <Modal eyebrow="Nalog" title="Promenite lozinku" onClose={onClose}>
       <p className="doc-p">Nova lozinka mora imati najmanje 8 karaktera.</p>
       <div className="pe-fields">
-        <label className="wo-field">
-          <span className="ag-label">Trenutna lozinka</span>
-          <input
-            className="wo-text is-line"
-            type="password"
+        <Field label="Trenutna lozinka">
+          <Password
             value={current}
-            onChange={(e) => {
-              setCurrent(e.target.value);
+            onChange={(v) => {
+              setCurrent(v);
               setError(null);
             }}
           />
-        </label>
-        <label className="wo-field">
-          <span className="ag-label">Nova lozinka</span>
-          <input
-            className="wo-text is-line"
-            type="password"
-            value={next}
-            onChange={(e) => setNext(e.target.value)}
-          />
-        </label>
-        <label className="wo-field">
-          <span className="ag-label">Nova lozinka još jednom</span>
-          <input
-            className="wo-text is-line"
-            type="password"
-            value={again}
-            onChange={(e) => setAgain(e.target.value)}
-          />
-        </label>
+        </Field>
+        <Field label="Nova lozinka" hint={short ? 'Kratka je — treba najmanje 8 karaktera.' : null}>
+          <Password value={next} onChange={setNext} autoComplete="new-password" />
+        </Field>
+        <Field label="Nova lozinka još jednom" hint={mismatch ? 'Dva unosa se ne poklapaju.' : null}>
+          <Password value={again} onChange={setAgain} autoComplete="new-password" />
+        </Field>
       </div>
 
-      {short && <p className="ag-hint">Kratka je — treba najmanje 8 karaktera.</p>}
-      {mismatch && <p className="ag-hint">Dva unosa se ne poklapaju.</p>}
       {error && <p className="tf-error">{error}</p>}
 
       <div className="panel-card-actions is-end">
@@ -273,7 +257,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
                 <Check size={12} strokeWidth={2.5} /> Kontakti negovateljica
               </li>
               <li>
-                <Check size={12} strokeWidth={2.5} /> Preporuke lekara i pomagala
+                <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
               </li>
             </ul>
             <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Mail, Send } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
+import { Field, TextArea } from './TextField';
 import { pl } from '../data/familyCare';
 
 // Sending the care plan to someone who is not in the app: a sister who shares
@@ -33,15 +34,9 @@ export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
         negovateljica odgovara. Ne vidi vaš nalog, plaćanje ni poruke sa negovateljicama.
       </p>
 
-      <label className="pw-message">
-        <span className="tf-label">Email adrese</span>
-        <textarea
-          rows={3}
-          value={text}
-          placeholder="ana@mail.com, milan@mail.com"
-          onChange={(e) => setText(e.target.value)}
-        />
-      </label>
+      <Field label="Email adrese">
+        <TextArea rows={3} value={text} placeholder="ana@mail.com, milan@mail.com" onChange={setText} />
+      </Field>
 
       {entered.length > 0 && (
         <div className="share-list">
@@ -57,15 +52,9 @@ export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
         <p className="ag-hint">Ovo ne liči na email adresu: {wrong.join(', ')}.</p>
       )}
 
-      <label className="pw-message">
-        <span className="tf-label">Poruka uz plan (nije obavezno)</span>
-        <textarea
-          rows={2}
-          value={note}
-          placeholder="Evo šta smo dogovorili za mamu."
-          onChange={(e) => setNote(e.target.value)}
-        />
-      </label>
+      <Field label="Poruka uz plan (nije obavezno)">
+        <TextArea rows={2} value={note} placeholder="Evo šta smo dogovorili za mamu." onChange={setNote} />
+      </Field>
 
       {sentTo.length > 0 && (
         <p className="fam-sub is-flush">Već poslato: {sentTo.join(', ')}.</p>
