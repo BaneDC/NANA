@@ -25,16 +25,18 @@ Postoji jedna kartica (`.panel-card`): bela, radius 24, padding 16, razmak 8, se
 - **Glava kartice** (`.panel-card-head`): naslov (`.doc-section-title`, 14px medium), a desno značka stanja i/ili ikonica-dugme (npr. olovka za izmenu). U naslovu nema ikonice.
 - **Tekst kartice:** 12px, visina reda 18, siv.
 - **Oznaka u kartici** (`.card-label`) iznad dela koji imenuje, npr. „Zašto ovo preporučujemo": 12px medium, siva.
-- **Akcije kartice** (`.panel-card-actions`): dole levo, prirodne širine. Na telefonu dele širinu kartice.
+- **Akcije kartice** (`.panel-card-actions`) su footer kartice: dole levo, prirodne širine, 16px od sadržaja (duplo od 8 između redova sadržaja), da se čitaju kao kraj kartice, a ne kao još jedan red. Na telefonu dele širinu kartice.
+- **Sadržaj kartice u grupama:** ono što ide zajedno stoji na 4–8px, a grupe su na 12px. Kartica negovateljice: ko je (ime, ocena — 4px), kakva je (opis, oznake — 8px), pa footer na 24px.
 
 **Istaknuta kartica** (`.panel-card.is-attention`) služi za ono što čeka na porodicu, za Jovanino pismo i za izmenu plana. Ima narandžastu podlogu, ivicu od 1px, nema senku i koristi tekst u boji podloge. Postoji samo jedna ovakva, ne tri.
 
 ## 4. Stavke (negovateljice, posete, upiti, kanali kontakta)
 
 - Stavka **sama na stranici** je kartica (pravilo 3). Primeri: negovateljica na „Pronađi", plan na „Planovi nege".
-- Stavka **unutar kartice** je red odvojen linijom, a ne kutija u kutiji: padding 12 gore i dole, linija od 1px između redova, bez podloge i bez radiusa. Naslov reda je 12px medium, jedan korak ispod naslova kartice.
+- Stavka **unutar kartice** je red, a ne kutija u kutiji. Red ima padding 16 gore i dole i 8 sa strane, a zalazi 8px u padding kartice. Između redova je linija od 1px, poravnata sa tekstom. Naslov reda je 12px medium, jedan korak ispod naslova kartice.
+- **Hover** na redu koji se otvara: siva podloga radiusa 16, linije oko reda se sklanjaju, a ime dobija boju. Uglovi se slažu: kartica 24 = red 16 + 8 uvučeno, a red 16 = dugme 8 + 8 paddinga.
 
-  Razlog je pravilo radiusa: unutrašnji radius + padding = spoljni radius. Kutija u kartici je treći nivo uglova (kartica 24, kutija 8, dugme 8 u njoj), a nijedan radius na skali ne zadovoljava i 24 − 16 i 8 + 12. Sa redovima ostaju dva nivoa: kartica 24 oko paddinga 16, a unutra sve sa radiusom 8.
+  Razlog je pravilo radiusa: unutrašnji radius + padding = spoljni radius. Kutija sa ivicom u kartici (kartica 24, kutija 8, dugme 8 u njoj) nije mogla da ga ispoštuje ni sa jednim radiusom na skali. Red koji zalazi 8px u karticu može.
 
 **Šta se klikne:**
 - Kartica ili red koji predstavlja nešto sa svojim detaljima (negovateljica, plan, poseta) je **ceo klikabilan** i otvara detalje. Ime je link koji se razvlači preko cele kartice (`.is-clickable` + `.card-link`). Na hover se kartica uokviri, a ime dobije boju.

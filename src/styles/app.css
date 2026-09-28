@@ -2814,7 +2814,6 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
-  margin-top: var(--spacing-1);
 }
 
 .rec-list {
@@ -2954,7 +2953,6 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-1);
-  margin-top: var(--spacing-1);
 }
 
 .contact-row {
@@ -7032,11 +7030,15 @@ button.svc:hover {
 
 /* ---------- Rows inside a card ----------
    A caregiver in a recommendation, a visit, a request, a way to reach Jovana:
-   inside a card each is a row between hairlines, not a box of its own. A box
-   inside the card was a third level of corners — the card's 24, the box's 8,
-   and the button's 8 inside that — and no radius on the scale satisfies both
-   24 − 16 and 8 + 12. Two levels do: the card's 24 around 16 of padding, and
-   the 8 of whatever sits in it (docs/patterns.md §4). */
+   inside a card each is a row, not a box of its own. A box inside the card was
+   a third level of corners that no radius on the scale could satisfy.
+
+   The row reaches 8px into the card's 16 of padding, so what lights it on hover
+   has room for its own corner and still nests: the card's 24 around 8 is a 16,
+   and the 16 around the row's own 8 of side padding is the 8 of the button in
+   it. Rows are split by a hairline at the text's edges; the two lines around a
+   lit row step aside, so the light is never cut through
+   (docs/patterns.md §4). */
 
 :is(.rec-providers, .fam-rows, .contact-rows, .fam-visits, .visit-list):has(
     > :is(.caregiver, .fam-row, .contact-row, .fam-visit, .visit)
@@ -7045,32 +7047,51 @@ button.svc:hover {
 }
 
 :is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit) {
-  padding: var(--spacing-3) 0;
+  position: relative;
+  margin: 0 calc(var(--spacing-2) * -1);
+  padding: var(--spacing-4) var(--spacing-2);
   border: 0;
-  border-top: 1px solid var(--border-subtle);
-  border-radius: 0;
+  border-radius: var(--radius-2xl);
   background: none;
   box-shadow: none;
+  transition: background 0.15s ease;
 }
 
-:is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit):first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-:is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit):last-child {
-  padding-bottom: 0;
+:is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit)
+  + :is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--spacing-2);
+  right: var(--spacing-2);
+  height: 1px;
+  background: var(--border-subtle);
+  transition: opacity 0.15s ease;
 }
 
 /* on the attention card's tint the line is the tint's own */
-.is-attention :is(.fam-row, .fam-visit, .caregiver) {
-  border-top-color: var(--color-primary-200);
+.is-attention :is(.fam-row, .fam-visit, .caregiver)::before {
+  background: var(--color-primary-200);
 }
 
-/* a row that opens something says so by its name, not by lifting */
+/* a row that opens something lights up under the pointer */
+:is(.caregiver.is-clickable, .fam-row.is-link, a.contact-row):not(.is-wide):hover {
+  background: var(--surface-2);
+}
+
+.is-attention :is(.fam-row.is-link, .caregiver.is-clickable):hover {
+  background: var(--surface-0);
+}
+
+:is(.caregiver.is-clickable, .fam-row.is-link, a.contact-row):not(.is-wide):hover::before,
+:is(.caregiver.is-clickable, .fam-row.is-link, a.contact-row):not(.is-wide):hover
+  + :is(.caregiver, .fam-row, .contact-row, .fam-visit, .visit)::before {
+  opacity: 0;
+}
+
 .fam-row.is-link:hover,
 .contact-row:hover {
-  border-color: var(--border-subtle);
+  border-color: transparent;
   box-shadow: none;
 }
 
@@ -7085,6 +7106,35 @@ button.svc:hover {
 .fam-visit.is-cancelled,
 .fam-visit.is-awaiting {
   background: none;
+}
+
+/* A card's footer — the action under what the card says — stands 16px off the
+   content, twice the 8 between the content's own lines, so it reads as the
+   card's end rather than one more line of it. After rows, the last row's own
+   16 is that space. */
+.panel-card > .panel-card-actions,
+.cg-main > .panel-card-actions {
+  margin-top: var(--spacing-2);
+}
+
+/* A caregiver's card in three groups: who she is (name, rating — 4 apart),
+   what she is like (what she says, what she does — 8 apart), and what to do.
+   12 between the first two, 24 to the footer, so the button is the card's end
+   and not one more line of it. The column's own gap is the 4. */
+.caregiver.is-wide .cg-bio {
+  margin-top: var(--spacing-2);
+}
+
+.caregiver.is-wide .cg-tags {
+  margin-top: var(--spacing-1);
+}
+
+.cg-main > .panel-card-actions {
+  margin-top: 20px;
+}
+
+.rec-providers > .panel-card-actions {
+  margin-top: 0;
 }
 
 /* ---------- A card that opens something ----------
