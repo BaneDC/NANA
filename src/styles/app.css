@@ -412,8 +412,8 @@ textarea {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-lg);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   background: var(--surface-0);
   color: var(--text-primary);
   transition: background 0.18s ease, color 0.18s ease;
@@ -536,8 +536,8 @@ textarea {
   padding: 0 var(--chip-px);
   border-radius: var(--chip-radius);
   background: var(--surface-elevated-3);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-primary);
   white-space: nowrap;
   max-width: 180px;
@@ -762,8 +762,8 @@ textarea {
 }
 
 .doc-eyebrow {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--primary);
 }
 
@@ -781,7 +781,7 @@ textarea {
 
 .doc-p {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -827,15 +827,15 @@ textarea {
 }
 
 .fact-label {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
 /* free text, so it wraps: an answer cut off with an ellipsis is not an answer */
 .fact-value {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
   overflow-wrap: anywhere;
@@ -854,8 +854,8 @@ textarea {
 
 /* a label inside a card, over the part it names: "Zašto ovo preporučujemo" */
 .card-label {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   font-weight: var(--font-medium);
   color: var(--text-secondary);
 }
@@ -884,7 +884,7 @@ textarea {
   border-radius: var(--radius-lg);
   background: var(--color-primary-200);
   color: var(--color-primary-700);
-  font-size: var(--text-xs-size);
+  font-size: var(--text-small-size);
   font-weight: var(--font-medium);
 }
 
@@ -928,7 +928,7 @@ textarea {
 .cg-bio {
   margin-top: 4px;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -966,7 +966,7 @@ textarea {
 
 .tip-body {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -1176,8 +1176,8 @@ textarea {
 }
 
 .nav-sub-label {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1206,8 +1206,8 @@ textarea {
   align-items: center;
   gap: 4px;
   margin-bottom: 4px;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
   transition: color 0.15s ease;
 }
@@ -1349,7 +1349,7 @@ textarea {
 
 .view-sub {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -1400,8 +1400,8 @@ textarea {
 }
 
 .stat-label {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -1479,7 +1479,7 @@ textarea {
   overflow: hidden;
   margin-top: 8px;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -1546,8 +1546,8 @@ textarea {
 
 .section-title {
   margin-bottom: var(--spacing-1);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   font-weight: var(--font-medium);
   color: var(--text-secondary);
 }
@@ -1705,7 +1705,7 @@ textarea {
 .locked-note {
   margin-bottom: var(--spacing-2);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -1902,8 +1902,8 @@ textarea {
 
 .text-field .tf-label {
   padding: 0 var(--spacing-3);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
 }
@@ -1952,8 +1952,8 @@ textarea {
 /* a unit after the number: "h", "RSD / h" */
 .text-field .tf-suffix {
   flex-shrink: 0;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -1985,7 +1985,7 @@ textarea {
   resize: vertical;
   font: inherit;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-primary);
   caret-color: var(--primary);
 }
@@ -2013,7 +2013,16 @@ textarea {
 
 /* ---------- Immersive questionnaire ---------- */
 
+/* The onboarding has its own type, and the phone's larger scale (tokens.css) is
+   not for it: it keeps the scale it was designed on. */
 .immersive {
+  --text-xs-size: 12px;
+  --text-xs-leading: 16px;
+  --text-sm-size: 14px;
+  --text-sm-leading: 20px;
+  --text-base-size: 16px;
+  --text-base-leading: 24px;
+  --text-body-leading: 18px;
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -2712,8 +2721,8 @@ textarea {
   gap: 4px;
   flex-shrink: 0;
   width: 128px;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -2786,8 +2795,8 @@ textarea {
 
 .coordinator-sign {
   margin-top: var(--spacing-1);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -2806,7 +2815,7 @@ textarea {
 
 .rec-why {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -2829,7 +2838,7 @@ textarea {
   align-items: flex-start;
   gap: var(--spacing-2);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -2904,7 +2913,7 @@ textarea {
   display: flex;
   flex-direction: column;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
 }
 
 .rec-price-what {
@@ -2938,7 +2947,7 @@ textarea {
   align-items: flex-start;
   gap: var(--spacing-2);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--status-ok-fg);
 }
 
@@ -2999,7 +3008,7 @@ textarea {
 .contact-note {
   margin-top: var(--spacing-1);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -3086,7 +3095,7 @@ textarea {
   flex-shrink: 0;
   width: 152px;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--color-primary-800);
   opacity: 0.65;
 }
@@ -3095,7 +3104,7 @@ textarea {
   flex: 1;
   min-width: 0;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   font-weight: var(--font-medium);
   color: var(--color-primary-900);
   overflow: hidden;
@@ -3138,7 +3147,7 @@ textarea {
 .imm-warning-note {
   margin-top: 4px;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--color-primary-800);
   opacity: 0.8;
 }
@@ -3177,7 +3186,7 @@ textarea {
 .imm-note-sign {
   margin-top: var(--spacing-2);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--color-primary-800);
   opacity: 0.7;
 }
@@ -3250,7 +3259,7 @@ textarea {
   border-radius: var(--radius-lg);
   background: var(--status-wait-bg);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--status-wait-fg);
 }
 
@@ -3324,7 +3333,7 @@ textarea {
   backdrop-filter: blur(8px);
   box-shadow: 0 1px 2px rgba(76, 34, 18, 0.05);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--color-primary-900);
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
@@ -3345,7 +3354,7 @@ textarea {
 .imm-error {
   margin-top: var(--spacing-3);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--status-no-fg);
 }
 
@@ -3407,7 +3416,7 @@ textarea {
 
 .imm-starter-sub {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--color-primary-800);
   opacity: 0.6;
 }
@@ -3428,7 +3437,7 @@ textarea {
 .imm-urgent {
   margin-top: var(--spacing-6);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--color-primary-800);
   opacity: 0.6;
 }
@@ -3660,7 +3669,7 @@ textarea {
   padding-left: var(--spacing-3);
   border-left: 1px solid rgba(138, 122, 109, 0.25);
   font-size: 12px;
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: #9a8a7d;
   text-align: left;
 }
@@ -3710,8 +3719,8 @@ textarea {
 
 .cg-topbar-role {
   flex: 1;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -3849,7 +3858,7 @@ textarea {
   border: 1px dashed var(--border-subtle);
   border-radius: var(--radius-2xl);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-disabled);
   text-align: center;
 }
@@ -3911,7 +3920,7 @@ textarea {
 
 .bc-note {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -3932,7 +3941,7 @@ textarea {
   align-items: baseline;
   gap: var(--spacing-2);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
 }
 
 .bc-line-label {
@@ -4018,14 +4027,14 @@ textarea {
 
 .ag-lead {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
 .ag-label {
   margin-top: var(--spacing-2);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
 }
@@ -4033,8 +4042,8 @@ textarea {
 /* a hint under a control: the same as a field's hint (.tf-hint), 12px and
    readable — 11px in the disabled grey fell under 3:1 on white */
 .ag-hint {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -4116,7 +4125,7 @@ button.svc:hover {
 
 .visit-note {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -4196,7 +4205,7 @@ button.svc:hover {
 
 .tl-text {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-primary);
 }
 
@@ -4242,7 +4251,7 @@ button.svc:hover {
 .svc.is-sm {
   padding: var(--spacing-1) var(--spacing-3);
   font-size: 11px;
-  line-height: 18px;
+  line-height: var(--text-body-leading);
 }
 
 /* Not a checkbox with no words: this reaches the family, so opening it asks
@@ -4431,7 +4440,7 @@ button.svc:hover {
   align-self: flex-start;
   margin-top: var(--spacing-1);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
   cursor: pointer;
 }
@@ -4467,7 +4476,7 @@ button.svc:hover {
   align-items: baseline;
   gap: var(--spacing-3);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
 }
 
 .report-row dt {
@@ -4488,7 +4497,7 @@ button.svc:hover {
   flex-wrap: wrap;
   gap: var(--spacing-3);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -4498,8 +4507,8 @@ button.svc:hover {
   display: flex;
   align-items: baseline;
   gap: var(--spacing-3);
-  font-size: var(--text-xs-size);
-  line-height: 18px;
+  font-size: var(--text-small-size);
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -4770,7 +4779,7 @@ button.svc:hover {
 
 .fam-sub {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -4796,7 +4805,7 @@ button.svc:hover {
 
 .fam-quiet p {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -4888,7 +4897,7 @@ button.svc:hover {
 
 .fam-row-body {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -4969,7 +4978,7 @@ button.svc:hover {
   padding-left: var(--spacing-3);
   border-left: 2px solid var(--color-primary-200);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   font-style: italic;
   color: var(--text-secondary);
 }
@@ -4988,7 +4997,7 @@ button.svc:hover {
   border-radius: var(--radius-2xl);
   background: var(--primary-subtle);
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-primary);
 }
 
@@ -5001,7 +5010,7 @@ button.svc:hover {
 .fam-confirm-text {
   flex-basis: 100%;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -5020,7 +5029,7 @@ button.svc:hover {
   background: var(--text-primary);
   color: #fff;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   box-shadow: var(--shadow-container);
 }
 
@@ -5254,7 +5263,7 @@ button.svc:hover {
 .fam-coordinator p {
   flex: 1;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
 }
 
 .fam-profile-head {
@@ -5470,8 +5479,8 @@ button.svc:hover {
   gap: var(--spacing-1);
   padding: var(--spacing-1) var(--spacing-2);
   border-radius: var(--radius-lg);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
 }
 
 .pc-chip.is-removed {
@@ -5797,8 +5806,8 @@ button.svc:hover {
 
 .text-field .tf-hint {
   padding: 0 var(--spacing-3);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -6038,8 +6047,8 @@ button.svc:hover {
 .reg-legal,
 .reg-gdpr {
   width: 100%;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -6493,8 +6502,8 @@ button.svc:hover {
 }
 
 .pw-plan-per {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
 }
 
@@ -6518,7 +6527,7 @@ button.svc:hover {
 
 .pw-plan-card .paywall-list li {
   align-items: flex-start;
-  line-height: 18px;
+  line-height: var(--text-body-leading);
 }
 
 .pw-plan-card .paywall-list svg {
@@ -6544,8 +6553,8 @@ button.svc:hover {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-1);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
   text-align: center;
 }
@@ -6772,7 +6781,7 @@ button.svc:hover {
 
 .ck-note {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-secondary);
 }
 
@@ -6801,7 +6810,7 @@ button.svc:hover {
 
 .ck-cookie-why {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--text-primary);
 }
 
@@ -6824,8 +6833,8 @@ button.svc:hover {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-disabled);
 }
 
@@ -6923,7 +6932,7 @@ button.svc:hover {
   min-width: 0;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   letter-spacing: 0.04em;
   color: var(--text-primary);
   word-break: break-all;
@@ -6985,7 +6994,7 @@ button.svc:hover {
 
 .tf-error {
   font-size: var(--text-xs-size);
-  line-height: 18px;
+  line-height: var(--text-body-leading);
   color: var(--status-no-fg);
   text-align: center;
 }
@@ -7111,13 +7120,9 @@ button.svc:hover {
     line-height: 24px;
   }
 
-  /* A dialog's sentences sit right above 16px fields, and at 12 they read as a
-     footnote to them. In a dialog or a drawer they are 14 under a finger — one
-     step under the field, not two. Pages keep 12: there is no field beside them
-     to be measured against. */
-  :is(.modal.is-wide, .drawer-body) :is(.doc-p, .tip-body, .fam-sub, .ag-lead) {
-    font-size: var(--text-sm-size);
-    line-height: var(--text-sm-leading);
+  /* the rating line is meta, and meta is 12 under a finger */
+  .cg-meta {
+    font-size: var(--text-small-size);
   }
 
   .ick-theme {

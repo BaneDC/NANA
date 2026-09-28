@@ -107,6 +107,11 @@
   --text-sm-leading: 20px;
   --text-base-size: 16px;
   --text-base-leading: 24px;
+  /* body text's line (the xs size runs on 18 in paragraphs) */
+  --text-body-leading: 18px;
+  /* labels, hints, meta: the one size that does not grow on a phone */
+  --text-small-size: 12px;
+  --text-small-leading: 16px;
   --font-normal: 400;
   --font-medium: 500;
 
@@ -144,4 +149,21 @@
   /* ---- gradients ---- */
   --gradient-primary: linear-gradient(178deg, var(--primary-highlight) 14.7%, var(--primary) 85.3%);
   --gradient-secondary: linear-gradient(164deg, var(--surface-elevated-3) 16.3%, var(--surface-transparent) 84.2%);
+}
+
+/* The type scale under a finger, one step up. Fields have to be 16 there (iOS
+   zooms into anything smaller), and against 12px text they stood out as the
+   largest thing on the page. Body text is 14, a field one step above it, titles
+   a step above that; labels and hints stay 12 (`--text-small-*`). The
+   onboarding keeps its own scale (see .immersive in app.css). */
+@media (pointer: coarse) {
+  :root {
+    --text-xs-size: 14px;
+    --text-xs-leading: 20px;
+    --text-sm-size: 16px;
+    --text-sm-leading: 24px;
+    --text-base-size: 20px;
+    --text-base-leading: 28px;
+    --text-body-leading: 20px;
+  }
 }

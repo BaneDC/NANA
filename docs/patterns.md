@@ -36,8 +36,32 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 
 ## 2. Tipografija — šta je koje veličine
 
-| Uloga | Klasa | Veličina / visina reda | Težina | Boja |
-|---|---|---|---|---|
+Dve skale: sa mišem i na dodir (`pointer: coarse`). Na dodir je sve osim sitnog teksta jedan korak veće. Polja moraju biti 16px (inače iOS zumira), pa je osnovni tekst 14, da polje bude samo jedan korak iznad. Skala je u tokenima (`tokens.css`); klase je ne biraju same.
+
+| Uloga | Klasa | Miš | Dodir | Težina | Boja |
+|---|---|---|---|---|---|
+| Naslov stranice | `.view-title` | 16 / 24 | 20 / 28 | medium | primary |
+| Naslov kartice | `.doc-section-title` | 14 / 20 | 16 / 24 | medium | primary |
+| Polje, chat | `TextField`, composer | 12 / 16 (chat 14 / 20) | 16 / 24 | normal | primary |
+| Naslov reda u kartici | `.fam-row-title`, `.cg-name` | 12 / 16 | 14 / 20 | medium | primary |
+| Tekst kartice, podnaslov stranice | `.tip-body`, `.doc-p`, `.fam-sub`, `.rec-why`, `.view-sub` | 12 / 18 | 14 / 20 | normal | secondary |
+| Dugme | `.btn` | 12 | 14 | medium | — |
+| Sitan tekst: naslov grupe, oznaka, napomena, meta, eyebrow | `.section-title`, `.card-label`, `.tf-label`, `.fact-label`, `.ag-hint`, `.tf-hint`, `.cg-meta`, `.doc-eyebrow` | 12 / 16 | 12 / 16 | medium ili normal | secondary |
+| Značka | `.status-pill` | 11 | 11 | medium | po stanju |
+
+**Tokeni:**
+- `--text-xs-*` (tekst), `--text-sm-*` (naslovi kartica) i `--text-base-*` (naslov stranice) rastu na dodir.
+- `--text-small-*` je sitan tekst i ne raste.
+- `--text-body-leading` je visina reda paragrafa: 18, a na dodir 20.
+- Novi sitan tekst uvek ide na `--text-small-*`, a nikad na `--text-xs-*`.
+
+**Onboarding** (`.immersive`) zaključava tokene na skali sa mišem, jer ima svoj vizuelni jezik.
+
+Za novi tekst kartice koristi `.tip-body`. Ne uvodi novu klasu istog izgleda.
+
+Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je veličine naslova kartice.
+
+---|---|---|---|---|
 | Naslov stranice | `.view-title` | 16 / 24 | medium | primary |
 | Podnaslov stranice | `.view-sub` | 12 / 18 | normal | secondary |
 | Naslov grupe | `.section-title` | 12 / 16 | medium | secondary |
