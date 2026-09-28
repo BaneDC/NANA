@@ -254,6 +254,8 @@ Vrsta vrednosti određuje raspored:
 - **Chat na dodir:** composer, poslata poruka i odgovor su svi 16/24 (sa mišem 14/20). Uvek su iste veličine.
 - **Zaštita na iOS-u:** `src/lib/iosZoom.js` dodaje `maximum-scale=1` u viewport samo na iPhone-u i iPad-u, pa Safari ne zumira pri fokusu ni kad bi neko polje ipak ispalo ispod 16px. Ručno zumiranje prstima i dalje radi. Na Androidu se ne dodaje, jer bi tamo isključilo ručno zumiranje.
 - **Traka sa strelicama i „Gotovo" iznad tastature** na iOS-u je Safarijeva i sajt ne može da je ukloni.
+- **Tastatura ne pomera stranicu:** na dodir aplikacija i svi slojevi preko celog ekrana (`#root`, drawer, dijalog, paneli sa strane) stoje na vidljivom delu ekrana (`--vv-height`, `--vv-top` iz `src/lib/keyboardViewport.js`). Kad se tastatura otvori, aplikacija postane niža, a ne pomeri se nagore: composer sedi na tastaturi, a header i poruke ostaju gde su. Novi sloj preko celog ekrana na telefonu dobija isto pravilo.
+- **Posle slanja poruke na telefonu tastatura se zatvara** (`dropKeyboardAfterSend`), da se vide i pitanje i odgovor. Sa mišem fokus ostaje u composeru.
 
 ---
 

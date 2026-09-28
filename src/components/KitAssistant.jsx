@@ -10,6 +10,7 @@ import { caregivers } from '../data/carePlan';
 import { chatLabelsSr } from '../data/chatLabels.sr';
 import Button from './Button';
 import { paneFor, previewFor } from './ChatPanes';
+import { dropKeyboardAfterSend } from '../lib/keyboardViewport';
 
 // The assistant, drawn by inline-chat-kit. The kit owns the conversation's
 // look and motion; what is NANA's rides in the answer as custom parts — the
@@ -51,6 +52,7 @@ export function ChatSource({ id, ctx, onTitle }) {
   const history = useRef([]);
 
   const send = useCallback(async function* (message, { turnId }) {
+    dropKeyboardAfterSend();
     const { plan, answers, care, apiKey, onAddNotes } = ctx.current;
     if (!plan || !apiKey) {
       yield 'Asistent radi kad plan nege postoji. Završite razgovor sa Jovanom, pa se vratite ovde.';
