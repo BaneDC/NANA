@@ -254,7 +254,13 @@ Vrsta vrednosti određuje raspored:
 - **Chat na dodir:** composer, poslata poruka i odgovor su svi 16/24 (sa mišem 14/20). Uvek su iste veličine.
 - **Zaštita na iOS-u:** `src/lib/iosZoom.js` dodaje `maximum-scale=1` u viewport samo na iPhone-u i iPad-u, pa Safari ne zumira pri fokusu ni kad bi neko polje ipak ispalo ispod 16px. Ručno zumiranje prstima i dalje radi. Na Androidu se ne dodaje, jer bi tamo isključilo ručno zumiranje.
 - **Traka sa strelicama i „Gotovo" iznad tastature** na iOS-u je Safarijeva i sajt ne može da je ukloni.
-- **Tastatura ne pomera stranicu:** na dodir aplikacija i svi slojevi preko celog ekrana (`#root`, drawer, dijalog, paneli sa strane) stoje na vidljivom delu ekrana (`--vv-height`, `--vv-top` iz `src/lib/keyboardViewport.js`). Kad se tastatura otvori, aplikacija postane niža, a ne pomeri se nagore: composer sedi na tastaturi, a header i poruke ostaju gde su. Novi sloj preko celog ekrana na telefonu dobija isto pravilo.
+- **Tastatura u chatu pomera samo composer** (`src/lib/keyboardViewport.js`, samo za composer chata, `.nana-chat [contenteditable]`):
+  - Safari na iOS-u, kad se tapne polje, skroluje celu stranicu do kraja dokumenta za visinu tastature, i to se ne može zaustaviti kad krene (vraćanje iz skripte kasni frejm i header poskoči ~300pt).
+  - Zato se tap na composer preuzima: composer se na trenutak podigne daleko iznad ekrana, dobije fokus i vrati se u sledećem frejmu. Safari ga zatekne „vidljivog" i ne skroluje stranicu.
+  - Kad tastatura krene, aplikacija postane visoka koliko tastatura ostavi (`--app-height`, na `html`/`body`/`#root` i na panelima sa strane koji su na telefonu fiksirani): header stoji, composer sedi na tastaturi, poslednja poruka je iznad composera.
+  - Ostaje: pri nekim ponovnim otvaranjima (ne prvom) Safari sam pomeri stranicu ~4–35pt na ~0,25s i vrati je. To se desi pre nego što stranica sazna za tastaturu i ne zavisi od toga gde je composer. Isto pomeranje Safari radi i na običnom polju (pretraga negovateljica). Iz stranice se ne može ukloniti.
+  - **Sva ostala polja** (forme, pretraga, dijalozi) imaju Safarijevo ponašanje: stranica se pomeri da se polje vidi. Tako rade forme svuda.
+  - **Kako se testira:** `?kbdebug` u adresi prikazuje brojeve (visina vidljivog dela, pomeranje, `--app-height`) i poslednje događaje (fokus, tastatura, skrol stranice). Za merenje: iOS Simulator, snimak ekrana (`xcrun simctl io <uređaj> recordVideo`), frejmovi kroz `ffmpeg`, i po frejmu se prati visina loga u headeru. Header ne sme da se pomeri ni u jednom frejmu, osim gore opisanog Safarijevog pomeranja.
 - **Posle slanja poruke na telefonu tastatura se zatvara** (`dropKeyboardAfterSend`), da se vide i pitanje i odgovor. Sa mišem fokus ostaje u composeru.
 
 ---

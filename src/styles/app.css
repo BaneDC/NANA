@@ -10,27 +10,6 @@ body,
   height: 100%;
 }
 
-/* Under a finger the app and every full-screen layer sit on the part of the
-   screen that is visible, so an open keyboard makes them shorter instead of
-   pushing them up (lib/keyboardViewport.js). Without the properties — a mouse,
-   a browser without visualViewport, a pinch-zoom — this is the whole screen. */
-@media (pointer: coarse) {
-  #root {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: var(--vv-top, 0px);
-    height: var(--vv-height, 100%);
-  }
-
-  .drawer-backdrop,
-  .modal-backdrop {
-    top: var(--vv-top, 0px);
-    bottom: auto;
-    height: var(--vv-height, 100%);
-  }
-}
-
 body {
   font-family: var(--font-sans);
   background: var(--primary-subtle-highlight);
@@ -7351,12 +7330,24 @@ button.svc:hover {
   }
 }
 
-/* the side panels, full-screen on a narrow screen, follow the visible part too */
+/* ---------- The keyboard on a phone ----------
+   While the chat's composer has the keyboard up, the app is as tall as what the
+   keyboard leaves (--app-height, lib/keyboardViewport.js): the header stays
+   where it is and the composer sits on the keyboard. The assistant's panel is
+   fixed to the screen on a phone, so it is shortened the same way. Without the
+   property this is the whole screen. */
+
+@media (pointer: coarse) {
+  html,
+  body,
+  #root {
+    height: var(--app-height, 100%);
+  }
+}
+
 @media (pointer: coarse) and (max-width: 900px) {
   .chat-pane-wrap,
   .sidebar-wrap {
-    top: var(--vv-top, 0px);
-    bottom: auto;
-    height: var(--vv-height, 100%);
+    bottom: calc(100% - var(--app-height, 100%));
   }
 }
