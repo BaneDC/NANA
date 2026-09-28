@@ -44,8 +44,22 @@ export function planSaving(plan, plans) {
   return off >= 0.05 ? Math.round(off * 100) : null;
 }
 
-// The line the app uses wherever it just states what the subscription costs.
-export const priceLine = (country) => {
-  const plan = plansFor(country)[0];
-  return `${planPrice(plan)} ${planEvery(plan)}`;
+// The line the app uses wherever it just states what the subscription costs:
+// the plan they are on, or — before they have one — every plan the market has,
+// so Finland reads "12,90 € mesečno ili 34,90 € svaka 3 meseca", not only the
+// first of them.
+export const priceLine = (country, planId) => {
+  const plans = plansFor(country);
+  const one = planId && plans.find((p) => p.id === planId);
+  return (one ? [one] : plans).map((p) => `${planPrice(p)} ${planEvery(p)}`).join(' ili ');
 };
+
+const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
+
+// When a plan taken out on `at` renews: a month, or three, later.
+export function renewsOn(country, planId, at) {
+  const plan = plansFor(country).find((p) => p.id === planId) || plansFor(country)[0];
+  const d = new Date(at);
+  d.setMonth(d.getMonth() + plan.months);
+  return `${d.getDate()}. ${GENITIVE[d.getMonth()]} ${d.getFullYear()}.`;
+}

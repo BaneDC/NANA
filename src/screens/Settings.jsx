@@ -9,7 +9,7 @@ import { Field, Password } from '../components/TextField';
 import { chargingVisit, heldNow, money, paidThisMonth, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword } from '../lib/account';
-import { priceLine } from '../data/plans';
+import { priceLine, renewsOn } from '../data/plans';
 
 // What the account remembers besides the person: kept on the user record, so
 // signing back in finds it as it was left.
@@ -119,7 +119,7 @@ function PasswordModal({ email, onDone, onClose }) {
   );
 }
 
-export default function Settings({ unlocked, care, user, onCare, onSaveUser, onAskAssistant, onSubscribe }) {
+export default function Settings({ unlocked, subscription, care, user, onCare, onSaveUser, onAskAssistant, onSubscribe }) {
   const [prefs, setPrefs] = useState({
     digest: false,
     marketing: false,
@@ -186,7 +186,10 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
                   <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
                 </li>
               </ul>
-              <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>
+              <p className="tip-body">
+                {priceLine(user?.country, subscription?.planId)} · obnavlja se{' '}
+                {renewsOn(user?.country, subscription?.planId, subscription?.at ?? Date.now())}
+              </p>
               {/* What adds or changes something is primary; what switches
                   something off or cancels it is not — orange is what we
                   recommend, and we do not recommend this. It asks first. */}
@@ -199,7 +202,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           ) : (
             <>
               <p className="tip-body">
-                Otključava brojeve negovateljica, preporuke lekara i predložena pomagala.
+                Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.
                 {' '}
                 {priceLine(user?.country)}.
               </p>

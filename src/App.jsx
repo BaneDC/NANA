@@ -63,6 +63,8 @@ export default function App() {
   const [answers, setAnswers] = useState(() => demoStart || {});
   const [plan, setPlan] = useState(() => (DEMO ? buildPlan(demoStart, demoNotes) : null));
   const [unlocked, setUnlocked] = useState(false);
+  // which plan they paid for and when, so settings can say what they are on
+  const [subscription, setSubscription] = useState(null); // { planId, at }
   // one slot on the right: the care plan or the assistant, never both
   const [rightPanel, setRightPanel] = useState(null); // null | 'plan' | 'copilot'
   // null when closed, otherwise { caregiver } — a caregiver means the user tapped one
@@ -674,13 +676,14 @@ export default function App() {
               {view === 'settings' && (
                 <Settings
                   unlocked={unlocked}
+                  subscription={subscription}
                   care={care}
                   user={user}
                   onCare={setCare}
                   onSaveUser={saveUser}
                   // starting one opens the same dialog the care plan uses, so
                   // the plans and the price are decided in one place
-                  onSubscribe={(on = true) => (on ? setPaywall({ caregiver: null }) : setUnlocked(false))}
+                  onSubscribe={(on = true) => (on ? setPaywall({ caregiver: null }) : (setUnlocked(false), setSubscription(null)))}
                   onAskAssistant={askAssistant}
                 />
               )}
@@ -854,8 +857,9 @@ export default function App() {
             unlocked={unlocked}
             alreadyAsked={Boolean(paywall.caregiver && care.requests.some((q) => q.caregiverId === paywall.caregiver.id))}
             country={user.country}
-            onPay={() => {
+            onPay={(chosen) => {
               setUnlocked(true);
+              setSubscription({ planId: chosen?.id, at: Date.now() });
               say('Pretplata je aktivna.');
               // unlocking the plan has nothing left to do here; a message still has to be sent
               if (!paywall.caregiver) setPaywall(null);
