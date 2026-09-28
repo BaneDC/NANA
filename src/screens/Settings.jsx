@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Check, Cookie, CreditCard, Globe, KeyRound, Shield, ShieldCheck, Trash2 } from 'lucide-react';
+import { Bell, Check, Cookie, CreditCard, Crown, Globe, KeyRound, Shield, ShieldCheck, Trash2, UserRound } from 'lucide-react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
-import TwoFactorSetup from '../components/TwoFactorSetup';
+import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
 import { Field, Password } from '../components/TextField';
 import { chargingVisit, heldNow, money, paidThisMonth, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
@@ -129,6 +129,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
   const [cardOpen, setCardOpen] = useState(false);
   const [cookiesOpen, setCookiesOpen] = useState(false);
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
+  const [twoFactorOff, setTwoFactorOff] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
@@ -160,7 +161,10 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
       </div>
 
       <div className="panel-card">
-        <p className="doc-section-title">Obaveštenja</p>
+        <p className="doc-section-title">
+          <Bell size={14} strokeWidth={1.75} />
+          Obaveštenja
+        </p>
         <div className="toggle-list">
           <Toggle
             label="Mesečni pregled"
@@ -181,7 +185,10 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           it belongs here and not on the dashboard. */}
       <div className="panel-card">
         <div className="panel-card-head">
-          <p className="doc-section-title">Način plaćanja</p>
+          <p className="doc-section-title">
+            <CreditCard size={14} strokeWidth={1.75} />
+            Način plaćanja
+          </p>
           {payment.connected ? (
             <span className="status-pill is-accepted">
               <ShieldCheck size={12} strokeWidth={2} />
@@ -245,7 +252,10 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           paywall — not where they go looking for what they pay for. */}
       <div className="panel-card">
         <div className="panel-card-head">
-          <p className="doc-section-title">Pretplata</p>
+          <p className="doc-section-title">
+            <Crown size={14} strokeWidth={1.75} />
+            Pretplata
+          </p>
           <span className={`status-pill is-${unlocked ? 'accepted' : 'muted'}`}>
             {unlocked ? 'Aktivna' : 'Niste pretplaćeni'}
           </span>
@@ -364,10 +374,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         </p>
         <div className="panel-card-actions">
           {twoFactor ? (
-            <Button
-              variant="secondary"
-              onClick={() => onSaveUser({ twoFactor: false, backupCodesLeft: 0 })}
-            >
+            <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
               Isključi
             </Button>
           ) : (
@@ -395,7 +402,10 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
       </div>
 
       <div className="panel-card">
-        <p className="doc-section-title">Nalog</p>
+        <p className="doc-section-title">
+          <UserRound size={14} strokeWidth={1.75} />
+          Nalog
+        </p>
         <p className="tip-body">
           Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.
         </p>
@@ -455,13 +465,26 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
       {twoFactorOpen && (
         <TwoFactorSetup
           email={user?.email}
-          onDone={(codes) => {
-            // How many are left is the only thing worth keeping: the codes
-            // themselves belong on the server, hashed, not in the account here.
-            onSaveUser({ twoFactor: true, backupCodesLeft: codes.length });
+          onDone={(codes, secret) => {
+            // Of the codes, how many are left is the only thing worth keeping:
+            // they belong on the server, hashed, not in the account here. The
+            // secret is kept so turning it off can ask for a code — prototype
+            // only; a real build never lets it back to the client.
+            onSaveUser({ twoFactor: true, twoFactorSecret: secret, backupCodesLeft: codes.length });
             setTwoFactorOpen(false);
           }}
           onClose={() => setTwoFactorOpen(false)}
+        />
+      )}
+
+      {twoFactorOff && (
+        <TwoFactorDisable
+          secret={user?.twoFactorSecret}
+          onDone={() => {
+            onSaveUser({ twoFactor: false, twoFactorSecret: null, backupCodesLeft: 0 });
+            setTwoFactorOff(false);
+          }}
+          onClose={() => setTwoFactorOff(false)}
         />
       )}
 
@@ -483,7 +506,10 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
             </li>
           </ul>
           <div className="panel-card-actions is-end">
-            <Button variant="primary" size="lg" onClick={connect}>
+            <Button variant="secondary" onClick={() => setCardOpen(false)}>
+              Otkaži
+            </Button>
+            <Button variant="primary" onClick={connect}>
               <CreditCard size={14} strokeWidth={1.75} />
               Nastavi na Stripe
             </Button>

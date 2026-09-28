@@ -75,6 +75,56 @@ function CodeInput({ value, onChange, onDone }) {
   );
 }
 
+// Turning it off takes a code from the phone too. Otherwise anyone who finds
+// the account signed in could take the second factor away with one click, and
+// the second factor is there for exactly that person.
+export function TwoFactorDisable({ secret, onDone, onClose }) {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState(null);
+  const [checking, setChecking] = useState(false);
+
+  const confirm = async () => {
+    setChecking(true);
+    // An account that turned it on before the key was kept has nothing to
+    // check against; the prototype lets it through rather than lock it in.
+    const ok = !secret || (await verifyCode(secret, code));
+    setChecking(false);
+    if (ok) return onDone();
+    setError('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.');
+  };
+
+  return (
+    <Modal eyebrow="Bezbednost" title="Isključite dvofaktorsku prijavu" onClose={onClose}>
+      <p className="doc-p">
+        Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za
+        prijavu dovoljna lozinka, pa je nalog manje zaštićen.
+      </p>
+
+      <div className="tf-verify">
+        <p className="tf-label">Kod iz aplikacije</p>
+        <CodeInput
+          value={code}
+          onChange={(v) => {
+            setCode(v);
+            setError(null);
+          }}
+        />
+      </div>
+
+      {error && <p className="tf-error">{error}</p>}
+
+      <div className="panel-card-actions is-end">
+        <Button variant="secondary" onClick={onClose}>
+          Otkaži
+        </Button>
+        <Button variant="primary" disabled={code.length !== 6 || checking} onClick={confirm}>
+          Isključi
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
 export default function TwoFactorSetup({ email, onDone, onClose }) {
   const [step, setStep] = useState(0);
   const [manual, setManual] = useState(false);
@@ -156,9 +206,11 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
           </Button>
         </div>
 
-        <Button variant="primary" size="lg" full onClick={() => onDone(codes)}>
-          Sačuvao sam rezervne kodove
-        </Button>
+        <div className="panel-card-actions is-end">
+          <Button variant="primary" onClick={() => onDone(codes, secret)}>
+            Sačuvao sam rezervne kodove
+          </Button>
+        </div>
       </Modal>
     );
   }
@@ -209,6 +261,9 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
           )}
 
           <div className="panel-card-actions is-end">
+            <Button variant="secondary" onClick={onClose}>
+              Otkaži
+            </Button>
             <Button variant="primary" onClick={() => setStep(1)}>
               Dalje
             </Button>
@@ -228,6 +283,9 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
           {error && <p className="tf-error">{error}</p>}
 
           <div className="panel-card-actions is-end">
+            <Button variant="ghost" onClick={onClose}>
+              Otkaži
+            </Button>
             <Button variant="secondary" onClick={() => setStep(0)}>
               Nazad
             </Button>

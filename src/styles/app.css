@@ -594,14 +594,15 @@ textarea {
 /* The one button that destroys something. It is the app's only red: a colour
    that means nothing anywhere else cannot be misread here. */
 .btn.danger {
-  background: var(--surface-0);
+  background: var(--status-no-fg);
   border: 1px solid var(--status-no-fg);
-  color: var(--status-no-fg);
+  color: var(--primary-foreground);
   box-shadow: var(--shadow-button);
 }
 
+/* darker, the way primary goes lighter: the text stays white on red */
 .btn.danger:hover {
-  background: var(--status-no-bg);
+  filter: brightness(0.9);
 }
 
 .btn.ghost {
@@ -4787,16 +4788,6 @@ button.svc:hover {
    Home, her page, visits and requests. Rows sit on the same cards, pills and
    avatars as the rest of the app; the only new pieces are a row that can hold
    an action and the quoted lines a caregiver writes. */
-
-.btn.danger {
-  background: var(--status-no-fg);
-  color: #fff;
-  box-shadow: var(--shadow-button);
-}
-
-.btn.danger:hover {
-  filter: brightness(0.94);
-}
 
 .btn:disabled {
   opacity: 0.45;
