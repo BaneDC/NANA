@@ -252,6 +252,8 @@ Vrsta vrednosti određuje raspored:
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.
 - **Na dodir je svako polje najmanje 16px**, i `input`/`textarea`/`select` i svaki `contenteditable` (composer u chatu je `contenteditable`). Ispod 16px iOS zumira stranicu kad se polje fokusira i ostavi je zumiranu. To je globalno pravilo sa `!important`; ne obaraj ga, ni preko `--ick-*` promenljivih kita.
 - **Chat na dodir:** composer, poslata poruka i odgovor su svi 16/24 (sa mišem 14/20). Uvek su iste veličine.
+- **Zaštita na iOS-u:** `src/lib/iosZoom.js` dodaje `maximum-scale=1` u viewport samo na iPhone-u i iPad-u, pa Safari ne zumira pri fokusu ni kad bi neko polje ipak ispalo ispod 16px. Ručno zumiranje prstima i dalje radi. Na Androidu se ne dodaje, jer bi tamo isključilo ručno zumiranje.
+- **Traka sa strelicama i „Gotovo" iznad tastature** na iOS-u je Safarijeva i sajt ne može da je ukloni.
 
 ---
 
