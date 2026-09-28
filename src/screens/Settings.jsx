@@ -254,7 +254,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
                 </p>
               </div>
               <div className="panel-card-actions">
-                <Button variant="primary" onClick={() => setCardOpen(true)}>
+                <Button variant="secondary" onClick={() => setCardOpen(true)}>
                   Promeni karticu
                 </Button>
               </div>

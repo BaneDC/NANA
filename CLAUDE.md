@@ -10,7 +10,7 @@ Pre svake izmene interfejsa pročitaj `docs/patterns.md` i prati ga doslovno. To
 - **Koncentrični uglovi:** spoljni radius = unutrašnji radius + padding. Radiusi su samo 4 / 8 / 16 / 24 / 32, a razmaci deljivi sa 4.
 - **Stavka unutar kartice je red**, nikad kutija sa ivicom ili senkom (§6).
 - **Kartica ili red koji otvara detalje je ceo klikabilan** (`.is-clickable` + `.card-link`). Na telefonu takva kartica nema dugme, nego strelicu; akcija je u detaljima (§7).
-- **Dugmad:** `primary` za dodavanje i menjanje, `secondary` za gašenje i otkazivanje, `danger` samo za brisanje. Na dodir sve ima najmanje 44px.
+- **Dugmad:** `primary` za ono što se tek podešava, `secondary` za ono što gasi, otkazuje ili menja nešto već podešeno, `danger` samo za brisanje. Tačna tabela po karticama je u §9. Na dodir sve ima najmanje 44px.
 - **Polja** su samo iz `src/components/TextField.jsx`.
 - **Bez velikih slova.** Onboarding (`Immersive*`, `imm-*`) ima svoj jezik i ne dira se bez izričitog zadatka.
 - **Ikonice (§11):** u Podešavanjima dugme sa tekstom nema ikonicu. Van Podešavanja odluka je na čekanju, pa ih ne dodaj i ne uklanjaj.
