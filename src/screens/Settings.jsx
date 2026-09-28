@@ -189,8 +189,11 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
                 </li>
               </ul>
               <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>
+              {/* What adds or changes something is primary; what switches
+                  something off or cancels it is not — orange is what we
+                  recommend, and we do not recommend this. It asks first. */}
               <div className="panel-card-actions">
-                <Button variant="primary" onClick={() => setCancelling(true)}>
+                <Button variant="secondary" onClick={() => setCancelling(true)}>
                   Otkaži pretplatu
                 </Button>
               </div>
@@ -311,7 +314,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           </p>
           <div className="panel-card-actions">
             {twoFactor ? (
-              <Button variant="primary" onClick={() => setTwoFactorOff(true)}>
+              <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
                 Isključi
               </Button>
             ) : (
