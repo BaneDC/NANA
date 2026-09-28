@@ -13,7 +13,7 @@ Pre svake izmene interfejsa pročitaj `docs/patterns.md` i prati ga doslovno. To
 - **Dugmad:** `primary` za dodavanje i menjanje, `secondary` za gašenje i otkazivanje, `danger` samo za brisanje. Na dodir sve ima najmanje 44px.
 - **Polja** su samo iz `src/components/TextField.jsx`.
 - **Bez velikih slova.** Onboarding (`Immersive*`, `imm-*`) ima svoj jezik i ne dira se bez izričitog zadatka.
-- **Ikonice imaju otvorenu odluku** (§11): ne dodaji ih i ne uklanjaj.
+- **Ikonice (§11):** u Podešavanjima dugme sa tekstom nema ikonicu. Van Podešavanja odluka je na čekanju, pa ih ne dodaj i ne uklanjaj.
 - **Obrazac koji ne postoji** prvo se upiše u `docs/patterns.md`, pa se tek onda koristi.
 - **Posle izmene** pokreni proveru iz §13 na desktopu i na 375×812. Očekuje se nula prekršaja.
 

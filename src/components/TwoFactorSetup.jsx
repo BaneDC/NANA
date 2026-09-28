@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { Check, ChevronDown, Copy, Download, Shield } from 'lucide-react';
+import { Check, ChevronDown, Copy, Shield } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
 import { newBackupCodes, newSecret, otpauthUrl, verifyCode } from '../lib/totp';
@@ -197,11 +197,9 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
 
         <div className="panel-card-actions">
           <Button variant="secondary" onClick={() => copy(codes.join('\n'), 'codes')}>
-            <Copy size={14} strokeWidth={1.75} />
             {copied === 'codes' ? 'Kopirano' : 'Kopiraj'}
           </Button>
           <Button variant="secondary" onClick={download}>
-            <Download size={14} strokeWidth={1.75} />
             Preuzmi
           </Button>
         </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
 import { COOKIE_GROUPS } from '../data/cookies';
@@ -101,7 +101,6 @@ export default function CookieSettings({ cookies, onSave, onClose }) {
           Prihvati sve
         </Button>
         <Button variant="primary" onClick={() => onSave(draft)}>
-          <Check size={14} strokeWidth={2} />
           Sačuvaj izbor
         </Button>
       </div>

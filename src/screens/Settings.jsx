@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, CreditCard, Shield, ShieldCheck, Trash2 } from 'lucide-react';
+import { Check, ShieldCheck } from 'lucide-react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
@@ -112,7 +112,6 @@ function PasswordModal({ email, onDone, onClose }) {
           Otkaži
         </Button>
         <Button variant="primary" disabled={!ready} onClick={submit}>
-          <Check size={14} strokeWidth={2} />
           Sačuvaj lozinku
         </Button>
       </div>
@@ -256,7 +255,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
               </div>
               <div className="panel-card-actions">
                 <Button variant="primary" onClick={() => setCardOpen(true)}>
-                  <CreditCard size={14} strokeWidth={1.75} />
                   Promeni karticu
                 </Button>
               </div>
@@ -269,7 +267,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
               </p>
               <div className="panel-card-actions">
                 <Button variant="primary" onClick={() => setCardOpen(true)}>
-                  <CreditCard size={14} strokeWidth={1.75} />
                   Dodaj karticu
                 </Button>
               </div>
@@ -315,7 +312,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
               </Button>
             ) : (
               <Button variant="primary" onClick={() => setTwoFactorOpen(true)}>
-                <Shield size={14} strokeWidth={1.75} />
                 Uključi
               </Button>
             )}
@@ -343,7 +339,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
                 aria-pressed={language === l.id}
                 onClick={() => onSaveUser({ language: l.id })}
               >
-                {language === l.id && <Check size={13} strokeWidth={2.5} />}
                 {l.label}
               </button>
             ))}
@@ -419,7 +414,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           <div className="panel-card-actions">
             <Button variant="primary">Preuzmi moje podatke</Button>
             <Button variant="danger">
-              <Trash2 size={14} strokeWidth={1.75} />
               Obriši nalog
             </Button>
           </div>
@@ -516,7 +510,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
               Otkaži
             </Button>
             <Button variant="primary" onClick={connect}>
-              <CreditCard size={14} strokeWidth={1.75} />
               Nastavi na Stripe
             </Button>
           </div>

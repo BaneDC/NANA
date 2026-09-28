@@ -109,7 +109,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 </section>
 ```
 
-- Ikonice u naslovu kartice: vidi §11 (odluka je na čekanju).
+- Ikonice u naslovu kartice: vidi §11.
 - Footer (`.panel-card-actions`) je uvek poslednji, dole levo, a dugmad su prirodne širine. Na telefonu dugmad dele širinu kartice (CSS to radi sam).
 - `.panel-card-actions.is-end` (desno) je samo za dijaloge i drawer-e.
 
@@ -208,7 +208,16 @@ Vrsta vrednosti određuje raspored:
 | Briše nepovratno (obriši nalog) | `danger` |
 | Sporedna akcija pored glavne u dijalogu („Otkaži", „Nazad") | `secondary` |
 
-- **Varijanta zavisi od vrste akcije, ne od stanja.** Isto dugme ne menja boju kad se nešto podesi.
+- **Varijanta zavisi od vrste akcije, ne od stanja.** Isto dugme ne menja boju kad se nešto podesi. Dugme promeni izgled samo kad se promeni i akcija koju nudi:
+
+  | Kartica | Pre | Posle | Zašto |
+  |---|---|---|---|
+  | Pretplata | „Pretplatite se" — primary | „Otkaži pretplatu" — secondary | akcija postaje otkazivanje |
+  | Dvofaktorska prijava | „Uključi" — primary | „Isključi" — secondary | akcija postaje gašenje |
+  | Način plaćanja | „Dodaj karticu" — primary | „Promeni karticu" — primary | i dalje menja, pa ostaje primary |
+  | Lozinka | „Promenite lozinku" — primary | isto | nema stanja |
+  | Kolačići | „Podešavanja kolačića" — primary | isto | nema stanja |
+  | Nalog | „Preuzmi moje podatke" — primary; „Obriši nalog" — danger | isto | nema stanja |
 - **U dijalogu i drawer-u** akcije su dole desno (`.panel-card-actions.is-end`): prvo secondary, pa glavna.
 - **Na ekranu na dodir** (`pointer: coarse`) sva dugmad, polja, redovi i čipovi imaju najmanje 44px. Tokeni `--button-size` i `--input-size` to rade sami, pa ne zadaji fiksnu visinu manju od 44 bez `(pointer: coarse)` pravila.
 - Ikonice u dugmadima: vidi §11.
@@ -224,18 +233,17 @@ Vrsta vrednosti određuje raspored:
 
 ---
 
-## 11. Ikonice — ODLUKA NA ČEKANJU
+## 11. Ikonice
 
-Za sada ikonice nemaju pravilo, i zato su nedosledne:
-- u Podešavanjima neka dugmad imaju ikonicu („Dodaj karticu", „Uključi", „Obriši nalog"), a neka nemaju („Pretplatite se", „Promenite lozinku");
-- „Pošalji poruku" ima ikonicu u planu, a na „Pronađi" nema;
-- ikonice u naslovima kartica u Podešavanjima kolega je dodao 28. 9. (`0f734cd`), a sweep obrazaca ih je istog dana uklonio.
+**Podešavanja (odlučeno 28. 9.):** dugme sa tekstom nema ikonicu. To važi za stranicu i za sve njene dijaloge i drawer-e (kartica, lozinka, 2FA, kolačići). Izbor jezika pokazuje podloga čipa, bez kvačice.
 
-**Dok se ne odluči: ne dodaj i ne uklanjaj ikonice ni u naslovima ni u dugmadima.** Kad odluka padne, ovaj odeljak postaje pravilo.
+**Ostatak aplikacije — ODLUKA NA ČEKANJU:** tamo su ikonice još nedosledne („Pošalji poruku" ima ikonicu u planu, a na „Pronađi" nema). Dok se ne odluči, ne dodaj i ne uklanjaj ikonice van Podešavanja. Ne dodaj ni ikonice u naslove kartica: kolega ih je dodao 28. 9. (`0f734cd`), sweep obrazaca ih je istog dana uklonio, a konačna odluka još nije pala.
 
-Izuzetak koji već važi: dugme bez teksta (`iconOnly`) uvek ima ikonicu i `aria-label`.
-
----
+**Ikonica ostaje uvek:**
+- dugme bez teksta (`iconOnly`), uz `aria-label`;
+- strelica koja pokazuje da li je nešto otvoreno ili zatvoreno (disclosure);
+- „Pitaj asistenta", ista komponenta na svim stranicama;
+- kvačice u listama i u znački stanja, jer to nisu dugmad.
 
 ## 12. Telefon
 
@@ -294,4 +302,4 @@ Očekivano: `cards` → `24px/16px`; `titles` → `doc-section-title 14px`, `sec
 - svoje `<input>` ili native `<select>` umesto `TextField`;
 - hex boje u komponentama, razmak koji nije deljiv sa 4;
 - pretraga ili jedno polje u kartici;
-- dodavanje ili uklanjanje ikonica dok §11 ne dobije odluku.
+- ikonica u dugmetu sa tekstom u Podešavanjima; dodavanje ili uklanjanje ikonica van Podešavanja dok §11 ne dobije odluku.
