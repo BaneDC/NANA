@@ -853,7 +853,6 @@ export default function App() {
           <PaywallModal
             key="paywall"
             caregiver={paywall.caregiver}
-            plan={plan}
             unlocked={unlocked}
             alreadyAsked={Boolean(paywall.caregiver && care.requests.some((q) => q.caregiverId === paywall.caregiver.id))}
             country={user.country}

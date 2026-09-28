@@ -8,23 +8,58 @@
 // from the language they read in — someone reading the app in English in
 // Belgrade still pays in dinars.
 //
-// NOTE: the Finnish prices are placeholders until the real ones are confirmed.
+// Finland's prices and every line below are the live platform's plan picker
+// (nanaprime.com, "Choose your plan"), in Serbian. One line is ours: the
+// partners' discount, which the platform does not have yet.
+//
+// `saving` is what the platform prints. Worked out from the prices it would be
+// 24% (98 against 3 × 43), not 22% — to be checked with the client; until then
+// the page says what the platform says.
+
+const MONTHLY = {
+  name: 'Mesečni plan',
+  description: 'Za porodice koje žele punu kontrolu i slobodu, bez dugoročnih obaveza.',
+  benefits: [
+    'Direktan pristup našoj bazi proverenih i pouzdanih negovateljica',
+    'Vi birate osobu sa kojom radite — bez posrednika, skrivenih provizija i ograničenja kakva postavljaju agencije',
+    'Podrška tima i koordinatorke tokom celog trajanja paketa',
+    'Zamena negovateljice u hitnim situacijama, bez dodatnih troškova',
+    'Formular „Pošalji zahtev" za dodatnu pomoć (lekar, medicinska sestra, rehabilitacija…)',
+    'Savet i pomoć pri izboru drugih vrsta nege',
+    'Pregledi i pomagala kod naših partnera, do 10% jeftinije',
+    'Pristup bazi mesec dana',
+  ],
+};
+
+const QUARTERLY = {
+  name: 'Tromesečni plan',
+  description: 'Najčešći izbor naših korisnika — za porodice koje žele stabilnost, kontinuitet i sigurnu podršku.',
+  lead: 'Sve iz mesečnog plana, i još:',
+  benefits: [
+    'Prednost kod slobodnih termina koordinatorke',
+    'Stabilnija podrška u planiranju dugoročnije nege',
+    'Lični vodič za negu kod kuće (na vaš zahtev)',
+    'Bez nove pretrage i dogovora svakog meseca',
+    'Pristup bazi tri meseca',
+  ],
+};
 
 const PLANS = {
-  RS: [{ id: 'monthly', months: 1, price: 1490, currency: 'RSD' }],
+  RS: [{ id: 'monthly', months: 1, price: 1490, currency: 'RSD', ...MONTHLY }],
   FI: [
-    { id: 'monthly', months: 1, price: 12.9, currency: 'EUR' },
-    { id: 'quarterly', months: 3, price: 34.9, currency: 'EUR' },
+    { id: 'monthly', months: 1, price: 43, currency: 'EUR', ...MONTHLY },
+    { id: 'quarterly', months: 3, price: 98, currency: 'EUR', saving: 22, recommended: true, ...QUARTERLY },
   ],
 };
 
 // Every market we do not have prices for is billed the way Serbia is.
 export const plansFor = (country) => PLANS[country] || PLANS.RS;
 
+// whole euros without the cents (43 €), anything else with them (32,67 €)
 export const planPrice = ({ price, currency }) =>
   currency === 'RSD'
     ? `${price.toLocaleString('sr-RS')} RSD`
-    : `${price.toFixed(2).replace('.', ',')} €`;
+    : `${Number.isInteger(price) ? price : price.toFixed(2).replace('.', ',')} €`;
 
 // What it works out to a month, for the plan that is not monthly — the number a
 // family actually compares the other plan against.
@@ -38,6 +73,7 @@ export const planTitle = (plan) => (plan.months === 1 ? 'Mesečno' : `${plan.mon
 // How much the longer plan saves against paying monthly, when it saves enough
 // to be worth saying.
 export function planSaving(plan, plans) {
+  if (plan.saving) return plan.saving;
   const monthly = plans.find((p) => p.months === 1);
   if (!monthly || plan.months === 1) return null;
   const off = 1 - plan.price / (monthly.price * plan.months);

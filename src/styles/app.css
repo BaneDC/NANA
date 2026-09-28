@@ -6065,28 +6065,6 @@ button.svc:hover {
   color: var(--primary-highlight);
 }
 
-/* ── writing to a caregiver ────────────────────────────────────────────────── */
-
-/* what the subscription opens, grouped under the one line that says why */
-.pw-gate {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  padding: var(--spacing-3);
-  border-radius: var(--radius-2xl);
-  background: var(--surface-2);
-}
-
-.pw-gate-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
 .reg-demo {
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
@@ -6405,93 +6383,127 @@ button.svc:hover {
   display: list-item;
 }
 
-/* ---------- The plans, where there is more than one ---------- */
+/* ---------- Choosing a plan ----------
+   The live platform's plan picker: a card per plan with everything in it, side
+   by side where there is room. The cards are the app's one card; they sit well
+   inside the dialog, away from its corners, so their 24 does not have to nest in
+   its 24. The plan we would rather sell is ringed in the primary colour, and
+   its button is the primary one. Every card's button sits on the card's floor,
+   so the two line up however long the lists are. */
 
-.pw-plans {
+.modal.is-plans {
+  max-width: 880px;
+  align-items: stretch;
+  gap: var(--spacing-4);
+}
+
+.modal.is-plans.is-single {
+  max-width: 480px;
+}
+
+.pw-head {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--spacing-1);
+  padding-right: var(--spacing-8);
 }
 
-/* the same selectable card as a caregiver task: a mark, then what it is */
-.pw-plan {
-  display: flex;
-  align-items: flex-start;
+/* the dialog's title is the page title's size: this is a decision, not a note */
+.pw-head .doc-title {
+  font-size: var(--text-base-size);
+  line-height: var(--text-base-leading);
+}
+
+.pw-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.pw-plan-card {
   gap: var(--spacing-3);
-  padding: var(--spacing-3);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-2xl);
-  background: var(--surface-0);
-  text-align: left;
-  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.pw-plan:hover {
-  border-color: var(--color-primary-300);
+.pw-plan-card.is-recommended {
+  box-shadow: 0 0 0 1px var(--primary), var(--shadow-card);
 }
 
-.pw-plan.is-on {
-  border-color: var(--primary);
-  background: var(--primary-subtle);
-}
-
-.pw-plan-mark {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: var(--surface-0);
-  color: var(--primary-foreground);
-}
-
-.pw-plan.is-on .pw-plan-mark {
-  border-color: var(--primary);
-  background: var(--primary);
-}
-
-.pw-plan-text {
-  flex: 1;
-  min-width: 0;
+.pw-plan-price {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-1);
 }
 
-.pw-plan-top {
+.pw-plan-amount {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
 }
 
-.pw-plan-name {
-  flex: 1;
+.pw-plan-amount > .status-pill {
+  margin-left: 0;
+}
+
+.pw-plan-per {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+}
+
+.pw-plan-includes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.pw-plan-lead {
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
 }
 
-/* the price is the thing being compared, so it is the one that is set larger */
-.pw-plan-price {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
+/* a benefit can run to two lines; its tick stays on the first */
+.pw-plan-card .paywall-list {
+  gap: var(--spacing-2);
 }
 
-.pw-plan.is-on .pw-plan-price,
-.pw-plan.is-on .pw-plan-name {
-  color: var(--primary-subtle-foreground);
+.pw-plan-card .paywall-list li {
+  align-items: flex-start;
+  line-height: 18px;
 }
 
-.pw-plan-note {
-  font-size: 11px;
-  line-height: 16px;
+.pw-plan-card .paywall-list svg {
+  height: 18px;
+}
+
+/* one class more than the footer rule every card has, which would otherwise
+   win on order and pin the button under the list instead of on the floor */
+.panel-card.pw-plan-card > .panel-card-actions {
+  margin-top: auto;
+  padding-top: var(--spacing-2);
+}
+
+/* stacked on a phone, the plan we recommend comes first rather than under the
+   whole of the other one's list */
+@media (max-width: 640px) {
+  .pw-plan-card.is-recommended {
+    order: -1;
+  }
+}
+
+.pw-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
   color: var(--text-secondary);
+  text-align: center;
 }
 
 /* ---------- Pages of a list ---------- */

@@ -1,70 +1,79 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, FileText, Lock, Send, X } from 'lucide-react';
-import { caregivers } from '../data/carePlan';
-import { perMonth, planEvery, planPrice, planSaving, planTitle, plansFor } from '../data/plans';
+import { Check, X } from 'lucide-react';
+import { perMonth, planPrice, planSaving, plansFor } from '../data/plans';
 import Button from './Button';
 import { Field, TextArea } from './TextField';
 
-// The plans, when there is more than one to choose from. Each card says the
-// three things somebody compares: what it is called, what it costs, and what
-// that works out to a month — the last one being the only way two plans with
-// different periods can be compared at all.
-function PlanChoice({ plans, chosen, onChoose }) {
+// One plan, as the live platform's plan picker shows it: what it is called, what
+// it costs, what it saves, who it is for, everything it includes, and its own
+// button. Every card has the lot, so two plans are compared line by line rather
+// than by a price and a name. The one we would rather sell is ringed and says
+// so; its button is the primary one.
+function PlanCard({ plan, plans, onChoose }) {
+  const saving = planSaving(plan, plans);
   return (
-    <div className="pw-plans">
-      {plans.map((plan) => {
-        const saving = planSaving(plan, plans);
-        const on = plan.id === chosen.id;
-        return (
-          <button
-            key={plan.id}
-            type="button"
-            className={`pw-plan${on ? ' is-on' : ''}`}
-            aria-pressed={on}
-            onClick={() => onChoose(plan)}
-          >
-            <span className="pw-plan-mark">{on && <Check size={12} strokeWidth={3} />}</span>
-            <span className="pw-plan-text">
-              <span className="pw-plan-top">
-                <span className="pw-plan-name">{planTitle(plan)}</span>
-                {saving && <span className="status-pill is-accepted">Uštedite {saving}%</span>}
-              </span>
-              <span className="pw-plan-price">
-                {planPrice(plan)} {planEvery(plan)}
-              </span>
-              <span className="pw-plan-note">
-                {plan.months === 1
-                  ? 'Otkazujete kad god želite.'
-                  : `${perMonth(plan)} mesečno, naplaćeno odjednom.`}
-              </span>
-            </span>
-          </button>
-        );
-      })}
+    <div className={`panel-card pw-plan-card${plan.recommended ? ' is-recommended' : ''}`}>
+      <div className="panel-card-head">
+        <p className="doc-section-title">{plan.name}</p>
+        {plan.recommended && <span className="status-pill is-attention">Najpopularniji</span>}
+      </div>
+
+      <div className="pw-plan-price">
+        <p className="pw-plan-amount">
+          {planPrice(plan)}
+          {saving && <span className="status-pill is-accepted">{saving}% uštede</span>}
+        </p>
+        <p className="pw-plan-per">
+          {plan.months === 1
+            ? 'mesečno, otkazujete kad god želite'
+            : `za ${plan.months} meseca · ${perMonth(plan)} mesečno, naplaćuje se odjednom`}
+        </p>
+      </div>
+
+      <p className="tip-body">{plan.description}</p>
+
+      <div className="pw-plan-includes">
+        {plan.lead && <p className="pw-plan-lead">{plan.lead}</p>}
+        <ul className="paywall-list">
+          {plan.benefits.map((b) => (
+            <li key={b}>
+              <Check size={12} strokeWidth={2.5} />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="panel-card-actions">
+        <Button
+          variant={plan.recommended || plans.length === 1 ? 'primary' : 'secondary'}
+          full
+          onClick={() => onChoose(plan)}
+        >
+          Izaberite plan
+        </Button>
+      </div>
     </div>
   );
 }
 
-// One modal, two ways in: writing to a caregiver, or unlocking the plan.
+// One dialog, two ways in: unlocking the plan, or writing to a caregiver.
 //
-// The message is written first and sent only once the subscription is paid —
-// writing costs nothing, and someone who has already put their mother's needs
-// into words is not asked to do it again after paying. The family's number is
-// not asked for here: registration already has it.
+// Writing comes first and the plan second — writing costs nothing, and someone
+// who has already put their mother's needs into words is not asked to do it
+// again after paying. So a message to a caregiver opens on the message; "Dalje"
+// goes to the plans; paying brings it back to the message, now with "Pošalji".
+// The family's number is not asked for here: registration already has it.
 //
 // The field starts empty. It used to open with a request written from the plan,
-// which read as ours rather than theirs: a family looking at a stranger's name
-// was handed a paragraph to send under it, and the first thing most of them did
-// was select all and delete. The placeholder says what belongs there instead.
-export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, country, onPay, onSend, onClose }) {
+// which read as ours rather than theirs; the placeholder says what belongs there.
+export default function PaywallModal({ caregiver, unlocked, alreadyAsked, country, onPay, onSend, onClose }) {
   const [message, setMessage] = useState('');
+  const [step, setStep] = useState('message');
   const plans = plansFor(country);
-  // The longer plan is the one we would rather sell, so it is the one already
-  // chosen — but only where there is a choice at all.
-  const [chosen, setChosen] = useState(() => plans[plans.length - 1]);
   const first = caregiver?.name.split(' ')[0];
-  const canSend = unlocked && message.trim().length > 0;
+  const choosing = !unlocked && !alreadyAsked && (!caregiver || step === 'plans');
 
   return (
     <motion.div
@@ -76,7 +85,7 @@ export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, 
       transition={{ duration: 0.18 }}
     >
       <motion.div
-        className="modal"
+        className={`modal${choosing ? ` is-plans${plans.length === 1 ? ' is-single' : ''}` : ' is-wide'}`}
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -87,79 +96,84 @@ export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, 
           <X size={16} strokeWidth={1.75} />
         </button>
 
-        <div className="modal-head">
-          {caregiver ? (
-            <div className="cg-avatar">{caregiver.initials}</div>
-          ) : (
-            <span className="locked-badge">
-              <FileText size={14} strokeWidth={2} />
-            </span>
-          )}
-          <div>
-            <p className="doc-eyebrow">{caregiver ? 'Poruka sa planom nege' : 'Ceo plan nege'}</p>
-            <p className="doc-title">{caregiver ? caregiver.name : `Plan nege · ${plan.name}`}</p>
-          </div>
-        </div>
-
-        {caregiver && alreadyAsked ? (
-          <p className="doc-p">Već ste poslali upit. {first} odgovara sa svoje table, a mi vam javljamo čim odgovori.</p>
-        ) : caregiver ? (
+        {choosing ? (
           <>
-            <p className="doc-p">
-              Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.
-            </p>
-            <Field label="Poruka za negovateljicu">
-              <TextArea
-                value={message}
-                rows={5}
-                onChange={setMessage}
-                placeholder="Recite joj ukratko šta vam treba i kada."
-              />
-            </Field>
+            <div className="pw-head">
+              <p className="doc-title">Izaberite plan</p>
+              <p className="tip-body">
+                {/* no name in these: Serbian would have to decline it ("za Vesnu"),
+                    and a template cannot */}
+                {caregiver
+                  ? 'Vaša poruka ide čim se pretplatite, zajedno sa planom nege.'
+                  : 'Pretplata otključava ceo plan nege i kontakte negovateljica.'}
+              </p>
+            </div>
+
+            <div className="pw-plan-grid">
+              {plans.map((p) => (
+                <PlanCard key={p.id} plan={p} plans={plans} onChoose={onPay} />
+              ))}
+            </div>
+
+            <div className="pw-notes">
+              <p>Pretplata se obnavlja automatski, a možete da je otkažete u svakom trenutku.</p>
+              <p>Cene su izražene u {plans[0].currency === 'EUR' ? 'evrima' : 'dinarima'}.</p>
+            </div>
+
+            {caregiver && (
+              <div className="panel-card-actions is-end">
+                <Button variant="secondary" onClick={() => setStep('message')}>
+                  Nazad na poruku
+                </Button>
+              </div>
+            )}
           </>
         ) : (
-          <p className="doc-p">
-            Otključajte ceo plan: preporuke, predložena pomagala i poruke svakoj negovateljici koja odgovara.
-          </p>
-        )}
+          <>
+            <div className="modal-head">
+              <div className="cg-avatar">{caregiver?.initials}</div>
+              <div>
+                <p className="doc-eyebrow">Poruka sa planom nege</p>
+                <p className="doc-title">{caregiver?.name}</p>
+              </div>
+            </div>
 
-        {!unlocked && (
-          <div className="pw-gate">
-            <p className="pw-gate-title">
-              <Lock size={12} strokeWidth={2} />
-              {caregiver ? 'Poruka se šalje posle pretplate' : 'Uz pretplatu'}
-            </p>
-            <ul className="paywall-list">
-              <li>
-                <Check size={12} strokeWidth={2.5} /> Poruke svim negovateljicama iz plana ({caregivers.length})
-              </li>
-              <li>
-                <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
-              </li>
-              <li>
-                <Check size={12} strokeWidth={2.5} /> Dostupnost potvrđuje naš tim
-              </li>
-            </ul>
-          </div>
-        )}
+            {alreadyAsked ? (
+              <p className="doc-p">Već ste poslali upit. {first} odgovara sa svoje table, a mi vam javljamo čim odgovori.</p>
+            ) : (
+              <>
+                <p className="doc-p">
+                  Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.
+                  {!unlocked && ' Poruka se šalje čim se pretplatite.'}
+                </p>
+                <Field label="Poruka za negovateljicu">
+                  <TextArea
+                    value={message}
+                    rows={5}
+                    onChange={setMessage}
+                    placeholder="Recite joj ukratko šta vam treba i kada."
+                  />
+                </Field>
+              </>
+            )}
 
-        {!unlocked && plans.length > 1 && (
-          <PlanChoice plans={plans} chosen={chosen} onChoose={setChosen} />
+            <div className="panel-card-actions is-end">
+              <Button variant="secondary" onClick={onClose}>
+                {alreadyAsked ? 'Zatvori' : 'Možda kasnije'}
+              </Button>
+              {!alreadyAsked &&
+                (unlocked ? (
+                  <Button variant="primary" disabled={!message.trim()} onClick={() => onSend(message.trim())}>
+                    Pošalji poruku
+                  </Button>
+                ) : (
+                  <Button variant="primary" onClick={() => setStep('plans')}>
+                    Dalje: izaberite plan
+                  </Button>
+                ))}
+            </div>
+          </>
         )}
-
-        {!unlocked ? (
-          <Button variant="primary" size="lg" full onClick={() => onPay(chosen)}>
-            Pretplati se · {planPrice(chosen)} {planEvery(chosen)}
-          </Button>
-        ) : caregiver && !alreadyAsked ? (
-          <Button variant="primary" size="lg" full disabled={!canSend} onClick={() => onSend(message.trim())}>
-            <Send size={14} strokeWidth={1.75} />
-            Pošalji poruku
-          </Button>
-        ) : null}
-        <Button variant="ghost" onClick={onClose}>
-          {unlocked && (alreadyAsked || !caregiver) ? 'Zatvori' : 'Možda kasnije'}
-        </Button>
       </motion.div>
     </motion.div>
   );
