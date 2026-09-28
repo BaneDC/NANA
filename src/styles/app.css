@@ -7083,8 +7083,27 @@ button.svc:hover {
      because each field sets its own size, and none of them may win here. */
   input:not([type='checkbox']):not([type='radio']),
   textarea,
-  select {
+  select,
+  [contenteditable]:not([contenteditable='false']) {
     font-size: 16px !important;
+  }
+
+  /* The chat's composer is not an input but an editable div, and the 14 set on
+     .nana-chat below was keeping it under 16 — so focusing it zoomed the page
+     on an iPhone and left the composer off to one side. Under a finger the
+     whole conversation is 16: the composer, the sent bubble and the answer stay
+     one size, as they are with a mouse, where all three are 14. (The kit's own
+     touch size is at least 16 too; ours was overriding it.) */
+  .nana-chat {
+    --ick-answer-size: 16px;
+    --ick-answer-leading: 24px;
+    --ick-composer-size: 16px;
+  }
+
+  .nana-chat [class*='ick-editor-'],
+  .nana-chat [class*='ick-surface-'][class*='ick-glass-'] [class*='ick-editor-'] {
+    font-size: 16px;
+    line-height: 24px;
   }
 
   /* several lines of 16px need the room of 16px lines */

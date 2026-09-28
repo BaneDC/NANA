@@ -242,7 +242,8 @@ Vrsta vrednosti određuje raspored:
 - **Stanje** se kaže samo značkom `.status-pill` sa jednim od modifikatora: `is-accepted` (zeleno, gotovo), `is-pending` (čeka), `is-declined` (ne), `is-muted` (neutralno), `is-attention` (narandžasto: poklapanje, izmenjeno).
 - **Poklapanje** se svuda piše „Poklapanje · 97%", kao značka `is-attention`.
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.
-- **Na dodir** su sva polja 16px (inače iOS zumira stranicu). To je već globalno pravilo; ne obaraj ga.
+- **Na dodir je svako polje najmanje 16px**, i `input`/`textarea`/`select` i svaki `contenteditable` (composer u chatu je `contenteditable`). Ispod 16px iOS zumira stranicu kad se polje fokusira i ostavi je zumiranu. To je globalno pravilo sa `!important`; ne obaraj ga, ni preko `--ick-*` promenljivih kita.
+- **Chat na dodir:** composer, poslata poruka i odgovor su svi 16/24 (sa mišem 14/20). Uvek su iste veličine.
 
 ---
 
