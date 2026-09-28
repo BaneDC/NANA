@@ -65,21 +65,20 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
-      {/* One field. The chips under it filtered by area and by what she does,
-          which is the plan's job — the list is already ordered by how well each
-          one fits it, and a family narrowing it by hand was undoing that. */}
-      <div className="panel-card">
-        <Field>
-          <Input
-            icon={Search}
-            type="search"
-            value={query}
-            placeholder="Ime, ili šta vam treba — demencija, obroci, noćne smene…"
-            aria-label="Pretraga negovateljica"
-            onChange={setQuery}
-          />
-        </Field>
-      </div>
+      {/* One field, on the page rather than in a card of its own: a card around
+          a single field was a frame around a frame. The chips that used to sit
+          under it filtered by area and by what she does, which is the plan's
+          job — the list is already ordered by how well each one fits it. */}
+      <Field>
+        <Input
+          icon={Search}
+          type="search"
+          value={query}
+          placeholder="Ime ili šta vam treba, npr. demencija"
+          aria-label="Pretraga negovateljica"
+          onChange={setQuery}
+        />
+      </Field>
 
       <div className="find-count">
         {/* what this page shows, out of everyone the search leaves */}
@@ -101,18 +100,22 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
             const request = care.requests.find((r) => r.caregiverId === c.id);
             const coming = arrangementOf(care, c.id);
             return (
-              <div className="caregiver is-wide" key={c.id}>
+              // The whole card opens her profile — the name is the link, and it
+              // covers the card. The one action sits in the card's footer; on a
+              // phone it goes, because the profile a tap opens has it too.
+              <div className="caregiver is-wide is-clickable" key={c.id}>
                 <div className="cg-avatar">{c.initials}</div>
                 <div className="cg-main">
                   <div className="cg-top">
                     <button
                       type="button"
-                      className="cg-name fam-name-link"
+                      className="cg-name card-link"
                       onClick={() => onDrawer({ kind: 'profile', caregiverId: c.id })}
                     >
                       {c.name}
                     </button>
                     <span className="status-pill is-attention">Poklapanje · {c.match}%</span>
+                    <ChevronRight className="card-go" size={16} strokeWidth={1.75} aria-hidden="true" />
                   </div>
                   <div className="cg-meta">
                     <Star size={11} strokeWidth={2} className="cg-star" />
@@ -126,28 +129,25 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
                       </span>
                     ))}
                   </div>
-                </div>
-                {/* Asking is not hiring. It sends the plan and waits — the terms
-                    are set afterwards, by both of them. */}
-                <div className="fam-find-actions">
-                  <Button variant="ghost" onClick={() => onDrawer({ kind: 'profile', caregiverId: c.id })}>
-                    Profil
-                  </Button>
-                  {coming ? (
-                    <span className="status-pill is-accepted">
-                      <Check size={12} strokeWidth={2} />
-                      {coming.endedOn ? 'Dolazila ranije' : 'Već dolazi'}
-                    </span>
-                  ) : request ? (
-                    <span className={`status-pill ${REQUEST_PILL[request.status].className}`}>
-                      {request.status !== 'declined' && <Check size={12} strokeWidth={2} />}
-                      {REQUEST_PILL[request.status].label(request)}
-                    </span>
-                  ) : (
-                    <Button variant="primary" onClick={() => ask(c)}>
-                      Pošalji poruku
-                    </Button>
-                  )}
+                  {/* Asking is not hiring. It sends the plan and waits — the
+                      terms are set afterwards, by both of them. */}
+                  <div className="panel-card-actions">
+                    {coming ? (
+                      <span className="status-pill is-accepted">
+                        <Check size={12} strokeWidth={2} />
+                        {coming.endedOn ? 'Dolazila ranije' : 'Već dolazi'}
+                      </span>
+                    ) : request ? (
+                      <span className={`status-pill ${REQUEST_PILL[request.status].className}`}>
+                        {request.status !== 'declined' && <Check size={12} strokeWidth={2} />}
+                        {REQUEST_PILL[request.status].label(request)}
+                      </span>
+                    ) : (
+                      <Button variant="primary" className="card-action" onClick={() => ask(c)}>
+                        Pošalji poruku
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

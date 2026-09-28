@@ -814,7 +814,7 @@ textarea {
 
 .facts.is-stacked .fact {
   padding: var(--spacing-3) 0;
-  border-top: 1px solid var(--card-line);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .facts.is-stacked .fact:first-child {
@@ -2893,11 +2893,11 @@ textarea {
   justify-content: space-between;
   gap: var(--spacing-3);
   padding: var(--spacing-2) 0;
-  border-top: 1px solid var(--card-line);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .rec-price:last-child {
-  border-bottom: 1px solid var(--card-line);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .rec-price-what,
@@ -5242,30 +5242,8 @@ button.svc:hover {
   }
 }
 
-.fam-name-link {
-  text-align: left;
-}
-
-.fam-name-link:hover {
-  color: var(--color-primary-700);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
 .cg-top > .status-pill {
   margin-left: var(--spacing-2);
-}
-
-.fam-find-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--spacing-1);
-  flex-shrink: 0;
-}
-
-.fam-find-actions > .status-pill {
-  margin-left: 0;
 }
 
 .fam-coordinator {
@@ -6299,21 +6277,46 @@ button.svc:hover {
     width: 100%;
   }
 
-  .fam-find-actions {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
+  /* The title and the page's actions share the top line, and what is said
+     under the title takes the whole width below them. As a flex row the actions
+     kept their width and the subtitle was squeezed into a column beside them,
+     six lines of three words. The text's own box steps aside (display:
+     contents) so its lines can be placed on the head's grid. */
+  .view-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--spacing-3);
+    row-gap: 0;
   }
 
-  /* the title takes the row and the actions drop under it rather than
-     squeezing it to a word and a half */
-  .view-head {
-    flex-wrap: wrap;
+  .view-head-text {
+    display: contents;
+  }
+
+  /* back link, then title and actions, then everything else under them */
+  .view-head-text > * {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .view-head-text > .back-link {
+    grid-row: 1;
+  }
+
+  .view-head-text > .view-title {
+    grid-row: 2;
+    grid-column: 1;
+    align-self: center;
+  }
+
+  .view-head > :not(.view-head-text) {
+    grid-row: 2;
+    grid-column: 2;
   }
 
   .view-head-actions {
     flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   /* a modal on a phone is the page: it takes the width it is given */
@@ -7016,15 +7019,134 @@ button.svc:hover {
 
   /* A link in a line of text: the target reaches past the words so the line
      around it does not have to move. */
-  .back-link,
-  .fam-name-link {
+  .back-link {
     position: relative;
   }
 
-  .back-link::after,
-  .fam-name-link::after {
+  .back-link::after {
     content: '';
     position: absolute;
     inset: -14px -4px;
+  }
+}
+
+/* ---------- Rows inside a card ----------
+   A caregiver in a recommendation, a visit, a request, a way to reach Jovana:
+   inside a card each is a row between hairlines, not a box of its own. A box
+   inside the card was a third level of corners — the card's 24, the box's 8,
+   and the button's 8 inside that — and no radius on the scale satisfies both
+   24 − 16 and 8 + 12. Two levels do: the card's 24 around 16 of padding, and
+   the 8 of whatever sits in it (docs/patterns.md §4). */
+
+:is(.rec-providers, .fam-rows, .contact-rows, .fam-visits, .visit-list):has(
+    > :is(.caregiver, .fam-row, .contact-row, .fam-visit, .visit)
+  ) {
+  gap: 0;
+}
+
+:is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit) {
+  padding: var(--spacing-3) 0;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+:is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit):first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+:is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit):last-child {
+  padding-bottom: 0;
+}
+
+/* on the attention card's tint the line is the tint's own */
+.is-attention :is(.fam-row, .fam-visit, .caregiver) {
+  border-top-color: var(--color-primary-200);
+}
+
+/* a row that opens something says so by its name, not by lifting */
+.fam-row.is-link:hover,
+.contact-row:hover {
+  border-color: var(--border-subtle);
+  box-shadow: none;
+}
+
+.contact-row:hover .contact-label,
+.fam-row.is-link:hover .fam-row-title {
+  color: var(--color-primary-700);
+}
+
+/* the others were told apart by a fill; the pill on each says it now */
+.fam-visit.is-charging,
+.fam-visit.is-planned,
+.fam-visit.is-cancelled,
+.fam-visit.is-awaiting {
+  background: none;
+}
+
+/* ---------- A card that opens something ----------
+   A caregiver, a plan, a visit: the whole card (or row) opens it. Its name is
+   the link and stretches over it; the action in it sits above that stretch. On
+   a phone the action goes and a chevron takes its place — a tap opens the
+   details, and the action is there too (docs/patterns.md §4). */
+
+.is-clickable {
+  position: relative;
+  cursor: pointer;
+}
+
+.card-link {
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.is-clickable .btn,
+.is-clickable .status-pill {
+  position: relative;
+  z-index: 1;
+}
+
+.is-clickable:hover .card-link {
+  color: var(--color-primary-700);
+}
+
+.panel-card.is-clickable:hover,
+.caregiver.is-wide.is-clickable:hover {
+  box-shadow: 0 0 0 1px var(--color-primary-300), var(--shadow-card);
+}
+
+.card-link:focus-visible {
+  outline: none;
+}
+
+.is-clickable:has(.card-link:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.card-go {
+  display: none;
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--text-disabled);
+}
+
+@media (max-width: 640px) {
+  .is-clickable .card-action {
+    display: none;
+  }
+
+  .card-go {
+    display: block;
   }
 }

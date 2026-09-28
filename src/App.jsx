@@ -114,6 +114,8 @@ export default function App() {
     []
   );
   const selectCaregiver = useCallback((c) => setPaywall({ caregiver: c }), []);
+  // her profile, from anywhere a caregiver is listed
+  const showProfile = useCallback((c) => setDrawer({ kind: 'profile', caregiverId: c.id }), []);
   const say = (text) => setFlash({ text, at: Date.now() });
 
   // The account's own fields, changed from the profile or from settings. One
@@ -648,6 +650,7 @@ export default function App() {
                   unlocked={unlocked}
                   onBack={() => setView('plans')}
                   onSelectCaregiver={selectCaregiver}
+            onOpenCaregiver={showProfile}
                   onUnlock={() => setPaywall({ caregiver: null })}
                   onAskAssistant={askAssistant}
                   onEdit={!openEntry.archived && plan ? () => setEditingPlan(true) : null}
@@ -696,6 +699,7 @@ export default function App() {
             plan={plan}
             unlocked={unlocked}
             onSelectCaregiver={selectCaregiver}
+            onOpenCaregiver={showProfile}
             onUnlock={() => setPaywall({ caregiver: null })}
             onClose={() => setRightPanel(null)}
           />

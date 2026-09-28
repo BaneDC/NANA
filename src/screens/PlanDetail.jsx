@@ -16,6 +16,7 @@ export default function PlanDetail({
   change,
   onBack,
   onSelectCaregiver,
+  onOpenCaregiver,
   onUnlock,
   onAskAssistant,
   onEdit,
@@ -77,6 +78,7 @@ export default function PlanDetail({
         archived={archived}
         change={shownChange}
         onSelectCaregiver={onSelectCaregiver}
+        onOpenCaregiver={onOpenCaregiver}
         onUnlock={onUnlock}
         onFindCaregivers={onFindCaregivers}
       />

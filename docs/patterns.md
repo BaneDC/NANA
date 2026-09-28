@@ -6,8 +6,9 @@ Sve mere su na mreži od 4px. Radijusi su samo 4 / 8 / 16 / 24 / 32, a unutrašn
 
 ## 1. Stranica
 
-- **Glava stranice** (`.view-head`): naslov 16px medium, ispod podnaslov 12px sivo. Akcije stranice su desno u glavi.
+- **Glava stranice** (`.view-head`): naslov 16px medium, ispod podnaslov 12px sivo. Akcije stranice su desno u glavi. Na telefonu su naslov i akcije u istom redu, a podnaslov je ispod njih, celom širinom.
 - **Nazad** (`.back-link`): 12px sivo sa strelicom, iznad naslova. Jedan izgled na svim stranicama.
+- **Pretraga i filteri** stoje na stranici, ne u kartici. Kartica oko jednog polja je okvir oko okvira.
 
 ## 2. Grupa kartica
 
@@ -31,8 +32,19 @@ Postoji jedna kartica (`.panel-card`): bela, radius 24, padding 16, razmak 8, se
 ## 4. Stavke (negovateljice, posete, upiti, kanali kontakta)
 
 - Stavka **sama na stranici** je kartica (pravilo 3). Primeri: negovateljica na „Pronađi", plan na „Planovi nege".
-- Stavka **unutar kartice** je red: bela podloga, ivica od 1px, radius 8, padding 12, bez senke. Naslov reda je 12px medium, jedan korak ispod naslova kartice.
-- Akcija stavke je desno u redu, a na telefonu ispod, preko cele širine.
+- Stavka **unutar kartice** je red odvojen linijom, a ne kutija u kutiji: padding 12 gore i dole, linija od 1px između redova, bez podloge i bez radiusa. Naslov reda je 12px medium, jedan korak ispod naslova kartice.
+
+  Razlog je pravilo radiusa: unutrašnji radius + padding = spoljni radius. Kutija u kartici je treći nivo uglova (kartica 24, kutija 8, dugme 8 u njoj), a nijedan radius na skali ne zadovoljava i 24 − 16 i 8 + 12. Sa redovima ostaju dva nivoa: kartica 24 oko paddinga 16, a unutra sve sa radiusom 8.
+
+**Šta se klikne:**
+- Kartica ili red koji predstavlja nešto sa svojim detaljima (negovateljica, plan, poseta) je **ceo klikabilan** i otvara detalje. Ime je link koji se razvlači preko cele kartice (`.is-clickable` + `.card-link`). Na hover se kartica uokviri, a ime dobije boju.
+- **Akcija** na takvoj kartici (npr. „Pošalji poruku"):
+  - na kartici: u footeru, dole levo, poravnata sa tekstom;
+  - u redu unutar kartice: desno u redu;
+  - akcija ima prednost nad klikom na karticu, pa klik na dugme radi samo ono što dugme kaže.
+- **Na telefonu** takva kartica nema dugme, nego strelicu desno (`.card-go`). Tap otvara detalje, a ista akcija je tamo. Deset dugmadi „Pošalji poruku" jedno ispod drugog na telefonu nisu izbor.
+- Kartica koja ne predstavlja ništa što se otvara (podešavanje, informacija) nije klikabilna. Akcije su joj u footeru i ostaju i na telefonu.
+- Dugme desno samo u redu, kad sadržaj reda staje u dve linije. U kartici sa više teksta (bio, oznake) dugme ide u footer.
 
 ## 5. Podaci (oznaka — vrednost)
 

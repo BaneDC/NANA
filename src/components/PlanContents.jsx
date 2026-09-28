@@ -18,6 +18,7 @@ export default function PlanContents({
   plan,
   unlocked,
   onSelectCaregiver,
+  onOpenCaregiver,
   onUnlock,
   onFindCaregivers,
   archived,
@@ -44,6 +45,7 @@ export default function PlanContents({
               changed={Boolean(change?.recs.includes(rec.id))}
               changeKey={change?.at}
               onSelectCaregiver={onSelectCaregiver}
+              onOpenCaregiver={archived ? null : onOpenCaregiver}
               onFindCaregivers={archived ? null : onFindCaregivers}
             />
           ))}
@@ -61,6 +63,8 @@ export default function PlanContents({
                 changed={Boolean(change?.recs.includes(rec.id))}
                 changeKey={change?.at}
                 onSelectCaregiver={onSelectCaregiver}
+                onOpenCaregiver={archived ? null : onOpenCaregiver}
+              onOpenCaregiver={archived ? null : onOpenCaregiver}
                 onFindCaregivers={archived ? null : onFindCaregivers}
               />
             ))

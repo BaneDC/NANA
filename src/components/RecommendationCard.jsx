@@ -17,6 +17,7 @@ export default function RecommendationCard({
   changed,
   changeKey,
   onSelectCaregiver,
+  onOpenCaregiver,
   onFindCaregivers,
 }) {
   return (
@@ -35,7 +36,7 @@ export default function RecommendationCard({
           {caregiversFor(unlocked)
             .slice(0, 5)
             .map((c) => (
-              <CaregiverRow key={c.id} caregiver={c} onSelect={onSelectCaregiver} />
+              <CaregiverRow key={c.id} caregiver={c} onSelect={onSelectCaregiver} onOpen={onOpenCaregiver} />
             ))}
           {onFindCaregivers && (
             <div className="panel-card-actions">
