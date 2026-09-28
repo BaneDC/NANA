@@ -61,22 +61,6 @@ Za novi tekst kartice koristi `.tip-body`. Ne uvodi novu klasu istog izgleda.
 
 Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je veličine naslova kartice.
 
----|---|---|---|---|
-| Naslov stranice | `.view-title` | 16 / 24 | medium | primary |
-| Podnaslov stranice | `.view-sub` | 12 / 18 | normal | secondary |
-| Naslov grupe | `.section-title` | 12 / 16 | medium | secondary |
-| Naslov kartice | `.doc-section-title` | 14 / 20 | medium | primary |
-| Naslov reda u kartici | `.fam-row-title`, `.cg-name` | 12 / 16 | medium | primary |
-| Tekst kartice | `.tip-body`, `.doc-p`, `.fam-sub`, `.rec-why` (isti stil) | 12 / 18 | normal | secondary |
-| Oznaka u kartici | `.card-label` | 12 / 16 | medium | secondary |
-| Napomena ispod polja ili kontrole | `.ag-hint`, `.tf-hint` | 12 / 16 | normal | secondary |
-
-Za novi tekst kartice koristi `.tip-body`. Ne uvodi petu klasu istog izgleda.
-
-**Na dodir, u dijalozima i drawer-ima** (`.modal.is-wide`, `.drawer-body`) tekst je 14/20 umesto 12/18. Polja su na dodir 16px (inače iOS zumira stranicu), pa je rečenica tik iznad polja od 12px izgledala kao fusnota. Na stranicama tekst ostaje 12, jer tamo nema polja pored njega. Višeredno polje na dodir ima visinu reda 24.
-
-Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je 14px.
-
 ---
 
 ## 3. Razmaci
