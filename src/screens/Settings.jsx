@@ -12,6 +12,7 @@ import { tasksOf } from '../data/caregiverTasks';
 const LANGUAGES = [
   { id: 'sr', label: 'Srpski' },
   { id: 'en', label: 'English' },
+  { id: 'fi', label: 'Suomi' },
 ];
 
 const COOKIE_KINDS = [
@@ -124,8 +125,6 @@ function TwoFactorModal({ onDone, onClose }) {
 
 export default function Settings({ unlocked, care, user, onCare, onSaveUser, onAskAssistant }) {
   const [prefs, setPrefs] = useState({
-    replies: true,
-    schedule: true,
     digest: false,
     marketing: false,
   });
@@ -205,20 +204,8 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         <p className="doc-section-title">Obaveštenja</p>
         <div className="toggle-list">
           <Toggle
-            label="Odgovori negovateljica"
-            hint="Kad neko prihvati ili odbije vaš upit"
-            on={prefs.replies}
-            onChange={set('replies')}
-          />
-          <Toggle
-            label="Promene rasporeda"
-            hint="Otkazane ili pomerene posete"
-            on={prefs.schedule}
-            onChange={set('schedule')}
-          />
-          <Toggle
-            label="Nedeljni pregled"
-            hint="Nedeljom, kratak pregled poseta te nedelje"
+            label="Mesečni pregled"
+            hint="Jednom mesečno, kratak pregled poseta tog meseca"
             on={prefs.digest}
             onChange={set('digest')}
           />
