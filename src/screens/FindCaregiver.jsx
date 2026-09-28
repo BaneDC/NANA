@@ -20,7 +20,7 @@ const REQUEST_PILL = {
 
 // How many fit on a page. The list is ordered by how well each one matches the
 // plan, so a page is "the next few best", not an arbitrary slice.
-const PER_PAGE = 5;
+const PER_PAGE = 10;
 
 export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAskAssistant }) {
   const [query, setQuery] = useState('');
@@ -82,8 +82,9 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
       </div>
 
       <div className="find-count">
+        {/* what this page shows, out of everyone the search leaves */}
         <span>
-          {results.length} od {caregivers.length} negovateljica
+          {shown.length} od {results.length} negovateljica
         </span>
         {query && (
           <button type="button" className="visit-raise" onClick={() => setQuery('')}>
