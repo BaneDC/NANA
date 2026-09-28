@@ -203,8 +203,8 @@ Vrsta vrednosti određuje raspored:
 
 | Akcija | Varijanta |
 |---|---|
-| Podešava nešto što nedostaje ili menja (pretplati se, dodaj karticu, uključi, promeni lozinku, pošalji) | `primary` |
-| Menja nešto što je već podešeno kroz karticu sa stanjem (promeni karticu) | `secondary` |
+| Podešava nešto što nedostaje (pretplati se, dodaj karticu, uključi, pošalji) | `primary` |
+| Menja nešto što je već podešeno (promeni karticu, promeni lozinku) | `secondary` |
 | Gasi ili otkazuje (otkaži pretplatu, isključi 2FA) — uvek prvo traži potvrdu | `secondary` |
 | Briše nepovratno (obriši nalog) | `danger` |
 | Sporedna akcija pored glavne u dijalogu („Otkaži", „Nazad") | `secondary` |
@@ -216,7 +216,7 @@ Vrsta vrednosti određuje raspored:
   | Pretplata | „Pretplatite se" — primary | „Otkaži pretplatu" — secondary | akcija postaje otkazivanje |
   | Dvofaktorska prijava | „Uključi" — primary | „Isključi" — secondary | akcija postaje gašenje |
   | Način plaćanja | „Dodaj karticu" — primary | „Promeni karticu" — secondary | kartica je podešena, a menjanje je održavanje, ne preporuka |
-  | Lozinka | „Promenite lozinku" — primary | isto | nema stanja |
+  | Lozinka | „Promenite lozinku" — secondary | isto | lozinka uvek postoji, pa je ovo uvek menjanje |
   | Kolačići | „Podešavanja kolačića" — primary | isto | nema stanja |
   | Nalog | „Preuzmi moje podatke" — primary; „Obriši nalog" — danger | isto | nema stanja |
 - **U dijalogu i drawer-u** akcije su dole desno (`.panel-card-actions.is-end`): prvo secondary, pa glavna.

@@ -285,7 +285,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           </div>
           <p className="tip-body">Promenite lozinku kojom se prijavljujete.</p>
           <div className="panel-card-actions">
-            <Button variant="primary" onClick={() => setPasswordOpen(true)}>
+            <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
               Promenite lozinku
             </Button>
           </div>
