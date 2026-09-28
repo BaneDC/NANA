@@ -6,6 +6,7 @@ import AskAssistant from '../components/AskAssistant';
 import CaregiverTasksEditor from '../components/CaregiverTasksEditor';
 import { chargingVisit, heldNow, money, paidThisMonth, visitCharge, serviceTitle } from '../data/familyCare';
 import { tasksOf } from '../data/caregiverTasks';
+import { priceLine } from '../data/plans';
 
 // What the account remembers besides the person: kept on the user record, so
 // signing back in finds it as it was left.
@@ -298,7 +299,7 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
                 <Check size={12} strokeWidth={2.5} /> Preporuke lekara i pomagala
               </li>
             </ul>
-            <p className="tip-body">1.490 RSD mesečno · obnavlja se 4. septembra 2026.</p>
+            <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>
             <div className="panel-card-actions">
               <Button variant="secondary">Upravljaj plaćanjem</Button>
             </div>

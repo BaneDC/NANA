@@ -592,23 +592,24 @@ export default function ImmersiveConversation({
   // handed to the rest of the app is still buildPlan's; this is its opening.
   const overview = stage === 'plan' ? planOverview(answers, notes) : null;
 
+  // Not on the blank first page: nothing has been said yet, so "Tek počinjemo"
+  // tells no one anything. Not on the overview either: the plan is written, so
+  // how far along she was is over.
+  const showScale = stage !== 'open' && stage !== 'plan';
+
   return (
+    // `has-scale` says the top bar is there, so the stage can leave room for it
+    // on a phone — the blank page and the overview have no bar.
     <motion.div
-      className="immersive has-scale"
+      className={`immersive${showScale ? ' has-scale' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.9, ease: 'easeOut' } }}
       exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeIn' } }}
     >
       <Backdrop />
 
-      {/* docked at the top centre, outside the stage so it stays put as the
-          stage scrolls */}
-      {/* Not on the blank first page: nothing has been said yet, so "Tek
-          počinjemo" tells no one anything — and that page runs to the bottom
-          of the screen, where the scale sat on top of the emergency line. Not
-          on the overview either: the plan is written, so how far along she was
-          is over, and the page under it is long enough to scroll. */}
-      {stage !== 'open' && stage !== 'plan' && <UnderstandingPanel level={level} dropped={dropped} />}
+      {/* docked at the top, outside the stage so it stays put as it scrolls */}
+      {showScale && <UnderstandingPanel level={level} dropped={dropped} />}
 
       <HistoryPanel open={historyOpen} entries={log} onClose={() => setHistoryOpen(false)} />
 

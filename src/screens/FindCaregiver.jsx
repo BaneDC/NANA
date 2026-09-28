@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Check, Phone, Search, Star } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Check, ChevronLeft, ChevronRight, Phone, Search, Star } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import { arrangementOf } from '../data/familyCare';
 import Button from '../components/Button';
@@ -10,26 +10,24 @@ import AskAssistant from '../components/AskAssistant';
 // hands, or a different one, is a thing a family can do at any time, and a
 // capability that exists on only one screen is not a capability.
 
-const AREAS = [...new Set(caregivers.map((c) => c.area))];
-
 // where an earlier request to her stands, said on her card
 const REQUEST_PILL = {
   pending: { className: 'is-pending', label: (r) => `Upit poslat ${r.requested}` },
   accepted: { className: 'is-accepted', label: () => 'Prihvatila' },
   declined: { className: 'is-declined', label: () => 'Odbila' },
 };
-const SKILLS = [...new Set(caregivers.flatMap((c) => c.tags))];
+
+// How many fit on a page. The list is ordered by how well each one matches the
+// plan, so a page is "the next few best", not an arbitrary slice.
+const PER_PAGE = 5;
 
 export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAskAssistant }) {
   const [query, setQuery] = useState('');
-  const [area, setArea] = useState(null);
-  const [skill, setSkill] = useState(null);
+  const [page, setPage] = useState(1);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const found = caregivers.filter((c) => {
-      if (area && c.area !== area) return false;
-      if (skill && !c.tags.includes(skill)) return false;
       if (!q) return true;
       return (
         c.name.toLowerCase().includes(q) ||
@@ -39,16 +37,18 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
     });
     // best match first, as the recommendation it is
     return found.sort((a, b) => b.match - a.match);
-  }, [query, area, skill]);
+  }, [query]);
+
+  const pages = Math.max(1, Math.ceil(results.length / PER_PAGE));
+  // A search that shortens the list can leave you on a page that no longer
+  // exists; the first page of the new results is where you meant to be.
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
+  const shown = results.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   // the message is written in the modal and sent once the subscription is paid
   const ask = (c) => onContact(c);
-
-  const clear = () => {
-    setQuery('');
-    setArea(null);
-    setSkill(null);
-  };
 
   return (
     <div className="view">
@@ -64,6 +64,9 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
         <AskAssistant onClick={onAskAssistant} />
       </div>
 
+      {/* One field. The chips under it filtered by area and by what she does,
+          which is the plan's job — the list is already ordered by how well each
+          one fits it, and a family narrowing it by hand was undoing that. */}
       <div className="panel-card">
         <label className="find-search">
           <Search size={14} strokeWidth={1.75} />
@@ -74,56 +77,24 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
-
-        <p className="ag-label">Deo grada</p>
-        <div className="ag-services">
-          {AREAS.map((a) => (
-            <button
-              key={a}
-              type="button"
-              className={`svc is-sm${area === a ? ' is-on' : ''}`}
-              onClick={() => setArea(area === a ? null : a)}
-              aria-pressed={area === a}
-            >
-              {a}
-            </button>
-          ))}
-        </div>
-
-        <p className="ag-label">Čime se bave</p>
-        <div className="ag-services">
-          {SKILLS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={`svc is-sm${skill === t ? ' is-on' : ''}`}
-              onClick={() => setSkill(skill === t ? null : t)}
-              aria-pressed={skill === t}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="find-count">
         <span>
           {results.length} od {caregivers.length} negovateljica
         </span>
-        {(query || area || skill) && (
-          <button type="button" className="visit-raise" onClick={clear}>
-            Poništi filtere
+        {query && (
+          <button type="button" className="visit-raise" onClick={() => setQuery('')}>
+            Poništi pretragu
           </button>
         )}
       </div>
 
       {results.length === 0 ? (
-        <p className="board-empty">
-          Niko ne odgovara. Proširite deo grada ili uklonite neki filter.
-        </p>
+        <p className="board-empty">Niko ne odgovara pretrazi. Probajte drugu reč.</p>
       ) : (
         <div className="view-list">
-          {results.map((c) => {
+          {shown.map((c) => {
             const request = care.requests.find((r) => r.caregiverId === c.id);
             const coming = arrangementOf(care, c.id);
             return (
@@ -179,6 +150,40 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
             );
           })}
         </div>
+      )}
+
+      {pages > 1 && (
+        <nav className="pager" aria-label="Strane">
+          <Button
+            variant="secondary"
+            iconOnly
+            disabled={page === 1}
+            aria-label="Prethodna strana"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            <ChevronLeft size={14} strokeWidth={2} />
+          </Button>
+          {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+            <button
+              key={n}
+              type="button"
+              className={`pager-page${n === page ? ' is-on' : ''}`}
+              aria-current={n === page ? 'page' : undefined}
+              onClick={() => setPage(n)}
+            >
+              {n}
+            </button>
+          ))}
+          <Button
+            variant="secondary"
+            iconOnly
+            disabled={page === pages}
+            aria-label="Sledeća strana"
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+          >
+            <ChevronRight size={14} strokeWidth={2} />
+          </Button>
+        </nav>
       )}
 
       {/* The way out for someone who does not want to choose from a list. */}

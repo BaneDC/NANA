@@ -1,6 +1,7 @@
 import { Check, Send, Star } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import { allVisits, firstName, money, pendingVersion, services, waitingOnYou } from '../data/familyCare';
+import { priceLine } from '../data/plans';
 import PlanContents from './PlanContents';
 import VisitRow from './family/VisitRow';
 import Button from './Button';
@@ -134,12 +135,12 @@ function CaregiversPane({ care, onContact }) {
   );
 }
 
-function SettingsPane({ care, unlocked, onUnlock }) {
+function SettingsPane({ care, unlocked, country, onUnlock }) {
   return (
     <div className="bc-lines ag-terms">
       <div className="bc-line">
         <span className="bc-line-label">Pretplata</span>
-        <span>{unlocked ? 'Aktivna · 1.490 RSD mesečno' : 'Nije aktivna'}</span>
+        <span>{unlocked ? `Aktivna · ${priceLine(country)}` : 'Nije aktivna'}</span>
       </div>
       <div className="bc-line">
         <span className="bc-line-label">Kartica</span>
@@ -189,7 +190,7 @@ export function paneFor(openId, ctx) {
     case 'find-caregiver':
       return { title: 'Negovateljice za vas', meta: `${caregivers.length}`, children: <div className="nana-pane"><CaregiversPane care={care} onContact={onContact} /></div> };
     case 'settings':
-      return { title: 'Pretplata i plaćanje', children: <div className="nana-pane"><SettingsPane care={care} unlocked={unlocked} onUnlock={onUnlock} /></div> };
+      return { title: 'Pretplata i plaćanje', children: <div className="nana-pane"><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></div> };
     case 'caregiver': {
       const c = caregivers.find((x) => x.id === id);
       if (!c) return null;

@@ -1923,7 +1923,9 @@ textarea {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2;
+  /* above the scale's bar: `.imm-chrome` makes its own stacking context, so
+     the controls inside it cannot climb over the dock on their own */
+  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6320,5 +6322,188 @@ textarea.wo-text {
 @media (max-width: 640px) {
   .ct-list {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- The plans, where there is more than one ---------- */
+
+.pw-plans {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* the same selectable card as a caregiver task: a mark, then what it is */
+.pw-plan {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-0);
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pw-plan:hover {
+  border-color: var(--color-primary-300);
+}
+
+.pw-plan.is-on {
+  border-color: var(--primary);
+  background: var(--primary-subtle);
+}
+
+.pw-plan-mark {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--surface-0);
+  color: var(--primary-foreground);
+}
+
+.pw-plan.is-on .pw-plan-mark {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.pw-plan-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.pw-plan-top {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.pw-plan-name {
+  flex: 1;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+/* the price is the thing being compared, so it is the one that is set larger */
+.pw-plan-price {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.pw-plan.is-on .pw-plan-price,
+.pw-plan.is-on .pw-plan-name {
+  color: var(--primary-subtle-foreground);
+}
+
+.pw-plan-note {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+/* ---------- Pages of a list ---------- */
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+}
+
+/* the number is a target of its own, the size of the arrows beside it */
+.pager-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--chip-size);
+  height: var(--chip-size);
+  padding: 0 var(--spacing-2);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pager-page:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+.pager-page.is-on {
+  background: var(--color-primary-200);
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+/* ---------- The onboarding on a phone ----------
+   On a wide screen the scale floats at the top centre and the confirm sits
+   under the answers, because there is room for both and the page rarely
+   scrolls. On a phone the answers run past the fold, so the two become bars:
+   the scale across the top, the confirm across the bottom, and the question
+   scrolls between them. */
+
+@media (max-width: 640px) {
+  .imm-know-dock {
+    top: 0;
+    padding: var(--spacing-3) var(--spacing-3) var(--spacing-2);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  /* the bar is the band now, so the blur that used to stand in for one goes */
+  .imm-know::before {
+    display: none;
+  }
+
+  /* room for both bars, and no 20vh drop under a bar that is already there */
+  .immersive.has-scale .imm-stage {
+    padding-top: 104px;
+  }
+
+  .imm-stage {
+    padding-bottom: 88px;
+  }
+
+  .imm-screen.is-conversation {
+    margin-top: var(--spacing-6);
+  }
+
+  /* The confirm, always within reach of a thumb. Fixed rather than sticky:
+     the stage is the scroller and its child is centred, which sticky has
+     nothing to hold on to. */
+  .imm-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    margin-top: 0;
+    padding: var(--spacing-3) var(--spacing-4);
+    padding-bottom: calc(var(--spacing-3) + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  /* one button takes the bar; two keep their ends */
+  .imm-actions > .btn:only-child {
+    width: 100%;
   }
 }

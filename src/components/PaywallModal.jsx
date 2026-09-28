@@ -2,7 +2,48 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, FileText, Lock, Send, X } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
+import { perMonth, planEvery, planPrice, planSaving, planTitle, plansFor } from '../data/plans';
 import Button from './Button';
+
+// The plans, when there is more than one to choose from. Each card says the
+// three things somebody compares: what it is called, what it costs, and what
+// that works out to a month — the last one being the only way two plans with
+// different periods can be compared at all.
+function PlanChoice({ plans, chosen, onChoose }) {
+  return (
+    <div className="pw-plans">
+      {plans.map((plan) => {
+        const saving = planSaving(plan, plans);
+        const on = plan.id === chosen.id;
+        return (
+          <button
+            key={plan.id}
+            type="button"
+            className={`pw-plan${on ? ' is-on' : ''}`}
+            aria-pressed={on}
+            onClick={() => onChoose(plan)}
+          >
+            <span className="pw-plan-mark">{on && <Check size={12} strokeWidth={3} />}</span>
+            <span className="pw-plan-text">
+              <span className="pw-plan-top">
+                <span className="pw-plan-name">{planTitle(plan)}</span>
+                {saving && <span className="status-pill is-accepted">Uštedite {saving}%</span>}
+              </span>
+              <span className="pw-plan-price">
+                {planPrice(plan)} {planEvery(plan)}
+              </span>
+              <span className="pw-plan-note">
+                {plan.months === 1
+                  ? 'Otkazujete kad god želite.'
+                  : `${perMonth(plan)} mesečno, naplaćeno odjednom.`}
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 // One modal, two ways in: writing to a caregiver, or unlocking the plan.
 //
@@ -15,8 +56,12 @@ import Button from './Button';
 // which read as ours rather than theirs: a family looking at a stranger's name
 // was handed a paragraph to send under it, and the first thing most of them did
 // was select all and delete. The placeholder says what belongs there instead.
-export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, onPay, onSend, onClose }) {
+export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, country, onPay, onSend, onClose }) {
   const [message, setMessage] = useState('');
+  const plans = plansFor(country);
+  // The longer plan is the one we would rather sell, so it is the one already
+  // chosen — but only where there is a choice at all.
+  const [chosen, setChosen] = useState(() => plans[plans.length - 1]);
   const first = caregiver?.name.split(' ')[0];
   const canSend = unlocked && message.trim().length > 0;
 
@@ -98,9 +143,13 @@ export default function PaywallModal({ caregiver, plan, unlocked, alreadyAsked, 
           </div>
         )}
 
+        {!unlocked && plans.length > 1 && (
+          <PlanChoice plans={plans} chosen={chosen} onChoose={setChosen} />
+        )}
+
         {!unlocked ? (
-          <Button variant="primary" size="lg" full onClick={onPay}>
-            Pretplati se · 1.490 RSD mesečno
+          <Button variant="primary" size="lg" full onClick={() => onPay(chosen)}>
+            Pretplati se · {planPrice(chosen)} {planEvery(chosen)}
           </Button>
         ) : caregiver && !alreadyAsked ? (
           <Button variant="primary" size="lg" full disabled={!canSend} onClick={() => onSend(message.trim())}>

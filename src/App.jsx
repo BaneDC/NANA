@@ -12,7 +12,7 @@ import Logo from './components/Logo';
 import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
-import { demoAnswers, demoNotes, demoUser, wantsDemo } from './data/demoCase';
+import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Menu, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -56,7 +56,9 @@ export default function App() {
   // `role` is chosen at registration and decides which of the two applications
   // this is: the family's, or the caregiver's. Switching means starting over,
   // which is what the restart button is for.
-  const [user, setUser] = useState(DEMO ? demoUser : { name: '', email: '', role: 'family' });
+  const [user, setUser] = useState(
+    DEMO ? { ...demoUser, country: demoCountry() } : { name: '', email: '', role: 'family' }
+  );
   // answers live here so the profile can read them without a second source of truth
   const [answers, setAnswers] = useState(() => demoStart || {});
   const [plan, setPlan] = useState(() => (DEMO ? buildPlan(demoStart, demoNotes) : null));
@@ -271,6 +273,7 @@ export default function App() {
     plan,
     answers,
     care,
+    user,
     apiKey,
     onAddNotes: addNotes,
     onApplyChanges: (changes) => editAnswers(changes, { source: 'assistant' }),
@@ -301,7 +304,7 @@ export default function App() {
   // The demo from the sign-in screen: the same finished case as /?demo.
   const openDemo = () => {
     const answersNow = reconcile({}, demoAnswers).answers;
-    setUser(demoUser);
+    setUser({ ...demoUser, country: demoCountry() });
     setAnswers(answersNow);
     setNotes(demoNotes);
     setPlan(buildPlan(answersNow, demoNotes));
@@ -843,6 +846,7 @@ export default function App() {
             plan={plan}
             unlocked={unlocked}
             alreadyAsked={Boolean(paywall.caregiver && care.requests.some((q) => q.caregiverId === paywall.caregiver.id))}
+            country={user.country}
             onPay={() => {
               setUnlocked(true);
               say('Pretplata je aktivna.');

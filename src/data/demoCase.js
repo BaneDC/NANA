@@ -53,3 +53,15 @@ export const wantsDemo = () => {
     return false;
   }
 };
+
+// `?demo=fi` opens the same finished case as a family in Finland, which is the
+// only way to see the two-plan subscription without registering with a Finnish
+// number. Anything else is Serbia, as `demoUser` says.
+export const demoCountry = () => {
+  try {
+    const v = new URLSearchParams(window.location.search).get('demo');
+    return v ? v.toUpperCase() : demoUser.country;
+  } catch {
+    return demoUser.country;
+  }
+};
