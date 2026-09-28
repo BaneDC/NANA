@@ -257,6 +257,7 @@ Vrsta vrednosti određuje raspored:
 
 - **Prelomi:** ≤640px je telefon, ≤900px je uzak ekran (meni postaje fioka).
 - **Paneli sa strane** (asistent, plan) su na uskom ekranu preko celog ekrana, bez radiusa.
+- **Svaki dijalog je na telefonu drawer:** i drawer-i (`Modal`) i centrirani dijalog (`.modal`, izbor plana i poruka negovateljici) zauzimaju celu visinu, 8px od ivica ekrana, sa radiusom 24 i paddingom 16. Sadržaj se skroluje, a poslednji red dugmadi je zakačen na dno sa linijom iznad. Na desktopu je drawer sa strane, a centrirani dijalog u sredini.
 - **Ništa ne sme da izlazi van ekrana** na 375px.
 - Pravila za telefon iz §4, §5, §7 i §9 rešava CSS. Markup je isti na svim širinama.
 

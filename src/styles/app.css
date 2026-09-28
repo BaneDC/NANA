@@ -6295,13 +6295,44 @@ button.svc:hover {
     justify-content: flex-end;
   }
 
-  /* a modal on a phone is the page: it takes the width it is given */
-  .modal {
-    max-width: none;
-  }
-
   .drawer-backdrop {
     padding: var(--spacing-2);
+  }
+
+  /* A dialog on a phone is a drawer: the same full-height pane 8px in from the
+     screen's edges, the same 16 of padding, and its action row pinned to the
+     floor with the rest scrolling under it — so choosing a plan and writing to
+     a caregiver behave like every other pane on a phone, not like a card
+     floating in the middle of one. */
+  .modal-backdrop {
+    align-items: stretch;
+    padding: var(--spacing-2);
+  }
+
+  .modal,
+  .modal.is-wide,
+  .modal.is-plans,
+  .modal.is-plans.is-single {
+    max-width: none;
+    padding: var(--spacing-4);
+    box-shadow: var(--shadow-container);
+  }
+
+  .modal > .panel-card-actions:last-child {
+    width: auto;
+    position: sticky;
+    bottom: calc(-1 * var(--spacing-4));
+    z-index: 1;
+    margin: auto calc(-1 * var(--spacing-4)) calc(-1 * var(--spacing-4));
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--surface-elevated);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* room for the close button, which is 44 under a finger */
+  .modal .pw-head,
+  .modal .modal-head {
+    padding-right: 48px;
   }
 }
 
