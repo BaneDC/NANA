@@ -31,6 +31,28 @@ export function updateAccount(user) {
   }
 }
 
+// Changing it from Settings. The current one has to check out first, and what
+// is stored is the new hash — the password itself is never written down, here
+// or anywhere else.
+export async function changePassword(email, current, next) {
+  let record = null;
+  try {
+    record = JSON.parse(localStorage.getItem(KEY) || 'null');
+  } catch {
+    record = null;
+  }
+  if (!record || record.user.email.toLowerCase() !== String(email).trim().toLowerCase()) {
+    return 'no-account';
+  }
+  if (record.passwordHash !== (await hash(current))) return 'wrong-current';
+  try {
+    localStorage.setItem(KEY, JSON.stringify({ ...record, passwordHash: await hash(next) }));
+  } catch {
+    return 'not-saved';
+  }
+  return null;
+}
+
 export async function signIn(email, password) {
   let record = null;
   try {

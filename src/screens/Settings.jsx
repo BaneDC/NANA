@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Check, Cookie, CreditCard, Globe, Pencil, Shield, ShieldCheck } from 'lucide-react';
+import { Check, Cookie, CreditCard, Globe, KeyRound, Shield, ShieldCheck, Trash2 } from 'lucide-react';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AskAssistant from '../components/AskAssistant';
-import CaregiverTasksEditor from '../components/CaregiverTasksEditor';
-import { chargingVisit, heldNow, money, paidThisMonth, visitCharge, serviceTitle } from '../data/familyCare';
-import { tasksOf } from '../data/caregiverTasks';
+import CookieSettings from '../components/CookieSettings';
+import TwoFactorSetup from '../components/TwoFactorSetup';
+import { chargingVisit, heldNow, money, paidThisMonth, visitCharge } from '../data/familyCare';
+import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
+import { changePassword } from '../lib/account';
 import { priceLine } from '../data/plans';
 
 // What the account remembers besides the person: kept on the user record, so
@@ -14,12 +16,6 @@ const LANGUAGES = [
   { id: 'sr', label: 'Srpski' },
   { id: 'en', label: 'English' },
   { id: 'fi', label: 'Suomi' },
-];
-
-const COOKIE_KINDS = [
-  { id: 'needed', label: 'Neophodni', hint: 'Prijava i bezbednost. Bez njih sajt ne radi.', fixed: true },
-  { id: 'analytics', label: 'Analitika', hint: 'Koliko se koja stranica koristi, bez imena.' },
-  { id: 'marketing', label: 'Marketing', hint: 'Merenje oglasa i preporuka.' },
 ];
 
 function Toggle({ label, hint, on, onChange, fixed }) {
@@ -43,100 +39,116 @@ function Toggle({ label, hint, on, onChange, fixed }) {
   );
 }
 
-// Which cookies are allowed. The necessary ones are shown but cannot be turned
-// off — a switch that does nothing is worse than a sentence saying why.
-function CookieModal({ cookies, onSave, onClose }) {
-  const [draft, setDraft] = useState({ analytics: cookies.analytics, marketing: cookies.marketing });
+// Changing the password. The current one has to check out, the new one is
+// typed twice, and neither leaves this dialog: `changePassword` compares and
+// stores hashes (see lib/account).
+function PasswordModal({ email, onDone, onClose }) {
+  const [current, setCurrent] = useState('');
+  const [next, setNext] = useState('');
+  const [again, setAgain] = useState('');
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const short = next.length > 0 && next.length < 8;
+  const mismatch = again.length > 0 && next !== again;
+  const ready = current && next.length >= 8 && next === again && !saving;
+
+  const submit = async () => {
+    setSaving(true);
+    const fault = await changePassword(email, current, next);
+    setSaving(false);
+    if (!fault) return setDone(true);
+    setError(
+      fault === 'wrong-current'
+        ? 'Trenutna lozinka nije tačna.'
+        : fault === 'no-account'
+          ? 'Nalog nije pronađen na ovom uređaju.'
+          : 'Nije sačuvano — proverite da li je čuvanje podataka dozvoljeno u pregledaču.'
+    );
+  };
+
+  if (done) {
+    return (
+      <Modal eyebrow="Nalog" title="Lozinka je promenjena" onClose={onDone}>
+        <p className="doc-p">
+          Od sledeće prijave koristite novu lozinku. Ako ste je negde sačuvali, promenite je i tamo.
+        </p>
+        <div className="panel-card-actions is-end">
+          <Button variant="primary" onClick={onDone}>
+            U redu
+          </Button>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
-    <Modal eyebrow="Privatnost" title="Podešavanja kolačića" onClose={onClose}>
-      <p className="doc-p">
-        Izbor važi i za nanaprime.com. Možete ga promeniti kad god želite, odavde.
-      </p>
-      <div className="toggle-list">
-        {COOKIE_KINDS.map((k) => (
-          <Toggle
-            key={k.id}
-            label={k.label}
-            hint={k.hint}
-            fixed={k.fixed}
-            on={k.fixed ? true : draft[k.id]}
-            onChange={(v) => setDraft((d) => ({ ...d, [k.id]: v }))}
+    <Modal eyebrow="Nalog" title="Promenite lozinku" onClose={onClose}>
+      <p className="doc-p">Nova lozinka mora imati najmanje 8 karaktera.</p>
+      <div className="pe-fields">
+        <label className="wo-field">
+          <span className="ag-label">Trenutna lozinka</span>
+          <input
+            className="wo-text is-line"
+            type="password"
+            value={current}
+            onChange={(e) => {
+              setCurrent(e.target.value);
+              setError(null);
+            }}
           />
-        ))}
+        </label>
+        <label className="wo-field">
+          <span className="ag-label">Nova lozinka</span>
+          <input
+            className="wo-text is-line"
+            type="password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+          />
+        </label>
+        <label className="wo-field">
+          <span className="ag-label">Nova lozinka još jednom</span>
+          <input
+            className="wo-text is-line"
+            type="password"
+            value={again}
+            onChange={(e) => setAgain(e.target.value)}
+          />
+        </label>
       </div>
-      <div className="panel-card-actions is-end">
-        <Button variant="secondary" onClick={() => onSave({ analytics: false, marketing: false })}>
-          Samo neophodni
-        </Button>
-        <Button variant="primary" onClick={() => onSave(draft)}>
-          <Check size={14} strokeWidth={2} />
-          Sačuvaj izbor
-        </Button>
-      </div>
-    </Modal>
-  );
-}
 
-// Turning the second factor on. The setup key comes from the server, and there
-// is no server yet — so the step that would show it says so plainly rather than
-// printing something that looks like a real key.
-function TwoFactorModal({ onDone, onClose }) {
-  const [code, setCode] = useState('');
-  const ready = /^\d{6}$/.test(code.trim());
+      {short && <p className="ag-hint">Kratka je — treba najmanje 8 karaktera.</p>}
+      {mismatch && <p className="ag-hint">Dva unosa se ne poklapaju.</p>}
+      {error && <p className="tf-error">{error}</p>}
 
-  return (
-    <Modal eyebrow="Bezbednost" title="Uključite dvofaktorsku prijavu" onClose={onClose}>
-      <p className="doc-p">
-        Uz lozinku tražiće se i šestocifreni kod iz aplikacije na vašem telefonu (Google
-        Authenticator, 1Password, Authy — bilo koja).
-      </p>
-      <ol className="paywall-list is-steps">
-        <li>Otvorite aplikaciju za kodove na telefonu.</li>
-        <li>Dodajte nalog i unesite ključ koji ćemo prikazati ovde.</li>
-        <li>Prepišite šestocifreni kod koji se pojavi.</li>
-      </ol>
-      <p className="ag-hint">
-        Ključ stiže sa servera, a server još nije povezan — ovaj korak radi tek kad bude.
-      </p>
-      <label className="pw-message">
-        <span className="tf-label">Kod iz aplikacije</span>
-        <input
-          className="wo-text is-line"
-          type="text"
-          inputMode="numeric"
-          maxLength={6}
-          value={code}
-          placeholder="123456"
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-        />
-      </label>
       <div className="panel-card-actions is-end">
         <Button variant="secondary" onClick={onClose}>
           Otkaži
         </Button>
-        <Button variant="primary" disabled={!ready} onClick={onDone}>
-          <Shield size={14} strokeWidth={1.75} />
-          Uključi
+        <Button variant="primary" disabled={!ready} onClick={submit}>
+          <Check size={14} strokeWidth={2} />
+          Sačuvaj lozinku
         </Button>
       </div>
     </Modal>
   );
 }
 
-export default function Settings({ unlocked, care, user, onCare, onSaveUser, onAskAssistant }) {
+export default function Settings({ unlocked, care, user, onCare, onSaveUser, onAskAssistant, onSubscribe }) {
   const [prefs, setPrefs] = useState({
     digest: false,
     marketing: false,
   });
   const set = (key) => (v) => setPrefs((p) => ({ ...p, [key]: v }));
   const [cardOpen, setCardOpen] = useState(false);
-  const [tasksOpen, setTasksOpen] = useState(false);
   const [cookiesOpen, setCookiesOpen] = useState(false);
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
-  const tasks = tasksOf(care);
-  const cookies = user?.cookies || { analytics: true, marketing: false };
+  const cookies = user?.cookies || COOKIE_DEFAULT;
   const twoFactor = Boolean(user?.twoFactor);
   const language = user?.language || 'sr';
 
@@ -161,44 +173,6 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
           <p className="view-sub">Obaveštenja, pretplata i nalog.</p>
         </div>
         <AskAssistant onClick={onAskAssistant} />
-      </div>
-
-      {/* What the caregiver is asked to do. The plan proposes it from the
-          answers; this is where the family says otherwise without touching the
-          answers the plan is built from. */}
-      <div className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">Zadaci negovateljice</p>
-          <span className="status-pill is-muted">{tasks.length} izabrano</span>
-          <Button variant="secondary" iconOnly aria-label="Izmeni zadatke" title="Izmeni zadatke" onClick={() => setTasksOpen(true)}>
-            <Pencil size={14} strokeWidth={1.75} />
-          </Button>
-        </div>
-        <p className="tip-body">
-          Ovo stoji u svakom upitu koji pošaljete i u uslovima koje negovateljica ponudi.
-        </p>
-        <div className="ag-services">
-          {tasks.map((id) => (
-            <span key={id} className="svc is-set">
-              <Check size={13} strokeWidth={2.5} />
-              {serviceTitle(id)}
-            </span>
-          ))}
-        </div>
-        {care?.tasks?.priority && (
-          <div className="bc-lines ag-terms">
-            <p className="bc-line">
-              <span className="bc-line-label">Najvažnije</span>
-              <span className="bc-line-value">{care.tasks.priority}</span>
-            </p>
-            {care.tasks.special && (
-              <p className="bc-line">
-                <span className="bc-line-label">Posebni zahtevi</span>
-                <span className="bc-line-value">{care.tasks.special}</span>
-              </p>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="panel-card">
@@ -282,6 +256,9 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         )}
       </div>
 
+      {/* Started and stopped from here. It used to be startable only from the
+          dialog on the care plan, which is where somebody runs into the
+          paywall — not where they go looking for what they pay for. */}
       <div className="panel-card">
         <div className="panel-card-head">
           <p className="doc-section-title">Pretplata</p>
@@ -301,13 +278,24 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
             </ul>
             <p className="tip-body">{priceLine(user?.country)} · obnavlja se 4. septembra 2026.</p>
             <div className="panel-card-actions">
-              <Button variant="secondary">Upravljaj plaćanjem</Button>
+              <Button variant="secondary" onClick={() => setCancelling(true)}>
+                Otkaži pretplatu
+              </Button>
             </div>
           </>
         ) : (
-          <p className="tip-body">
-            Pretplatite se iz plana nege da otključate brojeve negovateljica i sve preporuke.
-          </p>
+          <>
+            <p className="tip-body">
+              Otključava brojeve negovateljica, preporuke lekara i predložena pomagala.
+              {' '}
+              {priceLine(user?.country)}.
+            </p>
+            <div className="panel-card-actions">
+              <Button variant="primary" onClick={onSubscribe}>
+                Pretplatite se
+              </Button>
+            </div>
+          </>
         )}
       </div>
 
@@ -346,14 +334,27 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
             <Cookie size={14} strokeWidth={1.75} />
             Kolačići
           </p>
-          <span className="status-pill is-muted">
-            {[cookies.analytics && 'analitika', cookies.marketing && 'marketing'].filter(Boolean).join(', ') ||
-              'samo neophodni'}
-          </span>
         </div>
         <p className="tip-body">
           Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.
         </p>
+        {/* Every group and where it stands, in words. Rows rather than chips:
+            a chip here is the same shape as the ones that are pressed
+            elsewhere, and this is a reading of the state, not a control. */}
+        <div className="bc-lines ag-terms">
+          {COOKIE_GROUPS.map((g) => {
+            const on = g.fixed || cookies[g.id];
+            return (
+              <p className="bc-line" key={g.id}>
+                <span className="bc-line-label">{g.label}</span>
+                <span className={`bc-line-value${on ? '' : ' is-off'}`}>
+                  {on ? 'Uključeno' : 'Isključeno'}
+                  {g.fixed ? ' · uvek' : ''}
+                </span>
+              </p>
+            );
+          })}
+        </div>
         <div className="panel-card-actions">
           <Button variant="secondary" onClick={() => setCookiesOpen(true)}>
             Podešavanja kolačića
@@ -373,10 +374,16 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         </div>
         <p className="tip-body">
           Uz lozinku traži se i šestocifreni kod iz aplikacije na vašem telefonu.
+          {twoFactor && user?.backupCodesLeft
+            ? ` Ostalo vam je ${user.backupCodesLeft} rezervnih kodova.`
+            : ''}
         </p>
         <div className="panel-card-actions">
           {twoFactor ? (
-            <Button variant="secondary" onClick={() => onSaveUser({ twoFactor: false })}>
+            <Button
+              variant="secondary"
+              onClick={() => onSaveUser({ twoFactor: false, backupCodesLeft: 0 })}
+            >
               Isključi
             </Button>
           ) : (
@@ -389,29 +396,38 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
       </div>
 
       <div className="panel-card">
+        <div className="panel-card-head">
+          <p className="doc-section-title">
+            <KeyRound size={14} strokeWidth={1.75} />
+            Lozinka
+          </p>
+        </div>
+        <p className="tip-body">Promenite lozinku kojom se prijavljujete.</p>
+        <div className="panel-card-actions">
+          <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
+            Promenite lozinku
+          </Button>
+        </div>
+      </div>
+
+      <div className="panel-card">
         <p className="doc-section-title">Nalog</p>
         <p className="tip-body">
           Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.
         </p>
+        {/* Deleting is the one thing here that cannot be undone, so it is the
+            one button that is red. */}
         <div className="panel-card-actions">
           <Button variant="secondary">Preuzmi moje podatke</Button>
-          <Button variant="ghost">Obriši nalog</Button>
+          <Button variant="danger">
+            <Trash2 size={14} strokeWidth={1.75} />
+            Obriši nalog
+          </Button>
         </div>
       </div>
 
-      {tasksOpen && (
-        <CaregiverTasksEditor
-          care={care}
-          onClose={() => setTasksOpen(false)}
-          onSave={(tasks) => {
-            onCare((c) => ({ ...c, tasks, need: { ...c.need, services: tasks.services } }));
-            setTasksOpen(false);
-          }}
-        />
-      )}
-
       {cookiesOpen && (
-        <CookieModal
+        <CookieSettings
           cookies={cookies}
           onSave={(next) => {
             onSaveUser({ cookies: next });
@@ -421,10 +437,44 @@ export default function Settings({ unlocked, care, user, onCare, onSaveUser, onA
         />
       )}
 
+      {cancelling && (
+        <Modal eyebrow="Pretplata" title="Otkazati pretplatu?" onClose={() => setCancelling(false)}>
+          <p className="doc-p">
+            Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju
+            plaćenog perioda. Možete da se pretplatite ponovo kad god želite.
+          </p>
+          <div className="panel-card-actions is-end">
+            <Button variant="secondary" onClick={() => setCancelling(false)}>
+              Zadrži pretplatu
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                setCancelling(false);
+                onSubscribe?.(false);
+              }}
+            >
+              Otkaži pretplatu
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {passwordOpen && (
+        <PasswordModal
+          email={user?.email}
+          onDone={() => setPasswordOpen(false)}
+          onClose={() => setPasswordOpen(false)}
+        />
+      )}
+
       {twoFactorOpen && (
-        <TwoFactorModal
-          onDone={() => {
-            onSaveUser({ twoFactor: true });
+        <TwoFactorSetup
+          email={user?.email}
+          onDone={(codes) => {
+            // How many are left is the only thing worth keeping: the codes
+            // themselves belong on the server, hashed, not in the account here.
+            onSaveUser({ twoFactor: true, backupCodesLeft: codes.length });
             setTwoFactorOpen(false);
           }}
           onClose={() => setTwoFactorOpen(false)}

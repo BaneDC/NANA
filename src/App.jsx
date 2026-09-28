@@ -675,6 +675,9 @@ export default function App() {
                   user={user}
                   onCare={setCare}
                   onSaveUser={saveUser}
+                  // starting one opens the same dialog the care plan uses, so
+                  // the plans and the price are decided in one place
+                  onSubscribe={(on = true) => (on ? setPaywall({ caregiver: null }) : setUnlocked(false))}
                   onAskAssistant={askAssistant}
                 />
               )}

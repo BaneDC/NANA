@@ -10,12 +10,13 @@ import { X } from 'lucide-react';
 //
 // The name stays `Modal` because every screen calls it that and the contract is
 // unchanged: an eyebrow, a title, a close, and whatever the screen puts inside.
-export default function Modal({ title, eyebrow, wide, onClose, children }) {
+export default function Modal({ title, eyebrow, wide, dismissible = true, onClose, children }) {
   useEffect(() => {
+    if (!dismissible) return undefined;
     const onKey = (e) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, dismissible]);
 
   // Rendered into the body. The pages that open this animate themselves, and a
   // transform anywhere above a `position: fixed` element makes it fixed to that
@@ -24,7 +25,9 @@ export default function Modal({ title, eyebrow, wide, onClose, children }) {
   return createPortal(
     <motion.div
       className="drawer-backdrop"
-      onClick={onClose}
+      // Not every pane may be dismissed by clicking past it: backup codes are
+      // shown once, and a stray click would take them away for good.
+      onClick={dismissible ? onClose : undefined}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, pointerEvents: 'auto' }}
       // On the way out it stops taking clicks immediately. It covers the whole
@@ -50,9 +53,11 @@ export default function Modal({ title, eyebrow, wide, onClose, children }) {
             {eyebrow && <p className="doc-eyebrow">{eyebrow}</p>}
             <p className="doc-title">{title}</p>
           </div>
-          <button type="button" className="ci-btn" onClick={onClose} aria-label="Zatvori panel">
-            <X size={16} strokeWidth={1.75} />
-          </button>
+          {dismissible && (
+            <button type="button" className="ci-btn" onClick={onClose} aria-label="Zatvori panel">
+              <X size={16} strokeWidth={1.75} />
+            </button>
+          )}
         </div>
 
         <div className="drawer-body">{children}</div>

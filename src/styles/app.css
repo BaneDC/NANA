@@ -591,6 +591,19 @@ textarea {
   filter: brightness(0.98);
 }
 
+/* The one button that destroys something. It is the app's only red: a colour
+   that means nothing anywhere else cannot be misread here. */
+.btn.danger {
+  background: var(--surface-0);
+  border: 1px solid var(--status-no-fg);
+  color: var(--status-no-fg);
+  box-shadow: var(--shadow-button);
+}
+
+.btn.danger:hover {
+  background: var(--status-no-bg);
+}
+
 .btn.ghost {
   color: var(--text-primary);
   padding: 0 var(--spacing-3);
@@ -2827,6 +2840,12 @@ textarea {
   line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
   color: var(--text-primary);
+}
+
+/* a state that is off, said in the quieter ink */
+.bc-line-value.is-off {
+  color: var(--text-disabled);
+  font-weight: var(--font-normal);
 }
 
 .contact-note {
@@ -6505,5 +6524,324 @@ textarea.wo-text {
   /* one button takes the bar; two keep their ends */
   .imm-actions > .btn:only-child {
     width: 100%;
+  }
+}
+
+/* ---------- Cookies, in detail ---------- */
+
+.ck-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.ck-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-2);
+}
+
+/* on says so with a fill, not only with a switch */
+.ck-group.is-on {
+  background: var(--primary-subtle);
+}
+
+.ck-head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.ck-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  text-align: left;
+}
+
+.ck-open svg {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.ck-open svg.is-open {
+  transform: rotate(180deg);
+}
+
+.ck-name {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.ck-count {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-disabled);
+}
+
+.ck-state {
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.ck-group.is-on .ck-state {
+  color: var(--primary-subtle-foreground);
+}
+
+.ck-note {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+/* The cookies themselves: rows on hairlines rather than cards, so a group of
+   four does not become four more boxes inside a box inside a dialog. */
+.ck-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.ck-cookie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) 0;
+  border-top: 1px solid var(--card-line);
+}
+
+.ck-cookie-name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-primary);
+}
+
+.ck-cookie-why {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--text-primary);
+}
+
+.ck-cookie-meta {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--text-disabled);
+}
+
+/* ---------- Turning on the second factor ---------- */
+
+.tf-steps {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  list-style: none;
+}
+
+.tf-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-disabled);
+}
+
+.tf-step.is-on,
+.tf-step.is-done {
+  color: var(--text-primary);
+}
+
+.tf-step-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.tf-step.is-on .tf-step-mark {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.tf-step.is-done .tf-step-mark {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+}
+
+.tf-qr-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-2);
+}
+
+/* the code itself is white to the edge of the quiet zone, as a scanner wants */
+.tf-qr-img {
+  width: 192px;
+  height: 192px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+}
+
+.tf-qr-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 192px;
+  height: 192px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+  color: var(--text-disabled);
+}
+
+.tf-manual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-3);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.tf-manual svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.tf-manual svg.is-open {
+  transform: rotate(180deg);
+}
+
+/* the key, broken where it breaks: it is read off the screen and typed by hand */
+.tf-secret {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-2);
+}
+
+.tf-secret code {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.tf-verify {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+/* the boxes are a drawing; the field behind them takes the typing */
+.tf-code {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  cursor: text;
+}
+
+.tf-code-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+}
+
+.tf-code-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.tf-digit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 52px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+  font-size: var(--text-base-size);
+  line-height: var(--text-base-leading);
+  color: var(--text-primary);
+  transition: border-color 0.15s ease;
+}
+
+/* which one the next digit goes into, since there is no caret to see */
+.tf-code-field:focus + .tf-code-group .tf-digit.is-next,
+.tf-code:focus-within .tf-digit.is-next {
+  border-color: var(--primary);
+}
+
+.tf-code-dash {
+  color: var(--text-disabled);
+}
+
+.tf-error {
+  font-size: var(--text-xs-size);
+  line-height: 18px;
+  color: var(--status-no-fg);
+  text-align: center;
+}
+
+/* Ten codes, two columns, on a ground of their own so the eye reads them as
+   one block to copy rather than ten things to check. */
+.tf-codes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-2) var(--spacing-4);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  background: var(--surface-2);
+  list-style: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .tf-steps {
+    gap: var(--spacing-3);
+  }
+
+  .tf-digit {
+    width: 40px;
+    height: 48px;
   }
 }
