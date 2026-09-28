@@ -6411,14 +6411,14 @@ button.svc:hover {
   margin-top: 20px;
 }
 
+/* as written, not in capitals; a step above the cards' own 12px titles so the
+   two levels do not read as one */
 .set-group-title {
   margin-bottom: var(--spacing-1);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
   font-weight: var(--font-medium);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 /* ---------- Settings: cookies, the second factor ---------- */
