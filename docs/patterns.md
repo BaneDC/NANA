@@ -49,6 +49,8 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 
 Za novi tekst kartice koristi `.tip-body`. Ne uvodi petu klasu istog izgleda.
 
+**Na dodir, u dijalozima i drawer-ima** (`.modal.is-wide`, `.drawer-body`) tekst je 14/20 umesto 12/18. Polja su na dodir 16px (inače iOS zumira stranicu), pa je rečenica tik iznad polja od 12px izgledala kao fusnota. Na stranicama tekst ostaje 12, jer tamo nema polja pored njega. Višeredno polje na dodir ima visinu reda 24.
+
 Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je 14px.
 
 ---
@@ -85,6 +87,8 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 ```
 
 - Akcije stranice su samo u `.view-head`, desno.
+- **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (CSS to radi preko klase `.ask-assistant`). U Razgovoru ga nema, jer je chat već asistent.
+- **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - `.back-link` je iznad naslova (12px, strelica). Nema drugog stila za „nazad".
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava CSS; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici.
@@ -186,6 +190,7 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
   - `.card-action` se ne prikazuje, nego `.card-go` (strelica);
   - tap otvara detalje, pa **detalji moraju imati istu akciju** (profil negovateljice ima „Pošalji poruku");
   - pre nego što sakriješ akciju, proveri da je ima u detaljima.
+- **Grupa koja se sklapa** (npr. grupa kolačića): ceo njen gornji deo (naziv, stanje, opis) otvara i zatvara grupu. Naziv je dugme razvučeno preko tog dela (`.ck-summary` + `.ck-open`). Prekidač stoji iznad i samo menja stanje. Spisak koji se otvori nije deo mete, pa se čitanjem ne zatvara.
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
 - **Dugme desno** ide samo u redu čiji sadržaj staje u dve linije. U kartici sa više teksta dugme ide u footer.
 
@@ -225,7 +230,7 @@ Vrsta vrednosti određuje raspored:
   | Način plaćanja | „Dodaj karticu" — primary | „Promeni karticu" — secondary | kartica je podešena, a menjanje je održavanje, ne preporuka |
   | Lozinka | „Promenite lozinku" — secondary | isto | lozinka uvek postoji, pa je ovo uvek menjanje |
   | Kolačići | „Podešavanja kolačića" — primary | isto | nema stanja |
-  | Nalog | „Preuzmi moje podatke" — primary; „Obriši nalog" — danger | isto | nema stanja |
+  | Nalog | „Preuzmi moje podatke" — secondary; „Obriši nalog" — danger | isto | preuzimanje nije preporuka, samo mogućnost |
 - **U dijalogu i drawer-u** akcije su dole desno (`.panel-card-actions.is-end`): prvo secondary, pa glavna.
 - **Na ekranu na dodir** (`pointer: coarse`) sva dugmad, polja, redovi i čipovi imaju najmanje 44px. Tokeni `--button-size` i `--input-size` to rade sami, pa ne zadaji fiksnu visinu manju od 44 bez `(pointer: coarse)` pravila.
 - Ikonice u dugmadima: vidi §11.

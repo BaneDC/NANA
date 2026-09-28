@@ -415,7 +415,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           {/* Deleting is the one thing here that cannot be undone, so it is the
               one button that is red. */}
           <div className="panel-card-actions">
-            <Button variant="primary">Preuzmi moje podatke</Button>
+            <Button variant="secondary">Preuzmi moje podatke</Button>
             <Button variant="danger">
               Obriši nalog
             </Button>

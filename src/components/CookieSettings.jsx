@@ -10,41 +10,48 @@ import { COOKIE_GROUPS } from '../data/cookies';
 // word. This is the list the site itself publishes — the cookie, who sets it,
 // what it is for and how long it stays — folded away under each group so the
 // dialog still reads as four choices rather than a document.
+//
+// The whole of a group's top — its name, its state, what it is for — opens it;
+// the name is the button and it stretches over that part. The switch sits above
+// the stretch and only switches. The list that opens is not part of the target,
+// so reading it does not fold it away.
 function Group({ group, on, onChange }) {
   const [open, setOpen] = useState(false);
 
   return (
     <section className={`ck-group${on ? ' is-on' : ''}`}>
-      <div className="ck-head">
-        <button
-          type="button"
-          className="ck-open"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          <ChevronDown size={14} strokeWidth={2} className={open ? 'is-open' : ''} />
-          <span className="ck-name">{group.label}</span>
-          <span className="ck-count">
-            {group.cookies.length ? `${group.cookies.length} kolačića` : 'spisak još nije unet'}
-          </span>
-        </button>
-        {/* The state says itself, in a word, beside the switch: a switch alone
-            is read wrong often enough that the word is worth the room. */}
-        <span className="ck-state">{on ? 'Uključeno' : 'Isključeno'}</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={on}
-          aria-label={group.label}
-          aria-disabled={group.fixed || undefined}
-          className={`switch${on ? ' is-on' : ''}${group.fixed ? ' is-fixed' : ''}`}
-          onClick={() => !group.fixed && onChange(!on)}
-        >
-          <span className="switch-knob" />
-        </button>
-      </div>
+      <div className="ck-summary">
+        <div className="ck-head">
+          <button
+            type="button"
+            className="ck-open"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <ChevronDown size={14} strokeWidth={2} className={open ? 'is-open' : ''} />
+            <span className="ck-name">{group.label}</span>
+            <span className="ck-count">
+              {group.cookies.length ? `${group.cookies.length} kolačića` : 'spisak još nije unet'}
+            </span>
+          </button>
+          {/* The state says itself, in a word, beside the switch: a switch alone
+              is read wrong often enough that the word is worth the room. */}
+          <span className="ck-state">{on ? 'Uključeno' : 'Isključeno'}</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={on}
+            aria-label={group.label}
+            aria-disabled={group.fixed || undefined}
+            className={`switch${on ? ' is-on' : ''}${group.fixed ? ' is-fixed' : ''}`}
+            onClick={() => !group.fixed && onChange(!on)}
+          >
+            <span className="switch-knob" />
+          </button>
+        </div>
 
-      <p className="ck-note">{group.note}</p>
+        <p className="ck-note">{group.note}</p>
+      </div>
 
       {open &&
         (group.cookies.length ? (

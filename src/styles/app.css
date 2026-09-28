@@ -6182,6 +6182,19 @@ button.svc:hover {
   background: var(--nav-hover);
 }
 
+/* On a narrow screen the assistant lives in the top bar, beside the logo and
+   the menu: always in the same place, and never squeezed against a page's
+   title. The one in each page's head steps aside. */
+.app-topbar-ask {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .view-head .ask-assistant {
+    display: none;
+  }
+}
+
 .nav-scrim {
   display: none;
   position: fixed;
@@ -6673,6 +6686,41 @@ button.svc:hover {
   background: var(--primary-subtle);
 }
 
+/* the part of a group that opens it: its name stretches over it, the switch
+   stays above the stretch */
+.ck-summary {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  cursor: pointer;
+}
+
+.ck-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.ck-open:focus-visible {
+  outline: none;
+}
+
+.ck-summary:has(.ck-open:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-lg);
+}
+
+.ck-summary .switch {
+  position: relative;
+  z-index: 1;
+}
+
+.ck-summary:hover .ck-name {
+  color: var(--color-primary-700);
+}
+
 .ck-head {
   display: flex;
   align-items: center;
@@ -7037,6 +7085,20 @@ button.svc:hover {
   textarea,
   select {
     font-size: 16px !important;
+  }
+
+  /* several lines of 16px need the room of 16px lines */
+  .text-field textarea {
+    line-height: 24px;
+  }
+
+  /* A dialog's sentences sit right above 16px fields, and at 12 they read as a
+     footnote to them. In a dialog or a drawer they are 14 under a finger — one
+     step under the field, not two. Pages keep 12: there is no field beside them
+     to be measured against. */
+  :is(.modal.is-wide, .drawer-body) :is(.doc-p, .tip-body, .fam-sub, .ag-lead) {
+    font-size: var(--text-sm-size);
+    line-height: var(--text-sm-leading);
   }
 
   .ick-theme {

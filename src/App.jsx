@@ -17,6 +17,7 @@ import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Menu, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import PaywallModal from './components/PaywallModal';
+import AskAssistant from './components/AskAssistant';
 import SharePlanModal from './components/SharePlanModal';
 import PlanDetail from './screens/PlanDetail';
 import Immersive from './screens/Immersive';
@@ -474,6 +475,8 @@ export default function App() {
             <Menu size={18} strokeWidth={1.75} />
           </button>
           <Logo width={96} />
+          {/* the chat is the assistant, so there it has nothing to open */}
+          {view !== 'chat' && <AskAssistant className="app-topbar-ask" onClick={askAssistant} />}
         </div>
       )}
 

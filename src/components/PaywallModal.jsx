@@ -155,11 +155,14 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
                   Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.
                   {!unlocked && ' Poruka se šalje čim se pretplatite.'}
                 </p>
-                <Field label="Poruka za negovateljicu">
+                {/* no label: the sentence above says what goes in it, and the
+                    placeholder says it again inside */}
+                <Field>
                   <TextArea
                     value={message}
                     rows={5}
                     onChange={setMessage}
+                    aria-label="Poruka za negovateljicu"
                     placeholder="Recite joj ukratko šta vam treba i kada."
                   />
                 </Field>
