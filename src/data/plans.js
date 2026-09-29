@@ -13,16 +13,16 @@ import { eur } from '../lib/money';
 // one plan is its dinar price converted (1.490 RSD at ~117 RSD to the euro),
 // until its own euro price and options are decided.
 //
-// Finland's prices and every line below are the live platform's plan picker
+// Finland has two subscriptions: Basic, 9,99 € a month, and Premium, 17,99 €
+// for three months. Every line below is the live platform's plan picker
 // (nanaprime.com, "Choose your plan"), in Serbian. One line is ours: the
 // partners' discount, which the platform does not have yet.
 //
-// `saving` is what the platform prints. Worked out from the prices it would be
-// 24% (98 against 3 × 43), not 22% — to be checked with the client; until then
-// the page says what the platform says.
+// What Premium saves is worked out from the prices (`planSaving`): 17,99 €
+// against three months of Basic, 29,97 €, is 40% less.
 
 const MONTHLY = {
-  name: 'Mesečni plan',
+  name: 'Basic',
   description: 'Za porodice koje žele punu kontrolu i slobodu, bez dugoročnih obaveza.',
   benefits: [
     'Direktan pristup našoj bazi proverenih i pouzdanih negovateljica',
@@ -37,9 +37,9 @@ const MONTHLY = {
 };
 
 const QUARTERLY = {
-  name: 'Tromesečni plan',
+  name: 'Premium',
   description: 'Najčešći izbor naših korisnika — za porodice koje žele stabilnost, kontinuitet i sigurnu podršku.',
-  lead: 'Sve iz mesečnog plana, i još:',
+  lead: 'Sve iz Basic plana, i još:',
   benefits: [
     'Prednost kod slobodnih termina koordinatorke',
     'Stabilnija podrška u planiranju dugoročnije nege',
@@ -52,15 +52,15 @@ const QUARTERLY = {
 const PLANS = {
   RS: [{ id: 'monthly', months: 1, price: 12.7, currency: 'EUR', ...MONTHLY }],
   FI: [
-    { id: 'monthly', months: 1, price: 43, currency: 'EUR', ...MONTHLY },
-    { id: 'quarterly', months: 3, price: 98, currency: 'EUR', saving: 22, recommended: true, ...QUARTERLY },
+    { id: 'monthly', months: 1, price: 9.99, currency: 'EUR', ...MONTHLY },
+    { id: 'quarterly', months: 3, price: 17.99, currency: 'EUR', recommended: true, ...QUARTERLY },
   ],
 };
 
 // Every market we do not have prices for is billed the way Serbia is.
 export const plansFor = (country) => PLANS[country] || PLANS.RS;
 
-// whole euros without the cents (43 €), anything else with them (32,67 €)
+// whole euros without the cents (10 €), anything else with them (9,99 €)
 export const planPrice = ({ price }) => eur(price);
 
 // What it works out to a month, for the plan that is not monthly — the number a

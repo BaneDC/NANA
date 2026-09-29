@@ -140,7 +140,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 **Prazna stranica:** `.empty` sa `.locked-title`, `.locked-note` i jednom akcijom.
 
 **Izbor plana** (`PaywallModal`, `.modal.is-plans`):
-- Svaki plan je `.panel-card.pw-plan-card` sa svim sadržajem: naziv, cena (24px), ušteda kao značka, rečenica za koga je, spisak šta uključuje i dugme „Izaberite plan".
+- Svaki plan je `.panel-card.pw-plan-card` sa svim sadržajem: naziv, cena (24px), ušteda kao značka, rečenica za koga je, spisak šta uključuje i dugme „Izaberite" + naziv plana („Izaberite Premium"). Naslov dijaloga je „Izaberite pretplatu", a dugme koje ga otvara iz plana nege „Otključajte ceo plan nege": u naslovima i dugmadima „plan" znači samo plan nege, da se dva značenja ne sretnu na istom putu.
 - Kartice su jedna pored druge (`.pw-plan-grid`), a na telefonu jedna ispod druge, sa preporučenom prvom.
 - Preporučeni plan (`recommended` u `src/data/plans.js`) ima prsten u primarnoj boji (`.is-recommended`), značku „Najpopularniji" i primary dugme; ostali imaju secondary.
 - Ovo je jedini obrazac gde je dugme u footeru kartice preko cele širine i spušteno na dno kartice, da se dugmad poravnaju kad su spiskovi različite dužine.

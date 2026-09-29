@@ -85,7 +85,7 @@ export default function PlanContents({
                   koje stan čine bezbednijim{archived ? '.' : ', i direktan broj svake negovateljice.'}
                 </p>
                 <Button variant="primary" size="lg" onClick={onUnlock}>
-                  <Lock size={12} strokeWidth={2} /> Pretplatite se za ceo plan
+                  <Lock size={12} strokeWidth={2} /> Otključajte ceo plan nege
                 </Button>
               </div>
             </div>

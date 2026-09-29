@@ -51,7 +51,7 @@ function PlanCard({ plan, plans, onChoose }) {
           full
           onClick={() => onChoose(plan)}
         >
-          Izaberite plan
+          Izaberite {plan.name}
         </Button>
       </div>
     </div>
@@ -108,7 +108,7 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
         {choosing ? (
           <>
             <div className="pw-head">
-              <p className="doc-title">Izaberite plan</p>
+              <p className="doc-title">Izaberite pretplatu</p>
               <p className="tip-body">
                 {/* no name in these: Serbian would have to decline it ("za Vesnu"),
                     and a template cannot */}
@@ -180,7 +180,7 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
                   </Button>
                 ) : (
                   <Button variant="primary" onClick={() => setStep('plans')}>
-                    Dalje: izaberite plan
+                    Dalje: izaberite pretplatu
                   </Button>
                 ))}
             </div>
