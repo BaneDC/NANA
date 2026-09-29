@@ -55,8 +55,8 @@ export default function App() {
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
   const [view, setView] = useState(DEMO ? 'dashboard' : 'chat');
   // `role` is chosen at registration and decides which of the two applications
-  // this is: the family's, or the caregiver's. Switching means starting over,
-  // which is what the restart button is for.
+  // this is: the family's, or the caregiver's. Switching means starting over:
+  // reloading the page goes back to sign-in.
   const [user, setUser] = useState(
     DEMO ? { ...demoUser, country: demoCountry() } : { name: '', email: '', role: 'family' }
   );
@@ -87,7 +87,6 @@ export default function App() {
   // The arrangement with the caregiver, shared: the dashboard reads it and the
   // card that pays for it is set up in Settings.
   const [care, setCare] = useState(() => startCare(DEMO ? demoUser : null));
-  const [run, setRun] = useState(0); // remounts the flow on restart
   // The family's decisions open as a drawer from whichever page shows the thing
   // they concern, and a short line afterwards says what happened.
   const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
@@ -142,12 +141,11 @@ export default function App() {
   const careRef = useRef(care);
   careRef.current = care;
   const scheduled = useRef(new Set());
-  const timers = useRef([]);
   useEffect(() => {
     const later = (key, ms, fn) => {
       if (scheduled.current.has(key)) return;
       scheduled.current.add(key);
-      timers.current.push(setTimeout(fn, ms));
+      setTimeout(fn, ms);
     };
     for (const r of care.requests) {
       if (r.status !== 'pending') continue;
@@ -324,30 +322,6 @@ export default function App() {
     saveProgress(user.email, { answers, notes, planDone: Boolean(plan) });
   }, [phase, user, answers, notes, plan]);
 
-  const restart = () => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-    scheduled.current = new Set();
-    setCare(startCare());
-    setOpenPane(null);
-    convSeq.current += 1;
-    setConversations([{ id: `c${convSeq.current}`, title: '', at: Date.now() }]);
-    setConversation(`c${convSeq.current}`);
-    setPlanChange(null);
-    setAnswers({});
-    setNotes([]);
-    setPlan(null);
-    setUnlocked(false);
-    setRightPanel(null);
-    setPaywall(null);
-    setThreads(seedThreads);
-    setActiveThread('live');
-    setView('chat');
-    setVariant('classic');
-    setRun((r) => r + 1);
-    setPhase('register');
-  };
-
   // A second person to care for. The plan that exists is filed under the plans
   // already made — it is still readable, just not the live one — and the
   // conversation starts again for the new person. What registration told us
@@ -453,7 +427,7 @@ export default function App() {
   if (phase === 'app' && isCaregiver) {
     return (
       <div className="app">
-        <CaregiverApp user={user} onRestart={restart} />
+        <CaregiverApp user={user} />
       </div>
     );
   }
@@ -503,7 +477,6 @@ export default function App() {
           onSelectPlan={openPlanPage}
           planListOpen={planListOpen}
           onTogglePlanList={() => setPlanListOpen((v) => !v)}
-          onRestart={restart}
         />
       )}
 
@@ -511,7 +484,7 @@ export default function App() {
         <div className="chat-container">
           <AnimatePresence mode="wait">
             <Register
-              key={`register-${run}`}
+              key="register"
               onDemo={openDemo}
               onContinue={(u) => {
                 setUser(u);
@@ -748,7 +721,7 @@ export default function App() {
         )}
         {phase === 'app' && variant === 'ai' && apiKey && !askingKey && (
           <ImmersiveConversation
-            key={`ai-${run}`}
+            key="ai"
             user={user}
             answers={answers}
             onAnswer={onAnswer}

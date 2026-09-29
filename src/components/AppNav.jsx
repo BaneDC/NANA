@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   MessageSquare,
   Plus,
-  RotateCcw,
   Search,
   Settings,
   User,
@@ -95,7 +94,6 @@ export default function AppNav({
   onSelectPlan,
   planListOpen,
   onTogglePlanList,
-  onRestart,
   open,
   onClose,
 }) {
@@ -210,9 +208,6 @@ export default function AppNav({
             <span className="nav-user-name">{user.name || 'Gost'}</span>
             <span className="nav-user-mail">{user.email}</span>
           </span>
-          <button type="button" className="ci-btn" onClick={onRestart} aria-label="Počni ispočetka">
-            <RotateCcw size={14} strokeWidth={1.75} />
-          </button>
         </div>
       </div>
     </nav>

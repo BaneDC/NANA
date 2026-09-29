@@ -1,11 +1,10 @@
-import { RotateCcw } from 'lucide-react';
 import Logo from '../Logo';
 
 // The caregiver has no sidebar. A board wants every pixel of width it can get,
 // and a nav with one working item in it looks like a nav that is broken rather
 // than one that is small — the rest of her app (clients, earnings, profile) is
 // not built yet, so nothing pretends otherwise.
-export default function CaregiverTopBar({ user, onRestart }) {
+export default function CaregiverTopBar({ user }) {
   const initials =
     user.name
       .split(' ')
@@ -28,9 +27,6 @@ export default function CaregiverTopBar({ user, onRestart }) {
         </span>
       </div>
 
-      <button type="button" className="ci-btn" onClick={onRestart} aria-label="Počni ispočetka" title="Počni ispočetka">
-        <RotateCcw size={15} strokeWidth={1.75} />
-      </button>
     </div>
   );
 }

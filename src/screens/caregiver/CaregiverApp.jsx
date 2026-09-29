@@ -19,7 +19,7 @@ import {
 // the card on the board, and the board's buttons have to show up in the
 // client's activity.
 
-export default function CaregiverApp({ user, onRestart }) {
+export default function CaregiverApp({ user }) {
   const [clients, setClients] = useState(seedClients);
   const [paid] = useState(paidThisMonth);
   const [openId, setOpenId] = useState(null);
@@ -143,7 +143,7 @@ export default function CaregiverApp({ user, onRestart }) {
 
   return (
     <div className="chat-container">
-      <CaregiverTopBar user={user} onRestart={onRestart} />
+      <CaregiverTopBar user={user} />
       <AnimatePresence mode="wait">
         {open ? (
           <ClientPage
