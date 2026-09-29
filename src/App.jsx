@@ -798,6 +798,7 @@ export default function App() {
             key={`${drawer.kind}-${drawer.caregiverId || drawer.visitId}`}
             drawer={drawer}
             care={care}
+            unlocked={unlocked}
             onCare={setCare}
             onClose={() => setDrawer(null)}
             onOpen={setDrawer}

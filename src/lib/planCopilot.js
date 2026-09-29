@@ -4,7 +4,7 @@ import { isLoadBearing } from '../data/dependencies';
 import { frailtyOf } from '../data/frailty';
 import { answerText, planQuestions } from '../data/planEdits';
 import { srField, srOption, srTitle } from '../data/flow.sr';
-import { caregivers } from '../data/carePlan';
+import { caregivers, daysText, slotsText } from '../data/carePlan';
 import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/familyCare';
 
 // The assistant beside a finished care plan, able to change it. The plan is
@@ -152,12 +152,14 @@ function situation(care) {
     id: c.id,
     name: c.name,
     match: `${c.match}%`,
-    area: c.area,
-    distance: c.distance,
+    municipality: c.area,
+    travelsUpToKm: c.radius,
     rate: c.rate,
-    years: c.years,
-    skills: c.tags,
-    days: c.days,
+    rating: c.reviews ? `${c.rating} from ${c.reviews} reviews` : 'new, no reviews yet',
+    classifications: c.classifications,
+    languages: c.languages,
+    days: daysText(c.days),
+    partsOfDay: slotsText(c.slots),
     request: asked[c.id] ? { status: asked[c.id].status, detail: asked[c.id].detail } : 'not asked',
   }));
   const arrangements = care.arrangements.map((a) => ({

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight, Phone, Search, Star } from 'lucide-react';
-import { caregivers } from '../data/carePlan';
+import { caregivers, matchReasons, ratingText } from '../data/carePlan';
 import { arrangementOf } from '../data/familyCare';
 import Button from '../components/Button';
 import { Field, Input } from '../components/TextField';
@@ -33,7 +33,8 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
       return (
         c.name.toLowerCase().includes(q) ||
         c.bio.toLowerCase().includes(q) ||
-        c.tags.some((t) => t.toLowerCase().includes(q))
+        c.area.toLowerCase().includes(q) ||
+        [...c.classifications, ...c.languages].some((t) => t.toLowerCase().includes(q))
       );
     });
     // best match first, as the recommendation it is
@@ -74,7 +75,7 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
           icon={Search}
           type="search"
           value={query}
-          placeholder="Ime ili šta vam treba, npr. demencija"
+          placeholder="Ime, grad, jezik ili lähihoitaja"
           aria-label="Pretraga negovateljica"
           onChange={setQuery}
         />
@@ -119,11 +120,20 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
                   </div>
                   <div className="cg-meta">
                     <Star size={11} strokeWidth={2} className="cg-star" />
-                    {c.rating} ({c.reviews}) · {c.years} god. iskustva · {c.rate} · {c.area}, {c.distance}
+                    {ratingText(c)} · {c.rate} · {c.area}, do {c.radius} km
                   </div>
-                  <p className="cg-bio">{c.bio}</p>
+                  {/* why she comes up, the way the platform says it */}
+                  <p className="cg-bio">
+                    {matchReasons(c).map((r, i) => (
+                      <span key={r}>
+                        {i > 0 && ' · '}
+                        <Check size={12} strokeWidth={2.5} className="cg-star" />
+                        {r}
+                      </span>
+                    ))}
+                  </p>
                   <div className="cg-tags">
-                    {c.tags.map((t) => (
+                    {c.classifications.map((t) => (
                       <span className="cg-tag" key={t}>
                         {t}
                       </span>

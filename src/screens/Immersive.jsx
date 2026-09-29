@@ -580,7 +580,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
                     <span className="imm-option-text">
                       <span className="imm-option-title">{c.name}</span>
                       <span className="imm-option-desc">
-                        {c.match}% poklapanje · {c.years} god. iskustva · {c.rate} · {c.area}
+                        {c.match}% poklapanje · {c.rate} · {c.area}
                       </span>
                     </span>
                   </motion.div>

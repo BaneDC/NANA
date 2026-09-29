@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, Check, CreditCard, Frown, Meh, Smile, Star } from 'lucide-react';
-import { caregivers } from '../../data/carePlan';
+import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
 import Button from '../Button';
 import { Field, TextArea } from '../TextField';
@@ -555,7 +555,7 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
 
 // ── someone they might ask ──────────────────────────────────────────────────
 
-function Profile({ care, caregiverId, onContact, onClose }) {
+function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
   const c = caregivers.find((x) => x.id === caregiverId);
   if (!c) return null;
   const first = firstName(c.name);
@@ -566,26 +566,24 @@ function Profile({ care, caregiverId, onContact, onClose }) {
   const ask = () => onContact(c);
 
   return (
-    <Modal eyebrow={`${c.area} · ${c.distance}`} title={c.name} wide onClose={onClose}>
+    <Modal eyebrow={`${c.area} · dolazi do ${c.radius} km`} title={c.name} wide onClose={onClose}>
       <div className="fam-profile-head">
         <span className="cg-avatar is-lg">{c.initials}</span>
         <div className="fam-row-main">
           <p className="fam-row-title">
             <Star size={13} strokeWidth={2} className="cg-star" />
-            {c.rating} · {pl(c.reviews, 'ocena', 'ocene', 'ocena')}
+            {c.reviews ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} · ${pl(c.reviews, 'ocena', 'ocene', 'ocena')}` : 'Nova, još bez ocena'}
           </p>
-          <p className="fam-row-body">
-            {c.years} god. u kućnoj nezi · {c.rate}
-          </p>
+          <p className="fam-row-body">{c.rate}</p>
         </div>
         <span className="status-pill is-attention">Poklapanje · {c.match}%</span>
       </div>
 
       <p className="fam-quote">{c.bio}</p>
 
-      <p className="ag-label">Čime se bavi</p>
+      <p className="ag-label">Klasifikacije</p>
       <div className="ag-services">
-        {c.tags.map((t) => (
+        {c.classifications.map((t) => (
           <span key={t} className="svc is-set">
             <Check size={13} strokeWidth={2.5} />
             {t}
@@ -595,18 +593,25 @@ function Profile({ care, caregiverId, onContact, onClose }) {
 
       <p className="ag-label">Kvalifikacije</p>
       <div className="bc-lines ag-terms">
-        <Line label="Zanimanje" value={c.qualification} />
+        <Line label="Obrazovanje" value={c.education} />
         <Line label="Jezici" value={c.languages.join(', ')} />
-        <Line label="Iskustvo" value={pl(c.years, 'godina', 'godine', 'godina')} />
       </div>
 
       <p className="ag-label">Kada može da dolazi</p>
       <div className="bc-lines ag-terms">
-        <Line label="Dani" value={c.days} />
-        <Line label="Doba dana" value={c.slot} />
-        <Line label="Noćne smene" value={c.nightShift ? 'Da' : 'Ne'} />
+        <Line label="Dani" value={daysText(c.days)} />
+        <Line label="Doba dana" value={c.slots.map((s) => `${SLOTS[s].label.toLowerCase()} ${SLOTS[s].hours}`).join(', ')} />
+        <Line label="Radijus" value={`do ${c.radius} km`} />
         <Line label="Cena" value={c.rate} />
       </div>
+
+      {/* Her phone and e-mail open with the subscription, as on the platform. */}
+      <p className="ag-label">Kontakt</p>
+      <div className="bc-lines ag-terms">
+        <Line label="Telefon" value={unlocked ? c.phone : MASKED_PHONE} />
+        <Line label="E-mail" value={unlocked ? c.email : MASKED_EMAIL} />
+      </div>
+      {!unlocked && <p className="ag-hint">Telefon i e-mail se otključavaju pretplatom.</p>}
 
       <p className="ag-hint">
         Upit joj šalje plan nege. Ništa ne košta i nikoga ne obavezuje — ona odgovara, a ništa nije

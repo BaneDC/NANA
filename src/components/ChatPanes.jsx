@@ -1,5 +1,5 @@
 import { Check, Send, Star } from 'lucide-react';
-import { caregivers } from '../data/carePlan';
+import { caregivers, daysText, ratingText, slotsText } from '../data/carePlan';
 import { allVisits, firstName, money, pendingVersion, services, waitingOnYou } from '../data/familyCare';
 import { priceLine } from '../data/plans';
 import PlanContents from './PlanContents';
@@ -114,7 +114,7 @@ function CaregiversPane({ care, onContact }) {
             <div className="fam-row-main">
               <p className="fam-row-title">{c.name}</p>
               <p className="fam-row-body">
-                <Star size={11} strokeWidth={2} className="cg-star" /> {c.rating} · {c.rate} · {c.area}, {c.distance}
+                <Star size={11} strokeWidth={2} className="cg-star" /> {ratingText(c)} · {c.rate} · {c.area}, do {c.radius} km
               </p>
             </div>
             {asked ? (
@@ -197,16 +197,16 @@ export function paneFor(openId, ctx) {
       const asked = care.requests.find((r) => r.caregiverId === c.id);
       return {
         title: c.name,
-        meta: `${c.area} · ${c.distance}`,
+        meta: `${c.area} · do ${c.radius} km`,
         children: (
           <div className="nana-pane">
             <p className="fam-row-body">
-              <Star size={11} strokeWidth={2} className="cg-star" /> {c.rating} ({c.reviews}) · {c.years} god. iskustva · {c.rate}
+              <Star size={11} strokeWidth={2} className="cg-star" /> {ratingText(c)} · {c.rate}
             </p>
             <p className="fam-quote">{c.bio}</p>
-            <p className="ag-label">Čime se bavi</p>
+            <p className="ag-label">Klasifikacije</p>
             <div className="ag-services">
-              {c.tags.map((t) => (
+              {c.classifications.map((t) => (
                 <span key={t} className="svc is-set">
                   <Check size={13} strokeWidth={2.5} />
                   {t}
@@ -217,12 +217,8 @@ export function paneFor(openId, ctx) {
               <p className="bc-line">
                 <span className="bc-line-label">Dolazi</span>
                 <span className="bc-line-value">
-                  {c.days} · {c.slot}
+                  {daysText(c.days)} · {slotsText(c.slots)}
                 </span>
-              </p>
-              <p className="bc-line">
-                <span className="bc-line-label">Noćne smene</span>
-                <span className="bc-line-value">{c.nightShift ? 'Da' : 'Ne'}</span>
               </p>
               <p className="bc-line">
                 <span className="bc-line-label">Jezici</span>

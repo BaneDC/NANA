@@ -217,6 +217,27 @@ Vrsta vrednosti određuje raspored:
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
 - **Jedini izuzetak je cenovnik partnera** (`.rec-prices`): naziv levo, redovna i Minnina cena u koloni desno.
 
+### Negovateljica: šta se o njoj prikazuje
+
+U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prikazuje **samo ono što ona popunjava u formi na platformi**. Ništa se ne izmišlja preko toga.
+
+| Podatak | Kartica („Pronađi") | Red (preporuka u planu, chat) | Profil (drawer) |
+|---|---|---|---|
+| Ocena i broj ocena, ili „Nova" | meta | meta | zaglavlje |
+| Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
+| Opština (nikad adresa) i radijus | meta | meta | eyebrow |
+| Razlozi poklapanja (do tri, sa kvačicom) | ispod mete | — | — |
+| Klasifikacije (finski nazivi) | `.cg-tag` | — | čipovi „Klasifikacije" |
+| Biografija | — | — | citat |
+| Obrazovanje, jezici | — | — | „Kvalifikacije" |
+| Dani (`pon–pet`), doba dana sa satima, radijus | — | — | „Kada može da dolazi" |
+| Telefon, e-mail | — | — | „Kontakt", zamaskirano do pretplate |
+
+- **Klasifikacije** su četiri, uvek finskim imenom: Hoiva-avustaja, Lähihoitaja, Sairaanhoitaja, Kotiavustaja. Stoje na mestu nekadašnjeg „Čime se bavi".
+- **Doba dana** su tri, kao u formi: jutro 06–14, popodne 14–22, veče 22–06. Nege od 24 sata nema.
+- **Nema:** godina iskustva, spiska veština, tačne udaljenosti, noćnih smena kao posebne stavke.
+- Podaci i pomoćne funkcije (`daysText`, `slotsText`, `ratingText`, `matchReasons`, `SLOTS`) su u `src/data/carePlan.js`. Komponenta ih ne sastavlja sama.
+
 ---
 
 ## 9. Dugmad
