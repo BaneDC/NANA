@@ -102,7 +102,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
           sub={
             plan
               ? 'Plan nege je spreman. Pošaljite upit negovateljicama koje mu odgovaraju: upit šalje plan i ništa ne košta, a možete da pitate više njih.'
-              : 'Kad završite razgovor sa Jovanom, ovde će biti plan nege i negovateljice koje mu odgovaraju.'
+              : 'Kad završite razgovor sa Minnom, ovde će biti plan nege i negovateljice koje mu odgovaraju.'
           }
         >
           <div className="panel-card-actions">

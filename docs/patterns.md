@@ -97,7 +97,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - Akcije stranice su samo u `.view-head`, desno.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (CSS to radi preko klase `.ask-assistant`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
-- `.back-link` je iznad naslova (12px, strelica). Nema drugog stila za „nazad".
+- `.back-link` je iznad naslova (12px, strelica). Nema drugog stila za „nazad". Širok je koliko njegov tekst, i na telefonu, gde je zaglavlje grid: zona dodira ne sme da pređe na prazan prostor desno od njega.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava CSS; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici.
 
@@ -125,7 +125,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - Footer (`.panel-card-actions`) je uvek poslednji, dole levo, a dugmad su prirodne širine. Na telefonu dugmad dele širinu kartice (CSS to radi sam).
 - `.panel-card-actions.is-end` (desno) je samo za dijaloge i drawer-e.
 
-**Istaknuta kartica:** `.panel-card.is-attention` — narandžasta podloga, ivica od 1px, bez senke. Samo za tri stvari: ono što čeka na porodicu, Jovanino pismo i izmenu plana. Ne pravi drugu „istaknutu" varijantu.
+**Istaknuta kartica:** `.panel-card.is-attention` — narandžasta podloga, ivica od 1px, bez senke. Samo za tri stvari: ono što čeka na porodicu, Minnino pismo i izmenu plana. Ne pravi drugu „istaknutu" varijantu.
 
 **Grupa kartica** se koristi samo kad stranica ima više od jedne grupe:
 
@@ -215,7 +215,7 @@ Vrsta vrednosti određuje raspored:
 
 - Oznaka je u oba slučaja 12px secondary, a vrednost primary.
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
-- **Jedini izuzetak je cenovnik partnera** (`.rec-prices`): naziv levo, redovna i Jovanina cena u koloni desno.
+- **Jedini izuzetak je cenovnik partnera** (`.rec-prices`): naziv levo, redovna i Minnina cena u koloni desno.
 
 ---
 

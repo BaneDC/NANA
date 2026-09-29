@@ -169,7 +169,7 @@ function situation(care) {
   const visits = allVisits(care).map((v) => ({ caregiver: v.caregiver.name, date: v.date, time: v.time, status: v.status }));
   return [
     `Payment card saved: ${care.payment.connected ? 'yes' : 'no'}.`,
-    'Caregivers who fit the plan (rates in RSD per hour):',
+    'Caregivers who fit the plan (hourly rates in euros, a range until one is agreed):',
     JSON.stringify(list),
     `Arrangements: ${JSON.stringify(arrangements)}`,
     `Visits: ${visits.length ? JSON.stringify(visits) : 'none yet'}`,

@@ -126,7 +126,7 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
 
             <div className="pw-notes">
               <p>Pretplata se obnavlja automatski, a možete da je otkažete u svakom trenutku.</p>
-              <p>Cene su izražene u {plans[0].currency === 'EUR' ? 'evrima' : 'dinarima'}.</p>
+              <p>Cene su izražene u evrima.</p>
             </div>
 
             {caregiver && (

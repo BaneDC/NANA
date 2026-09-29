@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { ArrowRight, CalendarCheck, Check, Package } from 'lucide-react';
 import { caregiversFor } from '../data/carePlan';
-import { PARTNERS, discounted, rsd } from '../data/partners';
+import { PARTNERS, discounted, price } from '../data/partners';
 import CaregiverRow from './CaregiverRow';
 import Button from './Button';
 
 // One recommendation, in the shape the client's document sketched: what we suggest,
 // *why we suggest it for this person*, and who would do it. Where a partner does
-// it, the card shows their price and the lower one the family pays when Jovana
+// it, the card shows their price and the lower one the family pays when Minna
 // books it — that difference is the reason to go through us — and a single action
 // that hands it to her.
 export default function RecommendationCard({
@@ -66,7 +66,7 @@ export default function RecommendationCard({
 }
 
 // A partner's price list. Every row shows what the partner charges and what the
-// family pays through Jovana, so the saving is read row by row, not worked out.
+// family pays through Minna, so the saving is read row by row, not worked out.
 function Offer({ rec, bookable }) {
   const partner = PARTNERS[rec.partner];
   const [sent, setSent] = useState(false);
@@ -82,7 +82,7 @@ function Offer({ rec, bookable }) {
           <span className="rec-partner-name">{partner.name}</span>
         )}
         {partner.what && <span className="rec-partner-what">{partner.what}</span>}
-        <span className="status-pill is-accepted">−{partner.discount}% preko Jovane</span>
+        <span className="status-pill is-accepted">−{partner.discount}% preko Minne</span>
       </div>
 
       <ul className="rec-prices">
@@ -93,8 +93,8 @@ function Offer({ rec, bookable }) {
               {item.who && <span className="rec-price-who">{item.who}</span>}
             </span>
             <span className="rec-price-amount">
-              <s aria-label={`Redovna cena ${rsd(item.price)}`}>{rsd(item.price)}</s>
-              <span>{rsd(discounted(item.price, partner.discount))}</span>
+              <s aria-label={`Redovna cena ${price(item.price)}`}>{price(item.price)}</s>
+              <span>{price(discounted(item.price, partner.discount))}</span>
             </span>
           </li>
         ))}
@@ -104,13 +104,13 @@ function Offer({ rec, bookable }) {
         (sent ? (
           <p className="rec-sent" role="status">
             <Check size={14} strokeWidth={2} />
-            Jovana je dobila zahtev i javiće vam se danas {ordering ? 'sa danom isporuke' : 'sa terminom'}.
+            Minna je dobila zahtev i javiće vam se danas {ordering ? 'sa danom isporuke' : 'sa terminom'}.
           </p>
         ) : (
           <div className="panel-card-actions">
             <Button variant="primary" onClick={() => setSent(true)}>
               <Icon size={14} strokeWidth={1.75} />
-              Neka Jovana {ordering ? 'naruči' : 'zakaže'}
+              Neka Minna {ordering ? 'naruči' : 'zakaže'}
             </Button>
           </div>
         ))}

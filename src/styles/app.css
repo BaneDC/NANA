@@ -1949,7 +1949,7 @@ textarea {
   margin-left: var(--spacing-1);
 }
 
-/* a unit after the number: "h", "RSD / h" */
+/* a unit after the number: "h", "€ / h" */
 .text-field .tf-suffix {
   flex-shrink: 0;
   font-size: var(--text-small-size);
@@ -2070,7 +2070,7 @@ textarea {
 /* Understanding panel — the AI variant's replacement for the bar above.
    It lives in the left margin, which the centred conversation never occupies,
    so it can grow downward without ever pushing the question around. */
-/* How well Jovana understands the situation, docked at the top centre: the
+/* How well Minna understands the situation, docked at the top centre: the
    label, five steps and the step's name stacked and centred. What she knows and
    lacks is said in her thinking. */
 .imm-know-dock {
@@ -2849,7 +2849,7 @@ textarea {
 }
 
 /* a partner's price list inside a recommendation: who, what each thing costs,
-   and what it costs through Jovana. Rows are split by hairlines rather than put
+   and what it costs through Minna. Rows are split by hairlines rather than put
    in cards of their own, so the card stays one surface. */
 .rec-offer {
   display: flex;
@@ -3314,7 +3314,7 @@ textarea {
   justify-content: flex-end;
 }
 
-/* soft chips Jovana can offer alongside her own follow-up question */
+/* soft chips Minna can offer alongside her own follow-up question */
 .imm-suggestions {
   display: flex;
   flex-wrap: wrap;
@@ -3460,7 +3460,7 @@ textarea {
 
 /* The reason is the question's subtitle — the same voice as the subtitle on the
    opening screen, centred under the question and tight to it — so it reads as
-   the rest of what Jovana is saying, not as a note pinned beside it. */
+   the rest of what Minna is saying, not as a note pinned beside it. */
 .imm-why {
   /* the question's own width, so the two read as one block */
   width: 100%;
@@ -3470,7 +3470,7 @@ textarea {
   color: #7d6f63;
 }
 
-/* One gap between what Jovana says and what can be answered, whether the
+/* One gap between what Minna says and what can be answered, whether the
    question has a subtitle or not. */
 .imm-screen.is-conversation .imm-answer {
   margin-top: 0;
@@ -3553,7 +3553,7 @@ textarea {
   margin-top: 20vh;
 }
 
-/* The line takes the height of what Jovana wrote, starting under the section
+/* The line takes the height of what Minna wrote, starting under the section
    label, and everything below follows it at a fixed distance. Three lines used
    to be reserved with the text centred inside them, which left a shorter
    question floating in empty space with an uneven gap above the answers. Nothing
@@ -4393,7 +4393,7 @@ button.svc:hover {
 
 /* The only panel on the page that is asking for something. It is tinted
    because everything else here is a statement and this is a queue. */
-/* The attention card: what waits on the family, Jovana's letter, a change to
+/* The attention card: what waits on the family, Minna's letter, a change to
    the plan. One tint, one hairline, no shadow — and the ink that goes with it. */
 .panel-card.is-attention {
   background: var(--primary-subtle);
@@ -6297,8 +6297,12 @@ button.svc:hover {
     grid-row: 3;
   }
 
+  /* As wide as its words. A grid item stretches across its cell, and this one
+     spans the row: the link took the whole width, and with the touch target
+     reaching 14px under it, a tap to the right of the title went back. */
   .view-head-text > .back-link {
     grid-row: 1;
+    justify-self: start;
   }
 
   .view-head-text > .view-title {
@@ -7158,7 +7162,7 @@ button.svc:hover {
 }
 
 /* ---------- Rows inside a card ----------
-   A caregiver in a recommendation, a visit, a request, a way to reach Jovana:
+   A caregiver in a recommendation, a visit, a request, a way to reach Minna:
    inside a card each is a row, not a box of its own. A box inside the card was
    a third level of corners that no radius on the scale could satisfy.
 

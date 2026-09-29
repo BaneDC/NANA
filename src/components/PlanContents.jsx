@@ -81,7 +81,7 @@ export default function PlanContents({
                 </span>
                 <p className="locked-title">Još {locked.length} preporuke u punom planu</p>
                 <p className="locked-note">
-                  Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Jovana, promene
+                  Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Minna, promene
                   koje stan čine bezbednijim{archived ? '.' : ', i direktan broj svake negovateljice.'}
                 </p>
                 <Button variant="primary" size="lg" onClick={onUnlock}>

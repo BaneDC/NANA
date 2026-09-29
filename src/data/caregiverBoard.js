@@ -38,23 +38,24 @@ export const serviceById = Object.fromEntries(SERVICES.map((s) => [s.id, s]));
 export const serviceTitle = (id) => serviceById[id]?.title || id;
 export const serviceShort = (id) => serviceById[id]?.short || id;
 
-// Belgrade, dinars, the same families the rest of the app talks about — the
-// screenshots that prompted this view were euros and Finnish names from another
-// product, and this one has its own.
-export const money = (n) => `${n.toLocaleString('sr-RS').replace(/,/g, '.')} RSD`;
+// Helsinki, euros, the same families the rest of the app talks about. Amounts
+// go through the one shared formatter (15 €, 15,20 €); it keeps the name
+// `money` here because the caregiver's screens import it from this file.
+export { eur as money } from '../lib/money';
 
-export const DEFAULT_RATE = 850;
+// Euros per hour.
+export const DEFAULT_RATE = 15;
 
 export const clients = [
   {
-    id: 'stevanovic',
-    elder: 'Milica Stevanović',
+    id: 'makela',
+    elder: 'Eila Mäkelä',
     age: 84,
-    initials: 'MS',
-    family: 'Bogdan Stevanović',
+    initials: 'EM',
+    family: 'Mikko Mäkelä',
     relation: 'Sin',
-    phone: '+381 63 555 210',
-    area: 'Vračar',
+    phone: '+358 40 555 2100',
+    area: 'Töölö',
     distance: '1,8 km',
     frailty: 5,
     needs: ['medication', 'meals', 'company'],
@@ -68,19 +69,19 @@ export const clients = [
       {
         kind: 'request',
         when: 'pre 2 dana',
-        text: 'Bogdan je poslao upit pošto je završio plan nege. Milica je na nivou krhkosti 5.',
+        text: 'Mikko je poslao upit pošto je završio plan nege. Eila je na nivou krhkosti 5.',
       },
     ],
   },
   {
-    id: 'pavlovic',
-    elder: 'Đorđe Pavlović',
+    id: 'virtanen',
+    elder: 'Eero Virtanen',
     age: 79,
-    initials: 'ĐP',
-    family: 'Jelena Pavlović',
+    initials: 'EV',
+    family: 'Laura Virtanen',
     relation: 'Ćerka',
-    phone: '+381 64 220 118',
-    area: 'Zvezdara',
+    phone: '+358 50 555 1184',
+    area: 'Kallio',
     distance: '3,2 km',
     frailty: 6,
     needs: ['personal-care', 'mobility', 'meals'],
@@ -94,19 +95,19 @@ export const clients = [
       {
         kind: 'request',
         when: 'pre 4 sata',
-        text: 'Jelena je poslala upit. Živi u Novom Sadu i radnim danima ne može da bude tu.',
+        text: 'Laura je poslala upit. Živi u drugom gradu i radnim danima ne može da bude tu.',
       },
     ],
   },
   {
-    id: 'jovanovic',
-    elder: 'Radmila Jovanović',
+    id: 'salminen',
+    elder: 'Helmi Salminen',
     age: 88,
-    initials: 'RJ',
-    family: 'Nevena Jovanović',
+    initials: 'HS',
+    family: 'Emma Salminen',
     relation: 'Unuka',
-    phone: '+381 60 771 940',
-    area: 'Vračar',
+    phone: '+358 44 555 7194',
+    area: 'Kamppi',
     distance: '1,1 km',
     frailty: 6,
     needs: ['personal-care', 'meals', 'housekeeping'],
@@ -117,19 +118,19 @@ export const clients = [
     acceptedOn: 'juče',
     visits: [],
     activity: [
-      { kind: 'request', when: 'pre 3 dana', text: 'Nevena je poslala upit za baku.' },
+      { kind: 'request', when: 'pre 3 dana', text: 'Emma je poslala upit za baku.' },
       { kind: 'accepted', when: 'juče', text: 'Prihvatili ste. Ugovor tek treba postaviti.' },
     ],
   },
   {
-    id: 'maric',
-    elder: 'Vojislav Marić',
+    id: 'nieminen',
+    elder: 'Veikko Nieminen',
     age: 81,
-    initials: 'VM',
-    family: 'Aleksandar Marić',
+    initials: 'VN',
+    family: 'Antti Nieminen',
     relation: 'Sin',
-    phone: '+381 63 044 617',
-    area: 'Savski venac',
+    phone: '+358 40 555 0446',
+    area: 'Lauttasaari',
     distance: '4,6 km',
     frailty: 4,
     needs: ['company', 'errands', 'walks'],
@@ -139,27 +140,27 @@ export const clients = [
     agreementSent: true,
     sentOn: 'pre 2 dana',
     services: ['company', 'errands', 'walks'],
-    rate: 850,
+    rate: 15,
     visits: [],
     activity: [
-      { kind: 'request', when: 'pre 5 dana', text: 'Aleksandar je poslao upit.' },
+      { kind: 'request', when: 'pre 5 dana', text: 'Antti je poslao upit.' },
       { kind: 'accepted', when: 'pre 4 dana', text: 'Prihvatili ste.' },
       {
         kind: 'agreement-sent',
         when: 'pre 2 dana',
-        text: 'Ugovor poslat: 3 usluge po 850 RSD/h. Čeka se da Aleksandar potpiše.',
+        text: 'Ugovor poslat: 3 usluge po 15\u00a0€/h. Čeka se da Antti potpiše.',
       },
     ],
   },
   {
-    id: 'ilic',
-    elder: 'Zorka Ilić',
-    age: 86,
-    initials: 'ZI',
-    family: 'Milena Ilić',
+    id: 'korhonen',
+    elder: 'Aino Korhonen',
+    age: 84,
+    initials: 'AK',
+    family: 'Anna Korhonen',
     relation: 'Ćerka',
-    phone: '+381 64 909 335',
-    area: 'Vračar',
+    phone: '+358 40 123 4567',
+    area: 'Töölö',
     distance: '2,0 km',
     frailty: 5,
     needs: ['medication', 'meals', 'company'],
@@ -167,14 +168,14 @@ export const clients = [
     schedule: 'pon, sre, pet · 09:00–13:00',
     stage: 'active',
     services: ['medication', 'meals', 'company', 'housekeeping'],
-    rate: 850,
+    rate: 15,
     since: '12. juna',
     plan: {
       date: 'Sutra',
       time: '09:00–13:00',
       hours: 4,
       services: ['medication', 'meals', 'company'],
-      notes: 'Podići recept u apoteci u Njegoševoj. Milena je tražila da je pozovete posle.',
+      notes: 'Podići recept u apoteci na uglu. Anna je tražila da je pozovete posle.',
       sentOn: 'pre 2 dana',
     },
     visits: [
@@ -183,24 +184,24 @@ export const clients = [
       { date: '4. avgusta', time: '09:00–13:00', hours: 4, mood: 'low', eating: 'less', moving: 'less', services: ['medication', 'meals'], concern: 'Jede mnogo manje nego obično, treći put ove nedelje.', note: 'Umorna celo jutro, nije htela da izađe. Jela je vrlo malo.', status: 'paid' },
     ],
     activity: [
-      { kind: 'request', when: '10. juna', text: 'Milena je poslala upit.' },
+      { kind: 'request', when: '10. juna', text: 'Anna je poslala upit.' },
       { kind: 'accepted', when: '10. juna', text: 'Prihvatili ste.' },
-      { kind: 'agreement-sent', when: '11. juna', text: 'Ugovor poslat: 3 usluge po 850 RSD/h.' },
-      { kind: 'agreement-signed', when: '12. juna', text: 'Milena je potpisala. Saradnja je počela.' },
-      { kind: 'agreement-changed', when: '2. jula', text: 'Lakši kućni poslovi dodati na Milenin zahtev. Cena ista.' },
+      { kind: 'agreement-sent', when: '11. juna', text: 'Ugovor poslat: 3 usluge po 15\u00a0€/h.' },
+      { kind: 'agreement-signed', when: '12. juna', text: 'Anna je potpisala. Saradnja je počela.' },
+      { kind: 'agreement-changed', when: '2. jula', text: 'Lakši kućni poslovi dodati, Anna je to tražila. Cena ista.' },
       { kind: 'note', when: '4. avgusta', text: 'Zabeležili ste: jede mnogo manje nego obično, vredi reći porodici.' },
-      { kind: 'message', when: '5. avgusta', text: 'Milena: „Hvala što ste zvali. Zakazali smo lekara za petak.“' },
+      { kind: 'message', when: '5. avgusta', text: 'Anna: „Hvala što ste zvali. Zakazali smo lekara za petak.“' },
     ],
   },
   {
-    id: 'nikolic',
-    elder: 'Branko Nikolić',
+    id: 'laine',
+    elder: 'Toivo Laine',
     age: 90,
-    initials: 'BN',
-    family: 'Dušan Nikolić',
+    initials: 'TL',
+    family: 'Juha Laine',
     relation: 'Sin',
-    phone: '+381 61 328 004',
-    area: 'Zvezdara',
+    phone: '+358 40 555 3280',
+    area: 'Vallila',
     distance: '3,8 km',
     frailty: 7,
     needs: ['personal-care', 'mobility', 'medication'],
@@ -208,7 +209,7 @@ export const clients = [
     schedule: 'uto, čet, sub · 10:00–13:00',
     stage: 'active',
     services: ['personal-care', 'mobility', 'medication'],
-    rate: 900,
+    rate: 16,
     since: '3. marta',
     plan: {
       date: 'Četvrtak',
@@ -223,22 +224,22 @@ export const clients = [
       { date: '7. avgusta', time: '10:00–13:00', hours: 3, mood: 'good', eating: 'usual', moving: 'more', services: ['personal-care', 'mobility', 'medication'], note: 'Prvi put posle više nedelja savladao stepenice do dvorišta.', status: 'paid' },
     ],
     activity: [
-      { kind: 'request', when: '1. marta', text: 'Dušan je poslao upit.' },
+      { kind: 'request', when: '1. marta', text: 'Juha je poslao upit.' },
       { kind: 'accepted', when: '1. marta', text: 'Prihvatili ste.' },
-      { kind: 'agreement-sent', when: '2. marta', text: 'Ugovor poslat: 3 usluge po 900 RSD/h.' },
-      { kind: 'agreement-signed', when: '3. marta', text: 'Dušan je potpisao. Saradnja je počela.' },
+      { kind: 'agreement-sent', when: '2. marta', text: 'Ugovor poslat: 3 usluge po 16\u00a0€/h.' },
+      { kind: 'agreement-signed', when: '3. marta', text: 'Juha je potpisao. Saradnja je počela.' },
       { kind: 'note', when: '7. avgusta', text: 'Zabeležili ste: sam je savladao stepenice. Vredi nastaviti.' },
     ],
   },
   {
-    id: 'petrovic',
-    elder: 'Ljubica Petrović',
+    id: 'heikkinen',
+    elder: 'Ilona Heikkinen',
     age: 83,
-    initials: 'LJP',
-    family: 'Marko Petrović',
+    initials: 'IH',
+    family: 'Matti Heikkinen',
     relation: 'Sin',
-    phone: '+381 63 610 227',
-    area: 'Vračar',
+    phone: '+358 45 555 6102',
+    area: 'Munkkiniemi',
     distance: '1,4 km',
     frailty: 5,
     needs: ['meals', 'housekeeping', 'company'],
@@ -246,7 +247,7 @@ export const clients = [
     schedule: 'pon, sre, pet · 09:00–12:00',
     stage: 'work-order',
     services: ['meals', 'housekeeping', 'company'],
-    rate: 850,
+    rate: 15,
     since: '4. maja',
     sinceVisit: 'pre 18 sati',
     visits: [
@@ -255,22 +256,22 @@ export const clients = [
       { date: '5. avgusta', time: '09:00–12:00', hours: 3, mood: 'usual', eating: 'usual', moving: 'usual', services: ['meals', 'housekeeping'], note: 'Nabavka, čišćenje kuhinje.', status: 'paid' },
     ],
     activity: [
-      { kind: 'request', when: '2. maja', text: 'Marko je poslao upit.' },
+      { kind: 'request', when: '2. maja', text: 'Matti je poslao upit.' },
       { kind: 'accepted', when: '2. maja', text: 'Prihvatili ste.' },
-      { kind: 'agreement-sent', when: '3. maja', text: 'Ugovor poslat: 3 usluge po 850 RSD/h.' },
-      { kind: 'agreement-signed', when: '4. maja', text: 'Marko je potpisao. Saradnja je počela.' },
-      { kind: 'message', when: '1. avgusta', text: 'Marko: „Možete li od septembra da dodate i petke?“' },
+      { kind: 'agreement-sent', when: '3. maja', text: 'Ugovor poslat: 3 usluge po 15\u00a0€/h.' },
+      { kind: 'agreement-signed', when: '4. maja', text: 'Matti je potpisao. Saradnja je počela.' },
+      { kind: 'message', when: '1. avgusta', text: 'Matti: „Možete li od septembra da dodate i petke?“' },
     ],
   },
   {
-    id: 'djuric',
-    elder: 'Slavko Đurić',
+    id: 'koskinen',
+    elder: 'Pentti Koskinen',
     age: 77,
-    initials: 'SĐ',
-    family: 'Tanja Đurić',
+    initials: 'PK',
+    family: 'Tiina Koskinen',
     relation: 'Ćerka',
-    phone: '+381 60 447 812',
-    area: 'Palilula',
+    phone: '+358 50 555 4478',
+    area: 'Herttoniemi',
     distance: '5,1 km',
     frailty: 4,
     needs: ['company', 'walks', 'errands'],
@@ -278,18 +279,18 @@ export const clients = [
     schedule: 'pon, čet · 08:00–14:00',
     stage: 'work-order',
     services: ['company', 'walks', 'errands'],
-    rate: 800,
+    rate: 14,
     since: '20. jula',
     sinceVisit: 'pre 2 dana',
     visits: [
-      { date: '9. avgusta', time: '08:00–14:00', hours: 6, planned: ['company', 'walks', 'errands'], planNotes: 'Prvo pijaca, pa šetnja pored Dunava.', status: 'due' },
+      { date: '9. avgusta', time: '08:00–14:00', hours: 6, planned: ['company', 'walks', 'errands'], planNotes: 'Prvo pijaca, pa šetnja pored mora.', status: 'due' },
       { date: '5. avgusta', time: '08:00–14:00', hours: 6, mood: 'good', eating: 'more', moving: 'more', services: ['company', 'walks', 'errands'], note: 'Obaveze i duga šetnja. Ceo dan dobro raspoložen.', status: 'paid' },
     ],
     activity: [
-      { kind: 'request', when: '18. jula', text: 'Tanja je poslala upit.' },
+      { kind: 'request', when: '18. jula', text: 'Tiina je poslala upit.' },
       { kind: 'accepted', when: '18. jula', text: 'Prihvatili ste.' },
-      { kind: 'agreement-sent', when: '19. jula', text: 'Ugovor poslat: 3 usluge po 800 RSD/h.' },
-      { kind: 'agreement-signed', when: '20. jula', text: 'Tanja je potpisala. Saradnja je počela.' },
+      { kind: 'agreement-sent', when: '19. jula', text: 'Ugovor poslat: 3 usluge po 14\u00a0€/h.' },
+      { kind: 'agreement-signed', when: '20. jula', text: 'Tiina je potpisala. Saradnja je počela.' },
     ],
   },
 ];
@@ -297,7 +298,7 @@ export const clients = [
 // What the caregiver has already been paid this month, before anything on the
 // board is sent. The work-order column is money not yet asked for, which is the
 // reason it sits on the board at all.
-export const paidThisMonth = 38400;
+export const paidThisMonth = 608;
 
 export const frailtyLabel = (level) => CFS[level]?.label || '';
 
@@ -307,8 +308,11 @@ export const SERVICE_FEE = 0.1;
 
 export function totalsFor(hours, rate) {
   const charged = hours * rate;
-  const fee = Math.round(charged * SERVICE_FEE);
-  return { charged, fee, net: charged - fee };
+  // to the cent, and net worked in cents too so 15,20 € less 1,52 € is not
+  // 13,680000000000001
+  const fee = Math.round(charged * SERVICE_FEE * 100) / 100;
+  const net = Math.round(charged * 100 - fee * 100) / 100;
+  return { charged, fee, net };
 }
 
 // How long a time range runs, so a plan does not have to be told twice how many

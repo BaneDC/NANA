@@ -14,7 +14,7 @@ export const steps = [
   {
     id: 'getting-to-know',
     intro:
-      'Dobro došli u NANA Prime. Ja sam Jovana, vaša koordinatorka nege. Pre nego što vam preporučim bilo kakvu podršku, volela bih da upoznam vas i osobu o kojoj brinete.',
+      'Dobro došli u NANA Prime. Ja sam Minna, vaša koordinatorka nege. Pre nego što vam preporučim bilo kakvu podršku, volela bih da upoznam vas i osobu o kojoj brinete.',
     questions: [
       {
         id: 'about-person',
@@ -23,9 +23,9 @@ export const steps = [
         subtitle: 'Za sada samo osnovno — u detalje ćemo zajedno',
         shortTitle: 'O njoj/njemu',
         fields: [
-          { id: 'name', label: 'Ime i prezime', placeholder: 'Milica Stevanović' },
+          { id: 'name', label: 'Ime i prezime', placeholder: 'Aino Korhonen' },
           { id: 'age', label: 'Godine', placeholder: '84' },
-          { id: 'city', label: 'Gde živi', placeholder: 'Vračar, Beograd' },
+          { id: 'city', label: 'Gde živi', placeholder: 'Töölö, Helsinki' },
         ],
       },
       {
@@ -35,9 +35,9 @@ export const steps = [
         subtitle: 'Da znamo koga da obaveštavamo',
         shortTitle: 'O vama',
         fields: [
-          { id: 'your-name', label: 'Vaše ime', placeholder: 'Bogdan Stevanović' },
+          { id: 'your-name', label: 'Vaše ime', placeholder: 'Anna Korhonen' },
           { id: 'relation', label: 'Šta ste joj/mu', placeholder: 'Sin' },
-          { id: 'your-phone', label: 'Vaš telefon', placeholder: '+381 60 123 45 67' },
+          { id: 'your-phone', label: 'Vaš telefon', placeholder: '+358 40 123 4567' },
         ],
       },
       {

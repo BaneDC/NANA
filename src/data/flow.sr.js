@@ -248,7 +248,7 @@ export const Q = {
 // Section lead-ins, for the model to draw on rather than invent from nothing.
 export const STEP_INTRO = {
   'getting-to-know':
-    'Dobro došli u NANA Prime. Ja sam Jovana, vaš koordinator nege. Pre nego što vam preporučim bilo kakvu podršku, volela bih da upoznam vas i osobu o kojoj brinete.',
+    'Dobro došli u NANA Prime. Ja sam Minna, vaš koordinator nege. Pre nego što vam preporučim bilo kakvu podršku, volela bih da upoznam vas i osobu o kojoj brinete.',
   'daily-life':
     'Hvala. Sada kada smo se upoznali, volela bih da razumem kako izgleda njihov svakodnevni dan.',
   support: 'Sad mi je slika jasna. Još par pitanja i preporuka će biti precizna.',
@@ -269,7 +269,7 @@ export const CFS_SR = {
 
 // Openers for the blank first screen. The empty page is right for someone who
 // knows what to say; these are for everyone staring at it not knowing where to
-// start. Each one is sent as the user's first message, so Jovana picks it up
+// start. Each one is sent as the user's first message, so Minna picks it up
 // like anything else the person could have typed.
 export const STARTERS = [
   {
@@ -305,7 +305,7 @@ export const SECTION = {
 };
 
 // Why we ask — for the questions a family might reasonably wonder about. These
-// are not shown as written: they go into Jovana's instructions as the house's
+// are not shown as written: they go into Minna's instructions as the house's
 // own reasoning, and she decides per conversation whether a question needs one
 // and words it around what the family has told her. A name, an age, how she
 // gets around explain themselves and have none on purpose; a reason under every
@@ -337,7 +337,7 @@ export const WHY = {
 };
 
 // Follow-ups are where a reason matters most: the question was on no list, the
-// family's own answer opened it, and nothing tells them why Jovana picked up on
+// family's own answer opened it, and nothing tells them why Minna picked up on
 // that particular thing. The first one is the client's own example, word for
 // word bar the diacritics.
 export const WHY_FOLLOW_UPS = [

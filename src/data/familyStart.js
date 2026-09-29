@@ -93,10 +93,12 @@ export function requestMessage(care) {
 // Who says no, and why. A real board has people who are full; one of them
 // here, so a family sees what a no looks like and that it always says why.
 const BUSY = {
-  dragana: 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.',
+  liisa: 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.',
 };
 
-const rateOf = (c) => parseInt(String(c.rate).replace(/\D/g, ''), 10) || 850;
+// She names a range on her profile; the terms she sends start in its middle,
+// in whole euros, so the family has room either way.
+const rateOf = (c) => (c.rateMin && c.rateMax ? Math.round((c.rateMin + c.rateMax) / 2) : 15);
 
 // A caregiver's answer to a request: a no with its reason, or a yes that comes
 // with her terms for exactly what the plan asks for.

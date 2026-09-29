@@ -7,7 +7,7 @@ import Button from '../components/Button';
 
 // A care plan as its own page, reached from the Care plans list or the nav.
 //
-// It opens on Jovana's letter. The summary of the person that used to sit above
+// It opens on Minna's letter. The summary of the person that used to sit above
 // it told the family what they had just told us; the letter is the first thing
 // the plan has to say back.
 export default function PlanDetail({

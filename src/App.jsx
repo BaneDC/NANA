@@ -48,7 +48,7 @@ const DEMO = wantsDemo();
 const demoStart = DEMO ? reconcile({}, demoAnswers).answers : null;
 
 // What registration already told us about the person writing, as the answer the
-// onboarding would otherwise ask for, so Jovana does not ask it again.
+// onboarding would otherwise ask for, so Minna does not ask it again.
 const aboutYou = (u) => ({ values: { 'your-name': u.name, 'your-phone': u.phone } });
 
 export default function App() {
@@ -425,7 +425,7 @@ export default function App() {
   });
   const openEntry = entries.find((e) => e.id === selectedPlan) || entries[0];
 
-  // The conversation in the nav: Jovana until the plan exists, the assistant after.
+  // The conversation in the nav: Minna until the plan exists, the assistant after.
   // the conversations, as the nav lists them: what was asked first in each
   // A conversation is listed once something has been said in it: an empty one
   // is the page the family is looking at, and naming it in the nav says there
@@ -530,7 +530,7 @@ export default function App() {
                 }
                 setAnswers({ ...(saved?.answers || {}), 'about-you': aboutYou(u) });
                 if (saved?.notes) setNotes(saved.notes);
-                // A family starts with Jovana, not with the questionnaire: the AI
+                // A family starts with Minna, not with the questionnaire: the AI
                 // onboarding is the first thing after signing in, and the rest of
                 // the app is what it hands over to once the plan exists.
                 startVariant('ai');
@@ -541,7 +541,7 @@ export default function App() {
       ) : (
         <>
           {/* Razgovor: once the plan exists, the assistant, for anything; before
-              it, the way back into the conversation with Jovana. */}
+              it, the way back into the conversation with Minna. */}
           {view === 'chat' && !openThread && !fullscreen && (
             <div className="chat-container">
               {plan ? (
@@ -558,7 +558,7 @@ export default function App() {
                   <section className="panel-card is-attention">
                     <p className="doc-section-title">Upoznavanje nije završeno</p>
                     <p className="fam-sub">
-                      Jovana pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.
+                      Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.
                     </p>
                     <div className="panel-card-actions">
                       <Button variant="primary" onClick={() => startVariant('ai')}>

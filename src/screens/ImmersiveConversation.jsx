@@ -54,7 +54,7 @@ const list = {
   exit: { opacity: 0, transition: { staggerChildren: 0.03, staggerDirection: -1 } },
 };
 
-// Jovana's line is revealed one character at a time from a plain string. It is
+// Minna's line is revealed one character at a time from a plain string. It is
 // deliberately not a component per word: once a character is on screen it is
 // just text, so there is nothing left that *can* re-animate. The reveal is also
 // decoupled from the network — tokens arrive in lumps of several words, and
@@ -145,7 +145,7 @@ function Line({ full, shown }) {
 // One composer for everything typed, instead of a field per question. It is
 // always there, so the cards read as a shortcut rather than the only way through
 // — and the questions that used to be three stacked input cards are now just
-// answered in a sentence, which Jovana pulls the fields out of.
+// answered in a sentence, which Minna pulls the fields out of.
 function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: outer, onValue, withSend = true }) {
   const [own, setOwn] = useState('');
   const ref = useRef(null);
@@ -236,7 +236,7 @@ function Cards({ question, onPick, onSend, sr }) {
 
   // An `inputs` question has no cards at all — three stacked field cards were
   // the last piece of questionnaire left in here, and the person now answers in
-  // a sentence that Jovana maps onto the fields. So the composer *is* the whole
+  // a sentence that Minna maps onto the fields. So the composer *is* the whole
   // answer here.
   if (question.type === 'inputs') {
     return (
@@ -304,7 +304,7 @@ function Cards({ question, onPick, onSend, sr }) {
       {
         optionIds: ids,
         // only where the question has a free-text row of its own; elsewhere the
-        // words still reach Jovana in the message, and she keeps them as a note
+        // words still reach Minna in the message, and she keeps them as a note
         ...(text && question.allowOther ? { other: text } : {}),
       },
       [...picked, text].filter(Boolean).join(', ') || sr.empty || 'Ništa od toga'
@@ -353,7 +353,7 @@ function Cards({ question, onPick, onSend, sr }) {
 }
 
 // The AI conversation in the immersive form: one screen at a time over the
-// clouds, but the question on each screen is written by Jovana rather than read
+// clouds, but the question on each screen is written by Minna rather than read
 // off a list — and the first screen is a blank page, not a question.
 export default function ImmersiveConversation({
   user,
@@ -371,7 +371,7 @@ export default function ImmersiveConversation({
   const [draft, setDraft] = useState('');
   const [asked, setAsked] = useState(null);
   const [followUp, setFollowUp] = useState(null); // string[] of suggestions
-  // Why the question on screen is being asked — only when Jovana judged it needs
+  // Why the question on screen is being asked — only when Minna judged it needs
   // saying, so most questions have none.
   const [why, setWhy] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -435,7 +435,7 @@ export default function ImmersiveConversation({
   const stalled = stage === 'talking' && !waiting && !asking && !followUp;
   // A turn can call tools without writing a sentence, which left the screen
   // showing options with no question above them. The flow's own wording is the
-  // floor: Jovana's phrasing is preferred, but something is always asked.
+  // floor: Minna's phrasing is preferred, but something is always asked.
   //
   // Empty while she is still writing: the reveal only ever runs on a sentence
   // that is already complete, so its layout cannot change under it.
@@ -664,7 +664,7 @@ export default function ImmersiveConversation({
                 <textarea
                   rows={5}
                   value={draft}
-                  placeholder="Majka ima 84 godine i živi sama u Vračaru. Pala je dvaput ove godine…"
+                  placeholder="Majka ima 84 godine i živi sama u Helsinkiju. Pala je dvaput ove godine…"
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -716,7 +716,7 @@ export default function ImmersiveConversation({
             </motion.div>
           )}
 
-          {/* One screen, and it does not unmount between "Jovana is answering"
+          {/* One screen, and it does not unmount between "Minna is answering"
               and "here are the cards". Two screens were the bug: both rendered
               the line, so AnimatePresence threw away the sentence that had just
               finished typing and animated a fresh copy of it in. */}
@@ -840,7 +840,7 @@ export default function ImmersiveConversation({
               <motion.p className="imm-count" variants={piece}>
                 Vaš plan podrške
               </motion.p>
-              {/* Jovana's closing sentence, revealed in place like every other
+              {/* Minna's closing sentence, revealed in place like every other
                   line of hers; this was the last one still grown a character
                   at a time and re-centred on each. The fallback used to be
                   "Evo plana za" and the name, which Serbian has to decline

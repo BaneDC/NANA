@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
-// One line after a decision, saying what it did — "Paid. 3.400 RSD is on its way
-// to Vesna." The drawer that took the decision has already closed, and the page
+// One line after a decision, saying what it did — "Paid. 152 € is on its way
+// to Sanna." The drawer that took the decision has already closed, and the page
 // behind it changes quietly; without this the only sign anything happened is a
 // row that is no longer there.
 export default function Toast({ flash, onDone }) {

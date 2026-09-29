@@ -176,7 +176,7 @@ was *"ježim se od toga"*. Everything is built in `buildPlan()` in `src/data/car
    acknowledgement sentence is chosen per reason for contact, because the document's own
    example named the specific hard thing rather than offering generic sympathy.
 3. **Recommendations** — each one a title, **why we're recommending this** for this person
-   specifically, who would do it, and soft actions ("Ask Jovana to arrange this", "Talk it
+   specifically, who would do it, and soft actions ("Ask Minna to arrange this", "Talk it
    through first"). Never "book now".
 4. **Ask or adjust** — a free-text box, because the plan is a conversation the family can
    push back on, not a document handed down.
@@ -230,7 +230,7 @@ Note: `?forceRaf` URL param is a test hook that keeps animations running in head
 
 `Classic / Immersive / AI`. The AI variant is **not a chat window** — it is the
 immersive shell (one screen at a time, ambient audio) with the question on each
-screen written by Jovana instead of read off a list.
+screen written by Minna instead of read off a list.
 
 **Background** — `src/components/immersive/GradientBackground.jsx`, not the clouds.
 Five soft pools of the clouds' own colours drift on slow elliptical orbits over the
@@ -248,7 +248,7 @@ paragraph typically fills four to six answers at once, and the flow resumes from
 what is missing. Measured on a realistic paragraph: 16 remaining → 12, plus a note,
 in one turn. Four **starters** sit under the field for anyone staring at a blank
 page not knowing where to begin — each is sent as the user's own first message, so
-Jovana picks it up like anything else they could have typed. A line about
+Minna picks it up like anything else they could have typed. A line about
 emergencies sits below them: a chat is the wrong channel for a fall, and saying so
 costs nothing.
 
@@ -257,16 +257,16 @@ every screen, always — the cards are a shortcut, never a cage. There is no
 per-field input: `inputs` questions (name/age/city, your name/relation/phone,
 goal/worry) render **no cards at all**. Three stacked field cards were the last
 piece of questionnaire left in the variant; now the person answers in a sentence
-— *"Bogdan, sin, 063 555 210"* — and Jovana maps it onto the fields. Select
+— *"Mikko, sin, 040 555 2100"* — and Minna maps it onto the fields. Select
 questions keep their cards, multi-selects keep their "other" row.
 
-Jovana's line arrives **word by word, each resolving out of a 10px blur** rather
+Minna's line arrives **word by word, each resolving out of a 10px blur** rather
 than the paragraph snapping in. Words are keyed by index, so one already on
 screen never re-animates as the next token extends the string.
 
 **3. "Then the next question has to adapt."** Two tools exist for exactly this:
 
-- `follow_up` — Jovana asks **her own** question, one that is nowhere in `flow.js`,
+- `follow_up` — Minna asks **her own** question, one that is nowhere in `flow.js`,
   with no cards and optional soft suggestion chips. This is what stops the flow
   from replying to *"sestra je kod nje tri dana nedeljno"* with the next scripted
   question as if it hadn't heard.
@@ -282,7 +282,7 @@ screen. The prompt carries the house's reasoning instead — a reason for each
 question that tends to raise the doubt (`WHY` in `flow.sr.js`: who else lives there,
 the state of the flat, falls, incontinence, pressure sores…) and example follow-ups
 with theirs (`WHY_FOLLOW_UPS`, the first being the client's own dementia example) —
-and Jovana decides per question whether to send one, worded around what she has been
+and Minna decides per question whether to send one, worded around what she has been
 told. A name, an age or how she gets around get none. The reason arrives with the
 answer cards, once the question has finished writing, and leaves with them.
 
@@ -307,7 +307,7 @@ said in her thinking instead. It stays off the opening screen: before the first
 message there is nothing understood yet, and an empty scale under a blank page
 reads as a score the person has already been given.
 
-Jovana always writes the question text herself; the flow's phrasing is never shown
+Minna always writes the question text herself; the flow's phrasing is never shown
 on screen. `ask(questionId)` only decides which cards appear beneath it.
 
 The boundary that keeps the rest of the app working: **Claude invents questions,
@@ -320,7 +320,7 @@ already said gets asked again — without invalidating the cached prefix above i
 
 **There is no question counter.** The bar tracks data actually collected, and the
 label names the section you are in. A count was tried and removed: it could only
-count questions from the list, so a `follow_up` screen — Jovana's own question,
+count questions from the list, so a `follow_up` screen — Minna's own question,
 which by design is not in the list — froze the number while screens went by. A
 number the flow cannot honour reads as broken; with follow-ups the total is
 genuinely unknowable, so the honest move is not to claim one.

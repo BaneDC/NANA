@@ -46,7 +46,7 @@ export default function AgreementForm({ client, onSend, onCancel }) {
       </p>
 
       <Field label="Cena po satu" className="is-short">
-        <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="RSD / h" />
+        <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="€ / h" />
       </Field>
       {valid && (
         <p className="ag-hint">

@@ -53,7 +53,7 @@ export function ChatSource({ id, ctx, onTitle }) {
   const send = useCallback(async function* (message, { turnId }) {
     const { plan, answers, care, apiKey, onAddNotes } = ctx.current;
     if (!plan || !apiKey) {
-      yield 'Asistent radi kad plan nege postoji. Završite razgovor sa Jovanom, pa se vratite ovde.';
+      yield 'Asistent radi kad plan nege postoji. Završite razgovor sa Minnom, pa se vratite ovde.';
       return;
     }
     let r;

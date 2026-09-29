@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 
-// How well Jovana understands the family's situation, as a plain scale docked at
+// How well Minna understands the family's situation, as a plain scale docked at
 // the top centre of the screen — out of the way of the question, and centred
 // like everything else on it.
 //

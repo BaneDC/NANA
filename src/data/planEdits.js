@@ -103,7 +103,7 @@ export function planDiff(before, after) {
   const recs = after.recommendations.filter((r) => !same(byId[r.id], r)).map((r) => r.id);
   const letter = JSON.stringify(before.letter.paragraphs) !== JSON.stringify(after.letter.paragraphs);
   const touched = [
-    ...(letter ? ['Jovanino pismo'] : []),
+    ...(letter ? ['Minnino pismo'] : []),
     ...after.recommendations.filter((r) => recs.includes(r.id)).map((r) => `„${r.title}“`),
   ];
   return { recs, letter, touched };

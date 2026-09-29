@@ -3,21 +3,22 @@
 // without talking the whole conversation through each time. The answers are a
 // real case, the same one the end-to-end checks walk.
 
+// A family in Helsinki: the demo is being prepared for the Finnish market.
 export const demoUser = {
   role: 'family',
-  firstName: 'Milena',
-  lastName: 'Ilić',
-  name: 'Milena Ilić',
-  email: 'milena@mail.com',
-  phone: '+381 64 123 4567',
-  country: 'RS',
+  firstName: 'Anna',
+  lastName: 'Korhonen',
+  name: 'Anna Korhonen',
+  email: 'anna@mail.com',
+  phone: '+358 40 123 4567',
+  country: 'FI',
   source: 'Preko prijatelja ili porodice',
   consents: { processing: true, accuracy: true, newsletter: false },
 };
 
 export const demoAnswers = {
-  'about-person': { values: { name: 'Zorka Ilić', age: '84', city: 'Vračar, Beograd' } },
-  'about-you': { values: { 'your-name': 'Milena Ilić', relation: 'Ćerka', 'your-phone': '+381 64 123 4567' } },
+  'about-person': { values: { name: 'Aino Korhonen', age: '84', city: 'Töölö, Helsinki' } },
+  'about-you': { values: { 'your-name': 'Anna Korhonen', relation: 'Ćerka', 'your-phone': '+358 40 123 4567' } },
   household: { optionId: 'alone' },
   'home-condition': { optionId: 'mostly-fine' },
   mobility: { optionId: 'stick' },
@@ -54,9 +55,9 @@ export const wantsDemo = () => {
   }
 };
 
-// `?demo=fi` opens the same finished case as a family in Finland, which is the
-// only way to see the two-plan subscription without registering with a Finnish
-// number. Anything else is Serbia, as `demoUser` says.
+// `?demo=rs` opens the same finished case as a family in Serbia, the way to see
+// the one-plan subscription without registering with a Serbian number. Anything
+// else is Finland, as `demoUser` says.
 export const demoCountry = () => {
   try {
     const v = new URLSearchParams(window.location.search).get('demo');

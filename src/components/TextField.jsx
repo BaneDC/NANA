@@ -26,7 +26,7 @@ export function Field({ label, required, hint, className, as: Tag = 'label', lab
   );
 }
 
-// an icon in front (a search), or a unit behind (RSD / h)
+// an icon in front (a search), or a unit behind (€ / h)
 export function Input({ value, onChange, onEnter, icon: Icon, suffix, className, ...rest }) {
   return (
     <span className={`tf-input${className ? ` ${className}` : ''}`}>

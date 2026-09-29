@@ -29,8 +29,8 @@ const ROLES = [
 ];
 
 const COUNTRIES = [
-  { id: 'RS', name: 'Srbija', flag: '🇷🇸', code: '+381' },
   { id: 'FI', name: 'Finska', flag: '🇫🇮', code: '+358' },
+  { id: 'RS', name: 'Srbija', flag: '🇷🇸', code: '+381' },
   { id: 'HR', name: 'Hrvatska', flag: '🇭🇷', code: '+385' },
   { id: 'BA', name: 'Bosna i Hercegovina', flag: '🇧🇦', code: '+387' },
   { id: 'ME', name: 'Crna Gora', flag: '🇲🇪', code: '+382' },
@@ -85,7 +85,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [country, setCountry] = useState('RS');
+  const [country, setCountry] = useState('FI');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [source, setSource] = useState('');
@@ -152,14 +152,14 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
       <div className="form-card">
         <div className="reg-row">
           <Field label="Ime" required>
-            <Input value={firstName} onChange={setFirstName} placeholder="Milena" autoComplete="given-name" />
+            <Input value={firstName} onChange={setFirstName} placeholder="Anna" autoComplete="given-name" />
           </Field>
           <Field label="Prezime" required>
-            <Input value={lastName} onChange={setLastName} placeholder="Ilić" autoComplete="family-name" />
+            <Input value={lastName} onChange={setLastName} placeholder="Korhonen" autoComplete="family-name" />
           </Field>
         </div>
         <Field label="Email" required>
-          <Input value={email} onChange={setEmail} type="email" placeholder="milena@mail.com" autoComplete="email" />
+          <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
         </Field>
         <Field label="Broj telefona" required as="div" labelId="reg-phone">
           <span className="tf-input has-prefix">
@@ -174,7 +174,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             <input
               type="tel"
               value={phone}
-              placeholder="64 123 4567"
+              placeholder="40 123 4567"
               autoComplete="tel-national"
               aria-labelledby="reg-phone"
               onChange={(e) => setPhone(e.target.value)}
@@ -264,7 +264,7 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
       </div>
       <div className="form-card">
         <Field label="Email" required>
-          <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="milena@mail.com" autoComplete="email" />
+          <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
         </Field>
         <Field label="Lozinka" required hint={failed ? 'Email ili lozinka nisu tačni.' : null}>
           <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} onEnter={submit} placeholder="Vaša lozinka" />

@@ -1,3 +1,5 @@
+import { eur } from '../lib/money';
+
 // What the subscription costs, per market.
 //
 // Serbia has one plan and always will: a family deciding whether to pay at all
@@ -5,8 +7,11 @@
 // paying for three at once is how that market expects to be offered a discount.
 //
 // Which market a family is in comes from the country they registered with, not
-// from the language they read in — someone reading the app in English in
-// Belgrade still pays in dinars.
+// from the language they read in.
+//
+// Everything is in euros now, the demo being prepared for Finland. Serbia's
+// one plan is its dinar price converted (1.490 RSD at ~117 RSD to the euro),
+// until its own euro price and options are decided.
 //
 // Finland's prices and every line below are the live platform's plan picker
 // (nanaprime.com, "Choose your plan"), in Serbian. One line is ours: the
@@ -45,7 +50,7 @@ const QUARTERLY = {
 };
 
 const PLANS = {
-  RS: [{ id: 'monthly', months: 1, price: 1490, currency: 'RSD', ...MONTHLY }],
+  RS: [{ id: 'monthly', months: 1, price: 12.7, currency: 'EUR', ...MONTHLY }],
   FI: [
     { id: 'monthly', months: 1, price: 43, currency: 'EUR', ...MONTHLY },
     { id: 'quarterly', months: 3, price: 98, currency: 'EUR', saving: 22, recommended: true, ...QUARTERLY },
@@ -56,10 +61,7 @@ const PLANS = {
 export const plansFor = (country) => PLANS[country] || PLANS.RS;
 
 // whole euros without the cents (43 €), anything else with them (32,67 €)
-export const planPrice = ({ price, currency }) =>
-  currency === 'RSD'
-    ? `${price.toLocaleString('sr-RS')} RSD`
-    : `${Number.isInteger(price) ? price : price.toFixed(2).replace('.', ',')} €`;
+export const planPrice = ({ price }) => eur(price);
 
 // What it works out to a month, for the plan that is not monthly — the number a
 // family actually compares the other plan against.
