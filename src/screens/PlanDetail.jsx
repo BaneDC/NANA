@@ -1,9 +1,10 @@
 import { AnimatePresence } from 'framer-motion';
-import { ArrowLeft, PenLine, Send } from 'lucide-react';
+import { PenLine, Send } from 'lucide-react';
 import PlanContents from '../components/PlanContents';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
 import Button from '../components/Button';
+import BackButton from '../components/BackButton';
 
 // A care plan as its own page, reached from the Care plans list or the nav.
 //
@@ -30,12 +31,9 @@ export default function PlanDetail({
 
   return (
     <div className="view">
+      <BackButton label="Planovi nege" onClick={onBack} />
       <div className="view-head">
         <div className="view-head-text">
-          <button type="button" className="back-link" onClick={onBack}>
-            <ArrowLeft size={13} strokeWidth={2} />
-            Planovi nege
-          </button>
           <h1 className="view-title">{title}</h1>
           <p className="view-sub">
             {date} · <span className={`status-pill is-${archived ? 'muted' : 'accepted'}`}>{status}</span>

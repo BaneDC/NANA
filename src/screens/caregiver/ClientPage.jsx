@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
-  ArrowLeft,
   CalendarCheck,
   CalendarPlus,
   Check,
@@ -22,7 +21,8 @@ import {
   Frown,
 } from 'lucide-react';
 import Button from '../../components/Button';
-import Modal from '../../components/Modal';
+import Dialog from '../../components/Dialog';
+import BackButton from '../../components/BackButton';
 import Tags from '../../components/Tags';
 import AgreementForm from '../../components/caregiver/AgreementForm';
 import VisitPlanForm from '../../components/caregiver/VisitPlanForm';
@@ -259,14 +259,7 @@ export default function ClientPage({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } }}
     >
-      <div className="view-head">
-        <div className="view-head-text">
-          <button type="button" className="back-link" onClick={onBack}>
-            <ArrowLeft size={14} strokeWidth={1.75} />
-            Tabla
-          </button>
-        </div>
-      </div>
+      <BackButton label="Tabla" onClick={onBack} />
 
       <header className="client-head">
         <span className="cg-avatar">{client.initials}</span>
@@ -463,7 +456,7 @@ export default function ClientPage({
 
       <AnimatePresence>
         {modal === 'agreement' && (
-          <Modal
+          <Dialog
             key="agreement"
             eyebrow={client.elder}
             title="Ugovor o nezi"
@@ -478,11 +471,11 @@ export default function ClientPage({
               }}
               onCancel={() => setModal(null)}
             />
-          </Modal>
+          </Dialog>
         )}
 
         {modal === 'plan' && (
-          <Modal
+          <Dialog
             key="plan"
             eyebrow={client.elder}
             title={client.plan ? 'Promeni posetu' : 'Isplaniraj posetu'}
@@ -498,11 +491,11 @@ export default function ClientPage({
               }}
               onCancel={() => setModal(null)}
             />
-          </Modal>
+          </Dialog>
         )}
 
         {modal === 'work-order' && due && (
-          <Modal
+          <Dialog
             key="work-order"
             eyebrow={client.elder}
             title="Radni nalog"
@@ -518,7 +511,7 @@ export default function ClientPage({
               }}
               onCancel={() => setModal(null)}
             />
-          </Modal>
+          </Dialog>
         )}
       </AnimatePresence>
     </motion.div>

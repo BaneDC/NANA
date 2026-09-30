@@ -3,6 +3,7 @@ import { Check, ChevronLeft, ChevronRight, Phone, Search, Star } from 'lucide-re
 import { caregivers, matchReasons, ratingText } from '../data/carePlan';
 import { arrangementOf } from '../data/familyCare';
 import Button from '../components/Button';
+import Tags from '../components/Tags';
 import { Field, Input } from '../components/TextField';
 import AskAssistant from '../components/AskAssistant';
 
@@ -122,43 +123,31 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
                     <Star size={11} strokeWidth={2} className="cg-star" />
                     {ratingText(c)} · {c.rate} · {c.area}, do {c.radius} km
                   </div>
-                  {/* why she comes up, the way the platform says it */}
-                  <p className="cg-bio">
-                    {matchReasons(c).map((r, i) => (
-                      <span key={r}>
-                        {i > 0 && ' · '}
-                        <Check size={12} strokeWidth={2.5} className="cg-star" />
-                        {r}
-                      </span>
-                    ))}
-                  </p>
-                  <div className="cg-tags">
-                    {c.classifications.map((t) => (
-                      <span className="cg-tag" key={t}>
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                  {/* Asking is not hiring. It sends the plan and waits — the
-                      terms are set afterwards, by both of them. */}
-                  <div className="panel-card-actions">
-                    {coming ? (
-                      <span className="status-pill is-accepted">
-                        <Check size={12} strokeWidth={2} />
-                        {coming.endedOn ? 'Dolazila ranije' : 'Već dolazi'}
-                      </span>
-                    ) : request ? (
-                      <span className={`status-pill ${REQUEST_PILL[request.status].className}`}>
-                        {request.status !== 'declined' && <Check size={12} strokeWidth={2} />}
-                        {REQUEST_PILL[request.status].label(request)}
-                      </span>
-                    ) : (
-                      <Button variant="primary" className="card-action" onClick={() => ask(c)}>
-                        Pošalji poruku
-                      </Button>
-                    )}
+                  {/* Why she comes up (the platform's reasons) and what she is,
+                      each a labelled group of tags, the labels in one column. */}
+                  <div className="tag-rows">
+                    <Tags label="Poklapa se" items={matchReasons(c)} />
+                    <Tags label="Klasifikacije" items={c.classifications} />
                   </div>
                 </div>
+                {/* Asking is not hiring. It sends the plan and waits — the terms
+                    are set afterwards, by both of them. Top right, level with
+                    her name; on a phone the card opens her profile, which has it. */}
+                {coming ? (
+                  <span className="status-pill is-accepted">
+                    <Check size={12} strokeWidth={2} />
+                    {coming.endedOn ? 'Dolazila ranije' : 'Već dolazi'}
+                  </span>
+                ) : request ? (
+                  <span className={`status-pill ${REQUEST_PILL[request.status].className}`}>
+                    {request.status !== 'declined' && <Check size={12} strokeWidth={2} />}
+                    {REQUEST_PILL[request.status].label(request)}
+                  </span>
+                ) : (
+                  <Button variant="primary" className="card-action" onClick={() => ask(c)}>
+                    Pošalji poruku
+                  </Button>
+                )}
               </div>
             );
           })}

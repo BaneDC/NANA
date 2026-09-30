@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, Check, CreditCard, Frown, Meh, Smile, Star } from 'lucide-react';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
+import Dialog from '../Dialog';
 import Tags from '../Tags';
 import Button from '../Button';
 import { Field, TextArea } from '../TextField';
@@ -39,8 +40,10 @@ import {
 
 const MOOD_ICON = { low: Frown, usual: Meh, good: Smile };
 
-export function ServiceChips({ ids, missing = [] }) {
-  return <Tags items={ids.map(serviceTitle)} off={missing.map((id) => `${serviceTitle(id)} — ovog puta ne`)} />;
+export function ServiceChips({ ids, missing = [], label }) {
+  return (
+    <Tags label={label} items={ids.map(serviceTitle)} off={missing.map((id) => `${serviceTitle(id)} — ovog puta ne`)} />
+  );
 }
 
 export function Line({ label, value }) {
@@ -112,6 +115,7 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
   };
 
   return (
+    <>
     <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title={`Ugovor o nezi, verzija ${pen.version}`} wide onClose={onClose}>
       <p className="ag-lead">
         {first} je {pen.sentOn.toLowerCase()} poslala {act ? 'nove uslove' : 'svoje uslove'}.{' '}
@@ -165,12 +169,30 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
         </div>
       )}
 
-      {declining ? (
-        <div className="panel-card-actions is-end fam-confirm">
-          <p className="fam-confirm-text">
-            Ništa novo ne počinje i ništa se ne naplaćuje. {first} će biti obaveštena, a koordinatorka će
-            vas pozvati da se dogovore uslovi koji vam odgovaraju.
-          </p>
+      <div className="panel-card-actions is-end">
+        <Button variant="secondary" onClick={() => setDeclining(true)}>
+          Odbij
+        </Button>
+        <Button variant="primary" disabled={!hasCard} onClick={agree}>
+          <Check size={14} strokeWidth={2} />
+          Prihvati uslove
+        </Button>
+      </div>
+    </Modal>
+
+    {/* declining is an action, so it is asked in a dialog over the terms */}
+    {declining && (
+      <Dialog
+        eyebrow={`${a.caregiver.name} · ${care.elder.name}`}
+        title={`Odbiti verziju ${pen.version}?`}
+        onClose={() => setDeclining(false)}
+      >
+        <p className="doc-p">
+          Ništa novo ne počinje i ništa se ne naplaćuje. {first} će biti obaveštena, a koordinatorka će vas
+          pozvati da se dogovore uslovi koji vam odgovaraju.
+          {act && ` Verzija ${act.version} i dalje važi.`}
+        </p>
+        <div className="panel-card-actions is-end">
           <Button variant="secondary" onClick={() => setDeclining(false)}>
             Nazad
           </Button>
@@ -178,18 +200,9 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
             Odbij verziju {pen.version}
           </Button>
         </div>
-      ) : (
-        <div className="panel-card-actions is-end">
-          <Button variant="secondary" onClick={() => setDeclining(true)}>
-            Odbij
-          </Button>
-          <Button variant="primary" disabled={!hasCard} onClick={agree}>
-            <Check size={14} strokeWidth={2} />
-            Prihvati uslove
-          </Button>
-        </div>
-      )}
-    </Modal>
+      </Dialog>
+    )}
+    </>
   );
 }
 
@@ -226,6 +239,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
   };
 
   return (
+    <>
     <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title="Radni nalog" wide onClose={onClose}>
       {v.status === 'charging' ? (
         <p className="ag-lead">
@@ -285,60 +299,55 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
         </p>
       </div>
 
-      {v.status === 'charging' && querying && (
-        <>
-          <p className="ag-label">Šta nije u redu</p>
-          <div className="wo-choice">
-            {QUERY_REASONS.map((q) => (
-              <button
-                key={q.id}
-                type="button"
-                className={`svc is-sm${reason === q.id ? ' is-on' : ''}`}
-                onClick={() => setReason(q.id)}
-                aria-pressed={reason === q.id}
-              >
-                {q.label}
-              </button>
-            ))}
-          </div>
-          <Field label="Vašim rečima">
-            <TextArea
-              rows={3}
-              value={text}
-              autoFocus
-              placeholder="Šta ste primetili, i šta ste očekivali umesto toga."
-              onChange={setText}
-            />
-          </Field>
-          <p className="ag-hint">Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.</p>
-        </>
-      )}
-
       {v.status === 'charging' && (
         <div className="panel-card-actions is-end">
-          {querying ? (
-            <>
-              <Button variant="secondary" onClick={() => setQuerying(false)}>
-                Nazad
-              </Button>
-              <Button variant="primary" disabled={!text.trim()} onClick={query}>
-                Pošalji koordinatorki
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="secondary" onClick={() => setQuerying(true)}>
-                Nešto nije u redu
-              </Button>
-              <Button variant="primary" onClick={confirm}>
-                <Check size={14} strokeWidth={2} />
-                Sve je u redu — plati sada
-              </Button>
-            </>
-          )}
+          <Button variant="secondary" onClick={() => setQuerying(true)}>
+            Nešto nije u redu
+          </Button>
+          <Button variant="primary" onClick={confirm}>
+            <Check size={14} strokeWidth={2} />
+            Sve je u redu — plati sada
+          </Button>
         </div>
       )}
     </Modal>
+
+    {v.status === 'charging' && querying && (
+      <Dialog eyebrow={`Radni nalog · ${v.date}`} title="Šta nije u redu?" onClose={() => setQuerying(false)}>
+        <div className="wo-choice">
+          {QUERY_REASONS.map((q) => (
+            <button
+              key={q.id}
+              type="button"
+              className={`svc is-sm${reason === q.id ? ' is-on' : ''}`}
+              onClick={() => setReason(q.id)}
+              aria-pressed={reason === q.id}
+            >
+              {q.label}
+            </button>
+          ))}
+        </div>
+        <Field label="Vašim rečima">
+          <TextArea
+            rows={3}
+            value={text}
+            autoFocus
+            placeholder="Šta ste primetili, i šta ste očekivali umesto toga."
+            onChange={setText}
+          />
+        </Field>
+        <p className="ag-hint">Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.</p>
+        <div className="panel-card-actions is-end">
+          <Button variant="secondary" onClick={() => setQuerying(false)}>
+            Nazad
+          </Button>
+          <Button variant="primary" disabled={!text.trim()} onClick={query}>
+            Pošalji koordinatorki
+          </Button>
+        </div>
+      </Dialog>
+    )}
+    </>
   );
 }
 
@@ -372,6 +381,7 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
   };
 
   return (
+    <>
     <Modal eyebrow={`${v.caregiver.name} · ${v.date} · ${v.time}`} title="Plan posete" wide onClose={onClose}>
       <p className="ag-lead">
         {first} planira da dođe na {v.hours} h. {money(held)} je rezervisano na vašoj kartici, nije
@@ -391,93 +401,80 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
         <Line label="Rezervisano" value={`${money(held)} · ${v.hours} h po ${money(v.rate)}/h`} />
       </div>
 
-      {mode === 'query' && (
-        <>
-          <Field label="Šta nije u redu sa planom">
-            <TextArea
-              rows={3}
-              value={text}
-              autoFocus
-              placeholder="Dan, sati, šta će raditi…"
-              onChange={setText}
-            />
-          </Field>
-          <p className="ag-hint">
-            Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok
-            se ne reši. Čita koordinatorka, ne negovateljica.
-          </p>
-        </>
-      )}
-
-      {mode === 'call-off' && (
-        <>
-          <p className="ag-label">Zašto se otkazuje</p>
-          <div className="wo-choice">
-            {CALL_OFF_REASONS.map((r) => (
-              <button
-                key={r}
-                type="button"
-                className={`svc is-sm${reason === r ? ' is-on' : ''}`}
-                onClick={() => setReason(r)}
-                aria-pressed={reason === r}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-          {reason === OTHER && (
-            <Field>
-              <TextArea
-                rows={2}
-                value={other}
-                autoFocus
-                placeholder="U par reči"
-                aria-label="Drugi razlog"
-                onChange={setOther}
-              />
-            </Field>
-          )}
-          <p className="ag-hint">
-            {late
-              ? `Do dolaska je ostalo manje od sat vremena, pa se rezervisanih ${money(held)} naplaćuje u celosti umesto da se vrati. Negovateljica je čuvala to vreme i sada ne može da ga popuni.`
-              : `Rezervisanih ${money(held)} se odmah vraća i ništa se ne naplaćuje. Negovateljica je obaveštena, a koordinatorka će pomoći da se dogovori drugi dan ako je potrebno. U poslednjem satu pre dolaska naplaćuje se u celosti.`}
-          </p>
-        </>
-      )}
-
       <div className="panel-card-actions is-end">
-        {mode === 'idle' && (
-          <>
-            <Button variant="secondary" onClick={() => setMode('call-off')}>
-              Otkaži posetu
-            </Button>
-            <Button variant="secondary" onClick={() => setMode('query')}>
-              Nešto nije u redu
-            </Button>
-          </>
-        )}
-        {mode === 'query' && (
-          <>
-            <Button variant="secondary" onClick={() => setMode('idle')}>
-              Nazad
-            </Button>
-            <Button variant="primary" disabled={!text.trim()} onClick={query}>
-              Pošalji koordinatorki
-            </Button>
-          </>
-        )}
-        {mode === 'call-off' && (
-          <>
-            <Button variant="secondary" onClick={() => setMode('idle')}>
-              Nazad
-            </Button>
-            <Button variant="danger" disabled={!okReason} onClick={callOff}>
-              {late ? `Otkaži i plati ${money(held)}` : 'Otkaži i vrati novac'}
-            </Button>
-          </>
-        )}
+        <Button variant="secondary" onClick={() => setMode('call-off')}>
+          Otkaži posetu
+        </Button>
+        <Button variant="secondary" onClick={() => setMode('query')}>
+          Nešto nije u redu
+        </Button>
       </div>
     </Modal>
+
+    {mode === 'query' && (
+      <Dialog eyebrow={`Plan posete · ${v.date}`} title="Šta nije u redu sa planom?" onClose={() => setMode('idle')}>
+        <Field label="Vašim rečima">
+          <TextArea rows={3} value={text} autoFocus placeholder="Dan, sati, šta će raditi…" onChange={setText} />
+        </Field>
+        <p className="ag-hint">
+          Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok se ne
+          reši. Čita koordinatorka, ne negovateljica.
+        </p>
+        <div className="panel-card-actions is-end">
+          <Button variant="secondary" onClick={() => setMode('idle')}>
+            Nazad
+          </Button>
+          <Button variant="primary" disabled={!text.trim()} onClick={query}>
+            Pošalji koordinatorki
+          </Button>
+        </div>
+      </Dialog>
+    )}
+
+    {mode === 'call-off' && (
+      <Dialog eyebrow={`Plan posete · ${v.date} · ${v.time}`} title="Otkazati posetu?" onClose={() => setMode('idle')}>
+        <p className="ag-label">Zašto se otkazuje</p>
+        <div className="wo-choice">
+          {CALL_OFF_REASONS.map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={`svc is-sm${reason === r ? ' is-on' : ''}`}
+              onClick={() => setReason(r)}
+              aria-pressed={reason === r}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+        {reason === OTHER && (
+          <Field>
+            <TextArea
+              rows={2}
+              value={other}
+              autoFocus
+              placeholder="U par reči"
+              aria-label="Drugi razlog"
+              onChange={setOther}
+            />
+          </Field>
+        )}
+        <p className="ag-hint">
+          {late
+            ? `Do dolaska je ostalo manje od sat vremena, pa se rezervisanih ${money(held)} naplaćuje u celosti umesto da se vrati. Negovateljica je čuvala to vreme i sada ne može da ga popuni.`
+            : `Rezervisanih ${money(held)} se odmah vraća i ništa se ne naplaćuje. Negovateljica je obaveštena, a koordinatorka će pomoći da se dogovori drugi dan ako je potrebno. U poslednjem satu pre dolaska naplaćuje se u celosti.`}
+        </p>
+        <div className="panel-card-actions is-end">
+          <Button variant="secondary" onClick={() => setMode('idle')}>
+            Nazad
+          </Button>
+          <Button variant="danger" disabled={!okReason} onClick={callOff}>
+            {late ? `Otkaži i plati ${money(held)}` : 'Otkaži i vrati novac'}
+          </Button>
+        </div>
+      </Dialog>
+    )}
+    </>
   );
 }
 
@@ -496,7 +493,7 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
   };
 
   return (
-    <Modal eyebrow={`${a.caregiver.name} · samo ova saradnja`} title="Završiti saradnju?" wide onClose={onClose}>
+    <Dialog eyebrow={`${a.caregiver.name} · samo ova saradnja`} title="Završiti saradnju?" onClose={onClose}>
       {blocked.length ? (
         <>
           <p className="ag-lead">
@@ -536,7 +533,7 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
           </div>
         </>
       )}
-    </Modal>
+    </Dialog>
   );
 }
 

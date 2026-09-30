@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { Check, ChevronDown, Copy, Shield } from 'lucide-react';
-import Modal from './Modal';
+import Dialog from './Dialog';
 import Button from './Button';
 import { newBackupCodes, newSecret, otpauthUrl, verifyCode } from '../lib/totp';
 
@@ -94,7 +94,7 @@ export function TwoFactorDisable({ secret, onDone, onClose }) {
   };
 
   return (
-    <Modal eyebrow="Bezbednost" title="Isključite dvofaktorsku prijavu" onClose={onClose}>
+    <Dialog eyebrow="Bezbednost" title="Isključite dvofaktorsku prijavu" onClose={onClose}>
       <p className="doc-p">
         Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za
         prijavu dovoljna lozinka, pa je nalog manje zaštićen.
@@ -121,7 +121,7 @@ export function TwoFactorDisable({ secret, onDone, onClose }) {
           Isključi
         </Button>
       </div>
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -183,7 +183,7 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
   // click past the pane would lose them.
   if (step === 2) {
     return (
-      <Modal eyebrow="Bezbednost" title="Rezervni kodovi" dismissible={false} onClose={onClose}>
+      <Dialog eyebrow="Bezbednost" title="Rezervni kodovi" dismissible={false} onClose={onClose}>
         <p className="doc-p">
           Sačuvajte ove kodove na sigurnom mestu. Svaki se koristi jednom, za prijavu ako izgubite
           pristup aplikaciji sa kodovima. Prikazujemo ih samo sada.
@@ -209,12 +209,12 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
             Sačuvao sam rezervne kodove
           </Button>
         </div>
-      </Modal>
+      </Dialog>
     );
   }
 
   return (
-    <Modal eyebrow="Bezbednost" title="Uključite dvofaktorsku prijavu" onClose={onClose}>
+    <Dialog eyebrow="Bezbednost" title="Uključite dvofaktorsku prijavu" onClose={onClose}>
       <Stepper at={step} />
 
       {step === 0 ? (
@@ -293,6 +293,6 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
           </div>
         </>
       )}
-    </Modal>
+    </Dialog>
   );
 }

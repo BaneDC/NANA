@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Mail, Send } from 'lucide-react';
-import Modal from './Modal';
+import Dialog from './Dialog';
 import Button from './Button';
 import { Field, TextArea } from './TextField';
 import { pl } from '../data/familyCare';
@@ -28,7 +28,7 @@ export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
   const ready = entered.length > 0 && wrong.length === 0;
 
   return (
-    <Modal eyebrow={`Plan nege · ${plan.name}`} title="Pošaljite plan nekome" wide onClose={onClose}>
+    <Dialog eyebrow={`Plan nege · ${plan.name}`} title="Pošaljite plan nekome" wide onClose={onClose}>
       <p className="ag-lead">
         Onaj ko ga dobije vidi plan nege onakav kakav je sada: šta preporučujemo, zašto, i ko od
         negovateljica odgovara. Ne vidi vaš nalog, plaćanje ni poruke sa negovateljicama.
@@ -69,6 +69,6 @@ export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
           {entered.length > 1 ? `Pošalji na ${pl(entered.length, 'adresu', 'adrese', 'adresa')}` : 'Pošalji'}
         </Button>
       </div>
-    </Modal>
+    </Dialog>
   );
 }

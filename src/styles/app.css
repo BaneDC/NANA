@@ -942,9 +942,29 @@ textarea {
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
-  font-size: 11px;
-  line-height: 12px;
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--text-secondary);
+}
+
+/* A group of tags says what it is: its name, and its tags under it, 4 apart
+   as one group; the next group 12 below, as groups in a card are. */
+.tag-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.tag-row-label {
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
+  color: var(--text-secondary);
+}
+
+.tag-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
 }
 
 /* what was left out this time: the words say so, the ink steps back */
@@ -1209,27 +1229,21 @@ textarea {
   color: var(--nav-text-muted);
 }
 
-/* One way back, above the page's title, 12 off it: it is a way out, not part
-   of the name, and 4 read as the name's first line. */
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: var(--spacing-3);
-  font-size: var(--text-small-size);
-  line-height: var(--text-small-leading);
-  color: var(--text-secondary);
-  transition: color 0.15s ease;
+/* One way back (BackButton.jsx): the ghost button, first on the page, with 16
+   over it and 16 under it — the page's top padding comes down to 16 when it
+   leads, and the page's 12 gap gets 4 more. Its arrow sits on the page's left
+   edge, the button's own 12 of padding reaching out into the gutter. */
+.view:has(> .back-row:first-child) {
+  padding-top: var(--spacing-4);
 }
 
-/* on its own line above a page's head the page's own 12 is that space */
-.view > .back-link {
-  align-self: flex-start;
-  margin-bottom: 0;
+.view > .back-row {
+  flex-shrink: 0;
+  margin-bottom: var(--spacing-1);
 }
 
-.back-link:hover {
-  color: var(--primary-highlight);
+.back-btn {
+  margin-left: calc(var(--spacing-3) * -1);
 }
 
 .view-sub .status-pill {
@@ -4340,6 +4354,36 @@ button.svc:hover {
   gap: var(--spacing-2);
 }
 
+/* An action, in the middle (Dialog.jsx): end, subscribe, turn on, send. Its
+   title where a drawer has it, 36 clear of the close; what the screen puts in
+   12 apart; its action row 16 under the last of it and held on the floor while
+   a long form scrolls (12 of the gap, 8 taken back, 12 of its own). */
+.modal.is-dialog {
+  max-width: 440px;
+  align-items: stretch;
+  gap: var(--spacing-3);
+}
+
+.modal.is-dialog.is-wide {
+  max-width: 560px;
+}
+
+.modal-title {
+  padding-right: 36px;
+}
+
+@media (min-width: 641px) {
+  .modal.is-dialog > .panel-card-actions:last-child {
+    width: auto;
+    position: sticky;
+    bottom: calc(-1 * var(--spacing-6));
+    z-index: 1;
+    margin: calc(-1 * var(--spacing-2)) calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6));
+    padding: var(--spacing-3) var(--spacing-6) var(--spacing-6);
+    background: var(--surface-elevated);
+  }
+}
+
 /* Actions pushed to the trailing edge — where a dialog's confirm belongs, and
    where the eye already is after reading a row that ends in a status. The
    unmodified class stays left-aligned for the panels in the family's app. */
@@ -4554,7 +4598,7 @@ button.svc:hover {
 .caregiver.is-wide > .btn,
 .caregiver.is-wide > .status-pill {
   flex-shrink: 0;
-  align-self: center;
+  align-self: flex-start;
   margin-left: 0;
 }
 
@@ -4868,7 +4912,7 @@ button.svc:hover {
 }
 
 /* what she does, a group of its own under who she is: 12 off it (4 + 8) */
-.fam-row-main > .cg-tags {
+.fam-row-main > :is(.cg-tags, .tag-row) {
   margin-top: var(--spacing-2);
 }
 
@@ -6399,6 +6443,18 @@ button.svc:hover {
     width: 100%;
   }
 
+  /* Her card's state (already coming, asked) sat top right and took the width
+     her name needed; on a phone it goes under what the card says, in line with
+     it (the avatar's 32 and the 12 beside it). The action button has no such
+     problem: on a phone it is the chevron. */
+  .caregiver.is-wide .cg-main {
+    flex-basis: calc(100% - 44px);
+  }
+
+  .caregiver.is-wide > .status-pill {
+    margin-left: 44px;
+  }
+
   /* The title and the page's actions share the top line, and what is said
      under the title takes the whole width below them. As a flex row the actions
      kept their width and the subtitle was squeezed into a column beside them,
@@ -6419,14 +6475,6 @@ button.svc:hover {
   .view-head-text > * {
     grid-column: 1 / -1;
     grid-row: 3;
-  }
-
-  /* As wide as its words. A grid item stretches across its cell, and this one
-     spans the row: the link took the whole width, and with the touch target
-     reaching 14px under it, a tap to the right of the title went back. */
-  .view-head-text > .back-link {
-    grid-row: 1;
-    justify-self: start;
   }
 
   .view-head-text > .view-title {
@@ -6501,7 +6549,8 @@ button.svc:hover {
 
   /* room for the close button, which is 44 under a finger */
   .modal .pw-head,
-  .modal .modal-head {
+  .modal .modal-head,
+  .modal .modal-title {
     padding-right: 48px;
   }
 }
@@ -7293,17 +7342,6 @@ button.svc:hover {
     min-height: 44px;
   }
 
-  /* A link in a line of text: the target reaches past the words so the line
-     around it does not have to move. */
-  .back-link {
-    position: relative;
-  }
-
-  .back-link::after {
-    content: '';
-    position: absolute;
-    inset: -14px -4px;
-  }
 }
 
 /* ---------- Rows inside a card ----------
@@ -7404,20 +7442,19 @@ button.svc:hover {
   margin-top: var(--spacing-2);
 }
 
-/* A caregiver's card in three groups: who she is (name, rating — 4 apart),
-   what she is like (what she says, what she does — 8 apart), and what to do.
-   12 between the first two, 24 to the footer, so the button is the card's end
-   and not one more line of it. The column's own gap is the 4. */
+/* A caregiver's card: who she is (name, rating — 4 apart), then why she fits
+   and what she is, each a named group of tags (12 apart), 12 under who she is.
+   Her one action is top right, level with her name. The column's gap is 4. */
 .caregiver.is-wide .cg-bio {
   margin-top: var(--spacing-2);
 }
 
-.caregiver.is-wide .cg-tags {
-  margin-top: var(--spacing-1);
+.caregiver.is-wide .tag-rows {
+  margin-top: var(--spacing-2);
 }
 
 .cg-main > .panel-card-actions {
-  margin-top: 20px;
+  margin-top: var(--spacing-3);
 }
 
 .rec-providers > .panel-card-actions {

@@ -3,7 +3,7 @@ import { Check, Pencil } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { srField, srTitle } from '../data/flow.sr';
 import Button from '../components/Button';
-import Modal from '../components/Modal';
+import Dialog from '../components/Dialog';
 import { Field, Input } from '../components/TextField';
 import AskAssistant from '../components/AskAssistant';
 
@@ -47,7 +47,7 @@ function FieldEditor({ title, fields, onSave, onClose }) {
   const complete = fields.every((f) => f.optional || String(values[f.id] || '').trim());
 
   return (
-    <Modal eyebrow="Profil" title={title} onClose={onClose}>
+    <Dialog eyebrow="Profil" title={title} onClose={onClose}>
       <div className="pe-fields">
         {fields.map((f) => (
           <Field key={f.id} label={f.label}>
@@ -69,7 +69,7 @@ function FieldEditor({ title, fields, onSave, onClose }) {
           Sačuvaj
         </Button>
       </div>
-    </Modal>
+    </Dialog>
   );
 }
 

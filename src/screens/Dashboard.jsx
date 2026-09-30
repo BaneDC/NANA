@@ -222,7 +222,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                 {last.hours} h · naplaćeno {money(visitCharge(last))}
               </span>
             </span>
-            <ServiceChips ids={last.report.done} />
+            <ServiceChips label="Urađeno" ids={last.report.done} />
             <CareSignals report={last.report} />
             <span className="fam-quote is-inline">„{last.report.note}“</span>
           </button>
@@ -254,7 +254,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                         ? `${a.caregiver.area} · od ${a.since}${act ? ` · ${money(act.rate)}/h` : ''}`
                         : `${a.caregiver.area} · čeka da prihvatite ugovor`}
                   </p>
-                  {act && !ended && <ServiceChips ids={act.services} />}
+                  {act && !ended && <ServiceChips label="Usluge" ids={act.services} />}
                 </div>
                 <span className="fam-row-side">Plaćenih poseta: {paid}</span>
                 <ChevronRight size={16} strokeWidth={1.75} className="fam-row-chevron" aria-hidden="true" />

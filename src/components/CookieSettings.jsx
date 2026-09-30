@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import Modal from './Modal';
+import Dialog from './Dialog';
 import Button from './Button';
 import { COOKIE_GROUPS } from '../data/cookies';
 
@@ -84,7 +84,7 @@ export default function CookieSettings({ cookies, onSave, onClose }) {
     onSave({ analytics: value, recording: value, marketing: value });
 
   return (
-    <Modal eyebrow="Privatnost" title="Podešavanja kolačića" wide onClose={onClose}>
+    <Dialog eyebrow="Privatnost" title="Podešavanja kolačića" wide onClose={onClose}>
       <p className="ag-lead">
         Izbor važi i za nanaprime.com. Možete ga promeniti kad god želite, odavde.
       </p>
@@ -111,6 +111,6 @@ export default function CookieSettings({ cookies, onSave, onClose }) {
           Sačuvaj izbor
         </Button>
       </div>
-    </Modal>
+    </Dialog>
   );
 }

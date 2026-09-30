@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import VisitRow from '../components/family/VisitRow';
+import BackButton from '../components/BackButton';
 import { allVisits, dayOf, firstName, monthOf, pl } from '../data/familyCare';
 
 // Every visit, newest first, across everyone who has come: who came, how long
@@ -32,10 +32,7 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
 
   return (
     <div className="view">
-      <button type="button" className="back-link" onClick={onBack}>
-        <ArrowLeft size={14} strokeWidth={1.75} />
-        Moja nega
-      </button>
+      <BackButton label="Moja nega" onClick={onBack} />
 
       <div className="view-head">
         <div className="view-head-text">

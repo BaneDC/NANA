@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, Check, PenLine, Sparkles } from 'lucide-react';
-import Modal from './Modal';
+import Dialog from './Dialog';
 import Button from './Button';
 import { Field, Input } from './TextField';
 import { toAnswer } from '../data/conversation';
@@ -114,7 +114,7 @@ export default function PlanEditor({ answers, name, onApply, onAskAssistant, onC
   const sections = planQuestions(answers);
 
   return (
-    <Modal eyebrow={`Plan nege · ${name}`} title="Izmenite odgovore" wide onClose={onClose}>
+    <Dialog eyebrow={`Plan nege · ${name}`} title="Izmenite odgovore" wide onClose={onClose}>
       <p className="ag-lead pe-lead">
         Plan je napravljen iz ovih odgovora. Kad promenite jedan, plan se pravi iznova oko njega,
         preporuke i negovateljice prate izmenu.
@@ -179,6 +179,6 @@ export default function PlanEditor({ answers, name, onApply, onAskAssistant, onC
           Gotovo
         </Button>
       </div>
-    </Modal>
+    </Dialog>
   );
 }

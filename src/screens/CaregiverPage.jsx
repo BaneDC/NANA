@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ArrowLeft, CreditCard, Phone } from 'lucide-react';
+import { CreditCard, Phone } from 'lucide-react';
 import Button from '../components/Button';
+import BackButton from '../components/BackButton';
 import VisitRow from '../components/family/VisitRow';
 import { Line, ServiceChips } from '../components/family/FamilyDrawer';
 import {
@@ -105,10 +106,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
 
   return (
     <div className="view">
-      <button type="button" className="back-link" onClick={onBack}>
-        <ArrowLeft size={14} strokeWidth={1.75} />
-        Moja nega
-      </button>
+      <BackButton label="Moja nega" onClick={onBack} />
 
       <div className="view-head">
         <div className="fam-person">
@@ -155,7 +153,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
                 {services(act.services.length)}.
               </p>
             )}
-            <ServiceChips ids={terms.services} />
+            <ServiceChips label="Usluge" ids={terms.services} />
             <div className="bc-lines ag-terms">
               <Line label={pen ? 'Poslato' : 'Prihvaćeno'} value={pen ? terms.sentOn : terms.agreedOn} />
               <Line label="Cena po satu" value={`${money(terms.rate)} / h`} />

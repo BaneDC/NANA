@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Check, ShieldCheck } from 'lucide-react';
 import Button from '../components/Button';
-import Modal from '../components/Modal';
+import Dialog from '../components/Dialog';
 import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
@@ -71,7 +71,7 @@ function PasswordModal({ email, onDone, onClose }) {
 
   if (done) {
     return (
-      <Modal eyebrow="Nalog" title="Lozinka je promenjena" onClose={onDone}>
+      <Dialog eyebrow="Nalog" title="Lozinka je promenjena" onClose={onDone}>
         <p className="doc-p">
           Od sledeće prijave koristite novu lozinku. Ako ste je negde sačuvali, promenite je i tamo.
         </p>
@@ -80,12 +80,12 @@ function PasswordModal({ email, onDone, onClose }) {
             U redu
           </Button>
         </div>
-      </Modal>
+      </Dialog>
     );
   }
 
   return (
-    <Modal eyebrow="Nalog" title="Promenite lozinku" onClose={onClose}>
+    <Dialog eyebrow="Nalog" title="Promenite lozinku" onClose={onClose}>
       <p className="doc-p">Nova lozinka mora imati najmanje 8 karaktera.</p>
       <div className="pe-fields">
         <Field label="Trenutna lozinka">
@@ -115,7 +115,7 @@ function PasswordModal({ email, onDone, onClose }) {
           Sačuvaj lozinku
         </Button>
       </div>
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -435,7 +435,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
       )}
 
       {cancelling && (
-        <Modal eyebrow="Pretplata" title="Otkazati pretplatu?" onClose={() => setCancelling(false)}>
+        <Dialog eyebrow="Pretplata" title="Otkazati pretplatu?" onClose={() => setCancelling(false)}>
           <p className="doc-p">
             Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju
             plaćenog perioda. Možete da se pretplatite ponovo kad god želite.
@@ -454,7 +454,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
               Otkaži pretplatu
             </Button>
           </div>
-        </Modal>
+        </Dialog>
       )}
 
       {passwordOpen && (
@@ -492,7 +492,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
       )}
 
       {cardOpen && (
-        <Modal eyebrow="Plaćanje" title="Dodajte karticu" onClose={() => setCardOpen(false)}>
+        <Dialog eyebrow="Plaćanje" title="Dodajte karticu" onClose={() => setCardOpen(false)}>
           <p className="doc-p">
             Kartice čuva Stripe, ne mi — broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
             Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.
@@ -516,7 +516,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
               Nastavi na Stripe
             </Button>
           </div>
-        </Modal>
+        </Dialog>
       )}
     </div>
   );
