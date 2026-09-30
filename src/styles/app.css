@@ -6455,6 +6455,16 @@ button.svc:hover {
     margin-left: 44px;
   }
 
+  /* Sending her a message is not opening her details, so on a phone the card
+     keeps its button (under what the card says, the text's width) as well as
+     the chevron that says a tap opens her. Every other clickable card and row
+     still trades its button for the chevron. */
+  .caregiver.is-wide.is-clickable > .card-action {
+    display: inline-flex;
+    width: calc(100% - 44px);
+    margin-left: 44px;
+  }
+
   /* The title and the page's actions share the top line, and what is said
      under the title takes the whole width below them. As a flex row the actions
      kept their width and the subtitle was squeezed into a column beside them,
