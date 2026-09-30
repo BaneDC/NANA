@@ -936,7 +936,6 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 8px;
 }
 
 .cg-tag {
@@ -946,6 +945,11 @@ textarea {
   font-size: 11px;
   line-height: 12px;
   color: var(--text-secondary);
+}
+
+/* what was left out this time: the words say so, the ink steps back */
+.cg-tag.is-off {
+  color: var(--text-disabled);
 }
 
 .cg-star {
@@ -1200,22 +1204,23 @@ textarea {
   color: var(--nav-text-muted);
 }
 
-/* one way back, above the page's title */
+/* One way back, above the page's title, 12 off it: it is a way out, not part
+   of the name, and 4 read as the name's first line. */
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-3);
   font-size: var(--text-small-size);
   line-height: var(--text-small-leading);
   color: var(--text-secondary);
   transition: color 0.15s ease;
 }
 
-/* on its own line above a page's head: 4px to the title, like inside it */
+/* on its own line above a page's head the page's own 12 is that space */
 .view > .back-link {
   align-self: flex-start;
-  margin-bottom: -8px;
+  margin-bottom: 0;
 }
 
 .back-link:hover {
@@ -4820,7 +4825,7 @@ button.svc:hover {
    open her page. */
 .fam-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-3);
   width: 100%;
   padding: var(--spacing-3);
@@ -4832,16 +4837,6 @@ button.svc:hover {
 
 .is-attention .fam-row {
   border-color: var(--color-primary-200);
-}
-
-.fam-row.is-link {
-  cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.fam-row.is-link:hover {
-  border-color: var(--color-primary-300);
-  box-shadow: var(--shadow-card);
 }
 
 .fam-row.is-ended .cg-avatar {
@@ -4861,14 +4856,9 @@ button.svc:hover {
   gap: 4px;
 }
 
-.fam-row-main > .ag-services {
+/* what she does, a group of its own under who she is: 12 off it (4 + 8) */
+.fam-row-main > .cg-tags {
   margin-top: var(--spacing-2);
-}
-
-.fam-row-main .svc {
-  padding: 4px var(--spacing-3);
-  font-size: 11px;
-  line-height: 12px;
 }
 
 /* A row's title is a step under the card's (12 to its 14), so a card full of
@@ -4876,8 +4866,10 @@ button.svc:hover {
    caregiver on a page of her own — its title is the card's size. */
 .fam-row-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--spacing-2);
+  column-gap: var(--spacing-2);
+  row-gap: var(--spacing-1);
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
@@ -4892,6 +4884,25 @@ button.svc:hover {
 }
 
 .fam-row-title > .status-pill {
+  margin-left: 0;
+}
+
+/* the name as the row's link keeps the title's size and ink */
+.fam-row-title > .card-link {
+  font: inherit;
+  color: inherit;
+}
+
+/* a line with its state beside it, e.g. what is reserved for a visit */
+.fam-row-body.is-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--spacing-2);
+  row-gap: var(--spacing-1);
+}
+
+.fam-row-body.is-inline > .status-pill {
   margin-left: 0;
 }
 
@@ -5036,7 +5047,7 @@ button.svc:hover {
 .fam-person {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-3);
   min-width: 0;
 }
@@ -5127,10 +5138,6 @@ button.svc:hover {
 .fam-visit.is-cancelled,
 .fam-visit.is-awaiting {
   background: var(--surface-2);
-}
-
-.fam-visit > .status-pill {
-  margin-left: 0;
 }
 
 .fam-visit-head {
@@ -5225,7 +5232,7 @@ button.svc:hover {
 
 .fam-request-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-3);
 }
 
@@ -5242,6 +5249,12 @@ button.svc:hover {
   /* a row's action drops under it and takes the width, as a caregiver's does */
   .fam-row > .btn {
     width: 100%;
+  }
+
+  /* On a phone a count beside the row took the width her name and what she
+     does needed. The chevron is the row's end; her page has the count. */
+  .fam-row-side {
+    display: none;
   }
 
   .fam-flow {
@@ -6321,6 +6334,26 @@ button.svc:hover {
     justify-content: flex-end;
   }
 
+  /* A person's page (her avatar beside the name) keeps its own row: the head's
+     grid took the avatar block for an action and stacked it under the phone
+     number. The name and what is said under it read as one block, and the
+     page's action goes under them, 12 off. */
+  .view-head > .fam-person {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  .fam-person > .view-head-text {
+    display: block;
+  }
+
+  .view-head > .fam-person ~ .view-head-actions {
+    grid-row: 3;
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    margin-top: var(--spacing-3);
+  }
+
   .drawer-backdrop {
     padding: var(--spacing-2);
   }
@@ -7208,28 +7241,26 @@ button.svc:hover {
 }
 
 /* a row that opens something lights up under the pointer */
-:is(.caregiver.is-clickable, .fam-row.is-link, a.contact-row):not(.is-wide):hover {
+:is(.caregiver.is-clickable, .fam-row.is-clickable, .fam-visit.is-clickable, a.contact-row):not(.is-wide):hover {
   background: var(--surface-2);
 }
 
-.is-attention :is(.fam-row.is-link, .caregiver.is-clickable):hover {
+.is-attention :is(.fam-row.is-clickable, .caregiver.is-clickable):hover {
   background: var(--surface-0);
 }
 
-:is(.caregiver.is-clickable, .fam-row.is-link, a.contact-row):not(.is-wide):hover::before,
-:is(.caregiver.is-clickable, .fam-row.is-link, a.contact-row):not(.is-wide):hover
+:is(.caregiver.is-clickable, .fam-row.is-clickable, .fam-visit.is-clickable, a.contact-row):not(.is-wide):hover::before,
+:is(.caregiver.is-clickable, .fam-row.is-clickable, .fam-visit.is-clickable, a.contact-row):not(.is-wide):hover
   + :is(.caregiver, .fam-row, .contact-row, .fam-visit, .visit)::before {
   opacity: 0;
 }
 
-.fam-row.is-link:hover,
 .contact-row:hover {
   border-color: transparent;
   box-shadow: none;
 }
 
-.contact-row:hover .contact-label,
-.fam-row.is-link:hover .fam-row-title {
+.contact-row:hover .contact-label {
   color: var(--color-primary-700);
 }
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, Check, CreditCard, Frown, Meh, Smile, Star } from 'lucide-react';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
+import Tags from '../Tags';
 import Button from '../Button';
 import { Field, TextArea } from '../TextField';
 import {
@@ -39,21 +40,7 @@ import {
 const MOOD_ICON = { low: Frown, usual: Meh, good: Smile };
 
 export function ServiceChips({ ids, missing = [] }) {
-  return (
-    <div className="ag-services">
-      {ids.map((id) => (
-        <span key={id} className="svc is-set">
-          <Check size={13} strokeWidth={2.5} />
-          {serviceTitle(id)}
-        </span>
-      ))}
-      {missing.map((id) => (
-        <span key={id} className="svc">
-          {serviceTitle(id)} — ovog puta ne
-        </span>
-      ))}
-    </div>
-  );
+  return <Tags items={ids.map(serviceTitle)} off={missing.map((id) => `${serviceTitle(id)} — ovog puta ne`)} />;
 }
 
 export function Line({ label, value }) {
@@ -582,14 +569,7 @@ function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
       <p className="fam-quote">{c.bio}</p>
 
       <p className="ag-label">Klasifikacije</p>
-      <div className="ag-services">
-        {c.classifications.map((t) => (
-          <span key={t} className="svc is-set">
-            <Check size={13} strokeWidth={2.5} />
-            {t}
-          </span>
-        ))}
-      </div>
+      <Tags items={c.classifications} />
 
       <p className="ag-label">Kvalifikacije</p>
       <div className="bc-lines ag-terms">

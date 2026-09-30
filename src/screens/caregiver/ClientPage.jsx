@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
+import Tags from '../../components/Tags';
 import AgreementForm from '../../components/caregiver/AgreementForm';
 import VisitPlanForm from '../../components/caregiver/VisitPlanForm';
 import WorkOrderForm from '../../components/caregiver/WorkOrderForm';
@@ -84,14 +85,7 @@ function AgreedTerms({ client }) {
   return (
     <>
       <p className="ag-label">Usluge iz ovog ugovora</p>
-      <div className="ag-services">
-        {client.services.map((id) => (
-          <span key={id} className="svc is-set">
-            <Check size={13} strokeWidth={2.5} />
-            {serviceTitle(id)}
-          </span>
-        ))}
-      </div>
+      <Tags items={client.services.map(serviceTitle)} />
       <div className="bc-lines ag-terms">
         <p className="bc-line">
           <span className="bc-line-label">Cena po satu</span>
@@ -358,14 +352,7 @@ export default function ClientPage({
                 prođe po planu.
               </p>
               <p className="ag-label">Planirano</p>
-              <div className="ag-services">
-                {client.plan.services.map((id) => (
-                  <span key={id} className="svc is-set">
-                    <Check size={13} strokeWidth={2.5} />
-                    {serviceTitle(id)}
-                  </span>
-                ))}
-              </div>
+              <Tags items={client.plan.services.map(serviceTitle)} />
               {client.plan.notes && <p className="visit-note">{client.plan.notes}</p>}
               <div className="panel-card-actions is-end">
                 <Button variant="secondary" onClick={() => setModal('plan')}>
@@ -445,13 +432,7 @@ export default function ClientPage({
                 {state === 'none' || state === 'draft' ? (
                   <>
                     <p className="ag-label">Šta je porodica tražila</p>
-                    <div className="ag-services">
-                      {client.needs.map((id) => (
-                        <span key={id} className="svc">
-                          {serviceTitle(id)}
-                        </span>
-                      ))}
-                    </div>
+                    <Tags items={client.needs.map(serviceTitle)} />
                     <div className="bc-lines ag-terms">
                       <p className="bc-line">
                         <span className="bc-line-label">Sati</span>

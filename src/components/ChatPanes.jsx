@@ -5,6 +5,7 @@ import { priceLine } from '../data/plans';
 import PlanContents from './PlanContents';
 import VisitRow from './family/VisitRow';
 import Button from './Button';
+import Tags from './Tags';
 
 // What opens beside the conversation when the family presses a card in the
 // chat. The kit draws the pane and decides where it goes; these are what is in
@@ -205,14 +206,7 @@ export function paneFor(openId, ctx) {
             </p>
             <p className="fam-quote">{c.bio}</p>
             <p className="ag-label">Klasifikacije</p>
-            <div className="ag-services">
-              {c.classifications.map((t) => (
-                <span key={t} className="svc is-set">
-                  <Check size={13} strokeWidth={2.5} />
-                  {t}
-                </span>
-              ))}
-            </div>
+            <Tags items={c.classifications} />
             <div className="bc-lines ag-terms">
               <p className="bc-line">
                 <span className="bc-line-label">Dolazi</span>

@@ -465,7 +465,7 @@ export default function App() {
           view={view}
           onView={setView}
           user={user}
-          badge={care.requests.filter((r) => r.status === 'pending').length}
+          requestsBadge={care.requests.filter((r) => r.status === 'pending').length}
           threads={conversationEntries}
           activeThread={conversation}
           onSelectThread={openConversation}
@@ -599,7 +599,6 @@ export default function App() {
                   care={care}
                   onCaregiver={showCaregiver}
                   onFind={() => setView('find-caregiver')}
-                  onBack={() => setView('dashboard')}
                 />
               )}
               {view === 'find-caregiver' && (

@@ -7,14 +7,17 @@ import {
   MessageSquare,
   Plus,
   Search,
+  Send,
   Settings,
   User,
 } from 'lucide-react';
 import Logo from './Logo';
 
-// The pages that open from the family's home stay under it in the nav: her page,
-// every visit and every request are parts of the dashboard, not places of their own.
-const HOME_VIEWS = ['dashboard', 'caregiver', 'visits', 'requests'];
+// The pages that open from the family's home stay under it in the nav: her page
+// and every visit are parts of the dashboard, not places of their own. The
+// requests were one too, behind a link at the foot of the home; they are asked
+// for too often for that, so they are a place in the nav.
+const HOME_VIEWS = ['dashboard', 'caregiver', 'visits'];
 
 const FOOTER_ITEMS = [
   { id: 'profile', label: 'Profil', icon: User },
@@ -82,7 +85,7 @@ export default function AppNav({
   view,
   onView,
   user,
-  badge,
+  requestsBadge,
   threads,
   activeThread,
   onSelectThread,
@@ -150,7 +153,6 @@ export default function AppNav({
         >
           <LayoutDashboard size={16} strokeWidth={1.75} />
           <span>Moja nega</span>
-          {badge > 0 && <span className="nav-badge">{badge}</span>}
         </button>
 
         <button
@@ -161,6 +163,17 @@ export default function AppNav({
         >
           <Search size={16} strokeWidth={1.75} />
           <span>Pronađi negovateljicu</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item${view === 'requests' ? ' is-active' : ''}`}
+          onClick={go(() => onView('requests'))}
+          aria-current={view === 'requests' ? 'page' : undefined}
+        >
+          <Send size={16} strokeWidth={1.75} />
+          <span>Vaši upiti</span>
+          {requestsBadge > 0 && <span className="nav-badge">{requestsBadge}</span>}
         </button>
 
         <Section

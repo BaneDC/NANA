@@ -22,7 +22,7 @@ Onboarding (`src/screens/Immersive*.jsx`, klase `imm-*`) ima svoj vizuelni jezik
 | Boje | samo tokeni iz `src/styles/tokens.css`, bez hex vrednosti u komponentama |
 | Jedna podloga, jedna boja teksta | na istoj podlozi tekst iste uloge ima istu boju; na narandžastoj podlozi tekst je u boji te podloge (`--color-primary-700`) |
 | Velika slova | nikad (`text-transform: uppercase` je zabranjen van onboardinga) |
-| Najmanji tekst | 12px za sve što se čita; 11px samo u znački (`.status-pill`) i u meta liniji (`.cg-meta`) |
+| Najmanji tekst | 12px za sve što se čita; 11px samo u znački (`.status-pill`), u oznaci (`.cg-tag`) i u meta liniji (`.cg-meta`) |
 
 **Koncentrični uglovi, primeri koji važe u kodu:**
 - kartica r24, padding 16 → ono što je unutra i dodiruje ugao ima r8 (24 = 8 + 16);
@@ -97,7 +97,10 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - Akcije stranice su samo u `.view-head`, desno.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (CSS to radi preko klase `.ask-assistant`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
-- `.back-link` je iznad naslova (12px, strelica). Nema drugog stila za „nazad". Širok je koliko njegov tekst, i na telefonu, gde je zaglavlje grid: zona dodira ne sme da pređe na prazan prostor desno od njega.
+- `.back-link` je iznad naslova (12px, strelica), **12px od onoga ispod njega**, i kad je u `.view-head-text` i kad stoji sam iznad glave stranice (`.view > .back-link`). Nema drugog stila za „nazad". Širok je koliko njegov tekst, i na telefonu, gde je zaglavlje grid: zona dodira ne sme da pređe na prazan prostor desno od njega.
+- **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
+- **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Vašim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
+- **Stranica osobe** (avatar pored imena, `.fam-person`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava CSS; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici.
 
@@ -161,6 +164,10 @@ Mere (sve radi CSS u bloku „Rows inside a card" u `app.css`):
 
 Klase redova koje ovo već dobijaju: `.caregiver` (bez `.is-wide`), `.fam-row`, `.contact-row`, `.fam-visit`, `.visit`. Kontejneri: `.rec-providers`, `.fam-rows`, `.contact-rows`, `.fam-visits`, `.visit-list`.
 
+**Poravnanje u redu (`.fam-row`):** sve počinje od prve linije. Avatar je poravnat po vrhu sa naslovom, a ono desno (dugme, broj, strelica) počinje u istoj visini kao naslov. Ništa se ne centrira po visini reda, jer red sa oznakama ima tri i više linija.
+
+**Stanje u redu** je kratka značka pored naslova (`.fam-row-title` › `.status-pill`), a ne poseban red. Kod posete značka kaže samo korak („Plan posete", „Radni nalog stigao", „Plaćeno"), jer iznos desno već kaže šta je sa novcem, a linija ispod kaže ostalo. Iznos koji je rezervisan za posetu stoji u liniji ispod datuma (`.fam-row-body.is-inline`).
+
 Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj posebnu ivicu, podlogu, senku ili radius.
 
 **Zabranjeno:** kutija sa ivicom ili senkom unutar kartice. To je treći nivo uglova i ne može da ispoštuje §1.
@@ -201,6 +208,8 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 - **Grupa koja se sklapa** (npr. grupa kolačića): ceo njen gornji deo (naziv, stanje, opis) otvara i zatvara grupu. Naziv je dugme razvučeno preko tog dela (`.ck-summary` + `.ck-open`). Prekidač stoji iznad i samo menja stanje. Spisak koji se otvori nije deo mete, pa se čitanjem ne zatvara.
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
 - **Dugme desno** ide samo u redu čiji sadržaj staje u dve linije. U kartici sa više teksta dugme ide u footer.
+- **Red koji nešto otvara** (`.fam-row.is-clickable`, `.fam-visit.is-clickable`): naslov je `.card-link`, dugme desno je `.card-action` i kaže isto, a na telefonu ga menja `.card-go`. Tako su redovi u Mojoj nezi („Čeka na vas", „Predstoji", „Vaše negovateljice") i posete. Red ima jednu akciju; „Njena stranica" pored „Pogledaj plan posete" je bila druga, a njena stranica je jedan klik dalje preko reda „Vaše negovateljice".
+- **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima stalnu strelicu desno (`.fam-row-chevron`). Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
 
 ---
 
@@ -268,6 +277,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 ## 10. Stanje i polja
 
+- **Čip je samo za ono što se bira.** `.svc` (ivica, a popunjen kad je izabran) je dugme: izbor usluga u ugovoru, filteri, odgovor u tri reči, jezik. **Ono što se samo čita** (usluge iz ugovora, šta je urađeno na poseti, šta će raditi, klasifikacije negovateljice, šta je porodica tražila) je oznaka: komponenta `Tags` (`src/components/Tags.jsx`, `.cg-tags` › `.cg-tag`), siva podloga, bez ivice i bez kvačice. Ono što je izostavljeno je `.cg-tag.is-off` i to kaže rečima („— ovog puta ne"). `ServiceChips` crta oznake. Oznake u redu stoje 12px ispod teksta reda, a u kartici 8px ispod naslova.
 - **Stanje** se kaže samo značkom `.status-pill` sa jednim od modifikatora: `is-accepted` (zeleno, gotovo), `is-pending` (čeka), `is-declined` (ne), `is-muted` (neutralno), `is-attention` (narandžasto: poklapanje, izmenjeno).
 - **Poklapanje** se svuda piše „Poklapanje · 97%", kao značka `is-attention`.
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.

@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import Button from '../Button';
 import { CareSignals } from './FamilyDrawer';
 import { chargedFor, firstName, money, visitCharge } from '../../data/familyCare';
@@ -5,13 +6,19 @@ import { chargedFor, firstName, money, visitCharge } from '../../data/familyCare
 // One visit, as the family sees it: when, who, where the money is, and — when
 // there is one — the thing they can do about it. Her page and the list of every
 // visit both show visits this way, so a visit reads the same wherever it is.
+//
+// Its state is a short pill beside the date. The money column already says
+// what happened to the money and the line under says the rest, so the pill
+// only names the step. A visit with something to open is a clickable row: the
+// date is the link, the button says the same on a wide screen, and on a phone
+// a chevron stands in for it (docs/patterns.md §7).
 
 const STATUS = {
-  planned: { label: 'Plan posete · novac rezervisan', pill: 'is-pending' },
-  awaiting: { label: 'Poseta obavljena · radni nalog još nije stigao', pill: 'is-muted' },
-  charging: { label: 'Radni nalog · pogledajte', pill: 'is-attention' },
-  disputed: { label: 'Prijavljeno · kod koordinatorke', pill: 'is-declined' },
-  paid: { label: 'Radni nalog · plaćeno', pill: 'is-accepted' },
+  planned: { label: 'Plan posete', pill: 'is-pending' },
+  awaiting: { label: 'Čeka radni nalog', pill: 'is-muted' },
+  charging: { label: 'Radni nalog stigao', pill: 'is-attention' },
+  disputed: { label: 'Prijavljeno', pill: 'is-declined' },
+  paid: { label: 'Plaćeno', pill: 'is-accepted' },
   cancelled: { label: 'Otkazano', pill: 'is-muted' },
 };
 
@@ -57,12 +64,23 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
           ? { label: 'Radni nalog', variant: 'ghost', drawer: { kind: 'work-order', visitId: v.id } }
           : null;
 
+  const open = action && (() => onDrawer(action.drawer));
+
   return (
-    <li className={`fam-visit is-${v.status}`}>
+    <li className={`fam-visit is-${v.status}${open ? ' is-clickable' : ''}`}>
       <div className="fam-visit-head">
         <div className="fam-visit-when">
           <p className="fam-row-title">
-            {v.date} · {v.time}
+            {open ? (
+              <button type="button" className="card-link" onClick={open}>
+                {v.date} · {v.time}
+              </button>
+            ) : (
+              <span>
+                {v.date} · {v.time}
+              </span>
+            )}
+            <span className={`status-pill ${s.pill}`}>{s.label}</span>
           </p>
           <p className="fam-row-body">
             {showWho ? `${v.caregiver.name} · ` : ''}
@@ -73,9 +91,8 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
           <p className="fam-visit-amount">{m.amount}</p>
           <p className="fam-visit-note">{m.note}</p>
         </div>
+        {open && <ChevronRight size={16} strokeWidth={1.75} className="card-go" aria-hidden="true" />}
       </div>
-
-      <span className={`status-pill ${s.pill}`}>{s.label}</span>
 
       {v.report && (v.status === 'paid' || v.status === 'charging') && (
         <>
@@ -88,7 +105,7 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
       <div className="fam-visit-foot">
         <p className="fam-visit-line">{lineFor(v)}</p>
         {action && (
-          <Button variant={action.variant} onClick={() => onDrawer(action.drawer)}>
+          <Button variant={action.variant} className="card-action" onClick={open}>
             {action.label}
           </Button>
         )}
