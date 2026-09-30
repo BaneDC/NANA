@@ -12,6 +12,7 @@ import {
   User,
 } from 'lucide-react';
 import Logo from './Logo';
+import Button from './Button';
 
 // The pages that open from the family's home stay under it in the nav: her page
 // and every visit are parts of the dashboard, not places of their own. The
@@ -121,6 +122,14 @@ export default function AppNav({
         <Logo width={110} />
       </div>
 
+      {/* Starting a conversation is the one thing the menu asks for, so it is a
+          button of its own above the list of them, not a "+" folded into the
+          row beside a chevron. */}
+      <Button variant="secondary" full className="nav-new-chat" onClick={go(onNewChat)}>
+        <Plus size={14} strokeWidth={1.75} />
+        Novi razgovor
+      </Button>
+
       <div className="nav-group">
         <Section
           id="chat"
@@ -130,7 +139,6 @@ export default function AppNav({
           onOpen={go(() => onView('chat'))}
           open={chatListOpen}
           onToggle={onToggleChatList}
-          onAdd={go(onNewChat)}
         >
           {threads.map((t) => (
             <button

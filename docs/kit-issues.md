@@ -35,3 +35,11 @@ Nijedno od ovoga ne može da se isključi propovima: `animationConfig` menja sam
 - poruka se pojavi na svom mestu u konverzaciji, a input se samo isprazni — bez leta (npr. `bubbleTravel={false}`);
 - naslov u headeru ostaje onaj koji je host zadao;
 - input iste visine pre, tokom i posle slanja.
+
+## Dugmad kita ne mogu da budu naša (0.59.0)
+
+Kit crta svoja dugmad (`Button` iz kita: `primary` je staklo, `secondary` je providno dok se ne pređe mišem, `outline`, `ghost`, `glass`) i ne prima naša. Akcije u headeru se opisuju (`ChatHeaderAction`: `label`, `icon`), a ne predaju kao element, što ima smisla zbog „…" menija. Ali to znači da host ne može da kaže „ovo je moj primary". Pored toga, kit za istu varijantu ima dve uloge: `primary` je i „Pošalji" i predlozi pitanja u praznom chatu, a „Pošalji" i „Zaustavi" su isto dugme sa istom varijantom.
+
+**Predlog:** tokeni po varijanti (`--ick-btn-primary-bg`, `-border`, `-ink`, `-shadow`, `-radius`, `-height`, `-font-size`…) ili `components={{ Button }}` prop koji kit koristi za sva svoja dugmad, sa `role` (`send`, `stop`, `suggestion`, `header-action`, `answer-action`) da host može da bira varijantu po ulozi. I `Pošalji` / `Zaustavi` kao dve uloge, ne jedna.
+
+**Kod nas:** blok „The chat kit's buttons, drawn as ours" u `app.css` prepisuje varijante po klasama (`[class*='ick-primary-']`…) i po položaju (dugme u `ick-surface-*` je „Pošalji"). „Zaustavi" se prepoznaje po `aria-label` iz `src/data/chatLabels.sr.js`, pa se menja ako se promeni taj tekst. Širinu dugmeta „Pošalji" kit zadaje inline (28px), pa ono ostaje 28 i na dodir.

@@ -21,6 +21,7 @@ Onboarding (`src/screens/Immersive*.jsx`, klase `imm-*`) ima svoj vizuelni jezik
 | Koncentrični uglovi | **spoljni radius = unutrašnji radius + padding između njih** |
 | Boje | samo tokeni iz `src/styles/tokens.css`, bez hex vrednosti u komponentama |
 | Jedna podloga, jedna boja teksta | na istoj podlozi tekst iste uloge ima istu boju; na narandžastoj podlozi tekst je u boji te podloge (`--color-primary-700`) |
+| Čipovi i značke | nikad pun krug (999px): čip (`.svc`, 32–44px) r8, značka i oznaka (`.status-pill`, `.cg-tag`, 20px) r4 |
 | Velika slova | nikad (`text-transform: uppercase` je zabranjen van onboardinga) |
 | Najmanji tekst | 12px za sve što se čita; 11px samo u znački (`.status-pill`), u oznaci (`.cg-tag`) i u meta liniji (`.cg-meta`) |
 
@@ -58,6 +59,8 @@ Dve skale: sa mišem i na dodir (`pointer: coarse`). Na dodir je sve osim sitnog
 **Onboarding** (`.immersive`) zaključava tokene na skali sa mišem, jer ima svoj vizuelni jezik.
 
 Za novi tekst kartice koristi `.tip-body`. Ne uvodi novu klasu istog izgleda.
+
+**Rečenica u redu** (linija ispod posete, napomena na dnu stranice, korak u „Dan pre / Posle posete") je tekst kartice: 12 / 14 na dodir. Kratka oznaka pored broja („rezervisano", „Plaćenih poseta") je sitan tekst, 12. Ništa od toga nije 11.
 
 Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je veličine naslova kartice.
 
@@ -98,6 +101,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (CSS to radi preko klase `.ask-assistant`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - `.back-link` je iznad naslova (12px, strelica), **12px od onoga ispod njega**, i kad je u `.view-head-text` i kad stoji sam iznad glave stranice (`.view > .back-link`). Nema drugog stila za „nazad". Širok je koliko njegov tekst, i na telefonu, gde je zaglavlje grid: zona dodira ne sme da pređe na prazan prostor desno od njega.
+- **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") iznad reda „Razgovor", a red „Razgovor" ima samo strelicu za spisak. „Vaši upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Vašim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
 - **Stranica osobe** (avatar pored imena, `.fam-person`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
@@ -170,6 +174,8 @@ Klase redova koje ovo već dobijaju: `.caregiver` (bez `.is-wide`), `.fam-row`, 
 
 Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj posebnu ivicu, podlogu, senku ili radius.
 
+**Kartica koja se završava redovima** ima 16 od poslednjeg reda do donje ivice, kao 16 od vrha do naslova. Poslednji red zadržava 8 svog paddinga i ulazi 8 u padding kartice, pa je njegova podloga na hover-u 8 od dna kao i sa strane (24 = 16 + 8). CSS to radi sam.
+
 **Zabranjeno:** kutija sa ivicom ili senkom unutar kartice. To je treći nivo uglova i ne može da ispoštuje §1.
 
 ---
@@ -206,9 +212,29 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
   - tap otvara detalje, pa **detalji moraju imati istu akciju** (profil negovateljice ima „Pošalji poruku");
   - pre nego što sakriješ akciju, proveri da je ima u detaljima.
 - **Grupa koja se sklapa** (npr. grupa kolačića): ceo njen gornji deo (naziv, stanje, opis) otvara i zatvara grupu. Naziv je dugme razvučeno preko tog dela (`.ck-summary` + `.ck-open`). Prekidač stoji iznad i samo menja stanje. Spisak koji se otvori nije deo mete, pa se čitanjem ne zatvara.
+### Drawer ili dijalog
+
+Oba se otvaraju preko stranice. Bira se po tome **šta se otvara**, ne po tome koliko je veliko:
+
+| | Drawer (`Modal`, sa strane) | Dijalog (`.modal`, u sredini) |
+|---|---|---|
+| Šta je | detalji nečega sa stranice, ili posao nad tim | jedno pitanje koje zaustavlja tok dok se ne odgovori |
+| Primeri | ugovor, radni nalog, plan posete, profil negovateljice; izmena plana, deljenje plana, dodavanje kartice, promena lozinke, uključivanje 2FA, kolačići | potvrda nepovratnog ili novčanog koraka („Otkazati pretplatu?", „Završiti saradnju?", isključivanje 2FA); izbor pretplate pre poruke negovateljici |
+| Stranica iza | vidi se i ostaje u kontekstu, jer je sadržaj o njoj | zatamnjena; nije bitna dok se ne odgovori |
+| Dužina | koliko treba; skroluje se | staje na ekran bez skrola |
+| Akcije | dole desno; može više koraka | dve: sporedna („Zadrži", „Otkaži"), pa glavna |
+
+**Test:** treba li korisniku stranica dok radi → drawer. Je li ovo „da ili ne" pre nego što se nešto desi → dijalog. Kad nije jasno → drawer.
+
+- Korak koji je deo toka u drawer-u ostaje u njemu („Lozinka je promenjena", rezervni kodovi posle uključivanja 2FA). Dijalog se ne otvara preko drawer-a ni preko drugog dijaloga.
+- Kad dijalog vodi dalje („Pogledaj radni nalog" iz „Završiti saradnju?"), on se zatvara i otvara se drawer.
+- Na telefonu su oba isti drawer preko celog ekrana (§12), pa razlika važi za širi ekran.
+- **Danas ne prati pravilo** (predlog od 30. 9., čeka potvrdu pre izmene): „Otkazati pretplatu?" i „Isključite dvofaktorsku prijavu" (Podešavanja) i „Završiti saradnju?" (njena stranica) su drawer-i, a po pravilu su dijalozi. Za prelazak treba zajednička komponenta dijaloga; `.modal` je sada samo u `PaywallModal`.
+
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
 - **Dugme desno** ide samo u redu čiji sadržaj staje u dve linije. U kartici sa više teksta dugme ide u footer.
 - **Red koji nešto otvara** (`.fam-row.is-clickable`, `.fam-visit.is-clickable`): naslov je `.card-link`, dugme desno je `.card-action` i kaže isto, a na telefonu ga menja `.card-go`. Tako su redovi u Mojoj nezi („Čeka na vas", „Predstoji", „Vaše negovateljice") i posete. Red ima jednu akciju; „Njena stranica" pored „Pogledaj plan posete" je bila druga, a njena stranica je jedan klik dalje preko reda „Vaše negovateljice".
+- **Poseta** ima tri dela (datum i sati, rečenica šta je sa njom, dugme), pa joj je dugme ispod rečenice, levo, kao footer kartice, a ne desno.
 - **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima stalnu strelicu desno (`.fam-row-chevron`). Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
 
 ---
@@ -272,6 +298,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - **U dijalogu i drawer-u** akcije su dole desno (`.panel-card-actions.is-end`): prvo secondary, pa glavna.
 - **Na ekranu na dodir** (`pointer: coarse`) sva dugmad, polja, redovi i čipovi imaju najmanje 44px. Tokeni `--button-size` i `--input-size` to rade sami, pa ne zadaji fiksnu visinu manju od 44 bez `(pointer: coarse)` pravila.
 - Ikonice u dugmadima: vidi §11.
+- **Dugmad chat kita** (`inline-chat-kit`) crta kit, a ne `Button`, pa su u `app.css` („The chat kit's buttons, drawn as ours") obučena kao naša, po ulozi: „Pošalji" je `primary`; „Zaustavi", akcije u zaglavlju chata, „…", predlozi pitanja i koraci pitanja su `secondary`; kopiraj, ponovo i ocena odgovora su `ghost`. Iste visine (32, glif 28, na dodir 44), ugao 8, tekst 12 / 14 na dodir. Novo dugme koje mi dajemo kitu (kartice u chatu) je uvek naš `Button`.
 
 ---
 
