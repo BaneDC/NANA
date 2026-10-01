@@ -13,7 +13,7 @@ function fieldsOf(questionId, answers) {
   const q = questionById[questionId];
   const values = answers[questionId]?.values;
   if (!q?.fields || !values) return [];
-  return q.fields.map((f) => ({ label: srField(q, f.id), value: values[f.id] || '—' }));
+  return q.fields.map((f) => ({ label: srField(q, f.id), value: values[f.id] || '-' }));
 }
 
 function Section({ title, rows, onEdit }) {
@@ -103,9 +103,9 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
       <Section
         title="Vaš nalog"
         rows={[
-          { label: 'Ime i prezime', value: user.name || '—' },
-          { label: 'Email', value: user.email || '—' },
-          { label: 'Telefon', value: user.phone || '—' },
+          { label: 'Ime i prezime', value: user.name || '-' },
+          { label: 'Email', value: user.email || '-' },
+          { label: 'Telefon', value: user.phone || '-' },
         ]}
         onEdit={onSaveUser ? () => setEditing('account') : null}
       />

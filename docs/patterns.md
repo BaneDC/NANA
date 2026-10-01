@@ -401,6 +401,7 @@ Očekivano: `cards` → `24px/16px`; `titles` → `doc-section-title 14px`, `sec
 - narandžasta kartica sa sadržajem direktno na narandžastom (sadržaj ide u belu karticu u `Attention`);
 - uvučen citat u kurzivu; tekst kao dugme-link umesto `Button`;
 - velika slova van onboardinga;
+- duga crta (—) u tekstu interfejsa: piše se kratka (-), a prazna vrednost je takođe „-". Raspon ostaje sa – (`16–20 €/h`, `09:00–12:00`);
 - `onClick` na div kartice umesto `.card-link`;
 - sakrivena akcija na telefonu koje nema u detaljima;
 - `primary` za gašenje ili otkazivanje, ili boja dugmeta po stanju;

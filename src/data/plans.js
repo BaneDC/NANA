@@ -26,7 +26,7 @@ const MONTHLY = {
   description: 'Za porodice koje žele punu kontrolu i slobodu, bez dugoročnih obaveza.',
   benefits: [
     'Direktan pristup našoj bazi proverenih i pouzdanih negovateljica',
-    'Vi birate osobu sa kojom radite — bez posrednika, skrivenih provizija i ograničenja kakva postavljaju agencije',
+    'Vi birate osobu sa kojom radite - bez posrednika, skrivenih provizija i ograničenja kakva postavljaju agencije',
     'Podrška tima i koordinatorke tokom celog trajanja paketa',
     'Zamena negovateljice u hitnim situacijama, bez dodatnih troškova',
     'Formular „Pošalji zahtev" za dodatnu pomoć (lekar, medicinska sestra, rehabilitacija…)',
@@ -38,7 +38,7 @@ const MONTHLY = {
 
 const QUARTERLY = {
   name: 'Premium',
-  description: 'Najčešći izbor naših korisnika — za porodice koje žele stabilnost, kontinuitet i sigurnu podršku.',
+  description: 'Najčešći izbor naših korisnika - za porodice koje žele stabilnost, kontinuitet i sigurnu podršku.',
   lead: 'Sve iz Basic plana, i još:',
   benefits: [
     'Prednost kod slobodnih termina koordinatorke',

@@ -73,7 +73,7 @@ export default function CaregiverApp({ user }) {
         activity: logged(
           c,
           'visit',
-          `Poseta obavljena — ${c.plan.date} · ${c.plan.time}, ${c.plan.hours} h. Treba poslati radni nalog.`
+          `Poseta obavljena - ${c.plan.date} · ${c.plan.time}, ${c.plan.hours} h. Treba poslati radni nalog.`
         ),
       })),
   };
@@ -118,7 +118,7 @@ export default function CaregiverApp({ user }) {
       activity: logged(
         c,
         'work-order',
-        `Radni nalog poslat za posetu od ${report.hours} h — ${report.services.map(serviceShort).join(', ').toLowerCase() || 'ništa nije označeno'}. ${money(net)} stiže vama kad se naplati za 24 sata, osim ako porodica nešto prijavi.` +
+        `Radni nalog poslat za posetu od ${report.hours} h - ${report.services.map(serviceShort).join(', ').toLowerCase() || 'ništa nije označeno'}. ${money(net)} stiže vama kad se naplati za 24 sata, osim ako porodica nešto prijavi.` +
           (report.concern ? ` Napomenuli ste: ${report.concern}` : '')
       ),
     }));

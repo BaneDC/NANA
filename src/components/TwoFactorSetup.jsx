@@ -68,7 +68,7 @@ function CodeInput({ value, onChange, onDone }) {
       {digits.map((i) => (
         <span key={i} aria-hidden="true" className="tf-code-group">
           <span className={`tf-digit${value.length === i ? ' is-next' : ''}`}>{value[i] || ''}</span>
-          {i === 2 && <span className="tf-code-dash">—</span>}
+          {i === 2 && <span className="tf-code-dash">-</span>}
         </span>
       ))}
     </div>
@@ -169,7 +169,7 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
 
   const download = () => {
     const blob = new Blob(
-      [`NANA Prime — rezervni kodovi za ${email}\n\n${codes.join('\n')}\n`],
+      [`NANA Prime - rezervni kodovi za ${email}\n\n${codes.join('\n')}\n`],
       { type: 'text/plain' }
     );
     const a = document.createElement('a');

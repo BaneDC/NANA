@@ -148,7 +148,7 @@ export async function runTurn({
       // and, in full, to the console for whoever is debugging the deployment.
       const details = message.stop_details;
       console.error('Refusal', { details, model: message.model, usage: message.usage });
-      const why = [details?.category, details?.explanation].filter(Boolean).join(' — ');
+      const why = [details?.category, details?.explanation].filter(Boolean).join(' - ');
       throw new Error(`Model je odbio da odgovori na ovu poruku.${why ? ` (${why})` : ''}`);
     }
 
@@ -220,7 +220,7 @@ export async function runTurn({
           results.push({
             type: 'tool_result',
             tool_use_id: call.id,
-            content: `Nema pitanja sa id "${id}" među preostalima — ili je već odgovoreno. Izaberi id iz liste, ili postavi svoje potpitanje preko \`follow_up\`.`,
+            content: `Nema pitanja sa id "${id}" među preostalima - ili je već odgovoreno. Izaberi id iz liste, ili postavi svoje potpitanje preko \`follow_up\`.`,
             is_error: true,
           });
         } else {
@@ -229,7 +229,7 @@ export async function runTurn({
           results.push({
             type: 'tool_result',
             tool_use_id: call.id,
-            content: 'Kartice su prikazane korisniku. Sačekaj njegov odgovor — ne pitaj ništa više.',
+            content: 'Kartice su prikazane korisniku. Sačekaj njegov odgovor - ne pitaj ništa više.',
           });
         }
       } else if (call.name === 'follow_up') {
@@ -238,7 +238,7 @@ export async function runTurn({
         results.push({
           type: 'tool_result',
           tool_use_id: call.id,
-          content: 'Polje za pisanje je prikazano. Sačekaj odgovor — ne pitaj ništa više.',
+          content: 'Polje za pisanje je prikazano. Sačekaj odgovor - ne pitaj ništa više.',
         });
       } else {
         results.push({

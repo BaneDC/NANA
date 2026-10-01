@@ -204,7 +204,7 @@ export default function App() {
   const editAnswers = (changes, { source = 'manual' } = {}) => {
     const { answers: next } = applyChanges(answers, changes);
     changePlan({ nextAnswers: next, nextNotes: notes, source });
-    say(changes.length === 1 ? 'Plan je izmenjen.' : `Plan je izmenjen — ${changes.length} odgovora.`);
+    say(changes.length === 1 ? 'Plan je izmenjen.' : `Plan je izmenjen - ${changes.length} odgovora.`);
   };
 
   const addNotes = (added) => {

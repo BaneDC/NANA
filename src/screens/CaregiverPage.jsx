@@ -50,7 +50,7 @@ function nextStep(care, a) {
   if (order) {
     return {
       eyebrow: 'Čeka na vas',
-      copy: `${first} je poslala radni nalog za ${order.date}. Ako je sve bilo kako je dogovoreno, ne morate ništa — prolazi samo.`,
+      copy: `${first} je poslala radni nalog za ${order.date}. Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.`,
       label: 'Pogledaj radni nalog',
       drawer: { kind: 'work-order', visitId: order.id },
     };
@@ -178,10 +178,10 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
       <section className="panel-card">
         <p className="doc-section-title">Ukratko</p>
         <div className="bc-lines ag-terms">
-          <Line label="Zajedno" value={ended ? `${a.since || '—'} – ${a.endedOn}` : a.since ? `od ${a.since}` : 'još niste počeli'} />
+          <Line label="Zajedno" value={ended ? `${a.since || '-'} – ${a.endedOn}` : a.since ? `od ${a.since}` : 'još niste počeli'} />
           <Line label="Posete do sada" value={paid.length ? `${paid.length} · ${hoursSoFar} h` : 'još nijedna'} />
           <Line label="Naplaćeno do sada" value={money(chargedSoFar)} />
-          <Line label="Poslednja poseta" value={paid[0]?.date || '—'} />
+          <Line label="Poslednja poseta" value={paid[0]?.date || '-'} />
           <Line
             label="Način plaćanja"
             value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'}

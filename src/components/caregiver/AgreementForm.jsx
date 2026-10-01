@@ -22,8 +22,8 @@ export default function AgreementForm({ client, onSend, onCancel }) {
   return (
     <>
       <p className="ag-lead">
-        Ovde postavljate koje usluge pružate i jednu zajedničku cenu po satu. Sve posle toga —
-        posete, radni nalozi, uplate — računa se iz ovoga.
+        Ovde postavljate koje usluge pružate i jednu zajedničku cenu po satu. Sve posle toga -
+        posete, radni nalozi, uplate - računa se iz ovoga.
       </p>
 
       <p className="ag-label">Usluge iz ovog ugovora</p>

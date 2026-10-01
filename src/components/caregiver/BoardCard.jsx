@@ -146,7 +146,7 @@ const BoardCard = forwardRef(function BoardCard(
       {client.stage === 'agreement' && !client.agreementSent && (
         <>
           <p className="bc-note">
-            Prihvaćeno {client.acceptedOn}. Postavite usluge i cenu po satu — svaka poseta, radni nalog
+            Prihvaćeno {client.acceptedOn}. Postavite usluge i cenu po satu - svaka poseta, radni nalog
             i uplata posle ovoga računaju se iz toga.
           </p>
           <div className="bc-chips">

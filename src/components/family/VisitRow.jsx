@@ -31,14 +31,14 @@ function amountOf(v) {
   if (v.status === 'awaiting') return { amount: money(chargedFor(v.hours, v.rate)), note: 'još nije naplaćeno' };
   return v.lateCharge
     ? { amount: money(chargedFor(v.hours, v.rate)), note: 'naplaćeno, kasno otkazano' }
-    : { amount: '—', note: 'vraćeno' };
+    : { amount: '-', note: 'vraćeno' };
 }
 
 function lineFor(v) {
   const first = firstName(v.caregiver.name);
   switch (v.status) {
     case 'planned':
-      return 'Rezervisano, nije naplaćeno — novac se uzima tek posle posete, kad stigne radni nalog.';
+      return 'Rezervisano, nije naplaćeno - novac se uzima tek posle posete, kad stigne radni nalog.';
     case 'awaiting':
       return `${first} još treba da potvrdi šta je uradila pre nego što se išta naplati.`;
     case 'charging':
@@ -49,7 +49,7 @@ function lineFor(v) {
       return v.confirmed === 'you' ? 'Vi ste potvrdili.' : 'Potvrđeno automatski posle 24 sata.';
     default:
       if (v.lateCharge) return 'Otkazano u poslednjem satu, pa je naplaćeno u celosti.';
-      return v.cancelReason ? `Otkazano — ${v.cancelReason.toLowerCase()}. Ništa nije naplaćeno.` : 'Rezervacija je vraćena. Ništa nije naplaćeno.';
+      return v.cancelReason ? `Otkazano - ${v.cancelReason.toLowerCase()}. Ništa nije naplaćeno.` : 'Rezervacija je vraćena. Ništa nije naplaćeno.';
   }
 }
 

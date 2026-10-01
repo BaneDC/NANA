@@ -26,7 +26,7 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
 
         {rejected && (
           <p className="key-warning" role="alert">
-            Anthropic nije prihvatio ključ koji je bio sačuvan (401) — obrisan je, istekao ili je
+            Anthropic nije prihvatio ključ koji je bio sačuvan (401) - obrisan je, istekao ili je
             pogrešno kopiran. Upiši ključ koji radi; ako je stari u <code>.env.local</code>, zameni
             ga i tamo.
           </p>
@@ -47,7 +47,7 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
 
         <p className="doc-p">
           Ostaje u <code>localStorage</code> ovog browsera i ne odlazi nigde osim ka Anthropic-u.
-          Nije u repozitorijumu — svako ko povuče kod upisuje svoj.
+          Nije u repozitorijumu - svako ko povuče kod upisuje svoj.
         </p>
         <p className="doc-p">
           Browser ga pamti samo za ovu adresu, pa ga posle promene porta traži ponovo. Da ga ne
@@ -56,7 +56,7 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
         </p>
         <p className="key-warning">
           Ovako se radi samo lokalni demo. Ključ u browseru može da pročita bilo koja skripta na
-          stranici, pa ovo ne sme da ide u produkciju — tamo poziv ide preko servera.
+          stranici, pa ovo ne sme da ide u produkciju - tamo poziv ide preko servera.
         </p>
 
         <div className="panel-card-actions">

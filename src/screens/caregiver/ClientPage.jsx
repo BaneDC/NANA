@@ -228,7 +228,7 @@ export default function ClientPage({
       case 'none':
         return `Traženo: ${client.hours} h nedeljno · ${client.schedule}`;
       case 'draft':
-        return `Još nije postavljen — traženo ${client.hours} h nedeljno`;
+        return `Još nije postavljen - traženo ${client.hours} h nedeljno`;
       case 'sent':
         return `Usluga: ${client.services.length} · ${money(client.rate)}/h · poslato ${client.sentOn}`;
       default:
@@ -300,7 +300,7 @@ export default function ClientPage({
           }
         >
           <p className="ag-lead">
-            {due.date} · {due.time} — {due.hours} h po dogovorenih {money(client.rate)}/h, završeno{' '}
+            {due.date} · {due.time} - {due.hours} h po dogovorenih {money(client.rate)}/h, završeno{' '}
             {client.sinceVisit}. Slanjem počinje 24 sata za porodicu: ili potvrde, ili se naplata izvrši
             sama kad rok istekne.
           </p>
@@ -338,7 +338,7 @@ export default function ClientPage({
           {client.plan ? (
             <>
               <p className="ag-lead">
-                {client.plan.date} · {client.plan.time} — {client.plan.hours} h po{' '}
+                {client.plan.date} · {client.plan.time} - {client.plan.hours} h po{' '}
                 {money(client.rate)}/h. Poslato porodici {client.plan.sentOn};{' '}
                 {money(heldFor(client))} je rezervisano na njihovoj kartici, a{' '}
                 {money(totalsFor(client.plan.hours, client.rate).net)} od toga stiže vama ako poseta
@@ -361,7 +361,7 @@ export default function ClientPage({
             <>
               <p className="ag-lead">
                 Još ništa nije planirano. Plan posete kaže zašto dolazite, a kad ga pošaljete porodici,
-                novac se rezerviše pre nego što krenete — pa radni nalog posle samo potvrđuje ono što je
+                novac se rezerviše pre nego što krenete - pa radni nalog posle samo potvrđuje ono što je
                 već pokriveno.
               </p>
               <div className="panel-card-actions is-end">

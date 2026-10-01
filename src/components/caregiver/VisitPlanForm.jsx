@@ -29,7 +29,7 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
     <>
       <p className="ag-lead">
         Zašto dolazite. Kad ovo pošaljete porodici, novac za posetu se rezerviše pre nego što
-        krenete, a radni nalog se posle otvara prema ovome — pa ono što ovde promenite je ono prema
+        krenete, a radni nalog se posle otvara prema ovome - pa ono što ovde promenite je ono prema
         čemu se poseta meri.
       </p>
 

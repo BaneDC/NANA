@@ -109,7 +109,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
   const hasOrder = waiting.some((w) => w.kind === 'work-order');
   const waitNote =
     hasTerms && hasOrder
-      ? 'Uslovi moraju biti prihvaćeni pre nego što išta novo počne. Radni nalog je obrnuto — prolazi sam, osim ako vi nešto ne kažete.'
+      ? 'Uslovi moraju biti prihvaćeni pre nego što išta novo počne. Radni nalog je obrnuto - prolazi sam, osim ako vi nešto ne kažete.'
       : hasTerms
         ? 'Ništa novo ne počinje i ništa se ne naplaćuje dok ne odgovorite.'
         : 'Naplaćuje se automatski, osim ako kažete da nešto nije u redu.';
@@ -153,7 +153,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
 
       {quiet && (
         <div className="panel-card fam-quiet">
-          <p>Sve je sređeno — ništa ne čeka vaš odgovor i ništa nije zakazano.</p>
+          <p>Sve je sređeno - ništa ne čeka vaš odgovor i ništa nije zakazano.</p>
         </div>
       )}
 
@@ -184,7 +184,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                 title={`${firstName(w.visit.caregiver.name)} je poslala radni nalog za ${w.visit.date}`}
                 body={
                   <>
-                    <p className="fam-row-body">Ako je sve bilo kako je dogovoreno, ne morate ništa — prolazi samo.</p>
+                    <p className="fam-row-body">Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.</p>
                     <p className="fam-row-meta">
                       <Clock size={12} strokeWidth={2} />
                       {money(visitCharge(w.visit))} se naplaćuje za {w.visit.chargesInHours} h

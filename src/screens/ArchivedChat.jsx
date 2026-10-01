@@ -43,7 +43,7 @@ export default function ArchivedChat({ thread, user, onNewChat }) {
 
           <motion.div className="chat-message" {...messageMotion}>
             <p className="assistant-text">
-              To je sve — evo plana i negovateljica koje mu najbolje odgovaraju.
+              To je sve - evo plana i negovateljica koje mu najbolje odgovaraju.
             </p>
             <div className="workflow-card care-plan" id="archived-artifact">
               <div className="doc is-static">

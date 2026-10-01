@@ -539,7 +539,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
           {stage === 'breath' && (
             <motion.div key="breath" className="imm-screen" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-intro-text" variants={piece}>
-                To je sve, {firstName}. Predahnite — pravim plan.
+                To je sve, {firstName}. Predahnite - pravim plan.
               </motion.p>
             </motion.div>
           )}
@@ -566,12 +566,12 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
                   {plan.letter.paragraphs[plan.letter.paragraphs.length - 1]}
                 </p>
                 <p className="imm-note-sign">
-                  — {plan.coordinator.name}, {plan.coordinator.role.toLowerCase()}
+                  - {plan.coordinator.name}, {plan.coordinator.role.toLowerCase()}
                 </p>
               </motion.div>
 
               <motion.p className="imm-plan-note" variants={piece}>
-                Odgovara {caregivers.length} negovateljica — evo dve najbliže.
+                Odgovara {caregivers.length} negovateljica - evo dve najbliže.
               </motion.p>
               <motion.div className="imm-options" variants={list}>
                 {preview.map((c) => (
@@ -601,7 +601,7 @@ export default function Immersive({ user, answers, onAnswer, onPlan, onExit, onF
                 Procena krhkosti
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
-                Nivo {frailty.level} — {frailty.label}
+                Nivo {frailty.level} - {frailty.label}
               </motion.h1>
               <motion.p className="imm-subtitle" variants={piece}>
                 {frailty.blurb}

@@ -389,11 +389,11 @@ const CAREGIVER_ROLE = {
 };
 
 const BAND_ACTIONS = {
-  light: 'Lagana podrška — društvo, prevoz i da ostane aktivna.',
+  light: 'Lagana podrška - društvo, prevoz i da ostane aktivna.',
   moderate: 'Redovne posete negovateljice za kuću, obroke i obaveze.',
   high: 'Pomoć oko lične nege, a sprečavanje padova je na prvom mestu.',
-  severe: 'Nega na nivou medicinske sestre — sama negovateljica ovde ne bi bila dovoljna.',
-  palliative: 'Palijativna koordinacija — medicinska sestra, dostava lekova i podrška porodici.',
+  severe: 'Nega na nivou medicinske sestre - sama negovateljica ovde ne bi bila dovoljna.',
+  palliative: 'Palijativna koordinacija - medicinska sestra, dostava lekova i podrška porodici.',
 };
 
 // The document's scenarios: what gets arranged depends far more on why the family
@@ -407,7 +407,7 @@ const REASON_ACTIONS = {
   memory: [
     'Kognitivni pregled kod neuropsihijatra',
     'Negovateljica sa iskustvom u radu sa demencijom',
-    'Provera bezbednosti stana — šporet, brave, ključevi',
+    'Provera bezbednosti stana - šporet, brave, ključevi',
   ],
   discharge: [
     'Medicinska sestra prve nedelje posle otpusta',
@@ -455,7 +455,7 @@ const LETTER_ACKNOWLEDGEMENT = {
     'Znam da nije lako gledati kako se neko koga volite menja, pogotovo dok pokušavate da ga podržite i da pritom nastavite svoj život.',
   discharge: 'Povratak iz bolnice je trenutak kada porodica ima najviše posla, a najmanje uputstava.',
   loneliness: 'O usamljenosti se retko govori naglas, a to je jedna od stvari koje čoveka najbrže iscrpe.',
-  medication: 'Lekovi su jedna od onih tihih briga koje nosite ceo dan — da li su uzeti, i da li su pravi.',
+  medication: 'Lekovi su jedna od onih tihih briga koje nosite ceo dan - da li su uzeti, i da li su pravi.',
   diagnosis: 'Dijagnoza sve preuredi odjednom, i obično stigne sa više pitanja nego odgovora.',
   'home-help': 'Kad kuća počne da izmiče, retko je stvar u kući. To je znak da je dan postao predug.',
   respite: 'Tražiti predah ne znači odustati. Porodice koje izdrže su one koje dozvole nekom drugom da preuzme smenu.',
@@ -556,7 +556,7 @@ export function buildPlan(answers, notes = []) {
   ];
   if (reasonId) {
     narrative.push(
-      `${REASON_PHRASE[reasonId] || REASON_PHRASE['daily-living']} — ${ONSET_PHRASE[onsetId] || 'traje već neko vreme'}.${
+      `${REASON_PHRASE[reasonId] || REASON_PHRASE['daily-living']} - ${ONSET_PHRASE[onsetId] || 'traje već neko vreme'}.${
         HOSPITAL_PHRASE[answers['hospitalisation']?.optionId] || ''
       }`
     );
@@ -666,13 +666,13 @@ export function buildPlan(answers, notes = []) {
 
   const facts = [
     { label: 'Za koga', value: name },
-    { label: 'Nivo krhkosti', value: frailty ? `${frailty.level} · ${CFS_SR[frailty.level]?.label || frailty.label}` : '—' },
-    { label: 'Kretanje', value: mobility || '—' },
-    { label: 'Pomoć tokom dana', value: dailyHelp || '—' },
-    { label: 'Gde treba pomoć', value: needs.length ? needs.join(', ') : '—' },
-    { label: 'Razlog javljanja', value: reason || '—' },
-    { label: 'Kako je počelo', value: onset || '—' },
-    { label: 'Bolnica', value: hospital || '—' },
+    { label: 'Nivo krhkosti', value: frailty ? `${frailty.level} · ${CFS_SR[frailty.level]?.label || frailty.label}` : '-' },
+    { label: 'Kretanje', value: mobility || '-' },
+    { label: 'Pomoć tokom dana', value: dailyHelp || '-' },
+    { label: 'Gde treba pomoć', value: needs.length ? needs.join(', ') : '-' },
+    { label: 'Razlog javljanja', value: reason || '-' },
+    { label: 'Kako je počelo', value: onset || '-' },
+    { label: 'Bolnica', value: hospital || '-' },
   ];
 
   return {

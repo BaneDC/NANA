@@ -60,7 +60,7 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
           <h1 className="view-title">Pronađi negovateljicu</h1>
           <p className="view-sub">
             Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju. Upit im
-            šalje plan nege i ništa ne košta — možete da pitate više njih, a ništa nije dogovoreno dok
+            šalje plan nege i ništa ne košta - možete da pitate više njih, a ništa nije dogovoreno dok
             zajedno ne postavite uslove.
           </p>
         </div>

@@ -52,7 +52,7 @@ export default function CoordinatorMessage({ letter, changed, changeKey }) {
                   {p}
                 </p>
               ))}
-              <p className="coordinator-sign">— {from.name.split(' ')[0]}</p>
+              <p className="coordinator-sign">- {from.name.split(' ')[0]}</p>
             </motion.div>
           )}
         </AnimatePresence>

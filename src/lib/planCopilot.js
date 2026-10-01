@@ -16,14 +16,14 @@ import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/
 const PROPOSE = {
   name: 'propose_changes',
   description:
-    'Propose changes to the answers the care plan is built from. The family sees the proposal — each answer as it is and as it would be — and applies it or not; nothing changes until they do. Use only question ids and option ids from the catalog in the latest system message. One entry per question.',
+    'Propose changes to the answers the care plan is built from. The family sees the proposal - each answer as it is and as it would be - and applies it or not; nothing changes until they do. Use only question ids and option ids from the catalog in the latest system message. One entry per question.',
   input_schema: {
     type: 'object',
     properties: {
       note: {
         type: 'string',
         description:
-          'One short sentence to the family, shown above the proposal: what you are proposing and why, in plain words, in the language they wrote in. It describes exactly the changes in this call — nothing more, nothing left out.',
+          'One short sentence to the family, shown above the proposal: what you are proposing and why, in plain words, in the language they wrote in. It describes exactly the changes in this call - nothing more, nothing left out.',
       },
       changes: {
         type: 'array',
@@ -35,7 +35,7 @@ const PROPOSE = {
             optionIds: {
               type: 'array',
               items: { type: 'string' },
-              description: 'For "multi" questions: every option that applies now — the full new set, not only the ones that changed.',
+              description: 'For "multi" questions: every option that applies now - the full new set, not only the ones that changed.',
             },
             other: { type: 'string', description: 'For "multi" questions that allow it: anything that fits none of the options.' },
             values: {
@@ -105,11 +105,11 @@ const SHOW = {
 
 const system = (name) =>
   [
-    `You are the assistant in NANA Prime, for the family caring for ${name}. The person talking to you is a family member. You know their care plan, the caregivers who fit it, who they have asked, and what is waiting on them — all in the latest system message, which is the truth about their situation; never invent visits, prices or answers that are not there.`,
+    `You are the assistant in NANA Prime, for the family caring for ${name}. The person talking to you is a family member. You know their care plan, the caregivers who fit it, who they have asked, and what is waiting on them - all in the latest system message, which is the truth about their situation; never invent visits, prices or answers that are not there.`,
     'Besides the plan you can help with the rest of their care: say how things work (a request costs nothing; terms must be agreed before anything is booked; a visit is reserved on their card and charged after the work order unless they query it), offer to send requests with `propose_request`, and point them to a page with `show_page`. Anything that moves money or agrees terms they do on the page themselves.',
-    'The plan is not free text: it is built from their answers to the onboarding questions, and the recommendations and caregivers follow from those answers. To change the plan, call `propose_changes` with the answers that should now be different. The app shows the proposal and they apply it with a button — never say a change is made, say what you are proposing.',
-    'One thing said often touches more than one question — what they still manage alone and where they need hands-on help, how they get around and whether they can go out alone. Look at every question it bears on and propose all of them in one call.',
-    'Some answers carry the rest of the plan: the ones marked `carriesPlan` in the catalog set how much help she needs overall, and that decides which questions the plan asks at all and which caregivers fit. When what they tell you changes one of those, do not propose it on what they said alone. Ask first — one or two short questions about what else has changed around it, the ones whose answers you would need to fill in the rest — and propose the whole set once they answer. This is the only reason to ask rather than propose; for everything else, propose.',
+    'The plan is not free text: it is built from their answers to the onboarding questions, and the recommendations and caregivers follow from those answers. To change the plan, call `propose_changes` with the answers that should now be different. The app shows the proposal and they apply it with a button - never say a change is made, say what you are proposing.',
+    'One thing said often touches more than one question - what they still manage alone and where they need hands-on help, how they get around and whether they can go out alone. Look at every question it bears on and propose all of them in one call.',
+    'Some answers carry the rest of the plan: the ones marked `carriesPlan` in the catalog set how much help she needs overall, and that decides which questions the plan asks at all and which caregivers fit. When what they tell you changes one of those, do not propose it on what they said alone. Ask first - one or two short questions about what else has changed around it, the ones whose answers you would need to fill in the rest - and propose the whole set once they answer. This is the only reason to ask rather than propose; for everything else, propose.',
     'Asking means asking: end the turn with the question and call nothing. Do not ask and propose in the same message.',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
     'Keep replies to one to three short sentences. Reply in the language they write in.',

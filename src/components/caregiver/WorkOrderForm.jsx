@@ -67,7 +67,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
   return (
     <>
       <p className="ag-lead">
-        {visit.date} · {visit.time} — planirano {visit.hours} h, po dogovorenih {money(client.rate)}/h.
+        {visit.date} · {visit.time} - planirano {visit.hours} h, po dogovorenih {money(client.rate)}/h.
       </p>
       {visit.planNotes && (
         <p className="wo-plan-note">
@@ -88,7 +88,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
         <p className="ag-hint">
           {worked > visit.hours
             ? `Više od ${visit.hours} h rezervisanih na kartici porodice. Razlika se naplaćuje kad potvrde.`
-            : `Manje od ${visit.hours} h rezervisanih — razlika se vraća porodici.`}
+            : `Manje od ${visit.hours} h rezervisanih - razlika se vraća porodici.`}
         </p>
       )}
 
@@ -112,7 +112,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
 
       <p className="ag-label">Šta ste stigli</p>
       <p className="ag-hint">
-        Označeno prema planu posete — skinite ono što se nije desilo, označite ono što je iskrslo.
+        Označeno prema planu posete - skinite ono što se nije desilo, označite ono što je iskrslo.
       </p>
       <div className="ag-services">
         {client.services.map((id) => (
@@ -152,7 +152,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       )}
 
       <p className="ag-hint">
-        Slanjem počinje 24 sata za porodicu. Od njih se ništa ne traži — naplata se izvrši sama kad
+        Slanjem počinje 24 sata za porodicu. Od njih se ništa ne traži - naplata se izvrši sama kad
         rok istekne, osim ako u tom roku nešto prijave.
       </p>
 

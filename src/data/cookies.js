@@ -45,7 +45,7 @@ export const COOKIE_GROUPS = [
       {
         name: '_ga_BR6P8VJCJH',
         by: '.nanaprime.com',
-        why: 'Google Analytics — čuva stanje trenutne sesije.',
+        why: 'Google Analytics - čuva stanje trenutne sesije.',
         keeps: '2 godine',
       },
     ],
@@ -53,30 +53,30 @@ export const COOKIE_GROUPS = [
   {
     id: 'recording',
     label: 'Snimanje sesije',
-    note: 'Microsoft Clarity snima kako koristite stranicu — pomeranje miša, klikove i skrolovanje — i reprodukuje to da bismo našli gde se ljudi muče.',
+    note: 'Microsoft Clarity snima kako koristite stranicu - pomeranje miša, klikove i skrolovanje - i reprodukuje to da bismo našli gde se ljudi muče.',
     cookies: [
       {
         name: '_clck',
         by: '.nanaprime.com',
-        why: 'Microsoft Clarity — povezuje vaše snimke sa jednim posetiocem.',
+        why: 'Microsoft Clarity - povezuje vaše snimke sa jednim posetiocem.',
         keeps: '1 godina',
       },
       {
         name: '_clsk',
         by: '.nanaprime.com',
-        why: 'Microsoft Clarity — spaja više pregleda stranica u jedan snimak.',
+        why: 'Microsoft Clarity - spaja više pregleda stranica u jedan snimak.',
         keeps: '1 dan',
       },
       {
         name: 'CLID',
         by: 'www.clarity.ms',
-        why: 'Microsoft Clarity — prepoznaje pregledač na Microsoft-ovoj strani.',
+        why: 'Microsoft Clarity - prepoznaje pregledač na Microsoft-ovoj strani.',
         keeps: '1 godina',
       },
       {
         name: 'MUID',
         by: '.clarity.ms',
-        why: 'Microsoft — prepoznaje pregledač kroz Microsoft servise.',
+        why: 'Microsoft - prepoznaje pregledač kroz Microsoft servise.',
         keeps: '1 godina',
       },
     ],

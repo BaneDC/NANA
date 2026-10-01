@@ -41,7 +41,7 @@ import {
 
 export function ServiceChips({ ids, missing = [], label }) {
   return (
-    <Tags label={label} items={ids.map(serviceTitle)} off={missing.map((id) => `${serviceTitle(id)} — ovog puta ne`)} />
+    <Tags label={label} items={ids.map(serviceTitle)} off={missing.map((id) => `${serviceTitle(id)} - ovog puta ne`)} />
   );
 }
 
@@ -164,7 +164,7 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
         <div className="fam-callout">
           <p>
             Prvo dodajte način plaćanja. Prihvatanjem uslova {first} može da rezerviše posetu na vašoj
-            kartici — sada se ništa ne naplaćuje, niti pre nego što se poseta obavi.
+            kartici - sada se ništa ne naplaćuje, niti pre nego što se poseta obavi.
           </p>
           <Button
             variant="secondary"
@@ -253,12 +253,12 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
     <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title="Radni nalog" wide onClose={onClose}>
       {v.status === 'charging' ? (
         <p className="ag-lead">
-          {first} je ovo poslala {v.sentOn}. Ako je sve bilo kako je dogovoreno, ne morate ništa —{' '}
+          {first} je ovo poslala {v.sentOn}. Ako je sve bilo kako je dogovoreno, ne morate ništa -{' '}
           {money(charge)} se naplaćuje samo za {v.chargesInHours} h.
         </p>
       ) : (
         <p className="ag-lead">
-          Naplaćeno {v.chargedOn} — {v.confirmed === 'you' ? 'vi ste potvrdili' : 'potvrđeno automatski posle 24 sata'}.
+          Naplaćeno {v.chargedOn} - {v.confirmed === 'you' ? 'vi ste potvrdili' : 'potvrđeno automatski posle 24 sata'}.
         </p>
       )}
 
@@ -271,7 +271,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
         </div>
         <div className="report-row">
           <dt>Sati</dt>
-          <dd>{v.hours} h — kako je planirano</dd>
+          <dd>{v.hours} h - kako je planirano</dd>
         </div>
         <div className="report-row">
           <dt>Šta je uradila</dt>
@@ -316,7 +316,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
           </Button>
           <Button variant="primary" onClick={confirm}>
             <Check size={14} strokeWidth={2} />
-            Sve je u redu — plati sada
+            Sve je u redu - plati sada
           </Button>
         </div>
       )}
@@ -386,7 +386,7 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
   };
   const callOff = () => {
     onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : reason));
-    onFlash(late ? `Otkazano. ${money(held)} se naplaćuje — bilo je u poslednjem satu.` : `Otkazano. ${money(held)} se vraća na vašu karticu.`);
+    onFlash(late ? `Otkazano. ${money(held)} se naplaćuje - bilo je u poslednjem satu.` : `Otkazano. ${money(held)} se vraća na vašu karticu.`);
     onClose();
   };
 
@@ -395,7 +395,7 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
     <Modal eyebrow={`${v.caregiver.name} · ${v.date} · ${v.time}`} title="Plan posete" wide onClose={onClose}>
       <p className="ag-lead">
         {first} planira da dođe na {v.hours} h. {money(held)} je rezervisano na vašoj kartici, nije
-        naplaćeno — novac se uzima tek posle posete, kad pošalje radni nalog.
+        naplaćeno - novac se uzima tek posle posete, kad pošalje radni nalog.
       </p>
 
       <p className="ag-label">Šta će raditi</p>
@@ -507,7 +507,7 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
       {blocked.length ? (
         <>
           <p className="ag-lead">
-            {first} je obavila posao koji još nije izmiren. To prvo mora da se završi — da sada prekinete,
+            {first} je obavila posao koji još nije izmiren. To prvo mora da se završi - da sada prekinete,
             ostala bi neplaćena za posetu koju je već obavila.
           </p>
           <p className="ag-hint">Prvo rešite otvoreni radni nalog, pa se vratite na ovo.</p>
@@ -602,7 +602,7 @@ function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
       {!unlocked && <p className="ag-hint">Telefon i e-mail se otključavaju pretplatom.</p>}
 
       <p className="ag-hint">
-        Upit joj šalje plan nege. Ništa ne košta i nikoga ne obavezuje — ona odgovara, a ništa nije
+        Upit joj šalje plan nege. Ništa ne košta i nikoga ne obavezuje - ona odgovara, a ništa nije
         dogovoreno dok zajedno ne postavite uslove.
       </p>
 

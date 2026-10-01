@@ -20,7 +20,7 @@ export const steps = [
         id: 'about-person',
         type: 'inputs',
         title: 'O kome se brinemo?',
-        subtitle: 'Za sada samo osnovno — u detalje ćemo zajedno',
+        subtitle: 'Za sada samo osnovno - u detalje ćemo zajedno',
         shortTitle: 'O njoj/njemu',
         fields: [
           { id: 'name', label: 'Ime i prezime', placeholder: 'Aino Korhonen' },
@@ -57,7 +57,7 @@ export const steps = [
         id: 'home-condition',
         type: 'single',
         title: 'Kako biste opisali stanje stana?',
-        subtitle: 'Bez osuđivanja — da znamo šta negovateljicu čeka kad uđe',
+        subtitle: 'Bez osuđivanja - da znamo šta negovateljicu čeka kad uđe',
         shortTitle: 'Stanje stana',
         options: [
           { id: 'well-kept', title: 'Uredan', description: 'Čist i sređen' },
@@ -207,7 +207,7 @@ export const steps = [
           { id: 'transport', title: 'Prevoz do lekara', short: 'Prevoz' },
           { id: 'exercise', title: 'Da ostane fizički aktivna', short: 'Vežbanje' },
           { id: 'prevention', title: 'Redovne kontrole i prevencija', short: 'Prevencija' },
-          { id: 'wellness', title: 'Wellness — masaža, fizioterapija', short: 'Wellness' },
+          { id: 'wellness', title: 'Wellness - masaža, fizioterapija', short: 'Wellness' },
         ],
       },
 
@@ -240,7 +240,7 @@ export const steps = [
           { id: 'family', title: 'Porodica, kad stigne', short: 'Porodica' },
           { id: 'neighbour', title: 'Komšinica ili prijateljica', short: 'Komšinica' },
           { id: 'paid', title: 'Neko plaćen privatno', short: 'Plaćena pomoć' },
-          { id: 'nobody', title: 'Niko — ne radi se', short: 'Niko' },
+          { id: 'nobody', title: 'Niko - ne radi se', short: 'Niko' },
         ],
       },
 
@@ -273,7 +273,7 @@ export const steps = [
         options: [
           { id: 'low', title: 'Ne naročito', short: 'Nizak' },
           { id: 'medium', title: 'Razmišljam o tome', short: 'Srednji' },
-          { id: 'high', title: 'Mnogo — deluje kao pitanje dana', short: 'Visok' },
+          { id: 'high', title: 'Mnogo - deluje kao pitanje dana', short: 'Visok' },
         ],
       },
 
@@ -358,7 +358,7 @@ export const steps = [
 
   {
     id: 'reason',
-    intro: 'Još jedna stvar, i ona je najvažnija — zašto ste nam se javili baš sada?',
+    intro: 'Još jedna stvar, i ona je najvažnija - zašto ste nam se javili baš sada?',
     questions: [
       {
         id: 'reason-for-contact',
@@ -372,7 +372,7 @@ export const steps = [
           { id: 'discharge', title: 'Vraća se kući iz bolnice', short: 'Otpust' },
           { id: 'loneliness', title: 'Previše je sama', short: 'Usamljenost' },
           { id: 'medication', title: 'Lekovi su postali teški za praćenje', short: 'Lekovi' },
-          { id: 'diagnosis', title: 'Dijagnoza — šlog, Parkinson, kancer', short: 'Dijagnoza' },
+          { id: 'diagnosis', title: 'Dijagnoza - šlog, Parkinson, kancer', short: 'Dijagnoza' },
           { id: 'home-help', title: 'Kuća joj je postala prevelika', short: 'Pomoć u kući' },
           { id: 'respite', title: 'Porodici treba predah', short: 'Predah' },
           { id: 'daily-living', title: 'Svakodnevni život traži podršku', short: 'Svakodnevica' },
@@ -406,7 +406,7 @@ export const steps = [
         id: 'family-goal',
         type: 'inputs',
         title: 'Šta bi za vas bio dobar ishod?',
-        subtitle: 'Svojim rečima — od ovoga zavisi sve što predlažemo',
+        subtitle: 'Svojim rečima - od ovoga zavisi sve što predlažemo',
         shortTitle: 'Vaš cilj',
         fields: [
           {

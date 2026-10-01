@@ -65,7 +65,7 @@ function PasswordModal({ email, onDone, onClose }) {
         ? 'Trenutna lozinka nije tačna.'
         : fault === 'no-account'
           ? 'Nalog nije pronađen na ovom uređaju.'
-          : 'Nije sačuvano — proverite da li je čuvanje podataka dozvoljeno u pregledaču.'
+          : 'Nije sačuvano - proverite da li je čuvanje podataka dozvoljeno u pregledaču.'
     );
   };
 
@@ -97,7 +97,7 @@ function PasswordModal({ email, onDone, onClose }) {
             }}
           />
         </Field>
-        <Field label="Nova lozinka" hint={short ? 'Kratka je — treba najmanje 8 karaktera.' : null}>
+        <Field label="Nova lozinka" hint={short ? 'Kratka je - treba najmanje 8 karaktera.' : null}>
           <Password value={next} onChange={setNext} autoComplete="new-password" />
         </Field>
         <Field label="Nova lozinka još jednom" hint={mismatch ? 'Dva unosa se ne poklapaju.' : null}>
@@ -235,7 +235,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             <>
               <p className="tip-body">
                 Dodato {payment.connectedOn}. Svaka poseta se naplaćuje 24 sata pošto negovateljica
-                pošalje izveštaj — od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite
+                pošalje izveštaj - od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite
                 sa stranice Moja nega.
               </p>
               <div className="bc-lines ag-terms">
@@ -266,7 +266,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             <>
               <p className="tip-body">
                 Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže.
-                Dodaje se preko Stripe-a — mi nikad ne vidimo broj.
+                Dodaje se preko Stripe-a - mi nikad ne vidimo broj.
               </p>
               <div className="panel-card-actions">
                 <Button variant="primary" onClick={() => setCardOpen(true)}>
@@ -347,7 +347,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             ))}
           </div>
           {language !== 'sr' && (
-            <p className="ag-hint">Prevod još nije napravljen — za sada je izbor samo zapamćen.</p>
+            <p className="ag-hint">Prevod još nije napravljen - za sada je izbor samo zapamćen.</p>
           )}
         </div>
         <div className="panel-card">
@@ -494,7 +494,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
       {cardOpen && (
         <Dialog eyebrow="Plaćanje" title="Dodajte karticu" onClose={() => setCardOpen(false)}>
           <p className="doc-p">
-            Kartice čuva Stripe, ne mi — broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
+            Kartice čuva Stripe, ne mi - broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
             Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.
           </p>
           <ul className="paywall-list">

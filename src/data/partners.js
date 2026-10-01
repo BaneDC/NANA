@@ -30,7 +30,7 @@ const VISITS = {
   fall: [
     { title: 'Pregled fizijatra', who: 'dr Laura Nieminen, fizijatar', price: 140 },
     { title: 'Kućna poseta medicinske sestre posle pada', who: 'Koivu Klinikka, kućna nega', price: 95 },
-    { title: 'Denzitometrija — gustina kostiju', who: 'Koivu Klinikka, dijagnostika', price: 120 },
+    { title: 'Denzitometrija - gustina kostiju', who: 'Koivu Klinikka, dijagnostika', price: 120 },
   ],
   memory: [
     { title: 'Pregled neurologa', who: 'dr Mikko Korhonen, neurolog', price: 190 },
