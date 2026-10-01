@@ -5022,23 +5022,36 @@ button.svc:hover {
 }
 
 /* the last visit, as one block that opens its work order */
+/* The last visit: one row in its card that opens the work order, not a box
+   inside the card (docs/patterns.md §6). The row's band reaches 8 into the
+   card's padding; being the card's last thing, it keeps 8 of its own at the
+   foot and reaches 8 further, so the card ends 16 under its text. */
 .fam-report {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
-  width: 100%;
-  padding: var(--spacing-3);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--surface-0);
+  width: auto;
+  margin: 0 calc(var(--spacing-2) * -1);
+  padding: var(--spacing-4) var(--spacing-2);
+  border: 0;
+  border-radius: var(--radius-2xl);
+  background: none;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: background 0.15s ease;
+}
+
+.panel-card > .fam-report:last-child {
+  padding-bottom: var(--spacing-2);
+  margin-bottom: calc(var(--spacing-2) * -1);
 }
 
 .fam-report:hover {
-  border-color: var(--color-primary-300);
-  box-shadow: var(--shadow-card);
+  background: var(--surface-2);
+}
+
+.fam-report:hover .fam-row-title {
+  color: var(--color-primary-700);
 }
 
 .fam-report-top {
