@@ -96,7 +96,10 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
       transition={{ duration: 0.18 }}
     >
       <motion.div
-        className={`modal${choosing ? ` is-plans${plans.length === 1 ? ' is-single' : ''}` : ' is-wide'}`}
+        // The message is a dialog like any other (docs/patterns.md §7): its
+        // action row held on the floor while a long message scrolls, so the
+        // field can never push the buttons off the screen.
+        className={`modal${choosing ? ` is-plans${plans.length === 1 ? ' is-single' : ''}` : ' is-dialog is-wide'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

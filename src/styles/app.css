@@ -2014,13 +2014,12 @@ textarea {
 .text-field textarea {
   flex: 1;
   min-width: 0;
-  /* Taller by hand, but only so far: dragged without a limit it pushed a
-     dialog's own buttons off the screen. Past this it scrolls, as the
-     onboarding's composer does. Never shorter than the rows it opens with:
-     dragged up, it shrank to a sliver that cut its own placeholder in half. */
+  /* Taller by hand, with no ceiling of its own: the dialog it sits in scrolls,
+     with its buttons held on the floor, and how much a field needs depends on
+     the field. Never shorter than the rows it opens with: dragged up, it shrank
+     to a sliver that cut its own placeholder in half. */
   resize: vertical;
   min-height: calc(var(--rows, 3) * 1lh);
-  max-height: 40vh;
   font: inherit;
   font-size: var(--text-xs-size);
   line-height: var(--text-body-leading);
