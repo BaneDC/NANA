@@ -70,7 +70,14 @@ export function Password({ value, onChange, onEnter, placeholder, autoComplete =
 export function TextArea({ value, onChange, rows = 3, ...rest }) {
   return (
     <span className="tf-input is-area">
-      <textarea value={value} rows={rows} onChange={(e) => onChange(e.target.value)} {...rest} />
+      {/* the rows it opens with are also the least it can be dragged down to */}
+      <textarea
+        value={value}
+        rows={rows}
+        style={{ '--rows': rows }}
+        onChange={(e) => onChange(e.target.value)}
+        {...rest}
+      />
     </span>
   );
 }

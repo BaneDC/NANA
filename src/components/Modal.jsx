@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useBackdropClose } from '../lib/backdropClose';
 
 // A card's details, opened as the side pane the rest of the app already uses
 // for the care plan and the assistant — not a dialog in the middle of the page.
@@ -11,6 +12,7 @@ import { X } from 'lucide-react';
 // The name stays `Modal` because every screen calls it that and the contract is
 // unchanged: an eyebrow, a title, a close, and whatever the screen puts inside.
 export default function Modal({ title, eyebrow, wide, dismissible = true, onClose, children }) {
+  const backdrop = useBackdropClose(onClose, dismissible);
   useEffect(() => {
     if (!dismissible) return undefined;
     const onKey = (e) => e.key === 'Escape' && onClose();
@@ -27,7 +29,7 @@ export default function Modal({ title, eyebrow, wide, dismissible = true, onClos
       className="drawer-backdrop"
       // Not every pane may be dismissed by clicking past it: backup codes are
       // shown once, and a stray click would take them away for good.
-      onClick={dismissible ? onClose : undefined}
+      {...backdrop}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, pointerEvents: 'auto' }}
       // On the way out it stops taking clicks immediately. It covers the whole

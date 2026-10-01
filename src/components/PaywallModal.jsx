@@ -4,6 +4,7 @@ import { Check, X } from 'lucide-react';
 import { perMonth, planPrice, planSaving, plansFor } from '../data/plans';
 import Button from './Button';
 import { Field, TextArea } from './TextField';
+import { useBackdropClose } from '../lib/backdropClose';
 
 // One plan, as the live platform's plan picker shows it: what it is called, what
 // it costs, what it saves, who it is for, everything it includes, and its own
@@ -79,6 +80,7 @@ const arrive = () =>
 export default function PaywallModal({ caregiver, unlocked, alreadyAsked, country, onPay, onSend, onClose }) {
   const [message, setMessage] = useState('');
   const [motionProps] = useState(arrive);
+  const backdrop = useBackdropClose(onClose);
   const [step, setStep] = useState('message');
   const plans = plansFor(country);
   const first = caregiver?.name.split(' ')[0];
@@ -87,7 +89,7 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
   return (
     <motion.div
       className="modal-backdrop"
-      onClick={onClose}
+      {...backdrop}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

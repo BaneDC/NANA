@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useBackdropClose } from '../lib/backdropClose';
 
 // An action, asked in the middle of the page: end the collaboration, subscribe,
 // turn something on, send, cancel. The drawer (`Modal`) is for details of
@@ -23,6 +24,7 @@ const arrive = () =>
 
 export default function Dialog({ title, eyebrow, wide, dismissible = true, onClose, children }) {
   const [motionProps] = useState(arrive);
+  const backdrop = useBackdropClose(onClose, dismissible);
 
   useEffect(() => {
     if (!dismissible) return undefined;
@@ -40,7 +42,7 @@ export default function Dialog({ title, eyebrow, wide, dismissible = true, onClo
   return createPortal(
     <motion.div
       className="modal-backdrop"
-      onClick={dismissible ? onClose : undefined}
+      {...backdrop}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, pointerEvents: 'auto' }}
       exit={{ opacity: 0, pointerEvents: 'none' }}

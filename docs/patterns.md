@@ -233,6 +233,7 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 - **Akcija iz drawer-a otvara modal preko drawer-a** („Otkaži posetu" iz plana posete, „Nešto nije u redu" iz radnog naloga, „Odbij" iz ugovora). Drawer ostaje ispod; Escape i „Nazad" zatvaraju samo modal. Kad modal vodi dalje („Pogledaj radni nalog" iz „Završiti saradnju?"), on se zatvara i otvara se drawer.
 - Mere modala: 440 širok (`wide`: 560), padding 24, radius 24, delovi 12 jedan od drugog, red akcija 16 ispod sadržaja i zakačen za dno dok se dugačak sadržaj skroluje.
 - Na telefonu su oba isti drawer preko celog ekrana (§12).
+- **Klik van drawer-a ili modala ga zatvara samo ako je i pritisak počeo van njega** (`src/lib/backdropClose.js`, u `Modal`, `Dialog` i `PaywallModal`). Kad se iz polja razvlači ili selektuje tekst pa se miš pusti van prozora, prozor ostaje otvoren. Svaki novi prozor sa pozadinom koristi isti `useBackdropClose`.
 
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
 - **Dugme desno** ide samo u redu čiji sadržaj staje u dve linije. U kartici sa više teksta dugme ide u footer.
@@ -316,6 +317,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - **Stanje** se kaže samo značkom `.status-pill` sa jednim od modifikatora: `is-accepted` (zeleno, gotovo), `is-pending` (čeka), `is-declined` (ne), `is-muted` (neutralno), `is-attention` (narandžasto: poklapanje, izmenjeno).
 - **Poklapanje** se svuda piše „Poklapanje · 97%", kao značka `is-attention`.
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.
+- **`TextArea` se razvlači samo na dole**, od visine sa kojom se otvara (`rows`, to je i minimum) do najviše 40% visine ekrana; posle toga skroluje. U širinu se ne razvlači. Na telefonu ručice nema.
 - **Na dodir je svako polje najmanje 16px**, i `input`/`textarea`/`select` i svaki `contenteditable` (composer u chatu je `contenteditable`). Ispod 16px iOS zumira stranicu kad se polje fokusira i ostavi je zumiranu. To je globalno pravilo sa `!important`; ne obaraj ga, ni preko `--ick-*` promenljivih kita.
 - **Chat na dodir:** composer, poslata poruka i odgovor su svi 16/24 (sa mišem 14/20). Uvek su iste veličine.
 - **Zaštita na iOS-u:** `src/lib/iosZoom.js` dodaje `maximum-scale=1` u viewport samo na iPhone-u i iPad-u, pa Safari ne zumira pri fokusu ni kad bi neko polje ipak ispalo ispod 16px. Ručno zumiranje prstima i dalje radi. Na Androidu se ne dodaje, jer bi tamo isključilo ručno zumiranje.
