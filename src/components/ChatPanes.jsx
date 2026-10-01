@@ -204,7 +204,8 @@ export function paneFor(openId, ctx) {
             <p className="fam-row-body">
               <Star size={11} strokeWidth={2} className="cg-star" /> {ratingText(c)} · {c.rate}
             </p>
-            <p className="fam-quote">{c.bio}</p>
+            <p className="ag-label">O sebi</p>
+            <p className="doc-p">{c.bio}</p>
             <p className="ag-label">Klasifikacije</p>
             <Tags items={c.classifications} />
             <div className="bc-lines ag-terms">

@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarClock, Check, ChevronRight, Clock, Search } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, Clock, Search } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import {
   activeVersion,
@@ -14,7 +14,8 @@ import {
 } from '../data/familyCare';
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
-import { CareSignals, ServiceChips } from '../components/family/FamilyDrawer';
+import Attention from '../components/Attention';
+import { ServiceChips, VisitReport } from '../components/family/FamilyDrawer';
 
 // The family's home: what is waiting on them, what is coming, how the last visit
 // went, and everyone who has cared for their mother. Each of those opens the
@@ -38,12 +39,13 @@ function Section({ title, sub, action, className = '', children }) {
   );
 }
 
+// "everything of this" from a card's head: our button, as every other in a card
 function SeeAll({ label, onClick }) {
   return (
-    <button type="button" className="fam-link" onClick={onClick}>
+    <Button variant="secondary" onClick={onClick}>
       {label}
-      <ArrowRight size={13} strokeWidth={1.75} />
-    </button>
+      <ArrowRight size={14} strokeWidth={1.75} />
+    </Button>
   );
 }
 
@@ -62,6 +64,26 @@ function OpenRow({ initials, title, body, action, variant = 'secondary', onOpen 
       <span className="cg-avatar">{initials}</span>
       <div className="fam-row-main">
         <button type="button" className="fam-row-title card-link" onClick={onOpen}>
+          {title}
+        </button>
+        {body}
+      </div>
+      <Button variant={variant} className="card-action" onClick={onOpen}>
+        {action}
+      </Button>
+      <ChevronRight size={16} strokeWidth={1.75} className="card-go" aria-hidden="true" />
+    </div>
+  );
+}
+
+// The same, as a card of its own in the tinted tray of what waits on the
+// family: white like every card, its title a card's title.
+function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen }) {
+  return (
+    <div className="panel-card is-row is-clickable">
+      <span className="cg-avatar">{initials}</span>
+      <div className="fam-row-main">
+        <button type="button" className="doc-section-title card-link" onClick={onOpen}>
           {title}
         </button>
         {body}
@@ -112,22 +134,21 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
       </div>
 
       {fresh && (
-        <Section
-          title="Sledeći korak"
-          className="is-attention"
-          sub={
-            plan
-              ? 'Plan nege je spreman. Pošaljite upit negovateljicama koje mu odgovaraju: upit šalje plan i ništa ne košta, a možete da pitate više njih.'
-              : 'Kad završite razgovor sa Minnom, ovde će biti plan nege i negovateljice koje mu odgovaraju.'
-          }
-        >
-          <div className="panel-card-actions">
-            <Button variant="primary" onClick={onFindCaregiver} disabled={!plan}>
-              <Search size={14} strokeWidth={1.75} />
-              Pronađi negovateljicu
-            </Button>
+        <Attention title="Sledeći korak">
+          <div className="panel-card">
+            <p className="tip-body">
+              {plan
+                ? 'Plan nege je spreman. Pošaljite upit negovateljicama koje mu odgovaraju: upit šalje plan i ništa ne košta, a možete da pitate više njih.'
+                : 'Kad završite razgovor sa Minnom, ovde će biti plan nege i negovateljice koje mu odgovaraju.'}
+            </p>
+            <div className="panel-card-actions">
+              <Button variant="primary" onClick={onFindCaregiver} disabled={!plan}>
+                <Search size={14} strokeWidth={1.75} />
+                Pronađi negovateljicu
+              </Button>
+            </div>
           </div>
-        </Section>
+        </Attention>
       )}
 
       {quiet && (
@@ -137,47 +158,45 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
       )}
 
       {waiting.length > 0 && (
-        <Section title="Čeka na vas" sub={waitNote} className="is-attention">
-          <div className="fam-rows">
-            {waiting.map((w) =>
-              w.kind === 'terms' ? (
-                <OpenRow
-                  key={`terms-${w.arrangement.caregiver.id}`}
-                  initials={w.arrangement.caregiver.initials}
-                  title={`${firstName(w.arrangement.caregiver.name)} je poslala ${activeVersion(w.arrangement) ? 'nove uslove' : 'ugovor o nezi'}`}
-                  body={
-                    <p className="fam-row-body">
-                      {services(w.version.services.length)} po {money(w.version.rate)} na sat.{' '}
-                      {activeVersion(w.arrangement)
-                        ? `Verzija ${activeVersion(w.arrangement).version} važi dok ne odgovorite.`
-                        : 'Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.'}
+        <Attention title="Čeka na vas" sub={waitNote}>
+          {waiting.map((w) =>
+            w.kind === 'terms' ? (
+              <OpenCard
+                key={`terms-${w.arrangement.caregiver.id}`}
+                initials={w.arrangement.caregiver.initials}
+                title={`${firstName(w.arrangement.caregiver.name)} je poslala ${activeVersion(w.arrangement) ? 'nove uslove' : 'ugovor o nezi'}`}
+                body={
+                  <p className="fam-row-body">
+                    {services(w.version.services.length)} po {money(w.version.rate)} na sat.{' '}
+                    {activeVersion(w.arrangement)
+                      ? `Verzija ${activeVersion(w.arrangement).version} važi dok ne odgovorite.`
+                      : 'Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.'}
+                  </p>
+                }
+                action="Pogledaj uslove"
+                variant="primary"
+                onOpen={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}
+              />
+            ) : (
+              <OpenCard
+                key={`wo-${w.visit.id}`}
+                initials={w.visit.caregiver.initials}
+                title={`${firstName(w.visit.caregiver.name)} je poslala radni nalog za ${w.visit.date}`}
+                body={
+                  <>
+                    <p className="fam-row-body">Ako je sve bilo kako je dogovoreno, ne morate ništa — prolazi samo.</p>
+                    <p className="fam-row-meta">
+                      <Clock size={12} strokeWidth={2} />
+                      {money(visitCharge(w.visit))} se naplaćuje za {w.visit.chargesInHours} h
                     </p>
-                  }
-                  action="Pogledaj uslove"
-                  variant="primary"
-                  onOpen={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}
-                />
-              ) : (
-                <OpenRow
-                  key={`wo-${w.visit.id}`}
-                  initials={w.visit.caregiver.initials}
-                  title={`${firstName(w.visit.caregiver.name)} je poslala radni nalog za ${w.visit.date}`}
-                  body={
-                    <>
-                      <p className="fam-row-body">Ako je sve bilo kako je dogovoreno, ne morate ništa — prolazi samo.</p>
-                      <p className="fam-row-meta">
-                        <Clock size={12} strokeWidth={2} />
-                        {money(visitCharge(w.visit))} se naplaćuje za {w.visit.chargesInHours} h
-                      </p>
-                    </>
-                  }
-                  action="Pogledaj radni nalog"
-                  onOpen={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}
-                />
-              )
-            )}
-          </div>
-        </Section>
+                  </>
+                }
+                action="Pogledaj radni nalog"
+                onOpen={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}
+              />
+            )
+          )}
+        </Attention>
       )}
 
       {coming.length > 0 && (
@@ -194,10 +213,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                 body={
                   <p className="fam-row-body is-inline">
                     {v.caregiver.name} · {v.hours} h po {money(v.rate)}/h
-                    <span className="status-pill is-muted">
-                      <CalendarClock size={12} strokeWidth={2} />
-                      {money(chargedFor(v.hours, v.rate))} rezervisano
-                    </span>
+                    <span className="cg-tag">{money(chargedFor(v.hours, v.rate))} rezervisano</span>
                   </p>
                 }
                 action="Pogledaj plan posete"
@@ -213,19 +229,24 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
           title="Kako je prošla poslednja poseta"
           action={<SeeAll label="Sve posete" onClick={() => onView('visits')} />}
         >
-          <button type="button" className="fam-report" onClick={() => onDrawer({ kind: 'work-order', visitId: last.id })}>
-            <span className="fam-report-top">
-              <span className="fam-row-title">
-                {last.date} · {last.caregiver.name}
-              </span>
-              <span className="fam-report-meta">
-                {last.hours} h · naplaćeno {money(visitCharge(last))}
-              </span>
-            </span>
-            <ServiceChips label="Urađeno" ids={last.report.done} />
-            <CareSignals report={last.report} />
-            <span className="fam-quote is-inline">„{last.report.note}“</span>
-          </button>
+          <div className="fam-rows">
+            <div className="fam-row is-clickable">
+              <span className="cg-avatar">{last.caregiver.initials}</span>
+              <div className="fam-row-main">
+                <p className="fam-row-title">
+                  <button type="button" className="card-link" onClick={() => onDrawer({ kind: 'work-order', visitId: last.id })}>
+                    {last.date} · {last.time}
+                  </button>
+                </p>
+                <p className="fam-row-body is-inline">
+                  {last.caregiver.name} · {last.hours} h po {money(last.rate)}/h
+                  <span className="cg-tag">{money(visitCharge(last))} naplaćeno</span>
+                </p>
+                <VisitReport report={last.report} first={firstName(last.caregiver.name)} done />
+              </div>
+              <ChevronRight size={16} strokeWidth={1.75} className="fam-row-chevron" aria-hidden="true" />
+            </div>
+          </div>
         </Section>
       )}
 

@@ -60,7 +60,7 @@ Dve skale: sa mišem i na dodir (`pointer: coarse`). Na dodir je sve osim sitnog
 
 Za novi tekst kartice koristi `.tip-body`. Ne uvodi novu klasu istog izgleda.
 
-**Rečenica u redu** (linija ispod posete, napomena na dnu stranice, korak u „Dan pre / Posle posete") je tekst kartice: 12 / 14 na dodir. Kratka oznaka pored broja („rezervisano", „Plaćenih poseta") je sitan tekst, 12. Ništa od toga nije 11.
+**Rečenica u redu** (linija ispod posete, napomena na dnu stranice) je tekst kartice: 12 / 14 na dodir. Kratka oznaka pored broja („rezervisano", „Plaćenih poseta") je sitan tekst, 12. Ništa od toga nije 11.
 
 Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je veličine naslova kartice.
 
@@ -132,7 +132,19 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - Footer (`.panel-card-actions`) je uvek poslednji, dole levo, a dugmad su prirodne širine. Na telefonu dugmad dele širinu kartice (CSS to radi sam).
 - `.panel-card-actions.is-end` (desno) je samo za dijaloge i drawer-e.
 
-**Istaknuta kartica:** `.panel-card.is-attention` — narandžasta podloga, ivica od 1px, bez senke. Samo za tri stvari: ono što čeka na porodicu, Minnino pismo i izmenu plana. Ne pravi drugu „istaknutu" varijantu.
+**Narandžasti deo (odlučeno 1. 10.):** `Attention` (`src/components/Attention.jsx`, `.attention`). Narandžasto je podloga oko belih kartica, a ne kartica: naslov (i rečenica) stoje na narandžastom, u njegovoj boji (`--color-primary-700`), a sve što deo drži su obične bele `.panel-card` sa senkom.
+
+```jsx
+<Attention title="Čeka na vas" sub="Jedna rečenica šta je ovde.">
+  <div className="panel-card is-row is-clickable">…</div>   {/* stavka koja nešto otvara */}
+  <div className="panel-card">…</div>                       {/* tekst i dugme */}
+</Attention>
+```
+
+- Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice.
+- Stavka koja nešto otvara je `.panel-card.is-row.is-clickable`: avatar, naslov kartice kao `.card-link` (14), tekst, dugme desno (`.card-action`), na telefonu strelica.
+- Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
+- Samo za: ono što čeka na porodicu („Čeka na vas", sledeći korak na njenoj stranici), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Nema druge narandžaste kartice; `.panel-card.is-attention` više ne postoji.
 
 **Grupa kartica** se koristi samo kad stranica ima više od jedne grupe:
 
@@ -161,20 +173,20 @@ Stavka unutar kartice (negovateljica u preporuci, poseta, upit, kanal kontakta) 
 
 Mere (sve radi CSS u bloku „Rows inside a card" u `app.css`):
 - red zalazi 8px u padding kartice: `margin: 0 -8px`;
-- padding reda je 16 gore i dole i 8 sa strane;
+- padding reda je 8 sa svih strana, pa je podloga na hover-u isto daleko od teksta gore, dole i sa strane (odlučeno 1. 10.; bilo je 16 gore i dole a 8 sa strane);
+- između redova je 8, a linija od 1px je na sredini tog razmaka, uvučena 8 da bude poravnata sa tekstom;
 - radius reda je 16 (vidi se samo na hover-u);
-- između redova je linija od 1px, uvučena 8 da bude poravnata sa tekstom;
-- na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`.
+- na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`.cg-tag`) u njemu postanu bele, da ne nestanu u sivom.
 
 Klase redova koje ovo već dobijaju: `.caregiver` (bez `.is-wide`), `.fam-row`, `.contact-row`, `.fam-visit`, `.visit`. Kontejneri: `.rec-providers`, `.fam-rows`, `.contact-rows`, `.fam-visits`, `.visit-list`.
 
 **Poravnanje u redu (`.fam-row`):** sve počinje od prve linije. Avatar je poravnat po vrhu sa naslovom, a ono desno (dugme, broj, strelica) počinje u istoj visini kao naslov. Ništa se ne centrira po visini reda, jer red sa oznakama ima tri i više linija.
 
-**Stanje u redu** je kratka značka pored naslova (`.fam-row-title` › `.status-pill`), a ne poseban red. Kod posete značka kaže samo korak („Plan posete", „Radni nalog stigao", „Plaćeno"), jer iznos desno već kaže šta je sa novcem, a linija ispod kaže ostalo. Iznos koji je rezervisan za posetu stoji u liniji ispod datuma (`.fam-row-body.is-inline`).
+**Stanje u redu** je kratka značka pored naslova (`.fam-row-title` › `.status-pill`), a ne poseban red. Kod posete značka kaže samo korak („Plan posete", „Radni nalog stigao", „Plaćeno"), jer iznos desno već kaže šta je sa novcem, a linija ispod kaže ostalo. Iznos posete stoji u liniji ispod datuma kao oznaka (`.fam-row-body.is-inline` › `.cg-tag`): „54 € rezervisano" u „Predstoji", „54 € naplaćeno" u poslednjoj poseti. Oznaka je ista kao sve ostale oznake (bez ikonice), a ne značka.
 
 Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj posebnu ivicu, podlogu, senku ili radius.
 
-**Kartica koja se završava redovima** ima 16 od poslednjeg reda do donje ivice, kao 16 od vrha do naslova. Poslednji red zadržava 8 svog paddinga i ulazi 8 u padding kartice, pa je njegova podloga na hover-u 8 od dna kao i sa strane (24 = 16 + 8). CSS to radi sam.
+**Kartica koja se završava redovima** ima 16 od teksta poslednjeg reda do donje ivice, kao 16 od vrha do naslova. Poslednji red ulazi 8 u padding kartice, pa je njegova podloga na hover-u 8 od dna kao i sa strane (24 = 16 + 8). Ako posle redova ide footer (npr. „Prikaži još"), on je 16 od teksta poslednjeg reda. CSS to radi sam.
 
 **Zabranjeno:** kutija sa ivicom ili senkom unutar kartice. To je treći nivo uglova i ne može da ispoštuje §1.
 
@@ -225,7 +237,9 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
 - **Dugme desno** ide samo u redu čiji sadržaj staje u dve linije. U kartici sa više teksta dugme ide u footer.
 - **Red koji nešto otvara** (`.fam-row.is-clickable`, `.fam-visit.is-clickable`): naslov je `.card-link`, dugme desno je `.card-action` i kaže isto, a na telefonu ga menja `.card-go`. Tako su redovi u Mojoj nezi („Čeka na vas", „Predstoji", „Vaše negovateljice") i posete. Red ima jednu akciju; „Njena stranica" pored „Pogledaj plan posete" je bila druga, a njena stranica je jedan klik dalje preko reda „Vaše negovateljice".
-- **Poseta** ima tri dela (datum i sati, rečenica šta je sa njom, dugme), pa joj je dugme ispod rečenice, levo, kao footer kartice, a ne desno.
+- **Poseta** ima tri dela (datum i sati, izveštaj, rečenica šta je sa njom i dugme), 12 jedan od drugog, pa joj je dugme ispod rečenice, levo, kao footer kartice, a ne desno.
+- **Izveštaj posete** (`VisitReport` u `src/components/family/FamilyDrawer.jsx`) je uvek isti, gde god se prikazuje na stranici: delovi sa imenom, 12 jedan od drugog: „Urađeno" (oznake, samo u poslednjoj poseti), „Kako je bila" (oznake „Raspoloženje: dobro", „Ishrana: kao i obično", „Kretanje: kao i obično", bez ikonice) i „Sanna je zapisala" (običan tekst). U radnom nalogu (drawer) „Kako je bila" su iste oznake.
+- **„Sve posete" i „Svi upiti"** u glavi kartice su `Button` `secondary` (sa strelicom, kao i ranije), desno. **„Prikaži još"** je `Button` `secondary` u footeru, levo. Nema dugmeta-linka ni dugmeta koje je samo tekst.
 - **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima stalnu strelicu desno (`.fam-row-chevron`). Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
 
 ---
@@ -254,7 +268,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |
 | Klasifikacije (finski nazivi) | grupa oznaka „Klasifikacije" | — | oznake „Klasifikacije" |
-| Biografija | — | — | citat |
+| Biografija | — | — | „O sebi", običan tekst |
 | Obrazovanje, jezici | — | — | „Kvalifikacije" |
 | Dani (`pon–pet`), doba dana sa satima, radijus | — | — | „Kada može da dolazi" |
 | Telefon, e-mail | — | — | „Kontakt", zamaskirano do pretplate |
@@ -298,6 +312,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - **Čip je samo za ono što se bira.** `.svc` (ivica, a popunjen kad je izabran) je dugme: izbor usluga u ugovoru, filteri, odgovor u tri reči, jezik. **Ono što se samo čita** (usluge iz ugovora, šta je urađeno na poseti, šta će raditi, zašto se negovateljica poklapa, njene klasifikacije, šta je porodica tražila) je oznaka: komponenta `Tags` (`src/components/Tags.jsx`, `.cg-tags` › `.cg-tag`), siva podloga, bez ivice i **bez ikonice** (ni kvačice), 12px. Ono što je izostavljeno je `.cg-tag.is-off` i to kaže rečima („— ovog puta ne"). `ServiceChips` crta oznake.
 - **Grupa oznaka uvek kaže šta je:** ime grupe (`label`, 12px sivo), a ispod njega oznake, 4 razmaka, kao jedna grupa (`.tag-row`). Sledeća grupa je 12 niže (`.tag-rows`). Primeri: „Poklapa se" i „Klasifikacije" na kartici negovateljice, „Usluge" u redu negovateljice i u ugovoru, „Urađeno" u poslednjoj poseti. U drawer-u ime grupe je `.ag-label` sekcije, pa se `label` ne zadaje.
 - Grupa oznaka u redu stoji 12px ispod teksta reda.
+- **Ono što je neko napisao** (beleška negovateljice, njena poruka uz uslove, „O sebi", vaša poruka u upitu, ono što ste prijavili) je **običan tekst ispod imena dela**: `Group` sa `text` (`src/components/Tags.jsx`, `.tag-row-text`: 12 / 18, boja vrednosti), a u drawer-u `.ag-label` pa `.doc-p`. **Nikad uvučen citat u kurzivu** sa linijom levo (stari `.fam-quote` je uklonjen).
 - **Stanje** se kaže samo značkom `.status-pill` sa jednim od modifikatora: `is-accepted` (zeleno, gotovo), `is-pending` (čeka), `is-declined` (ne), `is-muted` (neutralno), `is-attention` (narandžasto: poklapanje, izmenjeno).
 - **Poklapanje** se svuda piše „Poklapanje · 97%", kao značka `is-attention`.
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.
@@ -374,6 +389,8 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
 })();
 ```
 
+Na `/?kartice` skript uzima `.chat-container` strane negovateljice za koren, pa tamo pokreni telo funkcije nad svakim `.gallery-frame` (umesto `root`), a tablu negovateljice (`.board`, skroluje se vodoravno) izuzmi iz `overflow`.
+
 Očekivano: `cards` → `24px/16px`; `titles` → `doc-section-title 14px`, `section-title 12px`, `fam-row-title 12px` (14px samo za naslov kartice koja je sama stavka).
 
 ---
@@ -381,6 +398,8 @@ Očekivano: `cards` → `24px/16px`; `titles` → `doc-section-title 14px`, `sec
 ## 14. Zabranjeno — kratko
 
 - druga klasa za karticu, kutija sa ivicom ili senkom u kartici, radius van skale;
+- narandžasta kartica sa sadržajem direktno na narandžastom (sadržaj ide u belu karticu u `Attention`);
+- uvučen citat u kurzivu; tekst kao dugme-link umesto `Button`;
 - velika slova van onboardinga;
 - `onClick` na div kartice umesto `.card-link`;
 - sakrivena akcija na telefonu koje nema u detaljima;

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import VisitRow from '../components/family/VisitRow';
 import BackButton from '../components/BackButton';
+import Button from '../components/Button';
 import { allVisits, dayOf, firstName, monthOf, pl } from '../data/familyCare';
 
 // Every visit, newest first, across everyone who has come: who came, how long
@@ -87,9 +88,11 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
       )}
 
       {picked.length > shown && (
-        <button type="button" className="visit-more" onClick={() => setShown((n) => n + PAGE)}>
-          Prikaži još {Math.min(PAGE, picked.length - shown)}
-        </button>
+        <div className="panel-card-actions">
+          <Button variant="secondary" onClick={() => setShown((n) => n + PAGE)}>
+            Prikaži još {Math.min(PAGE, picked.length - shown)}
+          </Button>
+        </div>
       )}
     </div>
   );

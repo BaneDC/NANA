@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import Button from '../components/Button';
+import { Group } from '../components/Tags';
 import { caregivers } from '../data/carePlan';
 import { arrangementOf, firstName } from '../data/familyCare';
 
@@ -83,7 +84,9 @@ export default function RequestsPage({ care, onCaregiver, onFind }) {
                       {LABEL[r.status]}
                     </span>
                   </div>
-                  <p className="fam-quote">„{r.message}“</p>
+                  <div className="tag-rows">
+                    <Group label="Vaša poruka" text={r.message} />
+                  </div>
                   <p className="fam-sub is-flush">
                     {r.status === 'declined' ? (
                       <>

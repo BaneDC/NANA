@@ -30,6 +30,7 @@ import Toast from './components/family/Toast';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import ApiKeyPanel from './components/ApiKeyPanel';
 import Button from './components/Button';
+import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { askCaregiver, firstName } from './data/familyCare';
@@ -526,17 +527,18 @@ export default function App() {
                 />
               ) : (
                 <div className="view">
-                  <section className="panel-card is-attention">
-                    <p className="doc-section-title">Upoznavanje nije završeno</p>
-                    <p className="fam-sub">
-                      Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.
-                    </p>
-                    <div className="panel-card-actions">
-                      <Button variant="primary" onClick={() => startVariant('ai')}>
-                        Nastavite razgovor
-                      </Button>
+                  <Attention title="Upoznavanje nije završeno">
+                    <div className="panel-card">
+                      <p className="tip-body">
+                        Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.
+                      </p>
+                      <div className="panel-card-actions">
+                        <Button variant="primary" onClick={() => startVariant('ai')}>
+                          Nastavite razgovor
+                        </Button>
+                      </div>
                     </div>
-                  </section>
+                  </Attention>
                 </div>
               )}
             </div>

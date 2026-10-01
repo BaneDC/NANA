@@ -15,44 +15,46 @@ export default function PlanChangeBanner({ change, onUndo, onDismiss }) {
   const Icon = change.source === 'manual' ? PenLine : Sparkles;
   return (
     <motion.section
-      className="panel-card is-attention pc-banner"
+      className="attention pc-banner"
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 320, damping: 30 }}
     >
-      <div className="pc-banner-head">
+      <div className="attention-head pc-banner-head">
         <span className="pc-banner-icon">
           <Icon size={14} strokeWidth={1.75} />
         </span>
         <div className="pc-banner-text">
-          <p className="pc-banner-title">Plan je izmenjen</p>
-          <p className="pc-banner-sub">
+          <p className="doc-section-title">Plan je izmenjen</p>
+          <p className="fam-sub">
             {{ assistant: 'Preko asistenta', manual: 'Ručno', both: 'Ručno i preko asistenta' }[change.source]} · izmenjeni delovi plana su označeni
           </p>
         </div>
       </div>
 
-      <ChangeRows rows={change.rows} notes={change.saved} />
+      <div className="panel-card">
+        <ChangeRows rows={change.rows} notes={change.saved} />
 
-      {change.frailty && (
-        <p className="pc-frailty">
-          <AlertTriangle size={12} strokeWidth={2} />
-          Nivo krhkosti: {change.frailty.before} → {change.frailty.after}
-        </p>
-      )}
+        {change.frailty && (
+          <p className="pc-frailty">
+            <AlertTriangle size={12} strokeWidth={2} />
+            Nivo krhkosti: {change.frailty.before} → {change.frailty.after}
+          </p>
+        )}
 
-      {change.touched.length > 0 && (
-        <p className="pc-touched">Zbog toga se promenilo: {change.touched.join(', ')}.</p>
-      )}
+        {change.touched.length > 0 && (
+          <p className="pc-touched">Zbog toga se promenilo: {change.touched.join(', ')}.</p>
+        )}
 
-      <div className="pc-actions">
-        <Button variant="ghost" onClick={onUndo}>
-          <RotateCcw size={14} strokeWidth={1.75} />
-          Poništi izmene
-        </Button>
-        <Button variant="secondary" onClick={onDismiss}>
-          U redu
-        </Button>
+        <div className="panel-card-actions">
+          <Button variant="secondary" onClick={onDismiss}>
+            U redu
+          </Button>
+          <Button variant="ghost" onClick={onUndo}>
+            <RotateCcw size={14} strokeWidth={1.75} />
+            Poništi izmene
+          </Button>
+        </div>
       </div>
     </motion.section>
   );

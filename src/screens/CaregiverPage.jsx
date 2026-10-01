@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CreditCard, Phone } from 'lucide-react';
 import Button from '../components/Button';
+import Attention from '../components/Attention';
 import BackButton from '../components/BackButton';
 import VisitRow from '../components/family/VisitRow';
 import { Line, ServiceChips } from '../components/family/FamilyDrawer';
@@ -128,17 +129,25 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
         )}
       </div>
 
-      <section className={`panel-card${next.label ? ' is-attention' : ''}`}>
-        <p className="doc-section-title">{next.eyebrow}</p>
-        <p className="fam-next">{next.copy}</p>
-        {next.label && (
-          <div className="panel-card-actions">
-            <Button variant="primary" onClick={() => onDrawer(next.drawer)}>
-              {next.label}
-            </Button>
+      {/* something to do about her is the page's tinted place; a plain state
+          of things is a card like the rest */}
+      {next.label ? (
+        <Attention title={next.eyebrow}>
+          <div className="panel-card">
+            <p className="fam-next">{next.copy}</p>
+            <div className="panel-card-actions">
+              <Button variant="primary" onClick={() => onDrawer(next.drawer)}>
+                {next.label}
+              </Button>
+            </div>
           </div>
-        )}
-      </section>
+        </Attention>
+      ) : (
+        <section className="panel-card">
+          <p className="doc-section-title">{next.eyebrow}</p>
+          <p className="fam-next">{next.copy}</p>
+        </section>
+      )}
 
       <section className="panel-card">
         <div className="panel-card-head">
@@ -178,23 +187,6 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
             value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'}
           />
         </div>
-        {/* how the next visit will go — nothing more will, once it has ended */}
-        {!ended && (
-          <ol className="fam-flow">
-            <li>
-              <span>Dan pre</span>
-              {first} šalje plan i novac se rezerviše
-            </li>
-            <li>
-              <span>Posle posete</span>
-              zapiše šta je uradila
-            </li>
-            <li>
-              <span>Dan kasnije</span>
-              naplaćuje se, osim ako kažete da nešto nije u redu
-            </li>
-          </ol>
-        )}
         {!care.payment.connected && (
           <div className="panel-card-actions">
             <Button
@@ -229,9 +221,11 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
           </ul>
         )}
         {visits.length > shown && (
-          <button type="button" className="visit-more" onClick={() => setShown((n) => n + PAGE)}>
-            Prikaži još {Math.min(PAGE, visits.length - shown)}
-          </button>
+          <div className="panel-card-actions">
+            <Button variant="secondary" onClick={() => setShown((n) => n + PAGE)}>
+              Prikaži još {Math.min(PAGE, visits.length - shown)}
+            </Button>
+          </div>
         )}
       </section>
 

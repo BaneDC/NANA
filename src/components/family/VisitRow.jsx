@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import Button from '../Button';
-import { CareSignals } from './FamilyDrawer';
+import { Group } from '../Tags';
+import { VisitReport } from './FamilyDrawer';
 import { chargedFor, firstName, money, visitCharge } from '../../data/familyCare';
 
 // One visit, as the family sees it: when, who, where the money is, and — when
@@ -95,12 +96,13 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
       </div>
 
       {v.report && (v.status === 'paid' || v.status === 'charging') && (
-        <>
-          <CareSignals report={v.report} />
-          <p className="fam-quote">„{v.report.note}“</p>
-        </>
+        <VisitReport report={v.report} first={firstName(v.caregiver.name)} />
       )}
-      {v.status === 'disputed' && v.queryReason && <p className="fam-quote">Vi ste napisali: „{v.queryReason}“</p>}
+      {v.status === 'disputed' && v.queryReason && (
+        <div className="tag-rows">
+          <Group label="Vi ste napisali" text={v.queryReason} />
+        </div>
+      )}
 
       <div className="fam-visit-foot">
         <p className="fam-visit-line">{lineFor(v)}</p>

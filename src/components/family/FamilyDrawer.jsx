@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { AlertTriangle, Check, CreditCard, Frown, Meh, Smile, Star } from 'lucide-react';
+import { AlertTriangle, Check, CreditCard, Star } from 'lucide-react';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
-import Tags from '../Tags';
+import Tags, { Group } from '../Tags';
 import Button from '../Button';
 import { Field, TextArea } from '../TextField';
 import {
@@ -38,7 +38,6 @@ import {
 // page, her page, the list of visits — and `drawer` says which: `{ kind,
 // caregiverId?, visitId? }`.
 
-const MOOD_ICON = { low: Frown, usual: Meh, good: Smile };
 
 export function ServiceChips({ ids, missing = [], label }) {
   return (
@@ -55,20 +54,26 @@ export function Line({ label, value }) {
   );
 }
 
-// how she was, as the caregiver wrote it down
-export function CareSignals({ report }) {
-  const Mood = MOOD_ICON[report.mood];
+// How she was, as the caregiver wrote it down: a tag for each thing asked,
+// all of them said the same way and none with an icon.
+export function careSignals(report) {
+  return [
+    report.mood && `Raspoloženje: ${MOOD_LABEL[report.mood].toLowerCase()}`,
+    report.eating && `Ishrana: ${AMOUNT_LABEL[report.eating].toLowerCase()}`,
+    report.moving && `Kretanje: ${AMOUNT_LABEL[report.moving].toLowerCase()}`,
+  ].filter(Boolean);
+}
+
+// A visit's report in a card or a row: a named part each — what was done (when
+// `done`), how she was, what the caregiver wrote — 12 apart. Wherever a report
+// is shown on a page it is these parts, in this order.
+export function VisitReport({ report, first, done }) {
   return (
-    <span className="visit-foot is-inline">
-      {Mood && (
-        <span className="visit-mood">
-          <Mood size={13} strokeWidth={1.75} />
-          Raspoloženje — {MOOD_LABEL[report.mood].toLowerCase()}
-        </span>
-      )}
-      {report.eating && <span className="visit-mood">Ishrana — {AMOUNT_LABEL[report.eating].toLowerCase()}</span>}
-      {report.moving && <span className="visit-mood">Kretanje — {AMOUNT_LABEL[report.moving].toLowerCase()}</span>}
-    </span>
+    <div className="tag-rows">
+      {done && <ServiceChips label="Urađeno" ids={report.done} />}
+      <Tags label="Kako je bila" items={careSignals(report)} />
+      {report.note && <Group label={`${first} je zapisala`} text={report.note} />}
+    </div>
   );
 }
 
@@ -124,7 +129,12 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
           : 'Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.'}
       </p>
 
-      {pen.note && <p className="fam-quote">„{pen.note}“</p>}
+      {pen.note && (
+        <>
+          <p className="ag-label">{first} je napisala</p>
+          <p className="doc-p">{pen.note}</p>
+        </>
+      )}
 
       {act && (
         <>
@@ -276,7 +286,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
         <div className="report-row">
           <dt>Kako je bila</dt>
           <dd>
-            <CareSignals report={r} />
+            <Tags items={careSignals(r)} />
           </dd>
         </div>
       </dl>
@@ -563,7 +573,8 @@ function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
         <span className="status-pill is-attention">Poklapanje · {c.match}%</span>
       </div>
 
-      <p className="fam-quote">{c.bio}</p>
+      <p className="ag-label">O sebi</p>
+      <p className="doc-p">{c.bio}</p>
 
       <p className="ag-label">Klasifikacije</p>
       <Tags items={c.classifications} />

@@ -967,6 +967,14 @@ textarea {
   gap: var(--spacing-3);
 }
 
+/* what someone wrote, under its name: plain text in the ink of a value, never
+   an indented italic quote */
+.tag-row-text {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--text-primary);
+}
+
 /* what was left out this time: the words say so, the ink steps back */
 .cg-tag.is-off {
   color: var(--text-disabled);
@@ -4451,21 +4459,54 @@ button.svc:hover {
 
 /* ---------- Family: the arrangement, from the other end ---------- */
 
-/* The only panel on the page that is asking for something. It is tinted
-   because everything else here is a statement and this is a queue. */
-/* The attention card: what waits on the family, Minna's letter, a change to
-   the plan. One tint, one hairline, no shadow — and the ink that goes with it. */
-.panel-card.is-attention {
+/* ---------- The attention tray ----------
+   What waits on the family, the next step, a change to the plan, Minna's
+   letter. The tint is the ground around them and the ink of their title; what
+   they hold are white cards like every other, so the tray tells them apart
+   from the rest of the page and the cards in it still read as cards.
+   32 around the cards' 24, 8 between them: concentric. The title sits where
+   the cards' text does, 24 in and 16 down, and 12 over the first card
+   (docs/patterns.md §5). The hairline is drawn inside, so it takes none of
+   the 8. */
+.attention {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2);
+  border-radius: var(--radius-4xl);
   background: var(--primary-subtle);
-  box-shadow: none;
-  border: 1px solid var(--color-primary-200);
+  box-shadow: inset 0 0 0 1px var(--color-primary-200);
 }
 
-.is-attention .doc-section-title {
+.attention-head {
   display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-4) var(--spacing-1);
+}
+
+/* a head that is a person or an icon beside the words */
+.attention-head:is(.coordinator-head, .pc-banner-head) {
+  flex-direction: row;
   align-items: center;
-  gap: var(--spacing-2);
+  gap: var(--spacing-3);
+}
+
+/* on the tint, its ink */
+.attention-head :is(.doc-section-title, .fam-sub, .coordinator-name, .coordinator-role) {
   color: var(--color-primary-700);
+}
+
+/* An item of the tray that opens something, as a card of its own: avatar,
+   what it is, and its one action on the right (on a phone a chevron). */
+.panel-card.is-row {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+}
+
+.panel-card.is-row > .cg-avatar {
+  flex-shrink: 0;
 }
 
 /* a charge inside its window can be stopped from the row itself */
@@ -4489,24 +4530,6 @@ button.svc:hover {
 
 .visit-raise:hover {
   color: var(--status-no-fg);
-}
-
-/* The fold for older visits. A row, not a button that looks like an action —
-   there is nothing to do here, only more to read. */
-.visit-more {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  align-self: flex-start;
-  margin-top: var(--spacing-1);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.visit-more:hover {
-  color: var(--text-primary);
 }
 
 /* ---------- Family: a report that has just arrived ---------- */
@@ -4549,16 +4572,6 @@ button.svc:hover {
   flex: 1;
   min-width: 0;
   color: var(--text-primary);
-}
-
-/* the mood row reused inside a definition list, where it is a value not a footer */
-.visit-foot.is-inline {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-3);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  color: var(--text-secondary);
 }
 
 /* ---------- Find a caregiver ---------- */
@@ -4868,22 +4881,6 @@ button.svc:hover {
   margin: 0;
 }
 
-.fam-link {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-1);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-medium);
-  color: var(--color-primary-700);
-}
-
-.fam-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
 .fam-quiet p {
   font-size: var(--text-xs-size);
   line-height: var(--text-body-leading);
@@ -4911,10 +4908,6 @@ button.svc:hover {
   text-align: left;
 }
 
-.is-attention .fam-row {
-  border-color: var(--color-primary-200);
-}
-
 .fam-row.is-ended .cg-avatar {
   background: var(--surface-2);
   color: var(--text-secondary);
@@ -4933,7 +4926,7 @@ button.svc:hover {
 }
 
 /* what she does, a group of its own under who she is: 12 off it (4 + 8) */
-.fam-row-main > :is(.cg-tags, .tag-row) {
+.fam-row-main > :is(.cg-tags, .tag-row, .tag-rows) {
   margin-top: var(--spacing-2);
 }
 
@@ -5021,66 +5014,6 @@ button.svc:hover {
   margin-left: 0;
 }
 
-/* the last visit, as one block that opens its work order */
-/* The last visit: one row in its card that opens the work order, not a box
-   inside the card (docs/patterns.md §6). The row's band reaches 8 into the
-   card's padding; being the card's last thing, it keeps 8 of its own at the
-   foot and reaches 8 further, so the card ends 16 under its text. */
-.fam-report {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  width: auto;
-  margin: 0 calc(var(--spacing-2) * -1);
-  padding: var(--spacing-4) var(--spacing-2);
-  border: 0;
-  border-radius: var(--radius-2xl);
-  background: none;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.panel-card > .fam-report:last-child {
-  padding-bottom: var(--spacing-2);
-  margin-bottom: calc(var(--spacing-2) * -1);
-}
-
-.fam-report:hover {
-  background: var(--surface-2);
-}
-
-.fam-report:hover .fam-row-title {
-  color: var(--color-primary-700);
-}
-
-.fam-report-top {
-  display: flex;
-  align-items: baseline;
-  gap: var(--spacing-2);
-}
-
-.fam-report-meta {
-  margin-left: auto;
-  font-size: var(--text-small-size);
-  line-height: var(--text-small-leading);
-  color: var(--text-disabled);
-}
-
-/* what a caregiver wrote, in her words */
-.fam-quote {
-  padding-left: var(--spacing-3);
-  border-left: 2px solid var(--color-primary-200);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  font-style: italic;
-  color: var(--text-secondary);
-}
-
-.fam-quote.is-inline {
-  display: block;
-}
-
 .fam-callout {
   display: flex;
   flex-direction: column;
@@ -5157,39 +5090,6 @@ button.svc:hover {
   color: var(--text-primary);
 }
 
-/* how a visit gets paid for, in three beats */
-.fam-flow {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-2);
-  list-style: none;
-  counter-reset: flow;
-}
-
-.fam-flow li {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--spacing-3) var(--spacing-3);
-  border-radius: var(--radius-lg);
-  background: var(--surface-2);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  color: var(--text-secondary);
-}
-
-.fam-flow li span {
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.fam-flow li span::before {
-  counter-increment: flow;
-  content: counter(flow) '. ';
-  color: var(--color-primary-600);
-}
-
 .fam-visits {
   display: flex;
   flex-direction: column;
@@ -5197,30 +5097,13 @@ button.svc:hover {
   list-style: none;
 }
 
+/* A visit: when and the money, then its report in named parts, then what
+   happens next — 12 between the parts, as between groups in a card. */
 .fam-visit {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--spacing-2);
-  padding: var(--spacing-3);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-2xl);
-  background: var(--surface-0);
-}
-
-/* the one a family is being asked to look at */
-.fam-visit.is-charging {
-  border-color: var(--color-primary-300);
-  background: var(--primary-subtle);
-}
-
-.fam-visit.is-planned {
-  border-color: var(--color-primary-200);
-}
-
-.fam-visit.is-cancelled,
-.fam-visit.is-awaiting {
-  background: var(--surface-2);
+  gap: var(--spacing-3);
 }
 
 .fam-visit-head {
@@ -5350,10 +5233,6 @@ button.svc:hover {
 
   .fam-end .btn.ghost {
     margin-left: calc(var(--spacing-3) * -1);
-  }
-
-  .fam-flow {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -5502,10 +5381,6 @@ button.svc:hover {
 
 /* ── what just changed in the plan ─────────────────────────────────────────── */
 
-.pc-banner {
-  gap: var(--spacing-3);
-}
-
 .pc-banner-head {
   display: flex;
   align-items: center;
@@ -5524,19 +5399,6 @@ button.svc:hover {
   color: var(--color-primary-700);
 }
 
-.pc-banner-title {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.pc-banner-sub {
-  font-size: 11px;
-  line-height: 16px;
-  color: var(--text-secondary);
-}
-
 .pc-rows {
   display: flex;
   flex-direction: column;
@@ -5552,7 +5414,7 @@ button.svc:hover {
   gap: var(--spacing-3);
   padding: var(--spacing-2) var(--spacing-3);
   border-radius: var(--radius-lg);
-  background: var(--surface-0);
+  background: var(--surface-2);
 }
 
 .pc-row-q {
@@ -5618,12 +5480,6 @@ button.svc:hover {
   color: var(--text-secondary);
 }
 
-.pc-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-2);
-}
-
 /* a part of the plan that the last change rewrote: marked, and lit once as it
    arrives so the eye finds it */
 .coordinator-head > .status-pill {
@@ -5631,7 +5487,7 @@ button.svc:hover {
 }
 
 .rec-card.is-changed,
-.coordinator-note.is-changed {
+.coordinator-letter.is-changed {
   box-shadow: 0 0 0 1px var(--color-primary-300), var(--shadow-card);
   animation: plan-changed 1.6s ease-out 1;
 }
@@ -7393,23 +7249,24 @@ button.svc:hover {
    inside a card each is a row, not a box of its own. A box inside the card was
    a third level of corners that no radius on the scale could satisfy.
 
-   The row reaches 8px into the card's 16 of padding, so what lights it on hover
-   has room for its own corner and still nests: the card's 24 around 8 is a 16,
-   and the 16 around the row's own 8 of side padding is the 8 of the button in
-   it. Rows are split by a hairline at the text's edges; the two lines around a
-   lit row step aside, so the light is never cut through
-   (docs/patterns.md §4). */
+   The row reaches 8px into the card's 16 of padding and keeps 8 of its own on
+   every side, so its text is where the card's is (16 in) and what lights it on
+   hover is as far from the text above and below as at the sides. The corners
+   nest: the card's 24 around 8 is a 16, and the 16 around the row's 8 is the 8
+   of the button in it. Rows are 8 apart, split by a hairline in the middle of
+   that 8 at the text's edges; the two lines around a lit row step aside, so
+   the light is never cut through (docs/patterns.md §6). */
 
 :is(.rec-providers, .fam-rows, .contact-rows, .fam-visits, .visit-list):has(
     > :is(.caregiver, .fam-row, .contact-row, .fam-visit, .visit)
   ) {
-  gap: 0;
+  gap: var(--spacing-2);
 }
 
 :is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit) {
   position: relative;
   margin: 0 calc(var(--spacing-2) * -1);
-  padding: var(--spacing-4) var(--spacing-2);
+  padding: var(--spacing-2);
   border: 0;
   border-radius: var(--radius-2xl);
   background: none;
@@ -7421,28 +7278,22 @@ button.svc:hover {
   + :is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit)::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: calc(var(--spacing-1) * -1);
   left: var(--spacing-2);
   right: var(--spacing-2);
   height: 1px;
+  transform: translateY(-50%);
   background: var(--border-subtle);
   transition: opacity 0.15s ease;
 }
 
-/* A card that ends in rows: the last row's own 16 and the card's 16 made 32
-   under it against 16 over the title. The last row keeps 8 of its own and
-   reaches 8 into the card's padding, so its hover band sits 8 in from the
-   bottom as it does from the sides (24 = 16 + 8) and the text 16 from the edge. */
+/* A card that ends in rows: the last row reaches 8 into the card's padding,
+   so its hover band sits 8 in from the bottom as it does from the sides
+   (24 = 16 + 8) and its text 16 from the edge, as the title is from the top. */
 .panel-card
   > :is(.rec-providers, .fam-rows, .contact-rows, .fam-visits, .visit-list):last-child
   > :is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit):last-child {
-  padding-bottom: var(--spacing-2);
   margin-bottom: calc(var(--spacing-2) * -1);
-}
-
-/* on the attention card's tint the line is the tint's own */
-.is-attention :is(.fam-row, .fam-visit, .caregiver)::before {
-  background: var(--color-primary-200);
 }
 
 /* a row that opens something lights up under the pointer */
@@ -7450,7 +7301,8 @@ button.svc:hover {
   background: var(--surface-2);
 }
 
-.is-attention :is(.fam-row.is-clickable, .caregiver.is-clickable):hover {
+/* the tags in a lit row would vanish into its grey: on it they are white */
+:is(.caregiver.is-clickable, .fam-row.is-clickable, .fam-visit.is-clickable):not(.is-wide):hover .cg-tag {
   background: var(--surface-0);
 }
 
@@ -7469,21 +7321,17 @@ button.svc:hover {
   color: var(--color-primary-700);
 }
 
-/* the others were told apart by a fill; the pill on each says it now */
-.fam-visit.is-charging,
-.fam-visit.is-planned,
-.fam-visit.is-cancelled,
-.fam-visit.is-awaiting {
-  background: none;
-}
-
 /* A card's footer — the action under what the card says — stands 16px off the
    content, twice the 8 between the content's own lines, so it reads as the
-   card's end rather than one more line of it. After rows, the last row's own
-   16 is that space. */
+   card's end rather than one more line of it. */
 .panel-card > .panel-card-actions,
 .cg-main > .panel-card-actions {
   margin-top: var(--spacing-2);
+}
+
+/* after rows, the last row's own 8 under its text is half of that 16 */
+.panel-card > :is(.rec-providers, .fam-rows, .contact-rows, .fam-visits, .visit-list) + .panel-card-actions {
+  margin-top: 0;
 }
 
 /* A caregiver's card: who she is (name, rating — 4 apart), then why she fits
