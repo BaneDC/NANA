@@ -4715,7 +4715,23 @@ button.svc:hover {
 
 .imm-ctl.is-on {
   background: rgba(255, 255, 255, 0.85);
-  color: var(--color-primary-600);
+}
+
+/* the history's chevron turns over as the panel opens and back as it closes;
+   the text stays the colour it was */
+.imm-ctl-chevron {
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.imm-ctl[aria-expanded='true'] .imm-ctl-chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-ctl-chevron {
+    transition: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -4731,6 +4747,11 @@ button.svc:hover {
   .imm-ctl.has-label {
     width: 32px;
     padding: 0;
+  }
+
+  /* a glyph only on a phone: the chevron goes with the words */
+  .imm-ctl.has-label .imm-ctl-chevron {
+    display: none;
   }
 
   .imm-ctl.has-label span {
@@ -7554,5 +7575,71 @@ button.svc:hover {
   .chat-pane-wrap,
   .sidebar-wrap {
     bottom: calc(100% - var(--app-height, 100%));
+  }
+}
+
+/* ---------- Every card on one page (/?kartice) ----------
+   Each screen in a frame like the app's own panel, under a title saying which
+   cards it holds. Only for looking; it is not part of the app. */
+
+.gallery {
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  padding: var(--spacing-8) var(--spacing-6);
+}
+
+.gallery > * {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.gallery-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
+
+.gallery-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.gallery-toc a {
+  text-decoration: none;
+}
+
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  scroll-margin-top: var(--spacing-6);
+}
+
+.gallery-frame {
+  border-radius: var(--radius-4xl);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-container);
+  overflow: hidden;
+}
+
+/* the caregiver's side is a whole app with its own bars: a window onto it */
+.gallery-frame.is-tall {
+  height: 860px;
+  overflow: auto;
+}
+
+@media (max-width: 640px) {
+  .gallery {
+    padding: var(--spacing-4);
+  }
+
+  .gallery-head {
+    flex-direction: column;
   }
 }

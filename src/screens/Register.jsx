@@ -237,9 +237,15 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
 // after the plan without running (and paying for) the onboarding each time.
 function DemoLink({ onDemo }) {
   return (
-    <button type="button" className="reg-demo" onClick={onDemo}>
-      Za testiranje: otvori demo sa gotovim planom
-    </button>
+    <>
+      <button type="button" className="reg-demo" onClick={onDemo}>
+        Za testiranje: otvori demo sa gotovim planom
+      </button>
+      {/* every card on one page (/?kartice), for comparing them */}
+      <button type="button" className="reg-demo" onClick={() => (window.location.href = '/?kartice')}>
+        Za pregled: sve kartice na jednoj stranici
+      </button>
+    </>
   );
 }
 

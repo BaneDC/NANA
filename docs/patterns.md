@@ -216,7 +216,7 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 ### Drawer ili modal (odlučeno 30. 9.)
 
 - **Drawer** (`Modal`, sa strane) je za **detalje**: kad treba prikazati više o nečemu, a akcija nije jedino što je bitno. Ugovor o nezi, radni nalog, plan posete, profil negovateljice. Drawer može imati akciju koja završava pregled (npr. „Prihvati uslove", „Sve je u redu — plati sada").
-- **Modal** (`Dialog`, `src/components/Dialog.jsx`, u sredini) je za **akciju**: završi saradnju, pretplati se, uključi ili isključi nešto, promeni lozinku, dodaj karticu, podesi kolačiće, pošalji ili izmeni plan, otkaži posetu, prijavi da nešto nije u redu, odbij uslove, a na strani negovateljice pošalji ugovor, isplaniraj posetu i pošalji radni nalog. Izbor pretplate (`PaywallModal`) je takođe modal.
+- **Modal** (`Dialog`, `src/components/Dialog.jsx`, u sredini) je za **akciju**: završi saradnju, pretplati se, uključi ili isključi nešto, promeni lozinku, dodaj karticu, podesi kolačiće, pošalji plan, otkaži posetu, prijavi da nešto nije u redu, odbij uslove, a na strani negovateljice pošalji ugovor, isplaniraj posetu i pošalji radni nalog. Izbor pretplate (`PaywallModal`) je takođe modal.
 - `Dialog` ima isti ugovor kao `Modal` (`eyebrow`, `title`, `wide`, `dismissible`, `onClose`, a sadržaj se završava redom akcija `.panel-card-actions.is-end`), pa ekran prelazi iz jednog u drugo promenom imena.
 - **Akcija iz drawer-a otvara modal preko drawer-a** („Otkaži posetu" iz plana posete, „Nešto nije u redu" iz radnog naloga, „Odbij" iz ugovora). Drawer ostaje ispod; Escape i „Nazad" zatvaraju samo modal. Kad modal vodi dalje („Pogledaj radni nalog" iz „Završiti saradnju?"), on se zatvara i otvara se drawer.
 - Mere modala: 440 širok (`wide`: 560), padding 24, radius 24, delovi 12 jedan od drugog, red akcija 16 ispod sadržaja i zakačen za dno dok se dugačak sadržaj skroluje.
@@ -339,6 +339,8 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 ---
 
 ## 13. Provera — obavezno posle izmene interfejsa
+
+**Sve kartice na jednoj stranici:** `/?kartice` (ili „Za pregled: sve kartice na jednoj stranici" ispod prijave). Stranica (`src/screens/CardGallery.jsx`) renderuje prave ekrane sa primerom podataka u kom je svaka kartica u svakom stanju, pa se kartice porede jedna pored druge. Novi ekran sa karticama dodaj i tamo.
 
 Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na 375×812. Rezultat mora biti prazan niz za `concentric`, `caps` i `overflow`, a `cards` i `titles` moraju imati samo vrednosti iz ovog dokumenta.
 

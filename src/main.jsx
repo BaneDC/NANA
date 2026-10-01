@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import CardGallery from './screens/CardGallery';
 import { showScrollbarsWhileScrolling } from './lib/scrollbars';
 import { closeKitMenusOnOutsidePress } from './lib/kitMenus';
 import { preventFocusZoomOnIOS } from './lib/iosZoom';
@@ -17,6 +18,7 @@ keyboardDebug();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    {/* /?kartice: every card on one page, for comparing them */}
+    {new URLSearchParams(window.location.search).has('kartice') ? <CardGallery /> : <App />}
   </React.StrictMode>
 );

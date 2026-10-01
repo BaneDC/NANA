@@ -639,6 +639,8 @@ export default function ImmersiveConversation({
           >
             <History size={15} strokeWidth={1.75} />
             <span>Istorija razgovora</span>
+            {/* turns over with the panel; the label keeps its own colour */}
+            <ChevronDown size={14} strokeWidth={1.75} className="imm-ctl-chevron" aria-hidden="true" />
           </button>
         </div>
       </div>

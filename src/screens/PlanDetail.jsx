@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion';
-import { PenLine, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import PlanContents from '../components/PlanContents';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
@@ -20,7 +20,6 @@ export default function PlanDetail({
   onOpenCaregiver,
   onUnlock,
   onAskAssistant,
-  onEdit,
   onShare,
   onUndoChange,
   onDismissChange,
@@ -48,11 +47,6 @@ export default function PlanDetail({
           {onShare && (
             <Button variant="secondary" iconOnly onClick={onShare} aria-label="Pošalji plan" title="Pošalji plan">
               <Send size={14} strokeWidth={1.75} />
-            </Button>
-          )}
-          {onEdit && (
-            <Button variant="secondary" iconOnly onClick={onEdit} aria-label="Izmeni plan" title="Izmeni plan">
-              <PenLine size={14} strokeWidth={1.75} />
             </Button>
           )}
         </div>

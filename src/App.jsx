@@ -36,7 +36,6 @@ import { askCaregiver, firstName } from './data/familyCare';
 import { REPLY_AFTER_MS, VISIT_AFTER_MS, answerRequest, planFirstVisit, requestMessage, startCare, withAnswers } from './data/familyStart';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
-import PlanEditor from './components/PlanEditor';
 import { planEntries, seedThreads } from './data/threads';
 
 const formatToday = () =>
@@ -92,7 +91,6 @@ export default function App() {
   const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
   const [flash, setFlash] = useState(null);
   const [openCaregiver, setOpenCaregiver] = useState(null);
-  const [editingPlan, setEditingPlan] = useState(false);
   // The last change to the plan, kept so the plan can say what changed and take
   // it back: what moved, which parts of the plan it rewrote, and the state from
   // before it, for "Poništi".
@@ -630,7 +628,6 @@ export default function App() {
             onOpenCaregiver={showProfile}
                   onUnlock={() => setPaywall({ caregiver: null })}
                   onAskAssistant={askAssistant}
-                  onEdit={!openEntry.archived && plan ? () => setEditingPlan(true) : null}
                   onShare={plan ? () => setSharing(true) : null}
                   change={planChange}
                   onUndoChange={undoPlanChange}
@@ -779,22 +776,6 @@ export default function App() {
               setDrawer(null);
               contactCaregiver(c);
             }}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {editingPlan && plan && (
-          <PlanEditor
-            key="plan-editor"
-            answers={answers}
-            name={plan.firstName}
-            onApply={editAnswers}
-            onAskAssistant={() => {
-              setEditingPlan(false);
-              askAssistant();
-            }}
-            onClose={() => setEditingPlan(false)}
           />
         )}
       </AnimatePresence>
