@@ -25,47 +25,49 @@ const FOOTER_ITEMS = [
   { id: 'settings', label: 'Podešavanja', icon: Settings },
 ];
 
-// A nav row that folds a list of its own away — used by Chat and Care plans.
-function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd, children }) {
+// A nav row that folds a list of its own away — used by the conversations and
+// Care plans. A row with `onOpen` is a page too, with the fold on its chevron;
+// a row without one (the conversations) only folds, the whole row its button,
+// so pressing it never lands somewhere unasked (docs/patterns.md §4).
+function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, empty, children }) {
   // An empty list still drew its rule and its margins, which read as a gap
   // between this section and the next.
   const hasItems = Children.toArray(children).length > 0;
+  const list = hasItems ? children : empty && <p className="nav-sub-empty">{empty}</p>;
+  const chevron = <ChevronDown size={15} strokeWidth={2} className={`toggle-chevron${open ? '' : ' is-up'}`} />;
   return (
     <>
-      <div className={`nav-item has-action${active ? ' is-active' : ''}`}>
-        <button
-          type="button"
-          className="nav-item-main"
-          onClick={onOpen}
-          aria-current={active ? 'page' : undefined}
-        >
-          <Icon size={16} strokeWidth={1.75} />
-          <span>{label}</span>
-        </button>
-        <button
-          type="button"
-          className="nav-inline-btn"
-          onClick={onToggle}
-          aria-label={open ? `Skupi: ${label}` : `Proširi: ${label}`}
-          aria-expanded={open}
-        >
-          <ChevronDown size={15} strokeWidth={2} className={`toggle-chevron${open ? '' : ' is-up'}`} />
-        </button>
-        {onAdd && (
+      {onOpen ? (
+        <div className={`nav-item has-action${active ? ' is-active' : ''}`}>
+          <button
+            type="button"
+            className="nav-item-main"
+            onClick={onOpen}
+            aria-current={active ? 'page' : undefined}
+          >
+            <Icon size={16} strokeWidth={1.75} />
+            <span>{label}</span>
+          </button>
           <button
             type="button"
             className="nav-inline-btn"
-            onClick={onAdd}
-            aria-label="Novi razgovor"
-            title="Novi razgovor"
+            onClick={onToggle}
+            aria-label={open ? `Skupi: ${label}` : `Proširi: ${label}`}
+            aria-expanded={open}
           >
-            <Plus size={15} strokeWidth={2} />
+            {chevron}
           </button>
-        )}
-      </div>
+        </div>
+      ) : (
+        <button type="button" className="nav-item is-fold" onClick={onToggle} aria-expanded={open}>
+          <Icon size={16} strokeWidth={1.75} />
+          <span>{label}</span>
+          {chevron}
+        </button>
+      )}
 
       <AnimatePresence initial={false}>
-        {open && hasItems && (
+        {open && list && (
           <motion.div
             key={`${id}-list`}
             initial={{ height: 0, opacity: 0 }}
@@ -74,7 +76,7 @@ function Section({ id, label, icon: Icon, active, onOpen, open, onToggle, onAdd,
             transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            <div className="nav-sub">{children}</div>
+            <div className="nav-sub">{list}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -132,14 +134,15 @@ export default function AppNav({
       </Button>
 
       <div className="nav-group">
+        {/* Earlier conversations, folded: the row opens the list and goes
+            nowhere. A new one starts from "Novi razgovor" above. */}
         <Section
           id="chat"
-          label="Razgovor"
+          label="Istorija razgovora"
           icon={MessageSquare}
-          active={view === 'chat'}
-          onOpen={go(() => onView('chat'))}
           open={chatListOpen}
           onToggle={onToggleChatList}
+          empty="Još nema razgovora."
         >
           {threads.map((t) => (
             <button

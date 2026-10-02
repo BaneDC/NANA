@@ -1178,6 +1178,13 @@ textarea {
   color: var(--nav-selected-text);
 }
 
+/* a row that only folds its list (Istorija razgovora): the chevron at its end,
+   where the fold sits on the rows that are pages too */
+.nav-item.is-fold > .toggle-chevron {
+  margin-left: auto;
+  color: var(--nav-text-muted);
+}
+
 /* ---------- Chat thread list ---------- */
 
 .nav-sub {
@@ -1227,6 +1234,14 @@ textarea {
 .nav-sub-date {
   font-size: 11px;
   line-height: 14px;
+  color: var(--nav-text-muted);
+}
+
+/* an opened history with nothing in it says so, in the list's own place */
+.nav-sub-empty {
+  padding: var(--spacing-2);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-leading);
   color: var(--nav-text-muted);
 }
 

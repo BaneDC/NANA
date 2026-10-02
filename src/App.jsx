@@ -73,7 +73,8 @@ export default function App() {
   const [paywall, setPaywall] = useState(null);
   const [threads, setThreads] = useState(seedThreads);
   const [activeThread, setActiveThread] = useState('live');
-  const [chatListOpen, setChatListOpen] = useState(true);
+  // the history of conversations opens when asked for
+  const [chatListOpen, setChatListOpen] = useState(false);
   const [planListOpen, setPlanListOpen] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState('live');
   const [variant, setVariant] = useState('classic'); // classic | immersive | ai
