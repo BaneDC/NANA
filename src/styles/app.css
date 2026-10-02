@@ -1247,7 +1247,6 @@ textarea {
 
 .view > .back-row {
   flex-shrink: 0;
-  margin-bottom: var(--spacing-1);
 }
 
 .back-btn {
@@ -1349,8 +1348,11 @@ textarea {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
-  padding: var(--spacing-8) var(--spacing-6) var(--spacing-6);
+  /* cards one after another are 16 apart, on every page */
+  gap: var(--spacing-4);
+  /* 24 on top as at the sides: the head's button sits as far from the pane's
+     top as from its edge, in its corner rather than low under it */
+  padding: var(--spacing-6);
   align-items: stretch;
 }
 
@@ -1360,10 +1362,12 @@ textarea {
   margin: 0 auto;
 }
 
+/* the page's words and its button: 32 apart, so a long subtitle does not run
+   up against the button */
 .view-head {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-3);
+  gap: var(--spacing-8);
   margin-bottom: var(--spacing-2);
 }
 
@@ -1388,7 +1392,7 @@ textarea {
 .view-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--spacing-4);
 }
 
 .empty {
@@ -1569,11 +1573,16 @@ textarea {
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--spacing-4);
+}
+
+/* the title stays 12 over its first card (16 of the gap, 4 taken back) */
+.section > .section-title {
+  margin-bottom: calc(var(--spacing-1) * -1);
 }
 
 .view > .section + .section {
-  margin-top: 20px;
+  margin-top: var(--spacing-4);
 }
 
 .section-title {
@@ -4397,6 +4406,13 @@ button.svc:hover {
   }
 }
 
+/* the grip of a bottom sheet is a phone's only (src/lib/sheet.js) */
+@media (min-width: 641px) {
+  .sheet-grip {
+    display: none;
+  }
+}
+
 /* Actions pushed to the trailing edge — where a dialog's confirm belongs, and
    where the eye already is after reading a row that ends in a status. The
    unmodified class stays left-aligned for the panels in the family's app. */
@@ -5046,23 +5062,40 @@ button.svc:hover {
   color: var(--text-secondary);
 }
 
+/* Centred between 16 from each edge, as wide as its words up to 520. It was
+   placed from the middle of the screen, which left it only the right half to
+   grow into: on a phone, a narrow strip of wrapped lines. */
 .fam-toast {
   position: fixed;
-  left: 50%;
+  left: var(--spacing-4);
+  right: var(--spacing-4);
   bottom: calc(var(--spacing-6) + env(safe-area-inset-bottom, 0px));
   z-index: 60;
-  translate: -50% 0;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  max-width: min(520px, calc(100vw - 32px));
+  width: fit-content;
+  max-width: 520px;
+  margin: 0 auto;
   padding: var(--spacing-3) var(--spacing-4);
-  border-radius: 999px;
+  border-radius: var(--radius-2xl);
   background: var(--text-primary);
   color: #fff;
   font-size: var(--text-xs-size);
   line-height: var(--text-body-leading);
   box-shadow: var(--shadow-container);
+}
+
+.fam-toast svg {
+  flex-shrink: 0;
+}
+
+/* on a phone it takes the width between the 16s, like the sheets above it */
+@media (max-width: 640px) {
+  .fam-toast {
+    width: auto;
+    max-width: none;
+  }
 }
 
 .fam-person {
@@ -5207,10 +5240,6 @@ button.svc:hover {
   gap: var(--spacing-3);
 }
 
-.fam-request.is-linked {
-  border: 1px solid var(--color-primary-200);
-}
-
 @media (max-width: 640px) {
   .fam-row,
   .fam-visit-foot {
@@ -5268,7 +5297,9 @@ button.svc:hover {
   margin-left: auto;
 }
 
+/* where the family stands with her, under her rate at the top of her profile */
 .fam-asked {
+  align-self: flex-start;
   margin-left: 0;
 }
 
@@ -6338,15 +6369,15 @@ button.svc:hover {
     width: 100%;
   }
 
-  /* Her card's state (already coming, asked) sat top right and took the width
-     her name needed; on a phone it goes under what the card says, in line with
-     it (the avatar's 32 and the 12 beside it). The action button has no such
-     problem: on a phone it is the chevron. */
-  .caregiver.is-wide .cg-main {
+  /* Her state (already coming, asked) sat top right and took the width her
+     name needed; on a phone it goes under what the card or row says, in line
+     with it (the avatar's 32 and the 12 beside it). The action button has no
+     such problem: on a phone it is the chevron. */
+  .caregiver .cg-main {
     flex-basis: calc(100% - 44px);
   }
 
-  .caregiver.is-wide > .status-pill {
+  .caregiver > .status-pill {
     margin-left: 44px;
   }
 
@@ -6418,27 +6449,66 @@ button.svc:hover {
     margin-top: var(--spacing-3);
   }
 
-  .drawer-backdrop {
-    padding: var(--spacing-2);
+  /* On a phone every pane is a bottom sheet (src/lib/sheet.js): a drawer's
+     details, a dialog's action, choosing a plan. Up from the bottom edge, as
+     tall as what it holds and never taller than the screen less 48 at the top,
+     where the page still shows. Its top corners round, its bottom sits on the
+     screen's edge, and its action row is on the floor with the rest scrolling
+     under it. A grip on top says it is dragged down to close. */
+  .drawer-backdrop,
+  .modal-backdrop {
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: calc(48px + env(safe-area-inset-top, 0px)) 0 0;
   }
 
-  /* A dialog on a phone is a drawer: the same full-height pane 8px in from the
-     screen's edges, the same 16 of padding, and its action row pinned to the
-     floor with the rest scrolling under it — so choosing a plan and writing to
-     a caregiver behave like every other pane on a phone, not like a card
-     floating in the middle of one. */
-  .modal-backdrop {
-    align-items: stretch;
-    padding: var(--spacing-2);
+  .drawer,
+  .drawer.is-wide,
+  .modal,
+  .modal.is-wide,
+  .modal.is-plans,
+  .modal.is-plans.is-single {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    max-height: 100%;
+    border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
+    box-shadow: var(--shadow-container);
+  }
+
+  .drawer {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .modal,
   .modal.is-wide,
   .modal.is-plans,
   .modal.is-plans.is-single {
-    max-width: none;
-    padding: var(--spacing-4);
-    box-shadow: var(--shadow-container);
+    padding: var(--spacing-4) var(--spacing-4) calc(var(--spacing-4) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .drawer > .sheet-grip,
+  .modal > .sheet-grip {
+    position: absolute;
+    top: var(--spacing-2);
+    left: 50%;
+    z-index: 2;
+    width: 36px;
+    height: 4px;
+    margin-left: -18px;
+    border-radius: var(--radius-sm);
+    background: var(--color-neutral-300);
+    pointer-events: none;
+  }
+
+  /* under the grip, so the head is clear of it */
+  .drawer > .sidebar-head {
+    padding-top: var(--spacing-6);
+  }
+
+  .modal > :is(.modal-title, .pw-head, .modal-head) {
+    padding-top: var(--spacing-2);
   }
 
   .modal > .panel-card-actions:last-child {
@@ -7270,6 +7340,10 @@ button.svc:hover {
 
 :is(.caregiver:not(.is-wide), .fam-row, .contact-row, .fam-visit, .visit) {
   position: relative;
+  /* auto, not 100%: at 100% the margins moved the row 8 left instead of
+     widening it, and its band stood 8 off the card's left edge and 24 off
+     its right */
+  width: auto;
   margin: 0 calc(var(--spacing-2) * -1);
   padding: var(--spacing-2);
   border: 0;

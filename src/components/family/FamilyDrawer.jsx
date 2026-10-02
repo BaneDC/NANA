@@ -3,13 +3,14 @@ import { AlertTriangle, Check, CreditCard, Star } from 'lucide-react';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
-import Tags, { Group } from '../Tags';
+import Tags from '../Tags';
+import Standing from '../Standing';
+import VisitRow from './VisitRow';
+import { careSignals } from './VisitReport';
 import Button from '../Button';
 import { Field, TextArea } from '../TextField';
 import {
-  AMOUNT_LABEL,
   LATE_HOURS,
-  MOOD_LABEL,
   activeVersion,
   agreeTerms,
   arrangementOf,
@@ -20,12 +21,14 @@ import {
   endArrangement,
   findVisit,
   firstName,
+  herVisits,
   linkCard,
   money,
   pendingVersion,
   pl,
   queryVisit,
   serviceTitle,
+  standingWith,
   unsettled,
   visitCharge,
 } from '../../data/familyCare';
@@ -51,29 +54,6 @@ export function Line({ label, value }) {
       <span className="bc-line-label">{label}</span>
       <span className="bc-line-value">{value}</span>
     </p>
-  );
-}
-
-// How she was, as the caregiver wrote it down: a tag for each thing asked,
-// all of them said the same way and none with an icon.
-export function careSignals(report) {
-  return [
-    report.mood && `Raspoloženje: ${MOOD_LABEL[report.mood].toLowerCase()}`,
-    report.eating && `Ishrana: ${AMOUNT_LABEL[report.eating].toLowerCase()}`,
-    report.moving && `Kretanje: ${AMOUNT_LABEL[report.moving].toLowerCase()}`,
-  ].filter(Boolean);
-}
-
-// A visit's report in a card or a row: a named part each — what was done (when
-// `done`), how she was, what the caregiver wrote — 12 apart. Wherever a report
-// is shown on a page it is these parts, in this order.
-export function VisitReport({ report, first, done }) {
-  return (
-    <div className="tag-rows">
-      {done && <ServiceChips label="Urađeno" ids={report.done} />}
-      <Tags label="Kako je bila" items={careSignals(report)} />
-      {report.note && <Group label={`${first} je zapisala`} text={report.note} />}
-    </div>
   );
 }
 
@@ -552,9 +532,9 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
 function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
   const c = caregivers.find((x) => x.id === caregiverId);
   if (!c) return null;
-  const first = firstName(c.name);
-  const asked = care.requests.find((r) => r.caregiverId === c.id);
-  const coming = arrangementOf(care, c.id);
+  // where the family stands with her is said at the top, under who she is,
+  // not in the footer where it read as a disabled button
+  const standing = standingWith(care, c.id);
 
   // writing to her goes through the one modal, sent once the subscription is paid
   const ask = () => onContact(c);
@@ -569,6 +549,7 @@ function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
             {c.reviews ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} · ${pl(c.reviews, 'ocena', 'ocene', 'ocena')}` : 'Nova, još bez ocena'}
           </p>
           <p className="fam-row-body">{c.rate}</p>
+          <Standing standing={standing} className="fam-asked" />
         </div>
         <span className="status-pill is-attention">Poklapanje · {c.match}%</span>
       </div>
@@ -606,23 +587,33 @@ function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
         dogovoreno dok zajedno ne postavite uslove.
       </p>
 
-      <div className="panel-card-actions is-end">
-        {coming || asked ? (
-          <span className="status-pill is-accepted fam-asked">
-            <Check size={12} strokeWidth={2} />
-            {coming ? 'Već dolazi kod vas' : `Upit poslat ${asked.requested}`}
-          </span>
-        ) : (
-          <>
-            <Button variant="secondary" onClick={onClose}>
-              Ne sada
-            </Button>
-            <Button variant="primary" onClick={ask}>
-              Pošalji poruku
-            </Button>
-          </>
-        )}
-      </div>
+      {!standing && (
+        <div className="panel-card-actions is-end">
+          <Button variant="secondary" onClick={onClose}>
+            Ne sada
+          </Button>
+          <Button variant="primary" onClick={ask}>
+            Pošalji poruku
+          </Button>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+// Every visit she has made, when her page shows only the latest ten. A visit's
+// own button opens its plan or work order in this drawer's place.
+function Visits({ care, caregiverId, onOpen, onClose }) {
+  const a = arrangementOf(care, caregiverId);
+  if (!a) return null;
+  const visits = herVisits(a);
+  return (
+    <Modal eyebrow={`${a.caregiver.name} · ${pl(visits.length, 'poseta', 'posete', 'poseta')}`} title="Sve posete" wide onClose={onClose}>
+      <ul className="fam-visits">
+        {visits.map((v) => (
+          <VisitRow key={v.id} visit={v} onDrawer={onOpen} />
+        ))}
+      </ul>
     </Modal>
   );
 }
@@ -634,5 +625,6 @@ export default function FamilyDrawer({ drawer, ...rest }) {
   if (drawer.kind === 'plan') return <Plan key={`plan-${drawer.visitId}`} visitId={drawer.visitId} {...rest} />;
   if (drawer.kind === 'end') return <End key="end" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'profile') return <Profile key="profile" caregiverId={drawer.caregiverId} {...rest} />;
+  if (drawer.kind === 'visits') return <Visits key="visits" caregiverId={drawer.caregiverId} {...rest} />;
   return null;
 }

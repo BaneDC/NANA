@@ -12,6 +12,7 @@ import Button from './Button';
 // that hands it to her.
 export default function RecommendationCard({
   rec,
+  standingOf,
   unlocked,
   bookable = true,
   changed,
@@ -36,7 +37,7 @@ export default function RecommendationCard({
           {caregiversFor(unlocked)
             .slice(0, 5)
             .map((c) => (
-              <CaregiverRow key={c.id} caregiver={c} onSelect={onSelectCaregiver} onOpen={onOpenCaregiver} />
+              <CaregiverRow key={c.id} caregiver={c} standing={standingOf?.(c.id)} onSelect={onSelectCaregiver} onOpen={onOpenCaregiver} />
             ))}
           {onFindCaregivers && (
             <div className="panel-card-actions">

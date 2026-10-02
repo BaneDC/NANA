@@ -5,6 +5,7 @@ import { perMonth, planPrice, planSaving, plansFor } from '../data/plans';
 import Button from './Button';
 import { Field, TextArea } from './TextField';
 import { useBackdropClose } from '../lib/backdropClose';
+import { useSheet } from '../lib/sheet';
 
 // One plan, as the live platform's plan picker shows it: what it is called, what
 // it costs, what it saves, who it is for, everything it includes, and its own
@@ -69,17 +70,18 @@ function PlanCard({ plan, plans, onChoose }) {
 //
 // The field starts empty. It used to open with a request written from the plan,
 // which read as ours rather than theirs; the placeholder says what belongs there.
-// On a phone the dialog is a drawer (app.css), so it arrives like one: sliding
-// in from the side rather than growing out of the middle.
-const PHONE = '(max-width: 640px)';
-const arrive = () =>
-  window.matchMedia?.(PHONE).matches
-    ? { initial: { opacity: 0, x: 28 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: 20 } }
-    : { initial: { opacity: 0, scale: 0.96, y: 12 }, animate: { opacity: 1, scale: 1, y: 0 }, exit: { opacity: 0, scale: 0.98, y: 8 } };
+// On a phone the dialog is a bottom sheet like every pane (src/lib/sheet.js):
+// up from the bottom edge, dragged down by its head.
+const MIDDLE = {
+  initial: { opacity: 0, scale: 0.96, y: 12 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.98, y: 8 },
+  transition: { type: 'spring', stiffness: 320, damping: 30 },
+};
 
 export default function PaywallModal({ caregiver, unlocked, alreadyAsked, country, onPay, onSend, onClose }) {
   const [message, setMessage] = useState('');
-  const [motionProps] = useState(arrive);
+  const sheet = useSheet({ desktop: MIDDLE, onClose });
   const backdrop = useBackdropClose(onClose);
   const [step, setStep] = useState('message');
   const plans = plansFor(country);
@@ -103,16 +105,16 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        {...motionProps}
-        transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+        {...sheet.pane}
       >
+        {sheet.phone && <span className="sheet-grip" aria-hidden="true" />}
         <button type="button" className="ci-btn modal-close" onClick={onClose} aria-label="Zatvori">
           <X size={16} strokeWidth={1.75} />
         </button>
 
         {choosing ? (
           <>
-            <div className="pw-head">
+            <div className="pw-head" {...sheet.grip}>
               <p className="doc-title">Izaberite pretplatu</p>
               <p className="tip-body">
                 {/* no name in these: Serbian would have to decline it ("za Vesnu"),
@@ -144,7 +146,7 @@ export default function PaywallModal({ caregiver, unlocked, alreadyAsked, countr
           </>
         ) : (
           <>
-            <div className="modal-head">
+            <div className="modal-head" {...sheet.grip}>
               <div className="cg-avatar">{caregiver?.initials}</div>
               <div>
                 <p className="doc-eyebrow">Poruka sa planom nege</p>

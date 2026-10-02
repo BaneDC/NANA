@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import Button from '../Button';
 import { Group } from '../Tags';
-import { VisitReport } from './FamilyDrawer';
+import VisitReport from './VisitReport';
 import { chargedFor, firstName, money, visitCharge } from '../../data/familyCare';
 
 // One visit, as the family sees it: when, who, where the money is, and — when

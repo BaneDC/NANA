@@ -86,6 +86,7 @@ export default function AppNav({
   view,
   onView,
   user,
+  careBadge,
   requestsBadge,
   threads,
   activeThread,
@@ -161,6 +162,7 @@ export default function AppNav({
         >
           <LayoutDashboard size={16} strokeWidth={1.75} />
           <span>Moja nega</span>
+          {careBadge > 0 && <span className="nav-badge">{careBadge}</span>}
         </button>
 
         <button

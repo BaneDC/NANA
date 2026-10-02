@@ -24,6 +24,7 @@ export default function PlanDetail({
   onUndoChange,
   onDismissChange,
   onFindCaregivers,
+  standingOf,
 }) {
   const { plan, title, date, status, archived } = entry;
   const shownChange = archived ? null : change;
@@ -73,6 +74,7 @@ export default function PlanDetail({
         onOpenCaregiver={onOpenCaregiver}
         onUnlock={onUnlock}
         onFindCaregivers={onFindCaregivers}
+        standingOf={standingOf}
       />
 
       {archived && (

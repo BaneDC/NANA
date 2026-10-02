@@ -69,6 +69,14 @@ export const paidThisMonth = (c) =>
     .filter((v) => v.status === 'paid' && /avgust/.test(v.chargedOn))
     .reduce((sum, v) => sum + visitCharge(v), 0);
 
+// Her visits as her page lists them: anything still moving first, then
+// everything settled, each with who she is on it.
+export function herVisits(a) {
+  const open = a.visits.filter((v) => v.status !== 'paid' && v.status !== 'cancelled');
+  const rest = a.visits.filter((v) => !open.includes(v));
+  return [...open, ...rest].map((v) => ({ ...v, caregiver: a.caregiver }));
+}
+
 export const lastVisit = (c) => allVisits(c).find((v) => v.status === 'paid');
 
 // What is waiting on the family, in the order it blocks things: terms stop every
@@ -84,6 +92,33 @@ export function waitingOnYou(c) {
     if (v.status === 'charging') out.push({ kind: 'work-order', visit: v });
   }
   return out;
+}
+
+// Answers to the family's requests they have not looked at yet. A request
+// they sent is not news; a yes or a no to it is, until they open "Vaši upiti".
+export const unseenAnswers = (c) => c.requests.filter((r) => r.status !== 'pending' && !r.seen).length;
+
+export const seeAnswers = (c) =>
+  unseenAnswers(c)
+    ? { ...c, requests: c.requests.map((r) => (r.status !== 'pending' && !r.seen ? { ...r, seen: true } : r)) }
+    : c;
+
+// Where the family stands with a caregiver, said as one pill wherever she is
+// shown (Pronađi, the plan's caregivers, her profile): she comes, she came,
+// her terms wait, or what became of the request. Nothing when they have never
+// written to her.
+export function standingWith(c, caregiverId) {
+  const a = c.arrangements.find((x) => x.caregiver.id === caregiverId);
+  if (a) {
+    if (a.endedOn) return { text: 'Dolazila ranije', pill: 'is-muted' };
+    if (activeVersion(a)) return { text: 'Već dolazi', pill: 'is-accepted' };
+    return { text: 'Ugovor čeka vas', pill: 'is-pending' };
+  }
+  const r = c.requests.find((x) => x.caregiverId === caregiverId);
+  if (!r) return null;
+  if (r.status === 'accepted') return { text: 'Prihvatila', pill: 'is-accepted' };
+  if (r.status === 'declined') return { text: 'Odbila', pill: 'is-declined' };
+  return { text: `Upit poslat ${r.requested}`, pill: 'is-pending' };
 }
 
 // Why an arrangement cannot be ended right now: a visit she has already made

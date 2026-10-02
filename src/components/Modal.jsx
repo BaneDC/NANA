@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useBackdropClose } from '../lib/backdropClose';
+import { useSheet } from '../lib/sheet';
 
 // A card's details, opened as the side pane the rest of the app already uses
 // for the care plan and the assistant — not a dialog in the middle of the page.
@@ -11,8 +12,19 @@ import { useBackdropClose } from '../lib/backdropClose';
 //
 // The name stays `Modal` because every screen calls it that and the contract is
 // unchanged: an eyebrow, a title, a close, and whatever the screen puts inside.
+//
+// On a phone it is a bottom sheet (src/lib/sheet.js), dragged down by its head.
+const BESIDE = {
+  initial: { x: 28, opacity: 0 },
+  animate: { x: 0, opacity: 1 },
+  // a spring to arrive on, a short curve to leave on
+  exit: { x: 20, opacity: 0, transition: { duration: 0.16, ease: 'easeIn' } },
+  transition: { type: 'spring', stiffness: 320, damping: 34 },
+};
+
 export default function Modal({ title, eyebrow, wide, dismissible = true, onClose, children }) {
   const backdrop = useBackdropClose(onClose, dismissible);
+  const sheet = useSheet({ desktop: BESIDE, onClose, dismissible });
   useEffect(() => {
     if (!dismissible) return undefined;
     const onKey = (e) => e.key === 'Escape' && onClose();
@@ -44,13 +56,10 @@ export default function Modal({ title, eyebrow, wide, dismissible = true, onClos
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        initial={{ x: 28, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        // a spring to arrive on, a short curve to leave on
-        exit={{ x: 20, opacity: 0, transition: { duration: 0.16, ease: 'easeIn' } }}
-        transition={{ type: 'spring', stiffness: 320, damping: 34 }}
+        {...sheet.pane}
       >
-        <div className="sidebar-head">
+        {sheet.phone && <span className="sheet-grip" aria-hidden="true" />}
+        <div className="sidebar-head" {...sheet.grip}>
           <div className="sidebar-head-text">
             {eyebrow && <p className="doc-eyebrow">{eyebrow}</p>}
             <p className="doc-title">{title}</p>

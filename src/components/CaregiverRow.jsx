@@ -1,5 +1,6 @@
 import { ChevronRight, Send, Star } from 'lucide-react';
 import Button from './Button';
+import Standing from './Standing';
 import { ratingText } from '../data/carePlan';
 
 // One caregiver in the care plan: who she is, and the one thing the family can
@@ -9,7 +10,10 @@ import { ratingText } from '../data/carePlan';
 // the action sits at the row's right, the app's own primary button. On a phone
 // the button goes and a chevron says the row opens: the profile a tap brings up
 // has the same "Pošalji poruku", so every row does not need its own.
-export default function CaregiverRow({ caregiver, onSelect, onOpen }) {
+//
+// Once the family has written to her, or she already comes, the row says so in
+// the button's place (`standing`), as her card on Pronađi does.
+export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) {
   return (
     <div className={`caregiver${onOpen ? ' is-clickable' : ''}`}>
       <div className="cg-avatar">{caregiver.initials}</div>
@@ -30,7 +34,9 @@ export default function CaregiverRow({ caregiver, onSelect, onOpen }) {
           {ratingText(caregiver)} · {caregiver.rate} · {caregiver.area}, do {caregiver.radius} km
         </div>
       </div>
-      {onSelect && (
+      {standing ? (
+        <Standing standing={standing} />
+      ) : onSelect && (
         <Button variant="primary" className={onOpen ? 'card-action' : undefined} onClick={() => onSelect(caregiver)}>
           <Send size={14} strokeWidth={1.75} />
           Pošalji poruku

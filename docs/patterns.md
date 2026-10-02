@@ -70,10 +70,11 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 
 | Odnos | Razmak |
 |---|---|
-| Između elemenata stranice (`.view`) | 12 |
-| Između kartica u listi ili grupi (`.view-list`, `.section`) | 8 |
-| Od naslova grupe do prve kartice | 12 (`.section-title` ima margin-bottom 4 + gap 8) |
-| Između grupa | 32 (`.view > .section + .section`) |
+| Između elemenata stranice (`.view`), tj. kartica jedne ispod druge | 16 (odlučeno 2. 10.; bilo je 12) |
+| Između kartica u listi ili grupi (`.view-list`, `.section`) | 16 (bilo je 8) |
+| Od naslova grupe do prve kartice | 12 (gap 16, a `.section > .section-title` vraća 4) |
+| Između grupa | 32 (`.view > .section + .section`: gap 16 + 16) |
+| Od ivice panela do sadržaja stranice | 24 sa svih strana (`.view`; na telefonu 16) |
 | Unutar kartice, između delova | 8 (gap kartice) |
 | Unutar grupe sadržaja (npr. ime i ocena) | 4 |
 | Između grupa sadržaja u kartici | 12 |
@@ -97,16 +98,17 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 </div>
 ```
 
-- Akcije stranice su samo u `.view-head`, desno.
+- Akcije stranice su samo u `.view-head`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (CSS to radi preko klase `.ask-assistant`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
-- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `.view-head`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 32). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari `.back-link` je uklonjen).
+- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `.view-head`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari `.back-link` je uklonjen).
 - **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") iznad reda „Razgovor", a red „Razgovor" ima samo strelicu za spisak. „Vaši upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Vašim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
 - **Stranica osobe** (avatar pored imena, `.fam-person`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava CSS; ne menjaj markup.
-- Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici.
+- Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici. „Pronađi negovateljicu" za sada nema pretragu (odlučeno 2. 10.): lista je poređana po poklapanju sa planom, sa stranama po 10.
+- **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog; `waitingOnYou`), a „Vaši upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Vaših upita" odgovori su viđeni.
 
 ---
 
@@ -232,7 +234,7 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 - `Dialog` ima isti ugovor kao `Modal` (`eyebrow`, `title`, `wide`, `dismissible`, `onClose`, a sadržaj se završava redom akcija `.panel-card-actions.is-end`), pa ekran prelazi iz jednog u drugo promenom imena.
 - **Akcija iz drawer-a otvara modal preko drawer-a** („Otkaži posetu" iz plana posete, „Nešto nije u redu" iz radnog naloga, „Odbij" iz ugovora). Drawer ostaje ispod; Escape i „Nazad" zatvaraju samo modal. Kad modal vodi dalje („Pogledaj radni nalog" iz „Završiti saradnju?"), on se zatvara i otvara se drawer.
 - Mere modala: 440 širok (`wide`: 560), padding 24, radius 24, delovi 12 jedan od drugog, red akcija 16 ispod sadržaja i zakačen za dno dok se dugačak sadržaj skroluje.
-- Na telefonu su oba isti drawer preko celog ekrana (§12).
+- Na telefonu su oba bottom sheet (§12).
 - **Klik van drawer-a ili modala ga zatvara samo ako je i pritisak počeo van njega** (`src/lib/backdropClose.js`, u `Modal`, `Dialog` i `PaywallModal`). Kad se iz polja razvlači ili selektuje tekst pa se miš pusti van prozora, prozor ostaje otvoren. Svaki novi prozor sa pozadinom koristi isti `useBackdropClose`.
 
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
@@ -242,6 +244,8 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 - **Izveštaj posete** (`VisitReport` u `src/components/family/FamilyDrawer.jsx`) je uvek isti, gde god se prikazuje na stranici: delovi sa imenom, 12 jedan od drugog: „Urađeno" (oznake, samo u poslednjoj poseti), „Kako je bila" (oznake „Raspoloženje: dobro", „Ishrana: kao i obično", „Kretanje: kao i obično", bez ikonice) i „Sanna je zapisala" (običan tekst). U radnom nalogu (drawer) „Kako je bila" su iste oznake.
 - **„Sve posete" i „Svi upiti"** u glavi kartice su `Button` `secondary` (sa strelicom, kao i ranije), desno. **„Prikaži još"** je `Button` `secondary` u footeru, levo. Nema dugmeta-linka ni dugmeta koje je samo tekst.
 - **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima stalnu strelicu desno (`.fam-row-chevron`). Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
+- **Posete na njenoj stranici:** najviše 10, a ako ih ima više, „Pogledaj sve (N)" (`secondary`, dole levo) otvara drawer „Sve posete" sa svim njenim posetama (`kind: 'visits'`). Redosled je isti (`herVisits`): prvo ono što je u toku, pa izmireno.
+- **Stanje sa negovateljicom** (`standingWith` u `src/data/familyCare.js`, značka `Standing`, `src/components/Standing.jsx`) je ista značka svuda gde je ona: kartica na „Pronađi", red u preporuci plana, vrh njenog profila. „Već dolazi", „Ugovor čeka vas", „Dolazila ranije", „Upit poslat …", „Prihvatila", „Odbila". Stoji na mestu dugmeta „Pošalji poruku"; na telefonu ispod teksta reda, poravnata sa njim. U profilu je ispod cene, gore, a ne u footeru (footer tada nema dugmad).
 
 ---
 
@@ -268,6 +272,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 | Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |
+| Stanje sa porodicom („Već dolazi", „Upit poslat …") | značka gore desno | značka desno | značka ispod cene, gore |
 | Klasifikacije (finski nazivi) | grupa oznaka „Klasifikacije" | — | oznake „Klasifikacije" |
 | Biografija | — | — | „O sebi", običan tekst |
 | Obrazovanje, jezici | — | — | „Kvalifikacije" |
@@ -349,7 +354,8 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 - **Prelomi:** ≤640px je telefon, ≤900px je uzak ekran (meni postaje fioka).
 - **Paneli sa strane** (asistent, plan) su na uskom ekranu preko celog ekrana, bez radiusa.
-- **Svaki dijalog je na telefonu drawer:** i drawer-i (`Modal`) i centrirani dijalog (`.modal`, izbor plana i poruka negovateljici) zauzimaju celu visinu, 8px od ivica ekrana, sa radiusom 24 i paddingom 16. Sadržaj se skroluje, a poslednji red dugmadi je zakačen na dno sa linijom iznad. Na desktopu je drawer sa strane, a centrirani dijalog u sredini.
+- **Na telefonu je svaki prozor bottom sheet (odlučeno 2. 10.):** drawer (`Modal`), modal (`Dialog`) i izbor plana i poruka negovateljici (`PaywallModal`). Dolazi odozdo, visok je koliko mu treba sadržaj, a najviše do 48px od vrha ekrana (tu se vidi stranica). Gornji uglovi r24, dno na ivici ekrana, preko cele širine, padding 16, na vrhu ručica (36×4). Sadržaj se skroluje, a poslednji red dugmadi je zakačen na dno. **Prevlačenjem glave nadole se zatvara** (preko 96px ili brzim pokretom; kraće se vrati). Sve to radi `useSheet` (`src/lib/sheet.js`), pa novi prozor koristi isti hook. Na desktopu je drawer sa strane, a modal u sredini.
+- **Toast** je na telefonu širok koliko ekran (16 od ivica), na desktopu koliko tekst, do 520, uvek u sredini. Radius 16, ne pun krug.
 - **Ništa ne sme da izlazi van ekrana** na 375px.
 - Pravila za telefon iz §4, §5, §7 i §9 rešava CSS. Markup je isti na svim širinama.
 

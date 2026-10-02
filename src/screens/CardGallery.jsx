@@ -4,6 +4,7 @@ import { demoAnswers, demoNotes, demoUser } from '../data/demoCase';
 import { reconcile } from '../data/dependencies';
 import { planEntries, seedThreads } from '../data/threads';
 import { startCare } from '../data/familyStart';
+import { standingWith } from '../data/familyCare';
 import Button from '../components/Button';
 import Dashboard from './Dashboard';
 import CaregiverPage from './CaregiverPage';
@@ -99,6 +100,10 @@ function sampleCare() {
           visit('g-paid-you', '5. avgusta', 'paid', { report: report({ mood: 'usual' }), confirmed: 'you', chargedOn: '6. avgusta' }),
           visit('g-paid-auto', '3. avgusta', 'paid', { report: report({ mood: 'low', concern: 'Žalila se na koleno.' }), confirmed: 'auto', chargedOn: '4. avgusta' }),
           visit('g-cancelled', '31. jula', 'cancelled', { cancelledBy: 'family', cancelReason: 'Hitan slučaj u porodici' }),
+          // enough of them that her page shows ten and "Pogledaj sve"
+          ...['29. jula', '27. jula', '24. jula', '22. jula', '21. jula'].map((d, i) =>
+            visit(`g-old-${i}`, d, 'paid', { report: report(), confirmed: i % 2 ? 'auto' : 'you', chargedOn: d })
+          ),
         ],
       },
       {
@@ -122,13 +127,13 @@ function sampleCare() {
 const SECTIONS = [
   { id: 'moja-nega', title: 'Moja nega', where: 'Čeka na vas, Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti' },
   { id: 'prvi-korak', title: 'Moja nega, pre prvog upita', where: 'Sledeći korak' },
-  { id: 'njena-stranica', title: 'Njena stranica', where: 'Predstoji, Ugovor o nezi, Ukratko, Posete (svaki status)' },
+  { id: 'njena-stranica', title: 'Njena stranica', where: 'Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Pogledaj sve")' },
   { id: 'nove-uslove', title: 'Njena stranica, novi uslovi čekaju', where: 'Čeka na vas, Novi uslovi' },
   { id: 'zavrsena', title: 'Njena stranica, završena saradnja', where: 'Završeno, ugovor koji više ne važi' },
   { id: 'posete', title: 'Sve posete', where: 'Posete po mesecima' },
   { id: 'upiti', title: 'Vaši upiti', where: 'Upit: čeka, prihvaćen, odbijen' },
-  { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, čeka odgovor, ne može' },
-  { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice' },
+  { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
+  { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)' },
   { id: 'planovi', title: 'Planovi nege', where: 'Lista planova' },
   { id: 'podesavanja', title: 'Podešavanja', where: 'Plaćanje, Bezbednost, Opšte, Privatnost i nalog' },
   { id: 'profil', title: 'Profil', where: 'O kome brinemo, Glavni kontakt, Čemu se nadate' },
@@ -220,6 +225,7 @@ export default function CardGallery() {
           onUndoChange={noop}
           onDismissChange={noop}
           onFindCaregivers={noop}
+          standingOf={(id) => standingWith(care, id)}
         />
       </Frame>
       <Frame {...SECTIONS[9]}>

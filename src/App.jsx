@@ -33,7 +33,7 @@ import Button from './components/Button';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, firstName } from './data/familyCare';
+import { askCaregiver, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { REPLY_AFTER_MS, VISIT_AFTER_MS, answerRequest, planFirstVisit, requestMessage, startCare, withAnswers } from './data/familyStart';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
@@ -464,7 +464,8 @@ export default function App() {
           view={view}
           onView={setView}
           user={user}
-          requestsBadge={care.requests.filter((r) => r.status === 'pending').length}
+          careBadge={waitingOnYou(care).length}
+          requestsBadge={unseenAnswers(care)}
           threads={conversationEntries}
           activeThread={conversation}
           onSelectThread={openConversation}
@@ -597,6 +598,7 @@ export default function App() {
               {view === 'requests' && (
                 <RequestsPage
                   care={care}
+                  onCare={setCare}
                   onCaregiver={showCaregiver}
                   onFind={() => setView('find-caregiver')}
                 />
@@ -635,6 +637,7 @@ export default function App() {
                   onUndoChange={undoPlanChange}
                   onDismissChange={() => setPlanChange(null)}
                   onFindCaregivers={() => setView('find-caregiver')}
+                  standingOf={(id) => standingWith(care, id)}
                 />
               )}
               {view === 'profile' && (

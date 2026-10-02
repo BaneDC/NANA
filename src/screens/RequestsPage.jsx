@@ -1,24 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import Button from '../components/Button';
 import { Group } from '../components/Tags';
 import { caregivers } from '../data/carePlan';
-import { arrangementOf, firstName } from '../data/familyCare';
+import { arrangementOf, firstName, seeAnswers } from '../data/familyCare';
 
 // Everyone the family has asked about care, and where each one stands. A "yes"
 // that became an arrangement links to her page; a "no" always says why, so
 // nobody is left guessing. A place of its own in the side menu, so no way back;
 // and since finding someone to ask is in the menu too, the page only offers it
 // while nobody has been asked yet.
+//
+// The menu counts the answers the family has not seen (a yes or a no, never a
+// request they sent themselves). Being on this page is seeing them, including
+// one that arrives while it is open.
 
 const LABEL = { pending: 'Čeka odgovor', accepted: 'Prihvaćeno', declined: 'Odbijeno' };
 const PILL = { pending: 'is-pending', accepted: 'is-accepted', declined: 'is-declined' };
 const ICON = { pending: Clock, accepted: CheckCircle2, declined: XCircle };
 const TABS = ['all', 'pending', 'accepted', 'declined'];
 
-export default function RequestsPage({ care, onCaregiver, onFind }) {
+export default function RequestsPage({ care, onCare, onCaregiver, onFind }) {
   const [tab, setTab] = useState('all');
   const mine = care.requests;
+  useEffect(() => {
+    onCare?.(seeAnswers);
+  }, [mine, onCare]);
   const picked = tab === 'all' ? mine : mine.filter((r) => r.status === tab);
 
   return (
@@ -70,7 +77,7 @@ export default function RequestsPage({ care, onCaregiver, onFind }) {
               const Icon = ICON[r.status];
               const linked = r.status === 'accepted' && arrangementOf(care, r.caregiverId);
               return (
-                <section key={r.caregiverId} className={`panel-card fam-request${linked ? ' is-linked' : ''}`}>
+                <section key={r.caregiverId} className="panel-card fam-request">
                   <div className="fam-request-head">
                     <span className="cg-avatar">{cg.initials}</span>
                     <div className="fam-row-main">

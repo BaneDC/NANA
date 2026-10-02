@@ -15,7 +15,8 @@ import {
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
-import { ServiceChips, VisitReport } from '../components/family/FamilyDrawer';
+import { ServiceChips } from '../components/family/FamilyDrawer';
+import VisitReport from '../components/family/VisitReport';
 
 // The family's home: what is waiting on them, what is coming, how the last visit
 // went, and everyone who has cared for their mother. Each of those opens the

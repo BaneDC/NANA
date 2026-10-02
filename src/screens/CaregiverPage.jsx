@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { CreditCard, Phone } from 'lucide-react';
 import Button from '../components/Button';
 import Attention from '../components/Attention';
@@ -10,6 +9,7 @@ import {
   arrangementOf,
   chargedFor,
   firstName,
+  herVisits,
   linkCard,
   money,
   pendingVersion,
@@ -21,7 +21,8 @@ import {
 // works under, how it has gone so far, and every visit she has made. Everything
 // the family can do about her is on this page or one drawer away from it.
 
-const PAGE = 5;
+// Her page shows the latest ten; all of them open in a drawer.
+const SHOWN = 10;
 
 // the one thing to know about her right now, and the button for it if there is one
 function nextStep(care, a) {
@@ -79,7 +80,6 @@ function nextStep(care, a) {
 }
 
 export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onBack, onFlash }) {
-  const [shown, setShown] = useState(PAGE);
   const a = arrangementOf(care, caregiverId) || care.arrangements[0];
   const cg = a.caregiver;
   const first = firstName(cg.name);
@@ -92,10 +92,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
   const paid = a.visits.filter((v) => v.status === 'paid');
   const hoursSoFar = paid.reduce((n, v) => n + v.hours, 0);
   const chargedSoFar = paid.reduce((n, v) => n + chargedFor(v.hours, v.rate), 0);
-  // anything still moving first, then everything settled, newest first
-  const open = a.visits.filter((v) => v.status !== 'paid' && v.status !== 'cancelled');
-  const rest = a.visits.filter((v) => !open.includes(v));
-  const visits = [...open, ...rest].map((v) => ({ ...v, caregiver: cg }));
+  const visits = herVisits(a);
 
   const termsBadge = !terms
     ? null
@@ -215,15 +212,15 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
         </p>
         {visits.length > 0 && (
           <ul className="fam-visits">
-            {visits.slice(0, shown).map((v) => (
+            {visits.slice(0, SHOWN).map((v) => (
               <VisitRow key={v.id} visit={v} onDrawer={onDrawer} />
             ))}
           </ul>
         )}
-        {visits.length > shown && (
+        {visits.length > SHOWN && (
           <div className="panel-card-actions">
-            <Button variant="secondary" onClick={() => setShown((n) => n + PAGE)}>
-              Prikaži još {Math.min(PAGE, visits.length - shown)}
+            <Button variant="secondary" onClick={() => onDrawer({ kind: 'visits', caregiverId: cg.id })}>
+              Pogledaj sve ({visits.length})
             </Button>
           </div>
         )}
