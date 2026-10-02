@@ -1245,8 +1245,10 @@ textarea {
   padding-top: var(--spacing-4);
 }
 
+/* 16 under it: the page's 12 and 4 of its own */
 .view > .back-row {
   flex-shrink: 0;
+  margin-bottom: var(--spacing-1);
 }
 
 .back-btn {
@@ -1348,8 +1350,8 @@ textarea {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  /* cards one after another are 16 apart, on every page */
-  gap: var(--spacing-4);
+  /* cards one after another are 12 apart, on every page */
+  gap: var(--spacing-3);
   /* 24 on top as at the sides: the head's button sits as far from the pane's
      top as from its edge, in its corner rather than low under it */
   padding: var(--spacing-6);
@@ -1392,7 +1394,7 @@ textarea {
 .view-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
 }
 
 .empty {
@@ -1570,19 +1572,19 @@ textarea {
    the cards are what is read: 12px, secondary, as written, never capitals.
    8 between the cards, 12 from the title to them, 32 from one group to the
    next (the view's 12 plus 20). */
+/* the title 12 over its first card, as the cards are 12 apart */
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
 }
 
-/* the title stays 12 over its first card (16 of the gap, 4 taken back) */
 .section > .section-title {
-  margin-bottom: calc(var(--spacing-1) * -1);
+  margin-bottom: 0;
 }
 
 .view > .section + .section {
-  margin-top: var(--spacing-4);
+  margin-top: 20px;
 }
 
 .section-title {

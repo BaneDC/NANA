@@ -70,10 +70,10 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 
 | Odnos | Razmak |
 |---|---|
-| Između elemenata stranice (`.view`), tj. kartica jedne ispod druge | 16 (odlučeno 2. 10.; bilo je 12) |
-| Između kartica u listi ili grupi (`.view-list`, `.section`) | 16 (bilo je 8) |
-| Od naslova grupe do prve kartice | 12 (gap 16, a `.section > .section-title` vraća 4) |
-| Između grupa | 32 (`.view > .section + .section`: gap 16 + 16) |
+| Između elemenata stranice (`.view`), tj. kartica jedne ispod druge | 12 (odlučeno 2. 10.; 16 je bilo previše) |
+| Između kartica u listi ili grupi (`.view-list`, `.section`) | 12 (bilo je 8) |
+| Od naslova grupe do prve kartice | 12 (gap grupe) |
+| Između grupa | 32 (`.view > .section + .section`: gap 12 + 20) |
 | Od ivice panela do sadržaja stranice | 24 sa svih strana (`.view`; na telefonu 16) |
 | Unutar kartice, između delova | 8 (gap kartice) |
 | Unutar grupe sadržaja (npr. ime i ocena) | 4 |
@@ -101,7 +101,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - Akcije stranice su samo u `.view-head`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (CSS to radi preko klase `.ask-assistant`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
-- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `.view-head`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari `.back-link` je uklonjen).
+- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `.view-head`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice 12 i 4 dugmeta). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari `.back-link` je uklonjen).
 - **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") iznad reda „Razgovor", a red „Razgovor" ima samo strelicu za spisak. „Vaši upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Vašim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
