@@ -1,17 +1,11 @@
-import { caregivers } from './carePlan';
 import { serviceTitle } from './caregiverBoard';
+import { servicesForNeed } from './serviceCatalog';
+import { START_HOUR } from './familyCare';
 
 // The family's side as it really starts: nobody asked yet, nobody coming, no
 // card. Everything on it from here is something the family did, or a
-// caregiver's answer to it.
-//
-// Caregivers answer from their own board, which in this build is nobody. So
-// that the story still moves on its own the way it would, their answers come
-// here, a few seconds after the thing they answer — the same answer a real
-// one would give, built from the family's own plan.
-
-export const REPLY_AFTER_MS = 6000;
-export const VISIT_AFTER_MS = 5000;
+// caregiver's or the coordinator's answer to it. Those answers are not timed:
+// they are simulated by hand, from a hidden panel (sim.js, SimPanel).
 
 export function startCare(user) {
   return {
@@ -21,6 +15,9 @@ export function startCare(user) {
     need: null,
     requests: [],
     arrangements: [],
+    // the clock (hours since 11 August 2026, 00:00) and what has happened
+    now: START_HOUR,
+    log: [],
   };
 }
 
@@ -56,7 +53,8 @@ export function needFrom(answers) {
           : { days: 'pon, sre, pet', time: '09:00–12:00', perVisit: 3, visits: 3 };
 
   return {
-    services: [...out],
+    // in the catalog's terms, as a caregiver's agreement would list them
+    services: servicesForNeed([...out]),
     hours: week.perVisit * week.visits,
     perVisit: week.perVisit,
     time: week.time,
@@ -90,95 +88,3 @@ export function requestMessage(care) {
     .join(' ');
 }
 
-// Who says no, and why. A real board has people who are full; one of them
-// here, so a family sees what a no looks like and that it always says why.
-const BUSY = {
-  liisa: 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.',
-};
-
-// She names a range on her profile; the terms she sends start in its middle,
-// in whole euros, so the family has room either way.
-const rateOf = (c) => (c.rateMin && c.rateMax ? Math.round((c.rateMin + c.rateMax) / 2) : 15);
-
-// A caregiver's answer to a request: a no with its reason, or a yes that comes
-// with her terms for exactly what the plan asks for.
-export const answerRequest = (caregiverId) => (care) => {
-  const req = care.requests.find((r) => r.caregiverId === caregiverId);
-  if (!req || req.status !== 'pending') return care;
-  const c = caregivers.find((x) => x.id === caregiverId);
-  if (BUSY[caregiverId]) {
-    return {
-      ...care,
-      requests: care.requests.map((r) => (r === req ? { ...r, status: 'declined', detail: BUSY[caregiverId] } : r)),
-    };
-  }
-  const need = care.need || needFrom({});
-  return {
-    ...care,
-    requests: care.requests.map((r) =>
-      r === req ? { ...r, status: 'accepted', detail: 'Prihvatila je i poslala svoje uslove.' } : r
-    ),
-    arrangements: [
-      ...care.arrangements,
-      {
-        caregiver: {
-          id: c.id,
-          name: c.name,
-          initials: c.initials,
-          phone: c.phone,
-          area: c.area,
-          radius: c.radius,
-          classifications: c.classifications,
-          rating: c.rating,
-          reviews: c.reviews,
-          bio: c.bio,
-        },
-        since: null,
-        endedOn: null,
-        versions: [
-          {
-            version: 1,
-            status: 'sent',
-            services: need.services,
-            rate: rateOf(c),
-            hours: need.hours,
-            schedule: need.schedule,
-            sentOn: 'upravo',
-            note: `Pročitala sam plan nege. Mogu da dolazim ${need.schedule}, i da preuzmem sve što piše u njemu.`,
-          },
-        ],
-        visits: [],
-      },
-    ],
-  };
-};
-
-// Once terms are agreed she plans the first visit, as she would from her board:
-// tomorrow, on the agreed schedule, for what the terms cover.
-export const planFirstVisit = (caregiverId) => (care) => ({
-  ...care,
-  arrangements: care.arrangements.map((a) => {
-    if (a.caregiver.id !== caregiverId || a.visits.length) return a;
-    const v = a.versions.find((x) => x.status === 'active');
-    if (!v) return a;
-    const time = v.schedule.split('·')[1]?.trim() || '09:00–12:00';
-    const [from, to] = time.split('–').map((t) => parseInt(t, 10));
-    return {
-      ...a,
-      visits: [
-        {
-          id: `v-${caregiverId}-1`,
-          date: 'Sutra',
-          time,
-          hours: to - from || 3,
-          rate: v.rate,
-          services: v.services,
-          notes: 'Prva poseta. Upoznaću se sa njom i proći kroz plan nege sa vama.',
-          status: 'planned',
-          sentOn: 'upravo',
-          dueInHours: 20,
-        },
-      ],
-    };
-  }),
-});

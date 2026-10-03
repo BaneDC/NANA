@@ -3,7 +3,7 @@ import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import Button from '../components/Button';
 import { Group } from '../components/Tags';
 import { caregivers } from '../data/carePlan';
-import { arrangementOf, firstName, seeAnswers } from '../data/familyCare';
+import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../data/familyCare';
 
 // Everyone the family has asked about care, and where each one stands. A "yes"
 // that became an arrangement links to her page; a "no" always says why, so
@@ -20,7 +20,7 @@ const PILL = { pending: 'is-pending', accepted: 'is-accepted', declined: 'is-dec
 const ICON = { pending: Clock, accepted: CheckCircle2, declined: XCircle };
 const TABS = ['all', 'pending', 'accepted', 'declined'];
 
-export default function RequestsPage({ care, onCare, onCaregiver, onFind }) {
+export default function RequestsPage({ care, onCare, onCaregiver, onFind, onContact }) {
   const [tab, setTab] = useState('all');
   const mine = care.requests;
   useEffect(() => {
@@ -76,14 +76,16 @@ export default function RequestsPage({ care, onCare, onCaregiver, onFind }) {
               if (!cg) return null;
               const Icon = ICON[r.status];
               const linked = r.status === 'accepted' && arrangementOf(care, r.caregiverId);
+              // only the latest request to her can be followed by another
+              const askAgain = r.status === 'declined' && latestRequest(care, r.caregiverId) === r && canAsk(care, r.caregiverId);
               return (
-                <section key={r.caregiverId} className="panel-card fam-request">
+                <section key={r.id || r.caregiverId} className="panel-card fam-request">
                   <div className="fam-request-head">
                     <span className="cg-avatar">{cg.initials}</span>
                     <div className="fam-row-main">
                       <p className="fam-row-title">{cg.name}</p>
                       <p className="fam-row-body">
-                        {cg.area} · {cg.rate} · upit poslat {r.requested}
+                        {cg.area} · {cg.rate} · {r.again ? 'ponovni upit' : 'upit'} poslat {r.requested}
                       </p>
                     </div>
                     <span className={`status-pill ${PILL[r.status]}`}>
@@ -112,6 +114,13 @@ export default function RequestsPage({ care, onCare, onCaregiver, onFind }) {
                     <div className="panel-card-actions">
                       <Button variant="secondary" onClick={() => onCaregiver(r.caregiverId)}>
                         Pogledaj saradnju
+                      </Button>
+                    </div>
+                  )}
+                  {askAgain && (
+                    <div className="panel-card-actions">
+                      <Button variant="primary" onClick={() => onContact?.(cg)}>
+                        Pitaj ponovo
                       </Button>
                     </div>
                   )}

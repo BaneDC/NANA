@@ -1,4 +1,5 @@
 import { CFS } from './frailty';
+import { CATALOG, SERVICE_GROUPS } from './serviceCatalog';
 
 // The caregiver's side of the same product. A family sends a request; from the
 // caregiver's desk that request is a piece of work that moves through four
@@ -18,25 +19,15 @@ export const STAGES = [
   { id: 'work-order', title: 'Radni nalozi', note: 'Pošalji posle svake posete' },
 ];
 
-// The services an agreement can cover. One closed list, because the agreement
+// The services an agreement can cover: the one catalog the caregivers' app
+// uses (serviceCatalog.js), four groups. One closed list, because the agreement
 // is what every later number is calculated from — a visit is billed against
-// these, so they cannot be free text. `short` is what fits on a board card.
-export const SERVICES = [
-  { id: 'personal-care', title: 'Lična nega i higijena', short: 'Lična nega' },
-  { id: 'meals', title: 'Priprema obroka', short: 'Obroci' },
-  { id: 'medication', title: 'Podsećanje na lekove', short: 'Lekovi' },
-  { id: 'company', title: 'Društvo i razgovor', short: 'Društvo' },
-  { id: 'errands', title: 'Nabavka i obaveze', short: 'Nabavka' },
-  { id: 'housekeeping', title: 'Lakši kućni poslovi', short: 'Kućni poslovi' },
-  { id: 'walks', title: 'Šetnje i boravak napolju', short: 'Šetnje' },
-  // Not on the client's draft list, but the care plan on the family's side asks
-  // about mobility support and someone at CFS 7 is mostly that.
-  { id: 'mobility', title: 'Pomoć pri kretanju', short: 'Kretanje' },
-];
-
-export const serviceById = Object.fromEntries(SERVICES.map((s) => [s.id, s]));
-export const serviceTitle = (id) => serviceById[id]?.title || id;
-export const serviceShort = (id) => serviceById[id]?.short || id;
+// these, so they cannot be free text.
+export const SERVICES = SERVICE_GROUPS.flatMap((g) => g.items.map(([id, title]) => ({ id, title, group: g.id })));
+export const serviceById = CATALOG;
+export const serviceTitle = (id) => CATALOG[id]?.title || id;
+// a board card has the same name as everywhere else: the catalog's names are short
+export const serviceShort = serviceTitle;
 
 // Helsinki, euros, the same families the rest of the app talks about. Amounts
 // go through the one shared formatter (15 €, 15,20 €); it keeps the name
@@ -58,7 +49,7 @@ export const clients = [
     area: 'Töölö',
     distance: '1,8 km',
     frailty: 5,
-    needs: ['medication', 'meals', 'company'],
+    needs: ['medication-reminders', 'food-preparation', 'companionship'],
     hours: 12,
     schedule: 'pon, sre, pet · 09:00–13:00',
     stage: 'request',
@@ -84,7 +75,7 @@ export const clients = [
     area: 'Kallio',
     distance: '3,2 km',
     frailty: 6,
-    needs: ['personal-care', 'mobility', 'meals'],
+    needs: ['hygiene', 'mobility-assistance', 'food-preparation'],
     hours: 20,
     schedule: 'svakog radnog dana · 08:00–12:00',
     stage: 'request',
@@ -110,7 +101,7 @@ export const clients = [
     area: 'Kamppi',
     distance: '1,1 km',
     frailty: 6,
-    needs: ['personal-care', 'meals', 'housekeeping'],
+    needs: ['hygiene', 'food-preparation', 'light-cleaning'],
     hours: 15,
     schedule: 'pon–čet · 09:00–13:00',
     stage: 'agreement',
@@ -133,13 +124,13 @@ export const clients = [
     area: 'Lauttasaari',
     distance: '4,6 km',
     frailty: 4,
-    needs: ['company', 'errands', 'walks'],
+    needs: ['companionship', 'grocery-shopping', 'walks'],
     hours: 8,
     schedule: 'uto, čet · 10:00–14:00',
     stage: 'agreement',
     agreementSent: true,
     sentOn: 'pre 2 dana',
-    services: ['company', 'errands', 'walks'],
+    services: ['companionship', 'grocery-shopping', 'walks'],
     rate: 15,
     visits: [],
     activity: [
@@ -163,25 +154,25 @@ export const clients = [
     area: 'Töölö',
     distance: '2,0 km',
     frailty: 5,
-    needs: ['medication', 'meals', 'company'],
+    needs: ['medication-reminders', 'food-preparation', 'companionship'],
     hours: 12,
     schedule: 'pon, sre, pet · 09:00–13:00',
     stage: 'active',
-    services: ['medication', 'meals', 'company', 'housekeeping'],
+    services: ['medication-reminders', 'food-preparation', 'companionship', 'light-cleaning'],
     rate: 15,
     since: '12. juna',
     plan: {
       date: 'Sutra',
       time: '09:00–13:00',
       hours: 4,
-      services: ['medication', 'meals', 'company'],
+      services: ['medication-reminders', 'food-preparation', 'companionship'],
       notes: 'Podići recept u apoteci na uglu. Anna je tražila da je pozovete posle.',
       sentOn: 'pre 2 dana',
     },
     visits: [
-      { date: '8. avgusta', time: '09:00–13:00', hours: 4, mood: 'good', eating: 'usual', moving: 'usual', services: ['medication', 'meals', 'company'], note: 'Jutarnja rutina, skuvala za dva dana, kratka šetnja do parka.', status: 'paid' },
-      { date: '6. avgusta', time: '09:00–13:00', hours: 4, mood: 'usual', eating: 'usual', moving: 'usual', services: ['medication', 'meals', 'housekeeping'], note: 'Apoteka, veš, ručak.', status: 'paid' },
-      { date: '4. avgusta', time: '09:00–13:00', hours: 4, mood: 'low', eating: 'less', moving: 'less', services: ['medication', 'meals'], concern: 'Jede mnogo manje nego obično, treći put ove nedelje.', note: 'Umorna celo jutro, nije htela da izađe. Jela je vrlo malo.', status: 'paid' },
+      { date: '8. avgusta', time: '09:00–13:00', hours: 4, mood: 'good', eating: 'usual', moving: 'usual', services: ['medication-reminders', 'food-preparation', 'companionship'], note: 'Jutarnja rutina, skuvala za dva dana, kratka šetnja do parka.', status: 'paid' },
+      { date: '6. avgusta', time: '09:00–13:00', hours: 4, mood: 'usual', eating: 'usual', moving: 'usual', services: ['medication-reminders', 'food-preparation', 'light-cleaning'], note: 'Apoteka, veš, ručak.', status: 'paid' },
+      { date: '4. avgusta', time: '09:00–13:00', hours: 4, mood: 'low', eating: 'less', moving: 'less', services: ['medication-reminders', 'food-preparation'], concern: 'Jede mnogo manje nego obično, treći put ove nedelje.', note: 'Umorna celo jutro, nije htela da izađe. Jela je vrlo malo.', status: 'paid' },
     ],
     activity: [
       { kind: 'request', when: '10. juna', text: 'Anna je poslala upit.' },
@@ -204,24 +195,24 @@ export const clients = [
     area: 'Vallila',
     distance: '3,8 km',
     frailty: 7,
-    needs: ['personal-care', 'mobility', 'medication'],
+    needs: ['hygiene', 'mobility-assistance', 'medication-reminders'],
     hours: 9,
     schedule: 'uto, čet, sub · 10:00–13:00',
     stage: 'active',
-    services: ['personal-care', 'mobility', 'medication'],
+    services: ['hygiene', 'mobility-assistance', 'medication-reminders'],
     rate: 16,
     since: '3. marta',
     plan: {
       date: 'Četvrtak',
       time: '10:00–13:00',
       hours: 3,
-      services: ['personal-care', 'mobility', 'medication'],
+      services: ['hygiene', 'mobility-assistance', 'medication-reminders'],
       notes: 'Probati ponovo stepenice do dvorišta ako bude mogao.',
       sentOn: 'juče',
     },
     visits: [
-      { date: '9. avgusta', time: '10:00–13:00', hours: 3, mood: 'usual', eating: 'usual', moving: 'usual', services: ['personal-care', 'mobility', 'medication'], note: 'Kupanje, oblačenje, vežbe sa hodalicom.', status: 'awaiting', sentOn: 'pre 6 sati', confirmsInHours: 18 },
-      { date: '7. avgusta', time: '10:00–13:00', hours: 3, mood: 'good', eating: 'usual', moving: 'more', services: ['personal-care', 'mobility', 'medication'], note: 'Prvi put posle više nedelja savladao stepenice do dvorišta.', status: 'paid' },
+      { date: '9. avgusta', time: '10:00–13:00', hours: 3, mood: 'usual', eating: 'usual', moving: 'usual', services: ['hygiene', 'mobility-assistance', 'medication-reminders'], note: 'Kupanje, oblačenje, vežbe sa hodalicom.', status: 'awaiting', sentOn: 'pre 6 sati', confirmsInHours: 18 },
+      { date: '7. avgusta', time: '10:00–13:00', hours: 3, mood: 'good', eating: 'usual', moving: 'more', services: ['hygiene', 'mobility-assistance', 'medication-reminders'], note: 'Prvi put posle više nedelja savladao stepenice do dvorišta.', status: 'paid' },
     ],
     activity: [
       { kind: 'request', when: '1. marta', text: 'Juha je poslao upit.' },
@@ -242,18 +233,18 @@ export const clients = [
     area: 'Munkkiniemi',
     distance: '1,4 km',
     frailty: 5,
-    needs: ['meals', 'housekeeping', 'company'],
+    needs: ['food-preparation', 'light-cleaning', 'companionship'],
     hours: 9,
     schedule: 'pon, sre, pet · 09:00–12:00',
     stage: 'work-order',
-    services: ['meals', 'housekeeping', 'company'],
+    services: ['food-preparation', 'light-cleaning', 'companionship'],
     rate: 15,
     since: '4. maja',
     sinceVisit: 'pre 18 sati',
     visits: [
-      { date: 'Juče', time: '09:00–12:00', hours: 3, planned: ['meals', 'housekeeping', 'company'], planNotes: 'Peglanje, i želela je pomoć oko pisanja pisma.', status: 'due' },
-      { date: '7. avgusta', time: '09:00–12:00', hours: 3, mood: 'good', eating: 'usual', moving: 'usual', services: ['meals', 'housekeeping', 'company'], note: 'Kuvale zajedno, veći deo uradila je sama.', status: 'paid' },
-      { date: '5. avgusta', time: '09:00–12:00', hours: 3, mood: 'usual', eating: 'usual', moving: 'usual', services: ['meals', 'housekeeping'], note: 'Nabavka, čišćenje kuhinje.', status: 'paid' },
+      { date: 'Juče', time: '09:00–12:00', hours: 3, planned: ['food-preparation', 'light-cleaning', 'companionship'], planNotes: 'Peglanje, i želela je pomoć oko pisanja pisma.', status: 'due' },
+      { date: '7. avgusta', time: '09:00–12:00', hours: 3, mood: 'good', eating: 'usual', moving: 'usual', services: ['food-preparation', 'light-cleaning', 'companionship'], note: 'Kuvale zajedno, veći deo uradila je sama.', status: 'paid' },
+      { date: '5. avgusta', time: '09:00–12:00', hours: 3, mood: 'usual', eating: 'usual', moving: 'usual', services: ['food-preparation', 'light-cleaning'], note: 'Nabavka, čišćenje kuhinje.', status: 'paid' },
     ],
     activity: [
       { kind: 'request', when: '2. maja', text: 'Matti je poslao upit.' },
@@ -274,17 +265,17 @@ export const clients = [
     area: 'Herttoniemi',
     distance: '5,1 km',
     frailty: 4,
-    needs: ['company', 'walks', 'errands'],
+    needs: ['companionship', 'walks', 'grocery-shopping'],
     hours: 12,
     schedule: 'pon, čet · 08:00–14:00',
     stage: 'work-order',
-    services: ['company', 'walks', 'errands'],
+    services: ['companionship', 'walks', 'grocery-shopping'],
     rate: 14,
     since: '20. jula',
     sinceVisit: 'pre 2 dana',
     visits: [
-      { date: '9. avgusta', time: '08:00–14:00', hours: 6, planned: ['company', 'walks', 'errands'], planNotes: 'Prvo pijaca, pa šetnja pored mora.', status: 'due' },
-      { date: '5. avgusta', time: '08:00–14:00', hours: 6, mood: 'good', eating: 'more', moving: 'more', services: ['company', 'walks', 'errands'], note: 'Obaveze i duga šetnja. Ceo dan dobro raspoložen.', status: 'paid' },
+      { date: '9. avgusta', time: '08:00–14:00', hours: 6, planned: ['companionship', 'walks', 'grocery-shopping'], planNotes: 'Prvo pijaca, pa šetnja pored mora.', status: 'due' },
+      { date: '5. avgusta', time: '08:00–14:00', hours: 6, mood: 'good', eating: 'more', moving: 'more', services: ['companionship', 'walks', 'grocery-shopping'], note: 'Obaveze i duga šetnja. Ceo dan dobro raspoložen.', status: 'paid' },
     ],
     activity: [
       { kind: 'request', when: '18. jula', text: 'Tiina je poslala upit.' },

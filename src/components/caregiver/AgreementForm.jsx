@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Check, Send } from 'lucide-react';
 import Button from '../Button';
 import { Field, Input } from '../TextField';
-import { DEFAULT_RATE, SERVICES, money, totalsFor } from '../../data/caregiverBoard';
+import { DEFAULT_RATE, money, totalsFor } from '../../data/caregiverBoard';
+import { SERVICE_GROUPS } from '../../data/serviceCatalog';
 
 // The agreement, the first and only time it is built: which services, and one
 // shared hourly rate. Both are pre-filled from what the family actually asked
@@ -27,20 +28,26 @@ export default function AgreementForm({ client, onSend, onCancel }) {
       </p>
 
       <p className="ag-label">Usluge iz ovog ugovora</p>
-      <div className="ag-services">
-        {SERVICES.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            className={`svc${services.includes(s.id) ? ' is-on' : ''}`}
-            onClick={() => toggle(s.id)}
-            aria-pressed={services.includes(s.id)}
-          >
-            {services.includes(s.id) && <Check size={13} strokeWidth={2.5} />}
-            {s.title}
-          </button>
-        ))}
-      </div>
+      {/* the catalog's four groups, each under its name */}
+      {SERVICE_GROUPS.map((g) => (
+        <div key={g.id} className="tag-row">
+          <p className="tag-row-label">{g.title}</p>
+          <div className="ag-services">
+            {g.items.map(([id, title]) => (
+              <button
+                key={id}
+                type="button"
+                className={`svc${services.includes(id) ? ' is-on' : ''}`}
+                onClick={() => toggle(id)}
+                aria-pressed={services.includes(id)}
+              >
+                {services.includes(id) && <Check size={13} strokeWidth={2.5} />}
+                {title}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
       <p className="ag-hint">
         Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.
       </p>

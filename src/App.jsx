@@ -33,8 +33,9 @@ import Button from './components/Button';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
-import { REPLY_AFTER_MS, VISIT_AFTER_MS, answerRequest, planFirstVisit, requestMessage, startCare, withAnswers } from './data/familyStart';
+import { askCaregiver, canAsk, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { requestMessage, startCare, withAnswers } from './data/familyStart';
+import SimPanel from './components/family/SimPanel';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { planEntries, seedThreads } from './data/threads';
@@ -135,40 +136,19 @@ export default function App() {
     setCare((c) => withAnswers(c, answers, user));
   }, [answers, user]);
 
-  // The caregivers' side of the story. A request gets an answer, and agreed
-  // terms get a first visit, a few seconds later, the way they would from the
-  // caregiver's board. Each is scheduled once.
-  const careRef = useRef(care);
-  careRef.current = care;
-  const scheduled = useRef(new Set());
+  // The caregivers' side of the story is not timed: whatever a caregiver or the
+  // coordinator would do is done by hand from the hidden simulation panel,
+  // which Ctrl+H opens and closes.
+  const [sim, setSim] = useState(false);
   useEffect(() => {
-    const later = (key, ms, fn) => {
-      if (scheduled.current.has(key)) return;
-      scheduled.current.add(key);
-      setTimeout(fn, ms);
+    const onKey = (e) => {
+      if (!e.ctrlKey || e.altKey || e.metaKey || e.key.toLowerCase() !== 'h') return;
+      e.preventDefault();
+      setSim((v) => !v);
     };
-    for (const r of care.requests) {
-      if (r.status !== 'pending') continue;
-      later(`answer-${r.caregiverId}`, REPLY_AFTER_MS, () => {
-        const next = answerRequest(r.caregiverId)(careRef.current);
-        const done = next.requests.find((x) => x.caregiverId === r.caregiverId);
-        const name = caregivers.find((c) => c.id === r.caregiverId)?.name || '';
-        setCare(answerRequest(r.caregiverId));
-        say(
-          done?.status === 'declined'
-            ? `${firstName(name)} ne može da preuzme. ${done.detail}`
-            : `${firstName(name)} je prihvatila upit i poslala ugovor o nezi.`
-        );
-      });
-    }
-    for (const a of care.arrangements) {
-      if (a.endedOn || a.visits.length || !a.versions.some((v) => v.status === 'active')) continue;
-      later(`visit-${a.caregiver.id}`, VISIT_AFTER_MS, () => {
-        setCare(planFirstVisit(a.caregiver.id));
-        say(`${firstName(a.caregiver.name)} je zakazala prvu posetu za sutra.`);
-      });
-    }
-  }, [care]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // A change to the plan, by hand or from the assistant: new answers, reconciled
   // the way every answer is, and the plan built again from them. What changed
@@ -591,6 +571,7 @@ export default function App() {
                   onDrawer={setDrawer}
                   onFlash={(text) => setFlash({ text, at: Date.now() })}
                   onBack={() => setView('dashboard')}
+                  onContact={contactCaregiver}
                 />
               )}
               {view === 'visits' && (
@@ -600,6 +581,7 @@ export default function App() {
                 <RequestsPage
                   care={care}
                   onCare={setCare}
+                  onContact={contactCaregiver}
                   onCaregiver={showCaregiver}
                   onFind={() => setView('find-caregiver')}
                 />
@@ -661,7 +643,14 @@ export default function App() {
                   onSaveUser={saveUser}
                   // starting one opens the same dialog the care plan uses, so
                   // the plans and the price are decided in one place
-                  onSubscribe={(on = true) => (on ? setPaywall({ caregiver: null }) : (setUnlocked(false), setSubscription(null)))}
+                  onSubscribe={(on = true) =>
+                    on === 'resume'
+                      ? setSubscription((x) => ({ ...x, cancelled: false }))
+                      : on
+                        ? setPaywall({ caregiver: null })
+                        : // it runs to the end of the period already paid
+                          setSubscription((x) => ({ ...x, cancelled: true }))
+                  }
                   onAskAssistant={askAssistant}
                 />
               )}
@@ -782,6 +771,19 @@ export default function App() {
               setDrawer(null);
               contactCaregiver(c);
             }}
+            onCaregiver={showCaregiver}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {sim && phase === 'app' && (
+          <SimPanel
+            key="sim"
+            care={care}
+            onCare={setCare}
+            onFlash={say}
+            onClose={() => setSim(false)}
           />
         )}
       </AnimatePresence>
@@ -817,7 +819,7 @@ export default function App() {
             key="paywall"
             caregiver={paywall.caregiver}
             unlocked={unlocked}
-            alreadyAsked={Boolean(paywall.caregiver && care.requests.some((q) => q.caregiverId === paywall.caregiver.id))}
+            alreadyAsked={Boolean(paywall.caregiver && !canAsk(care, paywall.caregiver.id))}
             country={user.country}
             onPay={(chosen) => {
               setUnlocked(true);

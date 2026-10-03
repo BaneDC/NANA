@@ -2,7 +2,7 @@ import { useState } from 'react';
 import VisitRow from '../components/family/VisitRow';
 import BackButton from '../components/BackButton';
 import Button from '../components/Button';
-import { allVisits, dayOf, firstName, monthOf, pl } from '../data/familyCare';
+import { allVisits, dayOf, monthOf, pl, todayOf } from '../data/familyCare';
 
 // Every visit, newest first, across everyone who has come: who came, how long
 // they stayed, how the day went and what it cost. Grouped by month, because
@@ -13,17 +13,17 @@ const PAGE = 8;
 export default function VisitsPage({ care, onDrawer, onBack }) {
   const [who, setWho] = useState('all');
   const [shown, setShown] = useState(PAGE);
-  const elder = firstName(care.elder.name);
+  const today = todayOf(care);
 
   const all = allVisits(care)
     .filter((v) => v.status !== 'cancelled' || v.cancelledBy)
-    .sort((a, b) => dayOf(b.date) - dayOf(a.date));
+    .sort((a, b) => dayOf(b.date, today) - dayOf(a.date, today));
   const picked = who === 'all' ? all : all.filter((v) => v.caregiver.id === who);
   const visible = picked.slice(0, shown);
 
   const groups = [];
   for (const v of visible) {
-    const month = monthOf(v.date);
+    const month = monthOf(v.date, today);
     const last = groups[groups.length - 1];
     if (last && last.month === month) last.visits.push(v);
     else groups.push({ month, visits: [v] });

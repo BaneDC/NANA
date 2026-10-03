@@ -108,7 +108,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - **Stranica osobe** (avatar pored imena, `.fam-person`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava CSS; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici. „Pronađi negovateljicu" za sada nema pretragu (odlučeno 2. 10.): lista je poređana po poklapanju sa planom, sa stranama po 10.
-- **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog; `waitingOnYou`), a „Vaši upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Vaših upita" odgovori su viđeni.
+- **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog, dodatni sati; `waitingOnYou`), a „Vaši upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Vaših upita" odgovori su viđeni.
 
 ---
 
@@ -245,6 +245,11 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 - **„Sve posete" i „Svi upiti"** u glavi kartice su `Button` `secondary` (sa strelicom, kao i ranije), desno. **„Prikaži još"** je `Button` `secondary` u footeru, levo. Nema dugmeta-linka ni dugmeta koje je samo tekst.
 - **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima stalnu strelicu desno (`.fam-row-chevron`). Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
 - **Posete na njenoj stranici:** najviše 10, a ako ih ima više, „Pogledaj sve (N)" (`secondary`, dole levo) otvara drawer „Sve posete" sa svim njenim posetama (`kind: 'visits'`). Redosled je isti (`herVisits`): prvo ono što je u toku, pa izmireno.
+- **„Šta se desilo"** (odlučeno 3. 10.): sve što se desilo sa negom, najnovije prvo (`care.log`, upisuju ga `familyCare` i `sim`). Kartica „Šta se desilo" (`ActivityCard`, `src/components/family/Activity.jsx`) pokazuje poslednje 3 stavke, a „Sve (N)" u glavi kartice otvara drawer sa filterima (Sve, Upiti, Ugovor, Posete, Novac) i stavkama po danima (`kind: 'activity'`). Na Mojoj nezi je za sve negovateljice (u liniji ispod stoji i njeno ime), a na njenoj stranici samo za nju. Stavka je red bez akcije: naslov (`.fam-row-title`), pa linija „ko · kada" (`vi`, njeno ime ili `koordinatorka`) i rečenica šta tačno. Naslov nikad ne menja njeno ime po padežu („Poslali ste upit", ne „Poslali ste upit Sanni").
+- **Pregled negovateljice** (`kind: 'overview'`, dugme „Pregled" u footeru kartice „Ukratko"): posete i plaćeno do sada, cena, ocena; kontakt (telefon se skriva kad se saradnja završi); klasifikacije; šta pokriva po ugovoru koji važi, po grupama; kako se plaća.
+- **Sve verzije ugovora** (`kind: 'versions'`, „Sve verzije (N)" u footeru kartice „Ugovor o nezi", samo kad ih ima više od jedne): svaka verzija sa značkom stanja (važi, čeka vaš odgovor, zamenjena, odbijena, povučena, završena) i šta je promenila u odnosu na prethodnu.
+- **Sledeći korak na njenoj stranici** pokriva i: prihvatila je a ugovor još nije stigao; uslovi su odbijeni ili povučeni (ništa ne važi); poseta je obavljena a radni nalog još nije stigao; dodatni sati čekaju odgovor; saradnja je završena (dugme „Ponovo sarađujte"); ponovni upit čeka, prihvaćen ili odbijen („Pitaj ponovo").
+- **Ponovo pitati** (odlučeno 3. 10.): posle odbijenog upita („Pitaj ponovo" na kartici upita i u profilu) i posle završene saradnje („Ponovo sarađujte" na njenoj stranici i u profilu) porodica može ponovo da piše, istim prozorom za poruku. Ne obnavlja se stari ugovor: ona šalje nove uslove, a raniji period ostaje u „Ukratko" kao „Ranije". Na „Pronađi" kartica i dalje pokazuje samo značku („Dolazila ranije", „Odbila"); tap otvara profil, a profil ima „Njena stranica" i „Ponovo sarađujte" ili „Pitaj ponovo".
 - **Stanje sa negovateljicom** (`standingWith` u `src/data/familyCare.js`, značka `Standing`, `src/components/Standing.jsx`) je ista značka svuda gde je ona: kartica na „Pronađi", red u preporuci plana, vrh njenog profila. „Već dolazi", „Ugovor čeka vas", „Dolazila ranije", „Upit poslat …", „Prihvatila", „Odbila". Stoji na mestu dugmeta „Pošalji poruku"; na telefonu ispod teksta reda, poravnata sa njim. U profilu je ispod cene, gore, a ne u footeru (footer tada nema dugmad).
 
 ---
@@ -316,6 +321,8 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 ## 10. Stanje i polja
 
 - **Čip je samo za ono što se bira.** `.svc` (ivica, a popunjen kad je izabran) je dugme: izbor usluga u ugovoru, filteri, odgovor u tri reči, jezik. **Ono što se samo čita** (usluge iz ugovora, šta je urađeno na poseti, šta će raditi, zašto se negovateljica poklapa, njene klasifikacije, šta je porodica tražila) je oznaka: komponenta `Tags` (`src/components/Tags.jsx`, `.cg-tags` › `.cg-tag`), siva podloga, bez ivice i **bez ikonice** (ni kvačice), 12px. Ono što je izostavljeno je `.cg-tag.is-off` i to kaže rečima („— ovog puta ne"). `ServiceChips` crta oznake.
+- **Usluge su iz jednog kataloga** (`src/data/serviceCatalog.js`, odlučeno 3. 10.): 57 usluga u 4 grupe, kao u aplikaciji za negovateljice (Pomoć u svakodnevici, Lična nega i kuća, Praktična nega, Medicinska nega). Ugovor, plan posete, radni nalog i pregled ih prikazuju po grupama (`ServiceChips grouped`: ime grupe, pa oznake). Red negovateljice na Mojoj nezi pokazuje samo imena grupa, a ceo spisak je na njenoj stranici. Ceo katalog (svih 57) se vidi samo u formi gde negovateljica bira šta nudi.
+- **Dodatni sati** (odlučeno 3. 10.): radni nalog sa više sati nego što je rezervisano naplaćuje samo rezervisano. Višak je deo „Dodatni sati" u radnom nalogu sa „Odbij dodatne sate" (secondary) i „Odobri X €" (primary), a do odgovora je i stavka u „Čeka na vas". Manje sati: naplaćuje se koliko je radila, a razlika se vraća („Vraća se" u obračunu).
 - **Grupa oznaka uvek kaže šta je:** ime grupe (`label`, 12px sivo), a ispod njega oznake, 4 razmaka, kao jedna grupa (`.tag-row`). Sledeća grupa je 12 niže (`.tag-rows`). Primeri: „Poklapa se" i „Klasifikacije" na kartici negovateljice, „Usluge" u redu negovateljice i u ugovoru, „Urađeno" u poslednjoj poseti. U drawer-u ime grupe je `.ag-label` sekcije, pa se `label` ne zadaje.
 - Grupa oznaka u redu stoji 12px ispod teksta reda.
 - **Ono što je neko napisao** (beleška negovateljice, njena poruka uz uslove, „O sebi", vaša poruka u upitu, ono što ste prijavili) je **običan tekst ispod imena dela**: `Group` sa `text` (`src/components/Tags.jsx`, `.tag-row-text`: 12 / 18, boja vrednosti), a u drawer-u `.ag-label` pa `.doc-p`. **Nikad uvučen citat u kurzivu** sa linijom levo (stari `.fam-quote` je uklonjen).
@@ -358,6 +365,18 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - **Toast** je na telefonu širok koliko ekran (16 od ivica), na desktopu koliko tekst, do 520, uvek u sredini. Radius 16, ne pun krug.
 - **Ništa ne sme da izlazi van ekrana** na 375px.
 - Pravila za telefon iz §4, §5, §7 i §9 rešava CSS. Markup je isti na svim širinama.
+
+---
+
+## 12a. Simulacija (samo demo)
+
+Ova aplikacija je samo porodična, pa sve što bi uradile negovateljice i koordinatorka radi skriveni drawer **„Simulacija"** (`src/components/family/SimPanel.jsx`, funkcije u `src/data/sim.js`). Otvara se i zatvara sa **Ctrl+H** (na Mac-u takođe Ctrl, ne Cmd). Ništa se ne dešava samo od sebe: nema više automatskog odgovora posle 6 s ni prve posete posle 5 s.
+
+- **Vreme:** „Prođe sat" i „Prođe dan". Stanje ima svoj sat (`care.now`, počinje 11. 8. 2026. u 08:00). Iz njega se računaju „Danas / Sutra / Juče", koliko je do posete (kasno otkazivanje u poslednjem satu) i koliko je ostalo od 24 sata. Kad dođe vreme posete, ona čeka radni nalog; radni nalog koji niko ne prijavi za 24 sata se naplati.
+- **Negovateljica:** prihvati ili odbij upit (sa razlogom), pošalji ugovor ili nove uslove, povuci predlog, plan posete za sutra ili za pola sata, radni nalog kako je planirano / sat manje / sat više, poseta se nije desila, otkaže posetu, završi saradnju.
+- **Koordinatorka:** reši prijavu (radni nalog: naplati kako je poslato, umanji za sat, ne naplaćuj; plan: plan ostaje, otkaži posetu).
+- Pravila kao u aplikaciji za negovateljice: jedan plan posete u isto vreme; nijedan dok novi uslovi čekaju, dok je prijava otvorena ili dok prošla poseta čeka radni nalog; najviše dva nenaplaćena radna naloga. Zašto plan ne može, drawer kaže ispod dugmeta.
+- Drawer je alat za demo, ne deo proizvoda: ne ide u galeriju i ne proverava se skriptom iz §13. Dugmad su `secondary`, grupe su `.wo-choice`.
 
 ---
 

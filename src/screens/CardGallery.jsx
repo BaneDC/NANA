@@ -24,6 +24,9 @@ import CaregiverApp from './caregiver/CaregiverApp';
 // each answer to a request). Buttons do nothing.
 
 const noop = () => {};
+
+// what her agreement covers, in the catalog's terms
+const SERVICES = ['hygiene', 'dressing', 'food-preparation', 'light-cleaning', 'walks', 'companionship'];
 const pick = (id) => caregivers.find((c) => c.id === id);
 
 const person = (c) => ({
@@ -45,7 +48,7 @@ const report = (over = {}) => ({
   eating: 'usual',
   moving: 'usual',
   note: 'Prošetale smo do parka, ručala je sve. Raspoložena, pričala o unucima.',
-  done: ['personal-care', 'meals', 'walks'],
+  done: ['hygiene', 'food-preparation', 'walks'],
   ...over,
 });
 
@@ -56,7 +59,7 @@ function sampleCare() {
   const terms = (version, status, over = {}) => ({
     version,
     status,
-    services: ['personal-care', 'meals', 'housekeeping', 'walks'],
+    services: SERVICES,
     rate: 18,
     hours: 9,
     schedule: 'pon, sre, pet · 09:00–12:00',
@@ -70,7 +73,7 @@ function sampleCare() {
     time: '09:00–12:00',
     hours: 3,
     rate: 18,
-    services: ['personal-care', 'meals', 'housekeeping', 'walks'],
+    services: SERVICES,
     status,
     sentOn: 'juče',
     ...over,
@@ -84,7 +87,11 @@ function sampleCare() {
       { caregiverId: 'sanna', status: 'accepted', requested: '19. jula', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Prihvatila je i poslala svoje uslove.' },
       { caregiverId: 'paivi', status: 'accepted', requested: '19. jula', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Prihvatila je i poslala svoje uslove.' },
       { caregiverId: 'liisa', status: 'declined', requested: '19. jula', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.' },
-      { caregiverId: 'riitta', status: 'pending', requested: 'juče', message: 'Da li biste mogli vikendom?', detail: '' },
+      { id: 'tuula-2', caregiverId: 'tuula', status: 'pending', requested: 'juče', again: true, message: 'Treba nam ponovo pomoć ujutru.', detail: 'Još nije odgovorila. Javićemo vam u svakom slučaju.' },
+      { caregiverId: 'riitta', status: 'accepted', requested: '8. avgusta', message: 'Da li biste mogli vikendom?', detail: 'Prihvatila je. Uslove šalje uskoro.' },
+      { caregiverId: 'anneli', status: 'accepted', requested: '7. avgusta', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Prihvatila je. Uslove šalje uskoro.' },
+      { caregiverId: 'johanna', status: 'pending', requested: 'juče', message: 'Da li biste mogli vikendom?', detail: 'Još nije odgovorila. Javićemo vam u svakom slučaju.' },
+      { id: 'tuula-1', caregiverId: 'tuula', status: 'accepted', requested: '28. juna', message: 'Treba nam pomoć ujutru.', detail: 'Prihvatila je i poslala svoje uslove.' },
     ],
     arrangements: [
       {
@@ -100,8 +107,18 @@ function sampleCare() {
           visit('g-paid-you', '5. avgusta', 'paid', { report: report({ mood: 'usual' }), confirmed: 'you', chargedOn: '6. avgusta' }),
           visit('g-paid-auto', '3. avgusta', 'paid', { report: report({ mood: 'low', concern: 'Žalila se na koleno.' }), confirmed: 'auto', chargedOn: '4. avgusta' }),
           visit('g-cancelled', '31. jula', 'cancelled', { cancelledBy: 'family', cancelReason: 'Hitan slučaj u porodici' }),
+          visit('g-extra', '2. avgusta', 'paid', { report: report({ hours: 4 }), extra: { hours: 1, status: 'asked' }, confirmed: 'auto', chargedOn: '3. avgusta' }),
+          visit('g-less', '1. avgusta', 'paid', { report: report({ hours: 2, mood: 'low' }), confirmed: 'you', chargedOn: '1. avgusta' }),
+          visit('g-resolved', '30. jula', 'paid', {
+            report: report({ hours: 2 }),
+            confirmed: 'coordinator',
+            chargedOn: '31. jula',
+            queryReason: 'Ostala je dva sata, ne tri.',
+            resolution: { outcome: 'reduce', text: 'Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.', on: '31. jula' },
+          }),
+          visit('g-cg-cancelled', '28. jula', 'cancelled', { cancelledBy: 'caregiver', cancelReason: 'Negovateljica je otkazala: bila sam bolesna' }),
           // enough of them that her page shows ten and "Pogledaj sve"
-          ...['29. jula', '27. jula', '24. jula', '22. jula', '21. jula'].map((d, i) =>
+          ...['26. jula', '24. jula', '22. jula', '21. jula'].map((d, i) =>
             visit(`g-old-${i}`, d, 'paid', { report: report(), confirmed: i % 2 ? 'auto' : 'you', chargedOn: d })
           ),
         ],
@@ -110,16 +127,48 @@ function sampleCare() {
         caregiver: person(paivi),
         since: '22. jula',
         endedOn: null,
-        versions: [terms(1, 'active', { rate: 16 }), terms(2, 'sent', { rate: 17, hours: 12, sentOn: 'juče', note: 'Mogla bih da dolazim i utorkom.' })],
+        versions: [
+          terms(1, 'active', { rate: 16 }),
+          terms(2, 'sent', {
+            rate: 17,
+            hours: 12,
+            sentOn: 'juče',
+            services: [...SERVICES, 'grocery-shopping'],
+            note: 'Mogla bih da dolazim i utorkom, i da usput uradim nabavku.',
+            terms: 'Ključ ostaje kod komšinice u stanu 4.',
+          }),
+        ],
         visits: [visit('g-p-paid', '6. avgusta', 'paid', { rate: 16, report: report(), confirmed: 'you', chargedOn: '7. avgusta' })],
       },
       {
         caregiver: person(tuula),
         since: '1. jula',
         endedOn: '20. jula',
-        versions: [terms(1, 'active', { rate: 19 })],
+        versions: [terms(1, 'ended', { rate: 19 })],
         visits: [visit('g-t-paid', '15. jula', 'paid', { rate: 19, report: report(), confirmed: 'auto', chargedOn: '16. jula' })],
       },
+      // accepted, her terms not sent yet
+      { caregiver: person(pick('riitta')), since: null, endedOn: null, versions: [], visits: [] },
+      // her terms were declined, nothing in force
+      {
+        caregiver: person(pick('anneli')),
+        since: null,
+        endedOn: null,
+        versions: [terms(1, 'declined', { rate: 14, declinedOn: '9. avgusta' })],
+        visits: [],
+      },
+    ],
+    now: 8,
+    log: [
+      { id: 'l9', at: 8, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: 'Stigao je plan posete', detail: 'Sutra · 09:00–12:00. 54 € je rezervisano na kartici.' },
+      { id: 'l8', at: 7, kind: 'agreement', caregiverId: 'paivi', by: 'caregiver', title: 'Stigli su novi uslovi, verzija 2', detail: '17 € na sat, 7 usluga.' },
+      { id: 'l7', at: -10, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: 'Stigao je radni nalog', detail: 'Juče · 3 sata. Naplaćuje se za 24 sata, osim ako nešto prijavite.' },
+      { id: 'l6', at: -14, kind: 'request', caregiverId: 'tuula', by: 'you', title: 'Ponovo ste joj pisali', detail: 'Treba nam ponovo pomoć ujutru.' },
+      { id: 'l5', at: -40, kind: 'agreement', caregiverId: 'anneli', by: 'you', title: 'Odbili ste uslove, verzija 1', detail: 'Koordinatorka će vas pozvati.' },
+      { id: 'l4', at: -60, kind: 'money', caregiverId: 'sanna', by: 'coordinator', title: 'Prijava je rešena', detail: 'Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.' },
+      { id: 'l3', at: -200, kind: 'money', caregiverId: 'sanna', by: 'you', title: 'Plaćeno 54 €', detail: 'Radni nalog za 5. avgusta je potvrđen.' },
+      { id: 'l2', at: -500, kind: 'money', by: 'you', title: 'Kartica je dodata', detail: 'Visa ···· 4242. Posete sada mogu da se rezervišu.' },
+      { id: 'l1', at: -520, kind: 'request', caregiverId: 'sanna', by: 'you', title: 'Poslali ste upit', detail: 'Treba nam pomoć ujutru, tri puta nedeljno.' },
     ],
   };
 }
@@ -129,7 +178,9 @@ const SECTIONS = [
   { id: 'prvi-korak', title: 'Moja nega, pre prvog upita', where: 'Sledeći korak' },
   { id: 'njena-stranica', title: 'Njena stranica', where: 'Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Pogledaj sve")' },
   { id: 'nove-uslove', title: 'Njena stranica, novi uslovi čekaju', where: 'Čeka na vas, Novi uslovi' },
-  { id: 'zavrsena', title: 'Njena stranica, završena saradnja', where: 'Završeno, ugovor koji više ne važi' },
+  { id: 'zavrsena', title: 'Njena stranica, završena saradnja', where: 'Ponovni upit poslat, ugovor koji više ne važi' },
+  { id: 'bez-ugovora', title: 'Njena stranica, prihvatila bez ugovora', where: 'Prihvatila je, ugovor stiže' },
+  { id: 'odbijeni-uslovi', title: 'Njena stranica, odbijeni uslovi', where: 'Uslovi su odbijeni, verzija 1 odbijena' },
   { id: 'posete', title: 'Sve posete', where: 'Posete po mesecima' },
   { id: 'upiti', title: 'Vaši upiti', where: 'Upit: čeka, prihvaćen, odbijen' },
   { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
@@ -204,15 +255,21 @@ export default function CardGallery() {
         <CaregiverPage care={care} caregiverId="tuula" onBack={noop} {...family} />
       </Frame>
       <Frame {...SECTIONS[5]}>
-        <VisitsPage care={care} onDrawer={noop} onBack={noop} />
+        <CaregiverPage care={care} caregiverId="riitta" onBack={noop} {...family} />
       </Frame>
       <Frame {...SECTIONS[6]}>
-        <RequestsPage care={care} onCaregiver={noop} onFind={noop} />
+        <CaregiverPage care={care} caregiverId="anneli" onBack={noop} {...family} />
       </Frame>
       <Frame {...SECTIONS[7]}>
-        <FindCaregiver care={care} onContact={noop} onDrawer={noop} onFlash={noop} onAskAssistant={noop} />
+        <VisitsPage care={care} onDrawer={noop} onBack={noop} />
       </Frame>
       <Frame {...SECTIONS[8]}>
+        <RequestsPage care={care} onCaregiver={noop} onFind={noop} />
+      </Frame>
+      <Frame {...SECTIONS[9]}>
+        <FindCaregiver care={care} onContact={noop} onDrawer={noop} onFlash={noop} onAskAssistant={noop} />
+      </Frame>
+      <Frame {...SECTIONS[10]}>
         <PlanDetail
           entry={live}
           unlocked
@@ -228,16 +285,16 @@ export default function CardGallery() {
           standingOf={(id) => standingWith(care, id)}
         />
       </Frame>
-      <Frame {...SECTIONS[9]}>
+      <Frame {...SECTIONS[11]}>
         <Plans entries={entries} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} onAskAssistant={noop} />
       </Frame>
-      <Frame {...SECTIONS[10]}>
+      <Frame {...SECTIONS[12]}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onAskAssistant={noop} onSubscribe={noop} />
       </Frame>
-      <Frame {...SECTIONS[11]}>
+      <Frame {...SECTIONS[13]}>
         <Profile user={user} answers={answers} onGoToChat={noop} onAskAssistant={noop} onSaveUser={noop} onEditAnswers={noop} />
       </Frame>
-      <Frame {...SECTIONS[12]} tall>
+      <Frame {...SECTIONS[14]} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />
       </Frame>
     </div>

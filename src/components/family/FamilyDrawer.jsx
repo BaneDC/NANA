@@ -4,29 +4,41 @@ import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../d
 import Modal from '../Modal';
 import Dialog from '../Dialog';
 import Tags from '../Tags';
+import { groupServices } from '../../data/serviceCatalog';
 import Standing from '../Standing';
 import VisitRow from './VisitRow';
 import { careSignals } from './VisitReport';
+import { ActivityRows } from './Activity';
 import Button from '../Button';
 import { Field, TextArea } from '../TextField';
 import {
   LATE_HOURS,
   activeVersion,
   agreeTerms,
+  answerExtra,
   arrangementOf,
   callOffVisit,
+  canAsk,
   chargedFor,
   confirmVisit,
   declineTerms,
   endArrangement,
+  LOG_KINDS,
+  dayLabel,
   findVisit,
   firstName,
+  nameOf,
+  paidTo,
+  services,
+  todayOf,
+  workedHours,
   herVisits,
   linkCard,
   money,
   pendingVersion,
   pl,
   queryVisit,
+  returnedFor,
   serviceTitle,
   standingWith,
   unsettled,
@@ -42,7 +54,25 @@ import {
 // caregiverId?, visitId? }`.
 
 
-export function ServiceChips({ ids, missing = [], label }) {
+// What an agreement, a plan or a work order covers. `grouped` lists them under
+// the catalog's group names (Pomoć u svakodnevici, Lična nega i kuća, …), for
+// where the whole of an agreement is read; a row keeps one plain group.
+export function ServiceChips({ ids, missing = [], label, grouped }) {
+  const groups = grouped ? groupServices([...ids, ...missing]) : [];
+  if (groups.length) {
+    return (
+      <div className="tag-rows">
+        {groups.map((g) => (
+          <Tags
+            key={g.id}
+            label={g.title}
+            items={g.items.filter((id) => ids.includes(id)).map(serviceTitle)}
+            off={g.items.filter((id) => missing.includes(id)).map((id) => `${serviceTitle(id)} - ovog puta ne`)}
+          />
+        ))}
+      </div>
+    );
+  }
   return (
     <Tags label={label} items={ids.map(serviceTitle)} off={missing.map((id) => `${serviceTitle(id)} - ovog puta ne`)} />
   );
@@ -111,7 +141,7 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
 
       {pen.note && (
         <>
-          <p className="ag-label">{first} je napisala</p>
+          <p className="ag-label">{act ? 'Zašto menja uslove' : `${first} je napisala`}</p>
           <p className="doc-p">{pen.note}</p>
         </>
       )}
@@ -128,12 +158,18 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
       )}
 
       <p className="ag-label">{act ? `Verzija ${pen.version} obuhvata` : 'Usluge'}</p>
-      <ServiceChips ids={pen.services} />
+      <ServiceChips ids={pen.services} grouped />
       <div className="bc-lines ag-terms">
         <Line label="Cena po satu" value={`${money(pen.rate)} / h`} />
         <Line label="Dogovoreni sati" value={`${pen.hours} h nedeljno`} />
         <Line label="Raspored" value={pen.schedule} />
       </div>
+      {pen.terms && (
+        <>
+          <p className="ag-label">Dodatni uslovi</p>
+          <p className="doc-p">{pen.terms}</p>
+        </>
+      )}
 
       <p className="ag-hint">
         Prihvatanjem uslova {first} može da zakazuje posete. Svaka se unapred rezerviše na vašoj
@@ -215,6 +251,14 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
   const r = v.report;
   const skipped = v.services.filter((s) => !r.done.includes(s));
   const charge = visitCharge(v);
+  const back = returnedFor(v);
+  const extra = v.extra;
+  const hoursText =
+    r.hours < v.hours
+      ? `${r.hours} h, rezervisano ${v.hours} h`
+      : r.hours > v.hours
+        ? `${r.hours} h, rezervisano ${v.hours} h`
+        : `${r.hours} h - kako je planirano`;
 
   const confirm = () => {
     onCare(confirmVisit(visitId));
@@ -227,20 +271,24 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
     onFlash('Poslato koordinatorki. Ništa se ne naplaćuje dok je otvoreno.');
     onClose();
   };
+  const answer = (yes) => {
+    onCare(answerExtra(visitId, yes));
+    onFlash(yes ? `Dodatni sati su odobreni. ${money(chargedFor(extra.hours, v.rate))} se naplaćuje sa posetom.` : 'Dodatni sati su odbijeni. Ništa više se ne naplaćuje.');
+  };
+
+  const lead =
+    v.status === 'charging'
+      ? `${first} je ovo poslala ${v.reportSentOn || v.sentOn}. Ako je sve bilo kako je dogovoreno, ne morate ništa - ${money(charge)} se naplaćuje za ${v.chargesInHours} h.`
+      : v.status === 'disputed'
+        ? 'Ovo ste prijavili koordinatorki. Ništa se ne naplaćuje dok ne proveri.'
+        : v.resolution
+          ? v.resolution.text
+          : `Naplaćeno ${v.chargedOn} - ${v.confirmed === 'you' ? 'vi ste potvrdili' : 'potvrđeno automatski posle 24 sata'}.`;
 
   return (
     <>
     <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title="Radni nalog" wide onClose={onClose}>
-      {v.status === 'charging' ? (
-        <p className="ag-lead">
-          {first} je ovo poslala {v.sentOn}. Ako je sve bilo kako je dogovoreno, ne morate ništa -{' '}
-          {money(charge)} se naplaćuje samo za {v.chargesInHours} h.
-        </p>
-      ) : (
-        <p className="ag-lead">
-          Naplaćeno {v.chargedOn} - {v.confirmed === 'you' ? 'vi ste potvrdili' : 'potvrđeno automatski posle 24 sata'}.
-        </p>
-      )}
+      <p className="ag-lead">{lead}</p>
 
       <dl className="report-rows">
         <div className="report-row">
@@ -251,7 +299,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
         </div>
         <div className="report-row">
           <dt>Sati</dt>
-          <dd>{v.hours} h - kako je planirano</dd>
+          <dd>{hoursText}</dd>
         </div>
         <div className="report-row">
           <dt>Šta je uradila</dt>
@@ -272,7 +320,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
       </dl>
 
       <p className="ag-label">Šta je urađeno</p>
-      <ServiceChips ids={r.done} missing={skipped} />
+      <ServiceChips ids={r.done} missing={skipped} grouped />
 
       {r.concern && (
         <p className="visit-concern">
@@ -281,11 +329,40 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
         </p>
       )}
 
+      {/* Hours over the reserved ones are never taken on their own: the
+          family says yes or no, here, whether or not the visit is charged yet. */}
+      {extra && (
+        <>
+          <p className="ag-label">Dodatni sati</p>
+          <p className="doc-p">
+            {extra.status === 'asked'
+              ? `${first} je radila ${pl(extra.hours, 'sat', 'sata', 'sati')} duže nego što je rezervisano. To se ne naplaćuje samo od sebe: odobrite ${money(chargedFor(extra.hours, v.rate))} ili odbijte.`
+              : extra.status === 'approved'
+                ? `Odobrili ste ${pl(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati')}, ${money(chargedFor(extra.hours, v.rate))}.`
+                : `Odbili ste ${pl(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati')}. Ništa više se ne naplaćuje.`}
+          </p>
+          {extra.status === 'asked' && (
+            <div className="panel-card-actions">
+              <Button variant="secondary" onClick={() => answer(false)}>
+                Odbij dodatne sate
+              </Button>
+              <Button variant="primary" onClick={() => answer(true)}>
+                Odobri {money(chargedFor(extra.hours, v.rate))}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
       <div className="bc-total">
-        <Line label={`${v.hours} h po ${money(v.rate)}/h`} value={money(chargedFor(v.hours, v.rate))} />
+        <Line label={`Rezervisano: ${v.hours} h po ${money(v.rate)}/h`} value={money(chargedFor(v.hours, v.rate))} />
+        {back > 0 && <Line label={`Vraća se: ${v.hours - r.hours} h manje`} value={money(back)} />}
+        {extra?.status === 'approved' && <Line label={`Dodatni sati: ${extra.hours} h`} value={money(chargedFor(extra.hours, v.rate))} />}
         <p className="bc-line is-net">
-          <span className="bc-line-label">{v.status === 'charging' ? `Naplaćuje se za ${v.chargesInHours} h` : 'Naplaćeno'}</span>
-          <span className="bc-line-value">{money(charge)}</span>
+          <span className="bc-line-label">
+            {v.status === 'charging' ? `Naplaćuje se za ${v.chargesInHours} h` : v.status === 'disputed' ? 'Zadržano dok se ne proveri' : v.status === 'cancelled' ? 'Ništa nije naplaćeno' : 'Naplaćeno'}
+          </span>
+          <span className="bc-line-value">{v.status === 'cancelled' ? money(0) : money(charge)}</span>
         </p>
       </div>
 
@@ -379,7 +456,7 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
       </p>
 
       <p className="ag-label">Šta će raditi</p>
-      <ServiceChips ids={v.services} />
+      <ServiceChips ids={v.services} grouped />
       {v.notes && (
         <>
           <p className="ag-label">Napomene za ovu posetu</p>
@@ -529,7 +606,7 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
 
 // ── someone they might ask ──────────────────────────────────────────────────
 
-function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
+function Profile({ care, caregiverId, unlocked, onContact, onCaregiver, onClose }) {
   const c = caregivers.find((x) => x.id === caregiverId);
   if (!c) return null;
   // where the family stands with her is said at the top, under who she is,
@@ -587,14 +664,25 @@ function Profile({ care, caregiverId, unlocked, onContact, onClose }) {
         dogovoreno dok zajedno ne postavite uslove.
       </p>
 
-      {!standing && (
+      {/* Never asked: write to her. Asked before and free to ask again (a no,
+          or a cooperation that ended): the same, said as again; and when she
+          came before, her page with everything from then. */}
+      {(!standing || canAsk(care, c.id) || arrangementOf(care, c.id)) && (
         <div className="panel-card-actions is-end">
-          <Button variant="secondary" onClick={onClose}>
-            Ne sada
-          </Button>
-          <Button variant="primary" onClick={ask}>
-            Pošalji poruku
-          </Button>
+          {arrangementOf(care, c.id) ? (
+            <Button variant="secondary" onClick={() => onCaregiver(c.id)}>
+              Njena stranica
+            </Button>
+          ) : (
+            <Button variant="secondary" onClick={onClose}>
+              Ne sada
+            </Button>
+          )}
+          {canAsk(care, c.id) && (
+            <Button variant="primary" onClick={ask}>
+              {!standing ? 'Pošalji poruku' : arrangementOf(care, c.id) ? 'Ponovo sarađujte' : 'Pitaj ponovo'}
+            </Button>
+          )}
         </div>
       )}
     </Modal>
@@ -618,6 +706,140 @@ function Visits({ care, caregiverId, onOpen, onClose }) {
   );
 }
 
+// Everything that has happened, newest first, by day, with a filter by kind:
+// one caregiver's from her page, everyone's from Moja nega.
+function ActivityDrawer({ care, caregiverId, onClose }) {
+  const [kind, setKind] = useState('all');
+  const all = (care.log || []).filter((e) => !caregiverId || e.caregiverId === caregiverId);
+  const kinds = LOG_KINDS.filter((k) => all.some((e) => e.kind === k.id));
+  const picked = kind === 'all' ? all : all.filter((e) => e.kind === kind);
+  const today = todayOf(care);
+  const days = [];
+  for (const e of picked) {
+    const day = dayLabel(Math.floor(e.at / 24), today);
+    const last = days[days.length - 1];
+    if (last && last.day === day) last.entries.push(e);
+    else days.push({ day, entries: [e] });
+  }
+  const who = caregiverId ? nameOf(care, caregiverId) : care.elder.name || 'Vaša nega';
+  return (
+    <Modal eyebrow={who} title="Šta se desilo" wide onClose={onClose}>
+      <div className="fam-filter" role="group" aria-label="Šta prikazati">
+        {[{ id: 'all', label: 'Sve' }, ...kinds].map((k) => (
+          <button
+            key={k.id}
+            type="button"
+            className={`svc is-sm${kind === k.id ? ' is-on' : ''}`}
+            aria-pressed={kind === k.id}
+            onClick={() => setKind(k.id)}
+          >
+            {k.label}
+            <span className="fam-filter-note">{k.id === 'all' ? all.length : all.filter((e) => e.kind === k.id).length}</span>
+          </button>
+        ))}
+      </div>
+      {days.map((d) => (
+        <div key={d.day}>
+          <p className="ag-label">{d.day}</p>
+          <ActivityRows care={care} entries={d.entries} showWho={!caregiverId} />
+        </div>
+      ))}
+      {!picked.length && <p className="ag-hint">Ovde još nema ničega.</p>}
+    </Modal>
+  );
+}
+
+// Everything about her in one place: how to reach her, what she is, what her
+// agreement covers, how paying works, and what has been paid so far.
+function Overview({ care, caregiverId, onClose }) {
+  const a = arrangementOf(care, caregiverId);
+  if (!a) return null;
+  const c = caregivers.find((x) => x.id === caregiverId);
+  const first = firstName(a.caregiver.name);
+  const act = activeVersion(a);
+  const done = a.visits.filter((v) => v.status === 'paid');
+  const hours = done.reduce((n, v) => n + workedHours(v) + (v.extra?.status === 'approved' ? v.extra.hours : 0), 0);
+  return (
+    <Modal eyebrow={`${a.caregiver.name} · ${a.caregiver.area}`} title="Pregled" wide onClose={onClose}>
+      <div className="bc-lines ag-terms">
+        <Line label="Posete do sada" value={done.length ? `${done.length} · ${hours} h` : 'još nijedna'} />
+        <Line label="Plaćeno do sada" value={money(paidTo(a))} />
+        <Line label="Cena po satu" value={act ? `${money(act.rate)} / h` : '-'} />
+        <Line label="Ocena" value={c?.reviews ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} · ${pl(c.reviews, 'ocena', 'ocene', 'ocena')}` : 'još bez ocena'} />
+      </div>
+
+      <p className="ag-label">Kontakt</p>
+      <div className="bc-lines ag-terms">
+        <Line label="Telefon" value={a.endedOn ? 'Skriven posle kraja saradnje' : a.caregiver.phone} />
+        <Line label="Opština" value={a.caregiver.area} />
+        {c?.languages && <Line label="Jezici" value={c.languages.join(', ')} />}
+      </div>
+      <p className="ag-hint">
+        Ako nešto nije u redu tokom posete, prvo pozovite {first}. Sve oko novca rešava koordinatorka.
+      </p>
+
+      <p className="ag-label">Klasifikacije</p>
+      <Tags items={a.caregiver.classifications || c?.classifications || []} />
+
+      <p className="ag-label">Šta pokriva za vas</p>
+      {act ? <ServiceChips ids={act.services} grouped /> : <p className="doc-p">Još ništa nije dogovoreno.</p>}
+      {act && <p className="ag-hint">Iz ugovora koji važi. Sve van njega mora prvo da se dogovori kao nova verzija.</p>}
+
+      <p className="ag-label">Kako se plaća</p>
+      <div className="bc-lines ag-terms">
+        <Line label="Način plaćanja" value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'} />
+        <Line label="Rezerviše se" value="kad stigne plan posete" />
+        <Line label="Naplaćuje se" value="24 sata posle radnog naloga" />
+      </div>
+      <p className="ag-hint">
+        Naplaćuje se samo poseta koja se desila i za koju je {first} poslala radni nalog. Sati preko
+        rezervisanih se naplaćuju samo ako ih odobrite.
+      </p>
+    </Modal>
+  );
+}
+
+// Every version of her terms, newest first, and what each changed.
+const VERSION_STATE = {
+  sent: { text: 'čeka vaš odgovor', pill: 'is-pending' },
+  active: { text: 'važi', pill: 'is-accepted' },
+  replaced: { text: 'zamenjena', pill: 'is-muted' },
+  declined: { text: 'odbijena', pill: 'is-declined' },
+  withdrawn: { text: 'povučena', pill: 'is-muted' },
+  ended: { text: 'završena', pill: 'is-muted' },
+};
+
+function Versions({ care, caregiverId, onClose }) {
+  const a = arrangementOf(care, caregiverId);
+  if (!a) return null;
+  const list = [...a.versions].reverse();
+  return (
+    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title="Sve verzije ugovora" wide onClose={onClose}>
+      {list.map((v) => {
+        const prev = a.versions[v.version - 2];
+        const st = VERSION_STATE[v.status] || VERSION_STATE.replaced;
+        const changes = prev ? changesBetween(prev, v) : [];
+        return (
+          <div key={v.version}>
+            <p className="ag-label">
+              Verzija {v.version} <span className={`status-pill ${st.pill}`}>{st.text}</span>
+            </p>
+            <div className="bc-lines ag-terms">
+              <Line label="Poslato" value={v.sentOn} />
+              <Line label="Cena po satu" value={`${money(v.rate)} / h`} />
+              <Line label="Usluge" value={services(v.services.length)} />
+              {changes.map((r) => (
+                <Line key={r.label} label={r.label} value={r.value} />
+              ))}
+            </div>
+            {v.note && prev && <p className="doc-p">{v.note}</p>}
+          </div>
+        );
+      })}
+    </Modal>
+  );
+}
+
 export default function FamilyDrawer({ drawer, ...rest }) {
   if (!drawer) return null;
   if (drawer.kind === 'terms') return <Terms key="terms" caregiverId={drawer.caregiverId} {...rest} />;
@@ -626,5 +848,8 @@ export default function FamilyDrawer({ drawer, ...rest }) {
   if (drawer.kind === 'end') return <End key="end" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'profile') return <Profile key="profile" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'visits') return <Visits key="visits" caregiverId={drawer.caregiverId} {...rest} />;
+  if (drawer.kind === 'activity') return <ActivityDrawer key="activity" caregiverId={drawer.caregiverId} {...rest} />;
+  if (drawer.kind === 'overview') return <Overview key="overview" caregiverId={drawer.caregiverId} {...rest} />;
+  if (drawer.kind === 'versions') return <Versions key="versions" caregiverId={drawer.caregiverId} {...rest} />;
   return null;
 }

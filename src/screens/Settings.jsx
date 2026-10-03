@@ -6,7 +6,7 @@ import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
 import { Field, Password } from '../components/TextField';
-import { chargingVisit, heldNow, money, paidThisMonth, visitCharge } from '../data/familyCare';
+import { chargingVisit, heldNow, linkCard, money, monthIn, paidThisMonth, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword } from '../lib/account';
 import { priceLine, renewsOn } from '../data/plans';
@@ -142,12 +142,12 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   // No card details are collected here, and none should be: this is where a
   // real build hands off to Stripe and gets a token back.
   const connect = () => {
-    onCare((c) => ({
-      ...c,
-      payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: 'upravo' },
-    }));
+    onCare(linkCard);
     setCardOpen(false);
   };
+  // cancelled, it still runs to the end of the period already paid
+  const cancelled = Boolean(subscription?.cancelled);
+  const until = subscription ? renewsOn(user?.country, subscription.planId, subscription.at ?? Date.now()) : '';
 
   // Four groups, each under its own title, in the order people come looking:
   // what they pay, how the account is kept safe, how the app talks to them, and
@@ -172,8 +172,8 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             <p className="doc-section-title">
               Pretplata
             </p>
-            <span className={`status-pill is-${unlocked ? 'accepted' : 'muted'}`}>
-              {unlocked ? 'Aktivna' : 'Niste pretplaćeni'}
+            <span className={`status-pill is-${unlocked && !cancelled ? 'accepted' : 'muted'}`}>
+              {unlocked ? (cancelled ? 'Otkazana' : 'Aktivna') : 'Niste pretplaćeni'}
             </span>
           </div>
           {unlocked ? (
@@ -187,16 +187,23 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
                 </li>
               </ul>
               <p className="tip-body">
-                {priceLine(user?.country, subscription?.planId)} · obnavlja se{' '}
-                {renewsOn(user?.country, subscription?.planId, subscription?.at ?? Date.now())}
+                {cancelled
+                  ? `Otkazali ste pretplatu. Važi do ${until}, a posle toga se ne obnavlja.`
+                  : `${priceLine(user?.country, subscription?.planId)} · obnavlja se ${until}`}
               </p>
               {/* What adds or changes something is primary; what switches
                   something off or cancels it is not — orange is what we
                   recommend, and we do not recommend this. It asks first. */}
               <div className="panel-card-actions">
-                <Button variant="secondary" onClick={() => setCancelling(true)}>
-                  Otkaži pretplatu
-                </Button>
+                {cancelled ? (
+                  <Button variant="primary" onClick={() => onSubscribe?.('resume')}>
+                    Obnovi pretplatu
+                  </Button>
+                ) : (
+                  <Button variant="secondary" onClick={() => setCancelling(true)}>
+                    Otkaži pretplatu
+                  </Button>
+                )}
               </div>
             </>
           ) : (
@@ -252,7 +259,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
                   </span>
                 </p>
                 <p className="bc-line">
-                  <span className="bc-line-label">Naplaćeno u avgustu</span>
+                  <span className="bc-line-label">Naplaćeno u {monthIn(care)}</span>
                   <span className="bc-line-value">{money(paidThisMonth(care))}</span>
                 </p>
               </div>

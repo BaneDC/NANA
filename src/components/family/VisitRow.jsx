@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import Button from '../Button';
 import { Group } from '../Tags';
 import VisitReport from './VisitReport';
-import { chargedFor, firstName, money, visitCharge } from '../../data/familyCare';
+import { chargedFor, firstName, money, returnedFor, visitCharge } from '../../data/familyCare';
 
 // One visit, as the family sees it: when, who, where the money is, and — when
 // there is one — the thing they can do about it. Her page and the list of every
@@ -42,13 +42,31 @@ function lineFor(v) {
     case 'awaiting':
       return `${first} još treba da potvrdi šta je uradila pre nego što se išta naplati.`;
     case 'charging':
-      return `Naplaćuje se za ${v.chargesInHours} h, osim ako kažete da nešto nije u redu.`;
+      return `Naplaćuje se za ${v.chargesInHours} h, osim ako kažete da nešto nije u redu.${
+        v.extra?.status === 'asked' ? ` ${first} traži i ${v.extra.hours} h preko rezervisanog.` : ''
+      }`;
     case 'disputed':
       return 'Ništa se ne naplaćuje dok je ovo otvoreno. Koordinatorka proverava i pozvaće vas.';
-    case 'paid':
-      return v.confirmed === 'you' ? 'Vi ste potvrdili.' : 'Potvrđeno automatski posle 24 sata.';
+    case 'paid': {
+      const said = v.resolution
+        ? v.resolution.text
+        : v.confirmed === 'you'
+          ? 'Vi ste potvrdili.'
+          : 'Potvrđeno automatski posle 24 sata.';
+      // what the coordinator settled already says what was charged
+      const back = v.resolution ? 0 : returnedFor(v);
+      const extra =
+        v.extra?.status === 'asked'
+          ? ` ${first} traži još ${v.extra.hours} h, čeka vaš odgovor.`
+          : v.extra?.status === 'approved'
+            ? ` Dodatni sati su odobreni.`
+            : '';
+      return `${said}${back ? ` ${money(back)} je vraćeno, radila je kraće.` : ''}${extra}`;
+    }
     default:
       if (v.lateCharge) return 'Otkazano u poslednjem satu, pa je naplaćeno u celosti.';
+      if (v.resolution) return v.resolution.text;
+      if (v.cancelledBy === 'caregiver') return `${v.cancelReason}. Ništa nije naplaćeno.`;
       return v.cancelReason ? `Otkazano - ${v.cancelReason.toLowerCase()}. Ništa nije naplaćeno.` : 'Rezervacija je vraćena. Ništa nije naplaćeno.';
   }
 }
@@ -57,11 +75,11 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
   const s = STATUS[v.status] || STATUS.paid;
   const m = amountOf(v);
   const action =
-    v.status === 'charging'
+    v.status === 'charging' || v.extra?.status === 'asked'
       ? { label: 'Pogledaj radni nalog', variant: 'primary', drawer: { kind: 'work-order', visitId: v.id } }
       : v.status === 'planned'
         ? { label: 'Pogledaj plan posete', variant: 'secondary', drawer: { kind: 'plan', visitId: v.id } }
-        : v.status === 'paid' && v.report
+        : (v.status === 'paid' || v.status === 'disputed' || v.resolution) && v.report
           ? { label: 'Radni nalog', variant: 'ghost', drawer: { kind: 'work-order', visitId: v.id } }
           : null;
 

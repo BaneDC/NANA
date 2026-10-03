@@ -5,6 +5,7 @@ import {
   allVisits,
   chargedFor,
   firstName,
+  lastVersion,
   lastVisit,
   money,
   pendingVersion,
@@ -15,7 +16,9 @@ import {
 import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
-import { ServiceChips } from '../components/family/FamilyDrawer';
+import Tags from '../components/Tags';
+import { ActivityCard } from '../components/family/Activity';
+import { groupServices } from '../data/serviceCatalog';
 import VisitReport from '../components/family/VisitReport';
 
 // The family's home: what is waiting on them, what is coming, how the last visit
@@ -107,7 +110,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
   const fresh = !care.arrangements.length && !care.requests.length;
 
   const hasTerms = waiting.some((w) => w.kind === 'terms');
-  const hasOrder = waiting.some((w) => w.kind === 'work-order');
+  const hasOrder = waiting.some((w) => w.kind === 'work-order' || w.kind === 'extra');
   const waitNote =
     hasTerms && hasOrder
       ? 'Uslovi moraju biti prihvaćeni pre nego što išta novo počne. Radni nalog je obrnuto - prolazi sam, osim ako vi nešto ne kažete.'
@@ -178,11 +181,24 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                 variant="primary"
                 onOpen={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}
               />
+            ) : w.kind === 'extra' ? (
+              <OpenCard
+                key={`extra-${w.visit.id}`}
+                initials={w.visit.caregiver.initials}
+                title={`${firstName(w.visit.caregiver.name)} traži dodatne sate za ${w.visit.date.toLowerCase()}`}
+                body={
+                  <p className="fam-row-body">
+                    Radila je {w.visit.extra.hours} h duže nego što je rezervisano. Naplaćuje se samo ako odobrite.
+                  </p>
+                }
+                action="Pogledaj radni nalog"
+                onOpen={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}
+              />
             ) : (
               <OpenCard
                 key={`wo-${w.visit.id}`}
                 initials={w.visit.caregiver.initials}
-                title={`${firstName(w.visit.caregiver.name)} je poslala radni nalog za ${w.visit.date}`}
+                title={`${firstName(w.visit.caregiver.name)} je poslala radni nalog za ${w.visit.date.toLowerCase()}`}
                 body={
                   <>
                     <p className="fam-row-body">Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.</p>
@@ -268,15 +284,22 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                       {a.caregiver.name}
                     </button>
                     {pen && <span className="status-pill is-pending">{act ? 'Novi uslovi' : 'Ugovor čeka'}</span>}
+                    {!pen && !act && !ended && lastVersion(a)?.status === 'declined' && <span className="status-pill is-declined">Uslovi odbijeni</span>}
                   </p>
                   <p className="fam-row-body">
                     {ended
                       ? `Završeno ${a.endedOn}`
                       : a.since
                         ? `${a.caregiver.area} · od ${a.since}${act ? ` · ${money(act.rate)}/h` : ''}`
-                        : `${a.caregiver.area} · čeka da prihvatite ugovor`}
+                        : pen
+                          ? `${a.caregiver.area} · čeka da prihvatite ugovor`
+                          : a.versions.length
+                            ? `${a.caregiver.area} · ništa još ne važi`
+                            : `${a.caregiver.area} · prihvatila, ugovor stiže uskoro`}
                   </p>
-                  {act && !ended && <ServiceChips label="Usluge" ids={act.services} />}
+                  {/* a row says which kinds of help, not every service: the
+                      agreement itself lists those on her page */}
+                  {act && !ended && <Tags label="Usluge" items={groupServices(act.services).map((g) => g.title)} />}
                 </div>
                 <span className="fam-row-side">Plaćenih poseta: {paid}</span>
                 <ChevronRight size={16} strokeWidth={1.75} className="fam-row-chevron" aria-hidden="true" />
@@ -288,17 +311,20 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
 
       )}
 
+      <ActivityCard care={care} onDrawer={onDrawer} />
+
       {care.requests.length > 0 && (
         <Section
           title="Vaši upiti"
           action={<SeeAll label="Svi upiti" onClick={() => onView('requests')} />}
         >
           <div className="fam-rows">
-            {care.requests.map((r) => {
+            {/* the latest request to each of them; every earlier one is on "Vaši upiti" */}
+            {care.requests.filter((r, i, all) => all.findIndex((x) => x.caregiverId === r.caregiverId) === i).map((r) => {
               const c = caregivers.find((x) => x.id === r.caregiverId);
               const pill = REQUEST_PILL[r.status];
               return (
-                <div key={r.caregiverId} className="fam-row">
+                <div key={r.id || r.caregiverId} className="fam-row">
                   <span className="cg-avatar">{c?.initials}</span>
                   <div className="fam-row-main">
                     <p className="fam-row-title">{c?.name}</p>
