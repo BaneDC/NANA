@@ -1,4 +1,4 @@
-import { ArrowRight, Check, ChevronRight, Clock, Search } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, Clock, History, Search } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import {
   activeVersion,
@@ -17,7 +17,6 @@ import Button from '../components/Button';
 import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
 import Tags from '../components/Tags';
-import { ActivityCard } from '../components/family/Activity';
 import { groupServices } from '../data/serviceCatalog';
 import VisitReport from '../components/family/VisitReport';
 
@@ -133,6 +132,12 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
             it again. Only a family that has asked nobody yet gets it, as the
             one step in the card below. */}
         <div className="view-head-actions">
+          {/* everything that has happened, with everyone: a drawer, as on her page */}
+          {care.log?.length > 0 && (
+            <Button variant="secondary" iconOnly aria-label="Šta se desilo" title="Šta se desilo" onClick={() => onDrawer({ kind: 'activity' })}>
+              <History size={14} strokeWidth={1.75} />
+            </Button>
+          )}
           <AskAssistant onClick={onAskAssistant} />
         </div>
       </div>
@@ -310,8 +315,6 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
       </Section>
 
       )}
-
-      <ActivityCard care={care} onDrawer={onDrawer} />
 
       {care.requests.length > 0 && (
         <Section

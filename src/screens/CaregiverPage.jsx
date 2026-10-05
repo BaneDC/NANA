@@ -1,11 +1,10 @@
-import { CreditCard, Phone } from 'lucide-react';
+import { CreditCard, History, IdCard, Phone } from 'lucide-react';
 import Button from '../components/Button';
 import Attention from '../components/Attention';
 import BackButton from '../components/BackButton';
 import VisitRow from '../components/family/VisitRow';
 import { Line, ServiceChips } from '../components/family/FamilyDrawer';
 import { Group } from '../components/Tags';
-import { ActivityCard } from '../components/family/Activity';
 import {
   activeVersion,
   arrangementOf,
@@ -174,14 +173,23 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
             </p>
           </div>
         </div>
-        {!ended && (
-          <div className="view-head-actions">
+        {/* Everything about her, and everything that has happened with her,
+            each a drawer: icons beside her number, as the plan's own actions
+            are, so the head keeps its width for her name. */}
+        <div className="view-head-actions">
+          {!ended && (
             <a className="btn secondary" href={`tel:${cg.phone.replace(/\s/g, '')}`}>
               <Phone size={14} strokeWidth={1.75} />
               {cg.phone}
             </a>
-          </div>
-        )}
+          )}
+          <Button variant="secondary" iconOnly aria-label="Pregled" title="Pregled" onClick={() => onDrawer({ kind: 'overview', caregiverId: cg.id })}>
+            <IdCard size={14} strokeWidth={1.75} />
+          </Button>
+          <Button variant="secondary" iconOnly aria-label="Šta se desilo" title="Šta se desilo" onClick={() => onDrawer({ kind: 'activity', caregiverId: cg.id })}>
+            <History size={14} strokeWidth={1.75} />
+          </Button>
+        </div>
       </div>
 
       {/* something to do about her is the page's tinted place; a plain state
@@ -260,11 +268,8 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
             value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'}
           />
         </div>
-        <div className="panel-card-actions">
-          <Button variant="secondary" onClick={() => onDrawer({ kind: 'overview', caregiverId: cg.id })}>
-            Pregled
-          </Button>
-          {!care.payment.connected && (
+        {!care.payment.connected && (
+          <div className="panel-card-actions">
             <Button
               variant="secondary"
               onClick={() => {
@@ -275,8 +280,8 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
               <CreditCard size={14} strokeWidth={1.75} />
               Dodaj karticu
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       <section className="panel-card">
@@ -306,8 +311,6 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
           </div>
         )}
       </section>
-
-      <ActivityCard care={care} caregiverId={cg.id} onDrawer={onDrawer} />
 
       {act && !ended && (
         <div className="fam-end">

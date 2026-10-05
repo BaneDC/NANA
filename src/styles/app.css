@@ -620,6 +620,13 @@ textarea {
   padding: 0;
 }
 
+/* In a page head an icon stands beside buttons with words (her number), so it
+   is as tall as they are; a touch screen makes all of them 44 anyway. */
+.view-head-actions .btn.icon-only {
+  width: var(--button-size);
+  height: var(--button-size);
+}
+
 .btn:disabled {
   opacity: 0.45;
   cursor: default;
