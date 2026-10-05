@@ -7541,6 +7541,26 @@ button.svc:hover {
   .card-go {
     display: block;
   }
+
+  /* Her card on Pronađi, and the head of her details, on a phone: the match
+     first, then her name, then her rating and the rest, each a line of its
+     own - side by side, a longer name and the match did not fit beside the
+     avatar. The avatar keeps its height and sits by the first line. The card
+     has no chevron here: its own button says what it does, and the card
+     opens on a tap as any card does. */
+  :is(.caregiver.is-wide, .fam-profile-head) .cg-top {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: var(--spacing-1);
+  }
+
+  :is(.caregiver.is-wide, .fam-profile-head) .cg-top > .status-pill {
+    margin-left: 0;
+  }
+
+  .caregiver.is-wide .card-go {
+    display: none;
+  }
 }
 
 /* ---------- The keyboard on a phone ----------

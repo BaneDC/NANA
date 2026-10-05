@@ -225,7 +225,7 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
   - `.card-action` se ne prikazuje, nego `.card-go` (strelica);
   - tap otvara detalje, pa **detalji moraju imati istu akciju** (profil negovateljice ima „Pošalji poruku");
   - pre nego što sakriješ akciju, proveri da je ima u detaljima.
-  - **izuzetak je kartica negovateljice na „Pronađi":** „Pošalji poruku" je posebna akcija od otvaranja detalja, pa na telefonu ostaje, ispod sadržaja kartice, poravnata sa tekstom i široka koliko on, a strelica gore ostaje i kaže da tap otvara profil. Stanje („Već dolazi", „Čeka odgovor") stoji na istom mestu.
+  - **izuzetak je kartica negovateljice na „Pronađi":** „Pošalji poruku" je posebna akcija od otvaranja detalja, pa na telefonu ostaje, ispod sadržaja kartice, poravnata sa tekstom i široka koliko on. Ova kartica na telefonu nema strelicu (odlučeno 5. 10.): dugme kaže šta radi, a tap na karticu otvara profil kao i svaka kartica. Stanje („Već dolazi", „Čeka odgovor") stoji na istom mestu.
 - **Grupa koja se sklapa** (npr. grupa kolačića): ceo njen gornji deo (naziv, stanje, opis) otvara i zatvara grupu. Naziv je dugme razvučeno preko tog dela (`.ck-summary` + `.ck-open`). Prekidač stoji iznad i samo menja stanje. Spisak koji se otvori nije deo mete, pa se čitanjem ne zatvara.
 ### Drawer ili modal (odlučeno 30. 9.)
 
@@ -272,7 +272,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 **Ocena** se svuda piše isto (`Rating`, `src/components/Rating.jsx`): broj, pa zvezdica, pa broj ocena: „4,9 ★ (64)". Ko još nema ocena je „Nova", bez zvezdice.
 
-**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. **Avatar je visok koliko ime i red ispod njega** (red imena + 4 + 16): 40 sa mišem, 44 na dodir, radius 8 (kartica r24 oko 16 paddinga; avatar veći od 36 nije izuzet od §1). Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`).
+**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. **Avatar je visok koliko ime i red ispod njega** (red imena + 4 + 16): 40 sa mišem, 44 na dodir, radius 8 (kartica r24 oko 16 paddinga; avatar veći od 36 nije izuzet od §1). Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom, 4 jedno od drugog (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
 | Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |
