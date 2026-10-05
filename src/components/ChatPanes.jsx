@@ -1,9 +1,11 @@
-import { Check, Send, Star } from 'lucide-react';
-import { caregivers, daysText, ratingText, slotsText } from '../data/carePlan';
-import { allVisits, firstName, money, pendingVersion, services, waitingOnYou } from '../data/familyCare';
+import { Check, Send } from 'lucide-react';
+import { caregivers, daysText, slotsText } from '../data/carePlan';
+import { allVisits, firstName, money, pendingVersion, services, standingWith, waitingOnYou } from '../data/familyCare';
 import { priceLine } from '../data/plans';
 import PlanContents from './PlanContents';
 import VisitRow from './family/VisitRow';
+import CaregiverHead from './CaregiverHead';
+import Rating from './Rating';
 import Button from './Button';
 import Tags from './Tags';
 
@@ -115,7 +117,7 @@ function CaregiversPane({ care, onContact }) {
             <div className="fam-row-main">
               <p className="fam-row-title">{c.name}</p>
               <p className="fam-row-body">
-                <Star size={11} strokeWidth={2} className="cg-star" /> {ratingText(c)} · {c.rate} · {c.area}, do {c.radius} km
+                <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
               </p>
             </div>
             {asked ? (
@@ -197,13 +199,10 @@ export function paneFor(openId, ctx) {
       if (!c) return null;
       const asked = care.requests.find((r) => r.caregiverId === c.id);
       return {
-        title: c.name,
-        meta: `${c.area} · do ${c.radius} km`,
+        title: 'Informacije o negovateljici',
         children: (
           <div className="nana-pane">
-            <p className="fam-row-body">
-              <Star size={11} strokeWidth={2} className="cg-star" /> {ratingText(c)} · {c.rate}
-            </p>
+            <CaregiverHead caregiver={c} standing={standingWith(care, c.id)} />
             <p className="ag-label">O sebi</p>
             <p className="doc-p">{c.bio}</p>
             <p className="ag-label">Klasifikacije</p>

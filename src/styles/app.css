@@ -980,9 +980,10 @@ textarea {
   color: var(--text-disabled);
 }
 
+/* the number, then the star, then how many: "4,9 ★ (64)" */
 .cg-star {
   display: inline-block;
-  margin-right: 4px;
+  margin: 0 4px 0 2px;
   vertical-align: -1px;
   color: var(--primary);
 }
@@ -5304,14 +5305,18 @@ button.svc:hover {
   line-height: var(--text-body-leading);
 }
 
+/* Who she is at the top of her details, as her card on Pronađi has it: the
+   avatar by the first line, her name (a card's title, 14) with the match
+   beside it, and under them her rating, rate and area (CaregiverHead.jsx). */
 .fam-profile-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-3);
 }
 
-.fam-profile-head > .status-pill {
-  margin-left: auto;
+.fam-profile-head .cg-name {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
 }
 
 /* where the family stands with her, under her rate at the top of her profile */

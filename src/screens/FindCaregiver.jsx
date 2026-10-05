@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Phone, Star } from 'lucide-react';
-import { caregivers, matchReasons, ratingText } from '../data/carePlan';
+import { ChevronLeft, ChevronRight, Phone } from 'lucide-react';
+import { caregivers, matchReasons } from '../data/carePlan';
 import { standingWith } from '../data/familyCare';
+import Rating from '../components/Rating';
 import Button from '../components/Button';
 import Tags from '../components/Tags';
 import Standing from '../components/Standing';
@@ -72,8 +73,7 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
                   <ChevronRight className="card-go" size={16} strokeWidth={1.75} aria-hidden="true" />
                 </div>
                 <div className="cg-meta">
-                  <Star size={11} strokeWidth={2} className="cg-star" />
-                  {ratingText(c)} · {c.rate} · {c.area}, do {c.radius} km
+                  <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
                 </div>
                 {/* Why she comes up (the platform's reasons) and what she is,
                     each a labelled group of tags, the labels in one column. */}
