@@ -114,7 +114,7 @@ function CardFooter({
   return (
     <div
       data-slot="card-footer"
-      className={cn("mt-2 flex gap-2 phone:flex-wrap phone:[&>*]:flex-auto", className)}
+      className={cn("mt-2 flex gap-2 phone:flex-wrap phone:*:flex-auto", className)}
       {...props} />
   );
 }

@@ -1,7 +1,12 @@
 import { forwardRef } from 'react';
 import { motion } from 'motion/react';
 import { AlertTriangle, CalendarPlus, Check, CheckCheck, Clock, FileText, Send, X } from 'lucide-react';
-import Button from '../Button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DataList, DataRow } from '@/components/data-list';
+import { Total } from '@/components/pane';
+import { statusVariant } from '../Standing';
 import Chip from '../Chip';
 import {
   awaitingFor,
@@ -20,10 +25,10 @@ import {
 
 function Pill({ tone, icon: Icon, children }) {
   return (
-    <span className={`status-pill is-${tone}`}>
+    <Badge variant={statusVariant(`is-${tone}`)}>
       {Icon && <Icon size={12} strokeWidth={2} />}
       {children}
-    </span>
+    </Badge>
   );
 }
 
@@ -68,12 +73,7 @@ function Status({ client }) {
 }
 
 function Line({ label, value }) {
-  return (
-    <p className="bc-line">
-      <span className="bc-line-label">{label}</span>
-      <span className="bc-line-value">{value}</span>
-    </p>
-  );
+  return <DataRow label={label}>{value}</DataRow>;
 }
 
 // The ref is not decoration: the board's columns animate with `popLayout`, which
@@ -97,7 +97,8 @@ const BoardCard = forwardRef(function BoardCard(
     <motion.article
       ref={ref}
       layout
-      className="bc"
+      // r16 with 12 inside, so the avatar in its corner is r4 (16 = 4 + 12)
+      className="flex flex-col gap-2 rounded-2xl bg-card p-3 shadow-card"
       // Clicking anywhere opens the client, which is convenient with a mouse
       // and nothing more: the card is not announced as a button, because a
       // button holding Accept and Decline inside it is a lie to anything
@@ -108,16 +109,22 @@ const BoardCard = forwardRef(function BoardCard(
       exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.18 } }}
       transition={{ type: 'spring', stiffness: 320, damping: 34 }}
     >
-      <div className="bc-head">
-        <span className="cg-avatar">{client.initials}</span>
+      <div className="mb-3 flex items-start gap-3 [--avatar:calc(var(--text-sm-leading)+16px)]">
+        <Avatar className="rounded-sm">
+          <AvatarFallback>{client.initials}</AvatarFallback>
+        </Avatar>
         {/* The age sits with the place, not with the name: on the same line as
             the name it left long names wrapping around a two-character number
             and the status pill pushed off on its own. */}
-        <div className="bc-id">
-          <button type="button" className="bc-name" onClick={act(onOpen)}>
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            className="block w-full cursor-pointer text-left text-sm font-medium text-foreground hover:text-primary-600"
+            onClick={act(onOpen)}
+          >
             {client.elder}
           </button>
-          <p className="bc-meta">
+          <p className="text-[11px] leading-4 text-disabled">
             {client.age} · {client.area} · {client.distance}
           </p>
         </div>
@@ -126,56 +133,56 @@ const BoardCard = forwardRef(function BoardCard(
 
       {client.stage === 'request' && (
         <>
-          <p className="bc-frailty">
+          <p className="text-xs text-primary-600">
             Krhkost {client.frailty} · {frailtyLabel(client.frailty)}
           </p>
-          <div className="bc-chips">
+          <div className="flex flex-wrap gap-2">
             {client.needs.map((n) => (
               <Chip key={n}>{serviceShort(n)}</Chip>
             ))}
           </div>
-          <div className="bc-lines">
+          <DataList>
             <Line label="Sati" value={`${client.hours} h nedeljno`} />
             <Line label="Kada" value={client.schedule} />
             <Line label="Početak" value={client.startsOn} />
             <Line label="Pitao/la" value={`${client.family} · ${client.relation}`} />
-          </div>
+          </DataList>
         </>
       )}
 
       {client.stage === 'agreement' && !client.agreementSent && (
         <>
-          <p className="bc-note">
+          <p className="text-xs leading-body text-muted-foreground">
             Prihvaćeno {client.acceptedOn}. Postavite usluge i cenu po satu - svaka poseta, radni nalog
             i uplata posle ovoga računaju se iz toga.
           </p>
-          <div className="bc-chips">
+          <div className="flex flex-wrap gap-2">
             {client.needs.map((n) => (
               <Chip key={n}>{serviceShort(n)}</Chip>
             ))}
           </div>
-          <div className="bc-lines">
+          <DataList>
             <Line label="Sati" value={`${client.hours} h nedeljno`} />
             <Line label="Kada" value={client.schedule} />
-          </div>
+          </DataList>
         </>
       )}
 
       {client.stage === 'agreement' && client.agreementSent && (
         <>
-          <p className="bc-note">
+          <p className="text-xs leading-body text-muted-foreground">
             Poslato {client.sentOn}. Ništa ne može da se zakaže dok porodica ne potpiše.
             {client.remindedOn && ` Podsetnik poslat ${client.remindedOn}.`}
           </p>
-          <div className="bc-lines">
+          <DataList>
             <Line label="Cena" value={`${money(client.rate)}/h`} />
             <Line label="Sati" value={`${client.hours} h nedeljno`} />
-          </div>
+          </DataList>
         </>
       )}
 
       {client.stage === 'active' && (
-        <div className="bc-lines">
+        <DataList>
           <Line
             label="Sledeća poseta"
             value={
@@ -192,35 +199,34 @@ const BoardCard = forwardRef(function BoardCard(
           ) : (
             <Line label="Dogovoreno" value={`${client.hours} h nedeljno`} />
           )}
-        </div>
+        </DataList>
       )}
 
       {client.stage === 'work-order' && due && (
         <>
-          <div className="bc-lines">
+          <DataList>
             <Line label="Poseta" value={`${due.date} · ${due.time}`} />
             <Line label="Radila" value={`${due.hours} h po ${money(client.rate)}/h`} />
             <Line label="Završeno" value={client.sinceVisit} />
-          </div>
-          <div className="bc-total">
+          </DataList>
+          <Total>
             <Line label="Naplaćeno" value={money(totals.charged)} />
             <Line label="Provizija (10%)" value={`−${money(totals.fee)}`} />
-            <p className="bc-line is-net">
-              <span className="bc-line-label">Vi dobijate</span>
-              <span className="bc-line-value">{money(totals.net)}</span>
-            </p>
-          </div>
+            <DataRow total label="Vi dobijate">
+              {money(totals.net)}
+            </DataRow>
+          </Total>
         </>
       )}
 
-      <div className="bc-actions">
+      <div className="flex gap-2 *:flex-1">
         {client.stage === 'request' && (
           <>
             <Button variant="secondary" onClick={act(onDecline)}>
               <X size={14} strokeWidth={2} />
               Odbij
             </Button>
-            <Button variant="primary" onClick={act(onAccept)}>
+            <Button onClick={act(onAccept)}>
               <Check size={14} strokeWidth={2} />
               Prihvati
             </Button>
@@ -228,7 +234,7 @@ const BoardCard = forwardRef(function BoardCard(
         )}
 
         {client.stage === 'agreement' && !client.agreementSent && (
-          <Button variant="primary" onClick={act(onOpen)}>
+          <Button onClick={act(onOpen)}>
             <FileText size={14} strokeWidth={1.75} />
             Postavi ugovor
           </Button>
@@ -262,7 +268,7 @@ const BoardCard = forwardRef(function BoardCard(
             was, what actually got done. It is filled in on the client's page,
             which is where the agreement it prices against lives. */}
         {client.stage === 'work-order' && (
-          <Button variant="primary" onClick={act(onOpen)}>
+          <Button onClick={act(onOpen)}>
             <FileText size={14} strokeWidth={1.75} />
             Popuni radni nalog
           </Button>

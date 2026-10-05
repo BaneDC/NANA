@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+
 import {
   AlertTriangle,
   CalendarCheck,
@@ -20,7 +20,17 @@ import {
   StickyNote,
   Frown,
 } from 'lucide-react';
-import Button from '../../components/Button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Item, ItemGroup } from '@/components/ui/item';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DataList, DataRow } from '@/components/data-list';
+import { Concern, PaneHint, PaneLabel } from '@/components/pane';
+import { Page, PageDescription, PageHeader, PageHeaderText, PagePerson, PageTitle } from '@/components/page';
+import { useKept } from '@/hooks/use-kept';
+import { cn } from '@/lib/utils';
 import Dialog from '../../components/Dialog';
 import BackButton from '../../components/BackButton';
 import Tags from '../../components/Tags';
@@ -69,37 +79,33 @@ const ACTIVITY_ICON = {
   message: MessageSquare,
 };
 
+// a card's buttons, right (as in a dialog), and on a phone too
+function CardActionsEnd({ children }) {
+  return <CardFooter className="justify-end phone:flex-nowrap phone:*:flex-none">{children}</CardFooter>;
+}
+
 function Section({ title, badge, children }) {
   return (
-    <section className="panel-card">
-      <div className="panel-card-head">
-        <p className="doc-section-title">{title}</p>
-        {badge}
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {badge && <CardAction>{badge}</CardAction>}
+      </CardHeader>
       {children}
-    </section>
+    </Card>
   );
 }
 
 function AgreedTerms({ client }) {
   return (
     <>
-      <p className="ag-label">Usluge iz ovog ugovora</p>
+      <PaneLabel>Usluge iz ovog ugovora</PaneLabel>
       <Tags items={client.services.map(serviceTitle)} />
-      <div className="bc-lines ag-terms">
-        <p className="bc-line">
-          <span className="bc-line-label">Cena po satu</span>
-          <span className="bc-line-value">{money(client.rate)} / h</span>
-        </p>
-        <p className="bc-line">
-          <span className="bc-line-label">Dogovoreni sati</span>
-          <span className="bc-line-value">{client.hours} h nedeljno</span>
-        </p>
-        <p className="bc-line">
-          <span className="bc-line-label">Raspored</span>
-          <span className="bc-line-value">{client.schedule}</span>
-        </p>
-      </div>
+      <DataList className="mt-2">
+        <DataRow label="Cena po satu">{money(client.rate)} / h</DataRow>
+        <DataRow label="Dogovoreni sati">{client.hours} h nedeljno</DataRow>
+        <DataRow label="Raspored">{client.schedule}</DataRow>
+      </DataList>
     </>
   );
 }
@@ -113,7 +119,7 @@ function Visits({ client }) {
   const settled = visits.filter((v) => v.status === 'paid');
   if (!visits.length) {
     return (
-      <p className="board-empty">
+      <p className="rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-body text-disabled">
         Još nema izmirenih poseta. Počinju kad porodica potpiše ugovor.
       </p>
     );
@@ -125,56 +131,57 @@ function Visits({ client }) {
 
   return (
     <>
-      <p className="ag-hint">
+      <PaneHint>
         Plaćeno: {settled.length} · {hours} h · {money(earned)} vama
         {pending > 0 && ` · ${money(pending)} u obradi`}
-      </p>
-      <ul className="visit-list">
+      </PaneHint>
+      {/* each visit a row (docs/patterns.md §6): what she wrote, and what it paid */}
+      <ItemGroup>
         {visits.map((v, i) => {
           const Mood = MOOD[v.mood]?.icon;
           const totals = totalsFor(v.hours, client.rate);
           return (
-            <li key={`${v.date}-${i}`} className="visit">
-              <div className="visit-head">
-                <p className="visit-when">
+            <Item key={`${v.date}-${i}`} role="listitem" className="flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <p className="min-w-0 flex-1 text-xs font-medium text-foreground">
                   {v.date} · {v.time}
                 </p>
                 {v.status === 'awaiting' ? (
-                  <span className="status-pill is-pending">
+                  <Badge variant="warning">
                     <Clock size={12} strokeWidth={2} />
                     Naplata za {v.confirmsInHours} h
-                  </span>
+                  </Badge>
                 ) : (
-                  <span className="status-pill is-accepted">Plaćeno</span>
+                  <Badge variant="success">Plaćeno</Badge>
                 )}
               </div>
-              <p className="visit-note">{v.note}</p>
+              <p className="text-xs leading-body text-muted-foreground">{v.note}</p>
               {v.services?.length > 0 && (
-                <p className="visit-services">{v.services.map(serviceShort).join(' · ')}</p>
+                <p className="text-[11px] leading-4 text-disabled">{v.services.map(serviceShort).join(' · ')}</p>
               )}
               {v.concern && (
-                <p className="visit-concern">
+                <Concern>
                   <AlertTriangle size={12} strokeWidth={2} />
                   {v.concern}
-                </p>
+                </Concern>
               )}
-              <div className="visit-foot">
+              <div className="flex items-center gap-3 text-[11px] leading-4 text-disabled">
                 {Mood && (
-                  <span className="visit-mood">
+                  <span className="inline-flex items-center gap-1">
                     <Mood size={13} strokeWidth={1.75} />
                     {MOOD[v.mood].label}
                   </span>
                 )}
-                {v.eating && <span className="visit-mood">ishrana: {AMOUNT_WORD[v.eating]}</span>}
-                {v.moving && <span className="visit-mood">kretanje: {AMOUNT_WORD[v.moving]}</span>}
-                <span className="visit-money">
+                {v.eating && <span className="inline-flex items-center gap-1">ishrana: {AMOUNT_WORD[v.eating]}</span>}
+                {v.moving && <span className="inline-flex items-center gap-1">kretanje: {AMOUNT_WORD[v.moving]}</span>}
+                <span className="ml-auto">
                   {v.hours} h · {money(totals.net)}
                 </span>
               </div>
-            </li>
+            </Item>
           );
         })}
-      </ul>
+      </ItemGroup>
     </>
   );
 }
@@ -184,17 +191,21 @@ function Activity({ client }) {
   // remember when she opens this.
   const entries = [...(client.activity || [])].reverse();
   return (
-    <ol className="timeline">
+    // a line down the left joins the dots, and stops at the last one
+    <ol className="flex list-none flex-col">
       {entries.map((e, i) => {
         const Icon = ACTIVITY_ICON[e.kind] || StickyNote;
         return (
-          <li key={i} className="tl-item">
-            <span className="tl-dot">
+          <li
+            key={i}
+            className="relative flex gap-3 pb-3 before:absolute before:top-7 before:bottom-0 before:left-3 before:w-px before:bg-border last:pb-0 last:before:hidden"
+          >
+            <span className="relative z-1 flex size-[25px] shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <Icon size={13} strokeWidth={1.75} />
             </span>
-            <div className="tl-body">
-              <p className="tl-text">{e.text}</p>
-              <p className="tl-when">{e.when}</p>
+            <div className="min-w-0 flex-1 pt-1">
+              <p className="text-xs leading-body text-foreground">{e.text}</p>
+              <p className="text-[11px] leading-4 text-disabled">{e.when}</p>
             </div>
           </li>
         );
@@ -215,6 +226,8 @@ export default function ClientPage({
   const state = agreementState(client);
   const due = dueVisit(client);
   const [modal, setModal] = useState(null); // null | 'agreement' | 'plan' | 'work-order'
+  // kept while the dialog closes, so it closes on the form it showed
+  const shownModal = useKept(modal);
   const [termsOpen, setTermsOpen] = useState(false);
 
   // What the row says without being opened. Enough to know the terms are the
@@ -237,55 +250,56 @@ export default function ClientPage({
   })();
 
   const badge = {
-    none: <span className="status-pill is-muted">Nije prihvaćeno</span>,
-    draft: <span className="status-pill is-pending">Nacrt</span>,
+    none: <Badge variant="secondary">Nije prihvaćeno</Badge>,
+    draft: <Badge variant="warning">Nacrt</Badge>,
     sent: (
-      <span className="status-pill is-pending">
+      <Badge variant="warning">
         <Clock size={12} strokeWidth={2} />
         Čeka potpis
-      </span>
+      </Badge>
     ),
     active: (
-      <span className="status-pill is-accepted">
+      <Badge variant="success">
         <Check size={12} strokeWidth={2} />
         Aktivno od {client.since}
-      </span>
+      </Badge>
     ),
   }[state];
 
   return (
-    <motion.div
-      className="view"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } }}
-    >
+    // the page comes up from a little below
+    <Page className="animate-in fade-in-0 slide-in-from-bottom-2 duration-250 ease-out">
       <BackButton label="Tabla" onClick={onBack} />
 
-      <header className="client-head">
-        <span className="cg-avatar">{client.initials}</span>
-        <div className="client-head-text">
-          <h1 className="view-title">{client.elder}</h1>
-          <p className="view-sub">
-            {client.age} · {client.area} · {client.distance} · krhkost {client.frailty},{' '}
-            {frailtyLabel(client.frailty)}
-          </p>
-        </div>
-      </header>
+      <PageHeader className="mb-0">
+        <PagePerson className="flex-initial">
+          <Avatar>
+            <AvatarFallback>{client.initials}</AvatarFallback>
+          </Avatar>
+          <PageHeaderText className="flex-initial">
+            <PageTitle>{client.elder}</PageTitle>
+            <PageDescription>
+              {client.age} · {client.area} · {client.distance} · krhkost {client.frailty},{' '}
+              {frailtyLabel(client.frailty)}
+            </PageDescription>
+          </PageHeaderText>
+        </PagePerson>
+      </PageHeader>
 
-      <div className="client-contact">
-        <p className="bc-line">
-          <span className="bc-line-label">Kontakt porodice</span>
-          <span className="bc-line-value">
-            {client.family} · {client.relation}
-          </span>
-        </p>
-        <p className="bc-line">
-          <span className="bc-line-label">
-            <Phone size={12} strokeWidth={1.75} /> Telefon
-          </span>
-          <span className="bc-line-value">{client.phone}</span>
-        </p>
-      </div>
+      <DataList className="rounded-2xl bg-muted px-4 py-3">
+        <DataRow label="Kontakt porodice">
+          {client.family} · {client.relation}
+        </DataRow>
+        <DataRow
+          label={
+            <span className="inline-flex items-center gap-1">
+              <Phone size={12} strokeWidth={1.75} /> Telefon
+            </span>
+          }
+        >
+          {client.phone}
+        </DataRow>
+      </DataList>
 
       {/* An outstanding work order goes first: it is the only thing on this
           page with a deadline. The agreement below it changes once. */}
@@ -293,31 +307,26 @@ export default function ClientPage({
         <Section
           title="Radni nalog čeka"
           badge={
-            <span className="status-pill is-pending">
+            <Badge variant="warning">
               <AlertTriangle size={12} strokeWidth={2} />
               Nije poslato
-            </span>
+            </Badge>
           }
         >
-          <p className="ag-lead">
+          <CardDescription>
             {due.date} · {due.time} - {due.hours} h po dogovorenih {money(client.rate)}/h, završeno{' '}
             {client.sinceVisit}. Slanjem počinje 24 sata za porodicu: ili potvrde, ili se naplata izvrši
             sama kad rok istekne.
-          </p>
-          <div className="bc-lines ag-terms">
-            <p className="bc-line">
-              <span className="bc-line-label">Ako se pošalje kako je rađeno</span>
-              <span className="bc-line-value">
-                {money(totalsFor(due.hours, client.rate).net)} vama
-              </span>
-            </p>
-          </div>
-          <div className="panel-card-actions is-end">
-            <Button variant="primary" onClick={() => setModal('work-order')}>
+          </CardDescription>
+          <DataList className="mt-2">
+            <DataRow label="Ako se pošalje kako je rađeno">{money(totalsFor(due.hours, client.rate).net)} vama</DataRow>
+          </DataList>
+          <CardActionsEnd>
+            <Button onClick={() => setModal('work-order')}>
               <FileText size={14} strokeWidth={1.75} />
               Popuni radni nalog
             </Button>
-          </div>
+          </CardActionsEnd>
         </Section>
       )}
 
@@ -328,48 +337,48 @@ export default function ClientPage({
           title="Sledeća poseta"
           badge={
             client.plan ? (
-              <span className="status-pill is-accepted">
+              <Badge variant="success">
                 <Check size={12} strokeWidth={2} />
                 {money(heldFor(client))} rezervisano
-              </span>
+              </Badge>
             ) : null
           }
         >
           {client.plan ? (
             <>
-              <p className="ag-lead">
+              <CardDescription>
                 {client.plan.date} · {client.plan.time} - {client.plan.hours} h po{' '}
                 {money(client.rate)}/h. Poslato porodici {client.plan.sentOn};{' '}
                 {money(heldFor(client))} je rezervisano na njihovoj kartici, a{' '}
                 {money(totalsFor(client.plan.hours, client.rate).net)} od toga stiže vama ako poseta
                 prođe po planu.
-              </p>
-              <p className="ag-label">Planirano</p>
+              </CardDescription>
+              <PaneLabel>Planirano</PaneLabel>
               <Tags items={client.plan.services.map(serviceTitle)} />
-              {client.plan.notes && <p className="visit-note">{client.plan.notes}</p>}
-              <div className="panel-card-actions is-end">
+              {client.plan.notes && <p className="text-xs leading-body text-muted-foreground">{client.plan.notes}</p>}
+              <CardActionsEnd>
                 <Button variant="secondary" onClick={() => setModal('plan')}>
                   Promeni plan
                 </Button>
-                <Button variant="primary" onClick={() => onVisitDone(client.id)}>
+                <Button onClick={() => onVisitDone(client.id)}>
                   <CheckCheck size={14} strokeWidth={1.75} />
                   Poseta obavljena
                 </Button>
-              </div>
+              </CardActionsEnd>
             </>
           ) : (
             <>
-              <p className="ag-lead">
+              <CardDescription>
                 Još ništa nije planirano. Plan posete kaže zašto dolazite, a kad ga pošaljete porodici,
                 novac se rezerviše pre nego što krenete - pa radni nalog posle samo potvrđuje ono što je
                 već pokriveno.
-              </p>
-              <div className="panel-card-actions is-end">
-                <Button variant="primary" onClick={() => setModal('plan')}>
+              </CardDescription>
+              <CardActionsEnd>
+                <Button onClick={() => setModal('plan')}>
                   <CalendarPlus size={14} strokeWidth={1.75} />
                   Isplaniraj posetu
                 </Button>
-              </div>
+              </CardActionsEnd>
             </>
           )}
         </Section>
@@ -377,74 +386,55 @@ export default function ClientPage({
 
       {/* Terms that are set once and then read occasionally. A row, with the
           detail a click away — as a full panel it pushed the visits and the
-          history, the things that actually change, below the fold. */}
-      <section className="panel-card is-compact">
-        <div className="compact-row">
-          <button
-            type="button"
-            className="compact-text"
-            onClick={() => setTermsOpen((v) => !v)}
-            aria-expanded={termsOpen}
-          >
-            <span className="doc-section-title">
-              Ugovor o nezi
-              <ChevronDown
-                size={14}
-                strokeWidth={2}
-                className={`toggle-chevron${termsOpen ? '' : ' is-up'}`}
-              />
-            </span>
-            <span className="compact-sub">{summary}</span>
-          </button>
-          {badge}
-          {state === 'draft' && (
-            <Button variant="primary" onClick={() => setModal('agreement')}>
-              <FileText size={14} strokeWidth={1.75} />
-              Postavi ugovor
-            </Button>
-          )}
-          {state === 'sent' && (
-            <Button variant="secondary" onClick={() => onRemind(client.id)}>
-              <Send size={14} strokeWidth={1.75} />
-              Pošalji podsetnik
-            </Button>
-          )}
-        </div>
+          history, the things that actually change, below the fold. A compact
+          card: 12 by 16 inside. */}
+      <Collapsible open={termsOpen} onOpenChange={setTermsOpen} asChild>
+        <Card className="gap-0 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <CollapsibleTrigger className="group/terms flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-1 text-left [font:inherit]">
+              <span className="flex items-center gap-2 text-sm font-medium text-foreground group-hover/terms:text-primary-600">
+                Ugovor o nezi
+                <ChevronDown
+                  size={14}
+                  strokeWidth={2}
+                  className={cn('transition-transform duration-200', !termsOpen && 'rotate-180')}
+                />
+              </span>
+              <span className="text-[11px] leading-4 text-disabled">{summary}</span>
+            </CollapsibleTrigger>
+            {badge}
+            {state === 'draft' && (
+              <Button onClick={() => setModal('agreement')}>
+                <FileText size={14} strokeWidth={1.75} />
+                Postavi ugovor
+              </Button>
+            )}
+            {state === 'sent' && (
+              <Button variant="secondary" onClick={() => onRemind(client.id)}>
+                <Send size={14} strokeWidth={1.75} />
+                Pošalji podsetnik
+              </Button>
+            )}
+          </div>
 
-        <AnimatePresence initial={false}>
-          {termsOpen && (
-            <motion.div
-              key="terms"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
-              style={{ overflow: 'hidden' }}
-            >
-              <div className="compact-body">
-                {state === 'none' || state === 'draft' ? (
-                  <>
-                    <p className="ag-label">Šta je porodica tražila</p>
-                    <Tags items={client.needs.map(serviceTitle)} />
-                    <div className="bc-lines ag-terms">
-                      <p className="bc-line">
-                        <span className="bc-line-label">Sati</span>
-                        <span className="bc-line-value">{client.hours} h nedeljno</span>
-                      </p>
-                      <p className="bc-line">
-                        <span className="bc-line-label">Raspored</span>
-                        <span className="bc-line-value">{client.schedule}</span>
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <AgreedTerms client={client} />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </section>
+          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+            <div className="flex flex-col gap-2 pt-3">
+              {state === 'none' || state === 'draft' ? (
+                <>
+                  <PaneLabel>Šta je porodica tražila</PaneLabel>
+                  <Tags items={client.needs.map(serviceTitle)} />
+                  <DataList className="mt-2">
+                    <DataRow label="Sati">{client.hours} h nedeljno</DataRow>
+                    <DataRow label="Raspored">{client.schedule}</DataRow>
+                  </DataList>
+                </>
+              ) : (
+                <AgreedTerms client={client} />
+              )}
+            </div>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       <Section title="Posete">
         <Visits client={client} />
@@ -454,66 +444,53 @@ export default function ClientPage({
         <Activity client={client} />
       </Section>
 
-      <AnimatePresence>
-        {modal === 'agreement' && (
-          <Dialog
-            key="agreement"
-            eyebrow={client.elder}
-            title="Ugovor o nezi"
-            wide
-            onClose={() => setModal(null)}
-          >
-            <AgreementForm
-              client={client}
-              onSend={(id, terms) => {
-                setModal(null);
-                onSendAgreement(id, terms);
-              }}
-              onCancel={() => setModal(null)}
-            />
-          </Dialog>
-        )}
+      {/* The forms, each in a dialog, kept while it closes (useKept). */}
+      {shownModal === 'agreement' && (
+        <Dialog eyebrow={client.elder} title="Ugovor o nezi" wide open={modal === 'agreement'} onClose={() => setModal(null)}>
+          <AgreementForm
+            client={client}
+            onSend={(id, terms) => {
+              setModal(null);
+              onSendAgreement(id, terms);
+            }}
+            onCancel={() => setModal(null)}
+          />
+        </Dialog>
+      )}
 
-        {modal === 'plan' && (
-          <Dialog
-            key="plan"
-            eyebrow={client.elder}
-            title={client.plan ? 'Promeni posetu' : 'Isplaniraj posetu'}
-            wide
-            onClose={() => setModal(null)}
-          >
-            <VisitPlanForm
-              client={client}
-              plan={client.plan}
-              onSave={(id, plan) => {
-                setModal(null);
-                onPlanVisit(id, plan);
-              }}
-              onCancel={() => setModal(null)}
-            />
-          </Dialog>
-        )}
+      {shownModal === 'plan' && (
+        <Dialog
+          eyebrow={client.elder}
+          title={client.plan ? 'Promeni posetu' : 'Isplaniraj posetu'}
+          wide
+          open={modal === 'plan'}
+          onClose={() => setModal(null)}
+        >
+          <VisitPlanForm
+            client={client}
+            plan={client.plan}
+            onSave={(id, plan) => {
+              setModal(null);
+              onPlanVisit(id, plan);
+            }}
+            onCancel={() => setModal(null)}
+          />
+        </Dialog>
+      )}
 
-        {modal === 'work-order' && due && (
-          <Dialog
-            key="work-order"
-            eyebrow={client.elder}
-            title="Radni nalog"
-            wide
-            onClose={() => setModal(null)}
-          >
-            <WorkOrderForm
-              client={client}
-              visit={due}
-              onSend={(id, report) => {
-                setModal(null);
-                onSendWorkOrder(id, report);
-              }}
-              onCancel={() => setModal(null)}
-            />
-          </Dialog>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {shownModal === 'work-order' && due && (
+        <Dialog eyebrow={client.elder} title="Radni nalog" wide open={modal === 'work-order'} onClose={() => setModal(null)}>
+          <WorkOrderForm
+            client={client}
+            visit={due}
+            onSend={(id, report) => {
+              setModal(null);
+              onSendWorkOrder(id, report);
+            }}
+            onCancel={() => setModal(null)}
+          />
+        </Dialog>
+      )}
+    </Page>
   );
 }

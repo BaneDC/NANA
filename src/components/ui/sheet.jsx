@@ -56,7 +56,7 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-20 bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px] duration-180 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-20 bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px] transition-none duration-180 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className
       )}
       {...props} />
@@ -76,7 +76,7 @@ function SheetContent({
         data-slot="sheet-content"
         aria-describedby={undefined}
         className={cn(
-          "fixed inset-y-3 right-3 z-20 flex flex-col overflow-hidden rounded-3xl bg-card shadow-container outline-none",
+          "fixed inset-y-3 right-3 z-20 flex flex-col transition-none overflow-hidden rounded-3xl bg-card shadow-container outline-none",
           wide ? "w-[min(520px,calc(100%-24px))]" : "w-[min(432px,calc(100%-24px))]",
           "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-right-7 data-[state=open]:duration-430 data-[state=open]:ease-spring-pane",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-right-5 data-[state=closed]:duration-160 data-[state=closed]:ease-in",

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Check, Send } from 'lucide-react';
-import Button from '../Button';
+import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { PaneHint, PaneLabel } from '@/components/pane';
 import { Field, Input, TextArea } from '../TextField';
 import { hoursIn, money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 
@@ -22,26 +25,23 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
   const hours = hoursIn(time);
   const valid = date.trim().length > 0 && hours > 0;
 
-  const toggle = (id) =>
-    setServices((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-
   return (
     <>
-      <p className="ag-lead">
+      <DialogDescription>
         Zašto dolazite. Kad ovo pošaljete porodici, novac za posetu se rezerviše pre nego što
         krenete, a radni nalog se posle otvara prema ovome - pa ono što ovde promenite je ono prema
         čemu se poseta meri.
-      </p>
+      </DialogDescription>
 
-      <div className="wo-row">
-        <Field label="Dan" className="is-wide">
+      <div className="flex flex-wrap gap-3">
+        <Field label="Dan" className="w-auto min-w-0 flex-1">
           <Input type="text" value={date} placeholder="četvrtak, 14. avgusta" onChange={setDate} />
         </Field>
-        <Field label="Vreme" className="is-short">
-          <Input type="text" value={time} placeholder="09:00–13:00" onChange={setTime} />
+        <Field label="Vreme" className="w-auto min-w-0 self-start">
+          <Input type="text" value={time} placeholder="09:00–13:00" onChange={setTime} className="w-40!" />
         </Field>
       </div>
-      <p className="ag-hint">
+      <PaneHint>
         {hours
           ? `${hours} h po dogovorenih ${money(client.rate)}/h. Na kartici porodice rezerviše se ${money(
               totalsFor(hours, client.rate).charged
@@ -49,23 +49,17 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
               totalsFor(hours, client.rate).net
             )} vama ako poseta prođe po planu. Raspored iz ugovora: ${client.schedule}.`
           : `Vreme kao raspon, npr. 09:00–13:00. Raspored iz ugovora: ${client.schedule}.`}
-      </p>
+      </PaneHint>
 
-      <p className="ag-label">Šta planirate da radite</p>
-      <div className="ag-services">
+      <PaneLabel>Šta planirate da radite</PaneLabel>
+      <ToggleGroup type="multiple" value={services} onValueChange={setServices} aria-label="Šta planirate da radite">
         {client.services.map((id) => (
-          <button
-            key={id}
-            type="button"
-            className={`svc${services.includes(id) ? ' is-on' : ''}`}
-            onClick={() => toggle(id)}
-            aria-pressed={services.includes(id)}
-          >
+          <ToggleGroupItem key={id} value={id}>
             {services.includes(id) && <Check size={13} strokeWidth={2.5} />}
             {serviceTitle(id)}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
 
       <Field label="Šta treba zapamtiti">
         <TextArea
@@ -76,12 +70,11 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
         />
       </Field>
 
-      <div className="panel-card-actions is-end">
+      <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
           Otkaži
         </Button>
         <Button
-          variant="primary"
           disabled={!valid}
           onClick={() =>
             onSave(client.id, { date: date.trim(), time: time.trim(), hours, services, notes: notes.trim() })
@@ -90,7 +83,7 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
           <Send size={14} strokeWidth={1.75} />
           {plan ? 'Pošalji izmenu' : 'Pošalji porodici'}
         </Button>
-      </div>
+      </DialogFooter>
     </>
   );
 }

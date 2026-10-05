@@ -1,5 +1,7 @@
 import { forwardRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import { cn } from '@/lib/utils';
 import BoardCard from '../../components/caregiver/BoardCard';
 import { STAGES, boardSummary, money } from '../../data/caregiverBoard';
 
@@ -24,7 +26,7 @@ const Empty = forwardRef(function Empty({ stage }, ref) {
   return (
     <motion.p
       ref={ref}
-      className="board-empty"
+      className="rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-body text-disabled"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.12 } }}
@@ -36,15 +38,18 @@ const Empty = forwardRef(function Empty({ stage }, ref) {
 
 function Column({ stage, cards, children }) {
   return (
-    <section className="board-col">
-      <header className="board-col-head">
-        <p className="board-col-title">
+    // a grey column, r24, its cards 8 apart and scrolling inside it
+    <section className="flex min-h-0 min-w-[320px] flex-[1_1_0] flex-col rounded-3xl bg-muted p-3">
+      <header className="shrink-0 px-1 pb-3">
+        <p className="flex items-center gap-2 text-sm font-medium text-foreground">
           {stage.title}
-          <span className="board-col-count">{cards.length}</span>
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-sm bg-elevated-4 px-2 text-[11px] leading-4 text-muted-foreground">
+            {cards.length}
+          </span>
         </p>
-        <p className="board-col-note">{stage.note}</p>
+        <p className="mt-1 text-[11px] leading-4 text-disabled">{stage.note}</p>
       </header>
-      <div className="board-col-body">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-0 [&.is-scrolling::-webkit-scrollbar-thumb]:bg-black/20">
         <AnimatePresence mode="popLayout" initial={false}>
           {cards.length === 0 ? <Empty key="empty" stage={stage.id} /> : children}
         </AnimatePresence>
@@ -55,10 +60,18 @@ function Column({ stage, cards, children }) {
 
 function Stat({ value, label, note, tone }) {
   return (
-    <div className={`stat${tone ? ` is-${tone}` : ''}`}>
-      <span className="stat-value">{value}</span>
-      <span className="stat-label">{label}</span>
-      {note && <span className="stat-note">{note}</span>}
+    <div className="flex flex-col gap-1 rounded-2xl bg-card px-4 py-3 shadow-card">
+      <span
+        className={cn(
+          'text-[22px] leading-7 font-medium text-foreground',
+          tone === 'warn' && 'text-warning',
+          tone === 'urgent' && 'text-destructive'
+        )}
+      >
+        {value}
+      </span>
+      <span className="text-small text-muted-foreground">{label}</span>
+      {note && <span className={cn('text-[11px] leading-4 text-disabled', tone === 'urgent' && 'text-destructive')}>{note}</span>}
     </div>
   );
 }
@@ -74,18 +87,20 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
         : `Najstariji: ${s.oldestRequest} h`;
 
   return (
-    <div className="view is-board">
-      <div className="view-head">
-        <div className="view-head-text">
-          <h1 className="view-title">Vaša tabla</h1>
-          <p className="view-sub">
+    // the board takes the whole width and does not scroll as a page: its
+    // columns do
+    <Page className="overflow-hidden pb-4 *:max-w-none phone:pb-4">
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>Vaša tabla</PageTitle>
+          <PageDescription>
             {user.name ? `${user.name.split(' ')[0]}, sve` : 'Sve'} što čeka na vas, sleva nadesno, redom
             kojim se dešava.
-          </p>
-        </div>
-      </div>
+          </PageDescription>
+        </PageHeaderText>
+      </PageHeader>
 
-      <div className="stat-row is-four">
+      <div className="grid grid-cols-4 gap-2">
         <Stat
           value={s.requests}
           label="Za odgovor"
@@ -117,7 +132,7 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
         />
       </div>
 
-      <motion.div className="board" layout>
+      <motion.div className="flex min-h-0 flex-1 items-stretch gap-3 overflow-x-auto pb-2" layout>
         {STAGES.map((stage) => {
           const cards = clients.filter((c) => c.stage === stage.id);
           return (
@@ -129,6 +144,6 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
           );
         })}
       </motion.div>
-    </div>
+    </Page>
   );
 }

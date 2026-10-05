@@ -47,7 +47,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 z-20 bg-[rgba(42,42,42,0.35)] backdrop-blur-[2px] duration-180 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-20 bg-[rgba(42,42,42,0.35)] backdrop-blur-[2px] transition-none duration-180 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className
       )}
       {...props} />
@@ -68,7 +68,12 @@ function DialogContent({
         data-slot="dialog-content"
         aria-describedby={undefined}
         className={cn(
-          "fixed top-1/2 left-1/2 z-20 flex max-h-[calc(100%-48px)] w-[calc(100%-48px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto rounded-3xl bg-card p-6 shadow-[0_12px_40px_rgba(0,0,0,0.18)] outline-none",
+          // centred by its margins rather than shadcn's translate(-50%): half of an
+          // odd height is half a pixel, and a box on half a pixel blurs its text.
+          // No transitions: the animation's duration would otherwise set one on
+          // everything, and a dialog that changes width (the message, then the
+          // plans) grew into it instead of jumping
+          "fixed inset-0 z-20 m-auto flex h-fit transition-none max-h-[calc(100%-48px)] w-[calc(100%-48px)] flex-col gap-3 overflow-y-auto rounded-3xl bg-card p-6 shadow-[0_12px_40px_rgba(0,0,0,0.18)] outline-none",
           wide ? "max-w-[560px]" : "max-w-[440px]",
           "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-[0.96] data-[state=open]:slide-in-from-bottom-3 data-[state=open]:duration-490 data-[state=open]:ease-spring-dialog",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-[0.98] data-[state=closed]:slide-out-to-bottom-2 data-[state=closed]:duration-180",

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { AlertTriangle, Check, ClipboardList, Send, Utensils, Footprints } from 'lucide-react';
-import Button from '../Button';
+import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { DataRow } from '@/components/data-list';
+import { PaneHint, PaneLabel, Total } from '@/components/pane';
 import { Field, Input, TextArea } from '../TextField';
 import { money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 
@@ -27,22 +31,16 @@ const AMOUNTS = [
   { id: 'more', label: 'Više nego obično' },
 ];
 
+// one of a few, always one chosen
 function Choice({ options, value, onChange, name }) {
   return (
-    <div className="wo-choice" role="radiogroup" aria-label={name}>
+    <ToggleGroup type="single" size="sm" value={value} onValueChange={(v) => v && onChange(v)} aria-label={name}>
       {options.map((o) => (
-        <button
-          key={o.id}
-          type="button"
-          role="radio"
-          aria-checked={value === o.id}
-          className={`svc is-sm${value === o.id ? ' is-on' : ''}`}
-          onClick={() => onChange(o.id)}
-        >
+        <ToggleGroupItem key={o.id} value={o.id}>
           {o.label}
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }
 
@@ -61,81 +59,70 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
   const totals = totalsFor(valid ? worked : 0, client.rate);
   const overtime = valid && worked !== visit.hours;
 
-  const toggle = (id) =>
-    setServices((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-
   return (
     <>
-      <p className="ag-lead">
+      <DialogDescription>
         {visit.date} · {visit.time} - planirano {visit.hours} h, po dogovorenih {money(client.rate)}/h.
-      </p>
+      </DialogDescription>
       {visit.planNotes && (
-        <p className="wo-plan-note">
+        <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-[11px] leading-4 text-muted-foreground">
           <ClipboardList size={13} strokeWidth={1.75} />
           Planirano: {visit.planNotes}
         </p>
       )}
 
-      <div className="wo-row">
-        <Field label="Odrađeni sati" className="is-short">
-          <Input type="number" inputMode="decimal" step="0.5" value={hours} onChange={setHours} suffix="h" />
+      <div className="flex flex-wrap gap-3">
+        <Field label="Odrađeni sati" className="w-auto min-w-0 self-start">
+          <Input type="number" inputMode="decimal" step="0.5" value={hours} onChange={setHours} suffix="h" className="w-40!" />
         </Field>
-        <Field label="Šta ste radili" className="is-wide">
+        <Field label="Šta ste radili" className="w-auto min-w-0 flex-1">
           <Input type="text" value={note} placeholder="Jutarnja rutina, doručak, kratka šetnja." onChange={setNote} />
         </Field>
       </div>
       {overtime && (
-        <p className="ag-hint">
+        <PaneHint>
           {worked > visit.hours
             ? `Više od ${visit.hours} h rezervisanih na kartici porodice. Razlika se naplaćuje kad potvrde.`
             : `Manje od ${visit.hours} h rezervisanih - razlika se vraća porodici.`}
-        </p>
+        </PaneHint>
       )}
 
-      <p className="ag-label">Kakva je bila danas?</p>
+      <PaneLabel>Kakva je bila danas?</PaneLabel>
       <Choice options={MOODS} value={mood} onChange={setMood} name="Raspoloženje" />
 
-      <div className="wo-row">
-        <div className="wo-field">
-          <span className="ag-label">
+      <div className="flex flex-wrap gap-3">
+        <div className="flex min-w-0 flex-col gap-2">
+          <PaneLabel className="mt-0 inline-flex items-center gap-1">
             <Utensils size={13} strokeWidth={1.75} /> Ishrana
-          </span>
+          </PaneLabel>
           <Choice options={AMOUNTS} value={eating} onChange={setEating} name="Ishrana" />
         </div>
-        <div className="wo-field">
-          <span className="ag-label">
+        <div className="flex min-w-0 flex-col gap-2">
+          <PaneLabel className="mt-0 inline-flex items-center gap-1">
             <Footprints size={13} strokeWidth={1.75} /> Kretanje
-          </span>
+          </PaneLabel>
           <Choice options={AMOUNTS} value={moving} onChange={setMoving} name="Kretanje" />
         </div>
       </div>
 
-      <p className="ag-label">Šta ste stigli</p>
-      <p className="ag-hint">
-        Označeno prema planu posete - skinite ono što se nije desilo, označite ono što je iskrslo.
-      </p>
-      <div className="ag-services">
+      <PaneLabel>Šta ste stigli</PaneLabel>
+      <PaneHint>Označeno prema planu posete - skinite ono što se nije desilo, označite ono što je iskrslo.</PaneHint>
+      <ToggleGroup type="multiple" value={services} onValueChange={setServices} aria-label="Šta ste stigli">
         {client.services.map((id) => (
-          <button
-            key={id}
-            type="button"
-            className={`svc${services.includes(id) ? ' is-on' : ''}`}
-            onClick={() => toggle(id)}
-            aria-pressed={services.includes(id)}
-          >
+          <ToggleGroupItem key={id} value={id}>
             {services.includes(id) && <Check size={13} strokeWidth={2.5} />}
             {serviceTitle(id)}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
 
       {/* Somewhere for the thing that does not fit in a rating. It reaches the
           family, so it is deliberately not a checkbox with no words. */}
       {concernOpen ? (
-        <div className="wo-concern">
-          <span className="ag-label">
+        <div className="mt-1 flex flex-col gap-2 rounded-2xl bg-destructive-muted p-3">
+          <PaneLabel className="mt-0 inline-flex items-center gap-1 text-destructive">
             <AlertTriangle size={13} strokeWidth={1.75} /> Nešto me je danas zabrinulo
-          </span>
+          </PaneLabel>
           <TextArea
             rows={2}
             value={concern}
@@ -145,38 +132,34 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           />
         </div>
       ) : (
-        <button type="button" className="wo-concern-open" onClick={() => setConcernOpen(true)}>
+        <button
+          type="button"
+          className="mt-1 inline-flex cursor-pointer items-center gap-2 self-start text-xs text-destructive hover:underline"
+          onClick={() => setConcernOpen(true)}
+        >
           <AlertTriangle size={13} strokeWidth={1.75} />
           Nešto me je danas zabrinulo
         </button>
       )}
 
-      <p className="ag-hint">
+      <PaneHint>
         Slanjem počinje 24 sata za porodicu. Od njih se ništa ne traži - naplata se izvrši sama kad
         rok istekne, osim ako u tom roku nešto prijave.
-      </p>
+      </PaneHint>
 
-      <div className="bc-total wo-total">
-        <p className="bc-line">
-          <span className="bc-line-label">Naplaćuje se · {valid ? worked : 0} h</span>
-          <span className="bc-line-value">{money(totals.charged)}</span>
-        </p>
-        <p className="bc-line">
-          <span className="bc-line-label">Provizija (10%)</span>
-          <span className="bc-line-value">−{money(totals.fee)}</span>
-        </p>
-        <p className="bc-line is-net">
-          <span className="bc-line-label">Vi dobijate</span>
-          <span className="bc-line-value">{money(totals.net)}</span>
-        </p>
-      </div>
+      <Total className="mt-2">
+        <DataRow label={`Naplaćuje se · ${valid ? worked : 0} h`}>{money(totals.charged)}</DataRow>
+        <DataRow label="Provizija (10%)">−{money(totals.fee)}</DataRow>
+        <DataRow total label="Vi dobijate">
+          {money(totals.net)}
+        </DataRow>
+      </Total>
 
-      <div className="panel-card-actions is-end">
+      <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
           Otkaži
         </Button>
         <Button
-          variant="primary"
           disabled={!valid}
           onClick={() =>
             onSend(client.id, {
@@ -193,7 +176,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           <Send size={14} strokeWidth={1.75} />
           Pošalji radni nalog
         </Button>
-      </div>
+      </DialogFooter>
     </>
   );
 }

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Check, Send } from 'lucide-react';
-import Button from '../Button';
+import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { PaneHint, PaneLabel } from '@/components/pane';
+import { Group } from '../Tags';
 import { Field, Input } from '../TextField';
 import { DEFAULT_RATE, money, totalsFor } from '../../data/caregiverBoard';
 import { SERVICE_GROUPS } from '../../data/serviceCatalog';
@@ -13,68 +17,66 @@ export default function AgreementForm({ client, onSend, onCancel }) {
   const [services, setServices] = useState(client.needs);
   const [rate, setRate] = useState(String(client.rate || DEFAULT_RATE));
 
-  const toggle = (id) =>
-    setServices((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-
   const rateNumber = Number(rate);
   const valid = services.length > 0 && rateNumber > 0;
   const weekly = valid ? rateNumber * client.hours : 0;
 
   return (
     <>
-      <p className="ag-lead">
+      <DialogDescription>
         Ovde postavljate koje usluge pružate i jednu zajedničku cenu po satu. Sve posle toga -
         posete, radni nalozi, uplate - računa se iz ovoga.
-      </p>
+      </DialogDescription>
 
-      <p className="ag-label">Usluge iz ovog ugovora</p>
-      {/* the catalog's four groups, each under its name */}
+      <PaneLabel>Usluge iz ovog ugovora</PaneLabel>
+      {/* the catalog's four groups, each under its name; any number chosen */}
       {SERVICE_GROUPS.map((g) => (
-        <div key={g.id} className="tag-row">
-          <p className="tag-row-label">{g.title}</p>
-          <div className="ag-services">
+        <Group key={g.id} label={g.title}>
+          <ToggleGroup
+            type="multiple"
+            value={services.filter((id) => g.items.some(([i]) => i === id))}
+            // as a toggle: what is unpicked leaves, what is picked joins at the end
+            onValueChange={(picked) =>
+              setServices((s) => [
+                ...s.filter((id) => picked.includes(id) || !g.items.some(([i]) => i === id)),
+                ...picked.filter((id) => !s.includes(id)),
+              ])
+            }
+            aria-label={g.title}
+          >
             {g.items.map(([id, title]) => (
-              <button
-                key={id}
-                type="button"
-                className={`svc${services.includes(id) ? ' is-on' : ''}`}
-                onClick={() => toggle(id)}
-                aria-pressed={services.includes(id)}
-              >
+              <ToggleGroupItem key={id} value={id}>
                 {services.includes(id) && <Check size={13} strokeWidth={2.5} />}
                 {title}
-              </button>
+              </ToggleGroupItem>
             ))}
-          </div>
-        </div>
+          </ToggleGroup>
+        </Group>
       ))}
-      <p className="ag-hint">
-        Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.
-      </p>
+      <PaneHint>Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.</PaneHint>
 
-      <Field label="Cena po satu" className="is-short">
-        <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="€ / h" />
+      <Field label="Cena po satu" className="w-auto self-start">
+        <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="€ / h" className="w-40!" />
       </Field>
       {valid && (
-        <p className="ag-hint">
+        <PaneHint>
           Za {client.hours} h nedeljno to je {money(weekly)} nedeljno,{' '}
           {money(totalsFor(client.hours, rateNumber).net)} vama posle provizije od 10%.
-        </p>
+        </PaneHint>
       )}
 
-      <div className="panel-card-actions is-end">
+      <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
           Otkaži
         </Button>
         <Button
-          variant="primary"
           disabled={!valid}
           onClick={() => onSend(client.id, { services, rate: rateNumber })}
         >
           <Send size={14} strokeWidth={1.75} />
           Pošalji porodici
         </Button>
-      </div>
+      </DialogFooter>
     </>
   );
 }
