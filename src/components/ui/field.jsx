@@ -149,7 +149,7 @@ function FieldDescription({
     <p
       data-slot="field-description"
       className={cn(
-        "px-3 text-xs font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance",
+        "px-3 text-small font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance",
                 "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className
       )}

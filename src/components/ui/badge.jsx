@@ -3,21 +3,26 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 import { Slot } from "radix-ui"
 
-// shadcn's badge as NANA's status pill: 11px, 8px corners, and a tint per
-// state. `success` and `warning` are ours; shadcn has no such states.
-
+// shadcn's badge as NANA's status and tag (docs/patterns.md §1, §2, §6).
+// A status is 20px: 11px medium, 4px corners, a tint per state; it is read,
+// not pressed, so it has no hover. `tag` is the label beside a name or an
+// amount ("54 € rezervisano", a service): small text, grey ground, 4px corners.
 const badgeVariants = cva(
-  "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-lg px-2 py-1 text-[11px] leading-3 font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
+  "inline-flex w-fit shrink-0 items-center gap-1 rounded-sm px-2 py-1 whitespace-nowrap [&>svg]:pointer-events-none [&>svg]:shrink-0",
   {
     variants: {
       variant: {
-        // a soft tint rather than a solid fill: a status is read, not pressed
-        default: "bg-(--color-primary-100) text-(--color-primary-700)",
-        secondary: "bg-(--surface-elevated-4) text-muted-foreground",
-        success: "bg-(--status-ok-bg) text-(--status-ok-fg)",
-        warning: "bg-(--status-wait-bg) text-(--status-wait-fg)",
-        destructive: "bg-(--status-no-bg) text-(--status-no-fg)",
-        outline: "border border-border text-foreground",
+        // for attention, not for a state: "Poklapanje · 97%", "Izmenjeno"
+        default: "bg-primary-100 text-badge font-medium text-primary-700",
+        // on, active, accepted
+        success: "bg-success-muted text-badge font-medium text-success",
+        // waiting on somebody else
+        warning: "bg-warning-muted text-badge font-medium text-warning",
+        // missing or declined
+        destructive: "bg-destructive-muted text-badge font-medium text-destructive",
+        // neutral, off
+        secondary: "bg-elevated-4 text-badge font-medium text-muted-foreground",
+        tag: "bg-muted text-small text-muted-foreground",
       },
     },
     defaultVariants: {

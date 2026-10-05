@@ -78,6 +78,69 @@
   --color-ring: var(--ring);
 }
 
+/* The rest of tokens.css, as Tailwind utilities. Each one points at the token
+   rather than copying its value, so what tokens.css changes for a finger
+   (`pointer: coarse` raises the text a step) reaches the utilities too:
+   `text-xs` is 12/16 with a mouse and 14/20 under a finger, as `.tip-body` was.
+   `text-small` is the small text that does not grow (labels, hints, meta),
+   `leading-body` the line of a paragraph, `text-badge` the status pill's 11. */
+@theme inline {
+  --text-xs: var(--text-xs-size);
+  --text-xs--line-height: var(--text-xs-leading);
+  --text-sm: var(--text-sm-size);
+  --text-sm--line-height: var(--text-sm-leading);
+  --text-base: var(--text-base-size);
+  --text-base--line-height: var(--text-base-leading);
+  --text-small: var(--text-small-size);
+  --text-small--line-height: var(--text-small-leading);
+  --text-badge: 11px;
+  --text-badge--line-height: 12px;
+  --leading-body: var(--text-body-leading);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-primary-50: var(--color-primary-50);
+  --color-primary-100: var(--color-primary-100);
+  --color-primary-200: var(--color-primary-200);
+  --color-primary-300: var(--color-primary-300);
+  --color-primary-400: var(--color-primary-400);
+  --color-primary-500: var(--color-primary-500);
+  --color-primary-600: var(--color-primary-600);
+  --color-primary-700: var(--color-primary-700);
+  --color-primary-800: var(--color-primary-800);
+  --color-primary-900: var(--color-primary-900);
+  --color-primary-950: var(--color-primary-950);
+  --color-success: var(--status-ok-fg);
+  --color-success-muted: var(--status-ok-bg);
+  --color-warning: var(--status-wait-fg);
+  --color-warning-muted: var(--status-wait-bg);
+  --color-destructive-muted: var(--status-no-bg);
+  --color-disabled: var(--text-disabled);
+  --color-elevated-3: var(--surface-elevated-3);
+  --color-elevated-4: var(--surface-elevated-4);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-container: var(--shadow-container);
+  --shadow-button: var(--shadow-button);
+}
+
+/* The springs the panes arrived on while motion drew them, as CSS curves
+   (`ease-spring-dialog`, `ease-spring-pane`), so shadcn's own enter animations
+   keep the feel: stiffness 320 with damping 30 for a dialog in the middle (a
+   touch of overshoot), 34 for the side pane (none to speak of). Each curve is
+   the spring sampled over the time it takes to settle, which is also the
+   duration that goes with it: 490ms and 430ms. */
+@theme {
+  --ease-spring-dialog: linear(0, 0.0318, 0.1092, 0.2109, 0.322, 0.4325, 0.536, 0.6291, 0.7099, 0.7783, 0.8347, 0.8802, 0.9162, 0.9439, 0.9647, 0.98, 0.9909, 0.9983, 1.0031, 1.006, 1.0075, 1.0079, 1.0078, 1.0072, 1.0064, 1.0055, 1.0047, 1.0038, 1.0031, 1.0024, 1.0019, 1.0014, 1);
+  --ease-spring-pane: linear(0, 0.0244, 0.0842, 0.1638, 0.2524, 0.3427, 0.43, 0.5113, 0.5853, 0.6511, 0.7088, 0.7587, 0.8014, 0.8376, 0.868, 0.8933, 0.9142, 0.9314, 0.9455, 0.9569, 0.9661, 0.9735, 0.9794, 0.9841, 0.9878, 0.9907, 0.993, 0.9948, 0.9961, 0.9972, 0.998, 0.9985, 1);
+}
+
+/* The two widths docs/patterns.md draws by: a phone (640 and under) and a
+   narrow screen (900 and under), where the side menu folds away. Tailwind's own
+   `max-sm` stops one pixel short of 640. `pointer-coarse:` (a finger) is
+   Tailwind's own. */
+@custom-variant phone (@media (max-width: 640px));
+@custom-variant narrow (@media (max-width: 900px));
+
 /* Radius on our scale only: 4, 8, 16, 24, 32. Tailwind's own `md` (6) and
    `xl` (12) are off it, and shadcn reaches for `md` everywhere, so both are
    moved onto the nearest step. sm, lg, 2xl, 3xl and 4xl already match. */

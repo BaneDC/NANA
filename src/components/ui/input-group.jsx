@@ -22,7 +22,7 @@ function InputGroup({
         "group/input-group relative flex w-full items-center rounded-lg border border-input bg-background transition-[border-color] duration-200 outline-none",
         "h-(--input-size) min-w-0 has-[>textarea]:h-auto",
         // Variants based on alignment.
-        "has-[>[data-align=inline-start]]:[&>input]:pl-2",
+        "has-[>[data-align=inline-start]]:[&>input]:pl-3",
         "has-[>[data-align=inline-end]]:[&>input]:pr-2",
         "has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3",
         "has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3",

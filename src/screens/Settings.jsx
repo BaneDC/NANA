@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Check, ShieldCheck } from 'lucide-react';
-import Button from '../components/Button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Page, PageHeader, PageHeaderText, PageTitle, PageDescription, PageSection } from '@/components/page';
+import { CheckList, DataList, DataRow } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
@@ -19,24 +26,17 @@ const LANGUAGES = [
   { id: 'fi', label: 'Suomi' },
 ];
 
-function Toggle({ label, hint, on, onChange, fixed }) {
+// A setting that is on or off: the whole row is its label, so a click anywhere
+// on it switches; the name, what it does under it, the switch right.
+function Toggle({ label, hint, on, onChange }) {
   return (
-    <button
-      type="button"
-      className={`toggle-row${fixed ? ' is-fixed' : ''}`}
-      onClick={() => !fixed && onChange(!on)}
-      role="switch"
-      aria-checked={on}
-      aria-disabled={fixed || undefined}
-    >
-      <span className="toggle-text">
-        <span className="tip-title">{label}</span>
-        <span className="tip-body">{hint}</span>
+    <label className="flex w-full cursor-pointer items-center gap-4 border-b py-3 last:border-b-0">
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-xs font-medium text-foreground">{label}</span>
+        <span className="text-xs leading-body text-muted-foreground">{hint}</span>
       </span>
-      <span className={`switch${on ? ' is-on' : ''}`}>
-        <span className="switch-knob" />
-      </span>
-    </button>
+      <Switch checked={on} onCheckedChange={onChange} />
+    </label>
   );
 }
 
@@ -72,22 +72,20 @@ function PasswordModal({ email, onDone, onClose }) {
   if (done) {
     return (
       <Dialog eyebrow="Nalog" title="Lozinka je promenjena" onClose={onDone}>
-        <p className="doc-p">
+        <DialogDescription>
           Od sledeće prijave koristite novu lozinku. Ako ste je negde sačuvali, promenite je i tamo.
-        </p>
-        <div className="panel-card-actions is-end">
-          <Button variant="primary" onClick={onDone}>
-            U redu
-          </Button>
-        </div>
+        </DialogDescription>
+        <DialogFooter>
+          <Button onClick={onDone}>U redu</Button>
+        </DialogFooter>
       </Dialog>
     );
   }
 
   return (
     <Dialog eyebrow="Nalog" title="Promenite lozinku" onClose={onClose}>
-      <p className="doc-p">Nova lozinka mora imati najmanje 8 karaktera.</p>
-      <div className="pe-fields">
+      <DialogDescription>Nova lozinka mora imati najmanje 8 karaktera.</DialogDescription>
+      <div className="flex flex-col gap-3">
         <Field label="Trenutna lozinka">
           <Password
             value={current}
@@ -105,16 +103,16 @@ function PasswordModal({ email, onDone, onClose }) {
         </Field>
       </div>
 
-      {error && <p className="tf-error">{error}</p>}
+      {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
 
-      <div className="panel-card-actions is-end">
+      <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
           Otkaži
         </Button>
-        <Button variant="primary" disabled={!ready} onClick={submit}>
+        <Button disabled={!ready} onClick={submit}>
           Sačuvaj lozinku
         </Button>
-      </div>
+      </DialogFooter>
     </Dialog>
   );
 }
@@ -153,211 +151,179 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   // what they pay, how the account is kept safe, how the app talks to them, and
   // what is kept about them.
   return (
-    <div className="view">
-      <div className="view-head">
-        <div className="view-head-text">
-          <h1 className="view-title">Podešavanja</h1>
-          <p className="view-sub">Plaćanje, bezbednost, jezik i obaveštenja, privatnost.</p>
-        </div>
+    <Page>
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>Podešavanja</PageTitle>
+          <PageDescription>Plaćanje, bezbednost, jezik i obaveštenja, privatnost.</PageDescription>
+        </PageHeaderText>
         <AskAssistant onClick={onAskAssistant} />
-      </div>
+      </PageHeader>
 
-      <section className="section">
-        <h2 className="section-title">Plaćanje</h2>
+      <PageSection title="Plaćanje">
         {/* Started and stopped from here. It used to be startable only from the
             dialog on the care plan, which is where somebody runs into the
             paywall — not where they go looking for what they pay for. */}
-        <div className="panel-card">
-          <div className="panel-card-head">
-            <p className="doc-section-title">
-              Pretplata
-            </p>
-            <span className={`status-pill is-${unlocked && !cancelled ? 'accepted' : 'muted'}`}>
-              {unlocked ? (cancelled ? 'Otkazana' : 'Aktivna') : 'Niste pretplaćeni'}
-            </span>
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Pretplata</CardTitle>
+            <CardAction>
+              <Badge variant={unlocked && !cancelled ? 'success' : 'secondary'}>
+                {unlocked ? (cancelled ? 'Otkazana' : 'Aktivna') : 'Niste pretplaćeni'}
+              </Badge>
+            </CardAction>
+          </CardHeader>
           {unlocked ? (
             <>
-              <ul className="paywall-list">
+              <CheckList>
                 <li>
                   <Check size={12} strokeWidth={2.5} /> Kontakti negovateljica
                 </li>
                 <li>
                   <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
                 </li>
-              </ul>
-              <p className="tip-body">
+              </CheckList>
+              <CardDescription>
                 {cancelled
                   ? `Otkazali ste pretplatu. Važi do ${until}, a posle toga se ne obnavlja.`
                   : `${priceLine(user?.country, subscription?.planId)} · obnavlja se ${until}`}
-              </p>
+              </CardDescription>
               {/* What adds or changes something is primary; what switches
                   something off or cancels it is not — orange is what we
                   recommend, and we do not recommend this. It asks first. */}
-              <div className="panel-card-actions">
+              <CardFooter>
                 {cancelled ? (
-                  <Button variant="primary" onClick={() => onSubscribe?.('resume')}>
-                    Obnovi pretplatu
-                  </Button>
+                  <Button onClick={() => onSubscribe?.('resume')}>Obnovi pretplatu</Button>
                 ) : (
                   <Button variant="secondary" onClick={() => setCancelling(true)}>
                     Otkaži pretplatu
                   </Button>
                 )}
-              </div>
+              </CardFooter>
             </>
           ) : (
             <>
-              <p className="tip-body">
+              <CardDescription>
                 Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.
                 {' '}
                 {priceLine(user?.country)}.
-              </p>
-              <div className="panel-card-actions">
-                <Button variant="primary" onClick={onSubscribe}>
-                  Pretplatite se
-                </Button>
-              </div>
+              </CardDescription>
+              <CardFooter>
+                <Button onClick={onSubscribe}>Pretplatite se</Button>
+              </CardFooter>
             </>
           )}
-        </div>
+        </Card>
         {/* Set up once and then never thought about again, which is exactly why
             it belongs here and not on the dashboard. */}
-        <div className="panel-card">
-          <div className="panel-card-head">
-            <p className="doc-section-title">
-              Način plaćanja
-            </p>
-            {payment.connected ? (
-              <span className="status-pill is-accepted">
-                <ShieldCheck size={12} strokeWidth={2} />
-                {payment.brand} ···· {payment.last4}
-              </span>
-            ) : (
-              <span className="status-pill is-declined">Nije podešeno</span>
-            )}
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Način plaćanja</CardTitle>
+            <CardAction>
+              {payment.connected ? (
+                <Badge variant="success">
+                  <ShieldCheck size={12} strokeWidth={2} />
+                  {payment.brand} ···· {payment.last4}
+                </Badge>
+              ) : (
+                <Badge variant="destructive">Nije podešeno</Badge>
+              )}
+            </CardAction>
+          </CardHeader>
 
           {payment.connected ? (
             <>
-              <p className="tip-body">
+              <CardDescription>
                 Dodato {payment.connectedOn}. Svaka poseta se naplaćuje 24 sata pošto negovateljica
                 pošalje izveštaj - od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite
                 sa stranice Moja nega.
-              </p>
-              <div className="bc-lines ag-terms">
-                <p className="bc-line">
-                  <span className="bc-line-label">Rezervisano za zakazane posete</span>
-                  <span className="bc-line-value">{money(heldNow(care))}</span>
-                </p>
-                <p className="bc-line">
-                  <span className="bc-line-label">Naplaćuje se sada</span>
-                  <span className="bc-line-value">
-                    {charging
-                      ? `${money(visitCharge(charging))} · za ${charging.chargesInHours} h`
-                      : 'Ništa'}
-                  </span>
-                </p>
-              </div>
-              <div className="panel-card-actions">
+              </CardDescription>
+              <DataList className="mt-2">
+                <DataRow label="Rezervisano za zakazane posete">{money(heldNow(care))}</DataRow>
+                <DataRow label="Naplaćuje se sada">
+                  {charging ? `${money(visitCharge(charging))} · za ${charging.chargesInHours} h` : 'Ništa'}
+                </DataRow>
+              </DataList>
+              <CardFooter>
                 <Button variant="secondary" onClick={() => setCardOpen(true)}>
                   Promeni karticu
                 </Button>
-              </div>
+              </CardFooter>
             </>
           ) : (
             <>
-              <p className="tip-body">
+              <CardDescription>
                 Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže.
                 Dodaje se preko Stripe-a - mi nikad ne vidimo broj.
-              </p>
-              <div className="panel-card-actions">
-                <Button variant="primary" onClick={() => setCardOpen(true)}>
-                  Dodaj karticu
-                </Button>
-              </div>
+              </CardDescription>
+              <CardFooter>
+                <Button onClick={() => setCardOpen(true)}>Dodaj karticu</Button>
+              </CardFooter>
             </>
           )}
-        </div>
-      </section>
+        </Card>
+      </PageSection>
 
-      <section className="section">
-        <h2 className="section-title">Bezbednost</h2>
-        <div className="panel-card">
-          <div className="panel-card-head">
-            <p className="doc-section-title">
-              Lozinka
-            </p>
-          </div>
-          <p className="tip-body">Promenite lozinku kojom se prijavljujete.</p>
-          <div className="panel-card-actions">
+      <PageSection title="Bezbednost">
+        <Card>
+          <CardHeader>
+            <CardTitle>Lozinka</CardTitle>
+          </CardHeader>
+          <CardDescription>Promenite lozinku kojom se prijavljujete.</CardDescription>
+          <CardFooter>
             <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
               Promenite lozinku
             </Button>
-          </div>
-        </div>
-        <div className="panel-card">
-          <div className="panel-card-head">
-            <p className="doc-section-title">
-              Dvofaktorska prijava
-            </p>
-            <span className={`status-pill is-${twoFactor ? 'accepted' : 'muted'}`}>
-              {twoFactor ? 'Uključena' : 'Isključena'}
-            </span>
-          </div>
-          <p className="tip-body">
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Dvofaktorska prijava</CardTitle>
+            <CardAction>
+              <Badge variant={twoFactor ? 'success' : 'secondary'}>{twoFactor ? 'Uključena' : 'Isključena'}</Badge>
+            </CardAction>
+          </CardHeader>
+          <CardDescription>
             Uz lozinku traži se i šestocifreni kod iz aplikacije na vašem telefonu.
             {twoFactor && user?.backupCodesLeft
               ? ` Ostalo vam je ${user.backupCodesLeft} rezervnih kodova.`
               : ''}
-          </p>
-          <div className="panel-card-actions">
+          </CardDescription>
+          <CardFooter>
             {twoFactor ? (
               <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
                 Isključi
               </Button>
             ) : (
-              <Button variant="primary" onClick={() => setTwoFactorOpen(true)}>
-                Uključi
-              </Button>
+              <Button onClick={() => setTwoFactorOpen(true)}>Uključi</Button>
             )}
-          </div>
-        </div>
-      </section>
+          </CardFooter>
+        </Card>
+      </PageSection>
 
-      <section className="section">
-        <h2 className="section-title">Opšte</h2>
+      <PageSection title="Opšte">
         {/* Language, cookies and the second factor: the account's own settings,
             the three the old platform kept together. */}
-        <div className="panel-card">
-          <div className="panel-card-head">
-            <p className="doc-section-title">
-              Jezik
-            </p>
-          </div>
-          <p className="tip-body">Jezik aplikacije i poruka koje vam šaljemo.</p>
-          <div className="set-choice">
+        <Card>
+          <CardHeader>
+            <CardTitle>Jezik</CardTitle>
+          </CardHeader>
+          <CardDescription>Jezik aplikacije i poruka koje vam šaljemo.</CardDescription>
+          {/* one is always chosen: pressing the chosen one again does nothing */}
+          <ToggleGroup type="single" value={language} onValueChange={(id) => id && onSaveUser({ language: id })}>
             {LANGUAGES.map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                className={`svc${language === l.id ? ' is-on' : ''}`}
-                aria-pressed={language === l.id}
-                onClick={() => onSaveUser({ language: l.id })}
-              >
+              <ToggleGroupItem key={l.id} value={l.id}>
                 {l.label}
-              </button>
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
           {language !== 'sr' && (
-            <p className="ag-hint">Prevod još nije napravljen - za sada je izbor samo zapamćen.</p>
+            <p className="text-small text-muted-foreground">Prevod još nije napravljen - za sada je izbor samo zapamćen.</p>
           )}
-        </div>
-        <div className="panel-card">
-          <p className="doc-section-title">
-            Obaveštenja
-          </p>
-          <div className="toggle-list">
+        </Card>
+        <Card>
+          <CardTitle>Obaveštenja</CardTitle>
+          <div className="flex flex-col">
             <Toggle
               label="Mesečni pregled"
               hint="Jednom mesečno, kratak pregled poseta tog meseca"
@@ -371,60 +337,44 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
               onChange={set('marketing')}
             />
           </div>
-        </div>
-      </section>
+        </Card>
+      </PageSection>
 
-      <section className="section">
-        <h2 className="section-title">Privatnost i nalog</h2>
-        <div className="panel-card">
-          <div className="panel-card-head">
-            <p className="doc-section-title">
-              Kolačići
-            </p>
-          </div>
-          <p className="tip-body">
-            Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.
-          </p>
+      <PageSection title="Privatnost i nalog">
+        <Card>
+          <CardHeader>
+            <CardTitle>Kolačići</CardTitle>
+          </CardHeader>
+          <CardDescription>Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.</CardDescription>
           {/* Every group and where it stands, in words. Rows rather than chips:
               a chip here is the same shape as the ones that are pressed
               elsewhere, and this is a reading of the state, not a control. */}
-          <div className="bc-lines ag-terms">
+          <DataList className="mt-2">
             {COOKIE_GROUPS.map((g) => {
               const on = g.fixed || cookies[g.id];
               return (
-                <p className="bc-line" key={g.id}>
-                  <span className="bc-line-label">{g.label}</span>
-                  <span className={`bc-line-value${on ? '' : ' is-off'}`}>
-                    {on ? 'Uključeno' : 'Isključeno'}
-                    {g.fixed ? ' · uvek' : ''}
-                  </span>
-                </p>
+                <DataRow key={g.id} label={g.label} off={!on}>
+                  {on ? 'Uključeno' : 'Isključeno'}
+                  {g.fixed ? ' · uvek' : ''}
+                </DataRow>
               );
             })}
-          </div>
-          <div className="panel-card-actions">
-            <Button variant="primary" onClick={() => setCookiesOpen(true)}>
-              Podešavanja kolačića
-            </Button>
-          </div>
-        </div>
-        <div className="panel-card">
-          <p className="doc-section-title">
-            Nalog
-          </p>
-          <p className="tip-body">
-            Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.
-          </p>
+          </DataList>
+          <CardFooter>
+            <Button onClick={() => setCookiesOpen(true)}>Podešavanja kolačića</Button>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardTitle>Nalog</CardTitle>
+          <CardDescription>Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.</CardDescription>
           {/* Deleting is the one thing here that cannot be undone, so it is the
               one button that is red. */}
-          <div className="panel-card-actions">
+          <CardFooter>
             <Button variant="secondary">Preuzmi moje podatke</Button>
-            <Button variant="danger">
-              Obriši nalog
-            </Button>
-          </div>
-        </div>
-      </section>
+            <Button variant="destructive">Obriši nalog</Button>
+          </CardFooter>
+        </Card>
+      </PageSection>
 
       {cookiesOpen && (
         <CookieSettings
@@ -439,16 +389,16 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
 
       {cancelling && (
         <Dialog eyebrow="Pretplata" title="Otkazati pretplatu?" onClose={() => setCancelling(false)}>
-          <p className="doc-p">
+          <DialogDescription>
             Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju
             plaćenog perioda. Možete da se pretplatite ponovo kad god želite.
-          </p>
-          <div className="panel-card-actions is-end">
+          </DialogDescription>
+          <DialogFooter>
             <Button variant="secondary" onClick={() => setCancelling(false)}>
               Zadrži pretplatu
             </Button>
             <Button
-              variant="danger"
+              variant="destructive"
               onClick={() => {
                 setCancelling(false);
                 onSubscribe?.(false);
@@ -456,7 +406,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             >
               Otkaži pretplatu
             </Button>
-          </div>
+          </DialogFooter>
         </Dialog>
       )}
 
@@ -496,11 +446,11 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
 
       {cardOpen && (
         <Dialog eyebrow="Plaćanje" title="Dodajte karticu" onClose={() => setCardOpen(false)}>
-          <p className="doc-p">
+          <DialogDescription>
             Kartice čuva Stripe, ne mi - broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
             Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.
-          </p>
-          <ul className="paywall-list">
+          </DialogDescription>
+          <CheckList>
             <li>
               <Check size={12} strokeWidth={2.5} /> Naplata 24 sata posle svakog izveštaja o poseti
             </li>
@@ -510,17 +460,15 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             <li>
               <Check size={12} strokeWidth={2.5} /> U tom roku možete da zaustavite svaku naplatu
             </li>
-          </ul>
-          <div className="panel-card-actions is-end">
+          </CheckList>
+          <DialogFooter>
             <Button variant="secondary" onClick={() => setCardOpen(false)}>
               Otkaži
             </Button>
-            <Button variant="primary" onClick={connect}>
-              Nastavi na Stripe
-            </Button>
-          </div>
+            <Button onClick={connect}>Nastavi na Stripe</Button>
+          </DialogFooter>
         </Dialog>
       )}
-    </div>
+    </Page>
   );
 }

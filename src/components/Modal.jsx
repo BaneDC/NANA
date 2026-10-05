@@ -1,79 +1,69 @@
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { motion } from 'motion/react';
 import { X } from 'lucide-react';
-import { useBackdropClose } from '../lib/backdropClose';
-import { useSheet } from '../lib/sheet';
+import { paneCloseClass } from '@/components/ui/dialog';
+import { Sheet, SheetBody, SheetContent, SheetEyebrow, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Drawer, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
+import { useIsPhone } from '@/hooks/use-phone';
+import { cn } from '@/lib/utils';
+import { focusPane, useCloseThreshold } from '../lib/sheet';
 
-// A card's details, opened as the side pane the rest of the app already uses
-// for the care plan and the assistant — not a dialog in the middle of the page.
-// These are the details *of something you are looking at*, so the thing you
-// clicked stays on screen beside them.
+// A card's details, opened as a pane beside the page (docs/patterns.md §7):
+// the details *of something you are looking at*, so the thing you clicked
+// stays on screen beside them.
+//
+// shadcn's Sheet with a mouse, shadcn's Drawer (a bottom sheet, dragged down
+// by its head) on a phone. The screen's content goes into the body, which
+// scrolls, and ends with `SheetFooter` (src/components/ui/sheet.jsx) when the
+// pane has buttons.
 //
 // The name stays `Modal` because every screen calls it that and the contract is
 // unchanged: an eyebrow, a title, a close, and whatever the screen puts inside.
-//
-// On a phone it is a bottom sheet (src/lib/sheet.js), dragged down by its head.
-const BESIDE = {
-  initial: { x: 28, opacity: 0 },
-  animate: { x: 0, opacity: 1 },
-  // a spring to arrive on, a short curve to leave on
-  exit: { x: 20, opacity: 0, transition: { duration: 0.16, ease: 'easeIn' } },
-  transition: { type: 'spring', stiffness: 320, damping: 34 },
-};
+// `dismissible={false}` takes away the close, Escape and a click past it.
+export default function Modal({ title, eyebrow, wide, dismissible = true, open = true, onClose, children }) {
+  const phone = useIsPhone();
+  const sheet = useCloseThreshold();
+  const onOpenChange = (next) => !next && onClose?.();
+  const head = (Title) => (
+    <div className="pointer-events-none relative min-w-0 flex-1">
+      {eyebrow && <SheetEyebrow>{eyebrow}</SheetEyebrow>}
+      <Title>{title}</Title>
+    </div>
+  );
+  const close = dismissible && (
+    <button type="button" className={cn(paneCloseClass, 'relative z-3 ml-auto')} onClick={onClose} aria-label="Zatvori panel">
+      <X className="size-4" strokeWidth={1.75} />
+    </button>
+  );
 
-export default function Modal({ title, eyebrow, wide, dismissible = true, onClose, children }) {
-  const backdrop = useBackdropClose(onClose, dismissible);
-  const sheet = useSheet({ desktop: BESIDE, onClose, dismissible });
-  useEffect(() => {
-    if (!dismissible) return undefined;
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, dismissible]);
+  if (phone) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible} closeThreshold={sheet.threshold}>
+        <DrawerContent ref={sheet.ref} tabIndex={-1} onOpenAutoFocus={focusPane}>
+          <SheetHeader>
+            {dismissible && <DrawerHandle />}
+            {head(DrawerTitle)}
+            {close}
+          </SheetHeader>
+          <SheetBody>{children}</SheetBody>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
-  // Rendered into the body. The pages that open this animate themselves, and a
-  // transform anywhere above a `position: fixed` element makes it fixed to that
-  // ancestor instead of the viewport — a pane that lands half off-screen for
-  // reasons nothing about the pane explains.
-  return createPortal(
-    <motion.div
-      className="drawer-backdrop"
-      // Not every pane may be dismissed by clicking past it: backup codes are
-      // shown once, and a stray click would take them away for good.
-      {...backdrop}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, pointerEvents: 'auto' }}
-      // On the way out it stops taking clicks immediately. It covers the whole
-      // screen, and it outlives its own fade by the length of the pane's spring
-      // — long enough to swallow the first thing clicked after dismissing it.
-      exit={{ opacity: 0, pointerEvents: 'none' }}
-      transition={{ duration: 0.18 }}
-    >
-      <motion.aside
-        className={`drawer${wide ? ' is-wide' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
-        {...sheet.pane}
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        wide={wide}
+        tabIndex={-1}
+        onOpenAutoFocus={focusPane}
+        onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
+        onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
       >
-        {sheet.phone && <span className="sheet-grip" aria-hidden="true" />}
-        <div className="sidebar-head" {...sheet.grip}>
-          <div className="sidebar-head-text">
-            {eyebrow && <p className="doc-eyebrow">{eyebrow}</p>}
-            <p className="doc-title">{title}</p>
-          </div>
-          {dismissible && (
-            <button type="button" className="ci-btn" onClick={onClose} aria-label="Zatvori panel">
-              <X size={16} strokeWidth={1.75} />
-            </button>
-          )}
-        </div>
-
-        <div className="drawer-body">{children}</div>
-      </motion.aside>
-    </motion.div>,
-    document.body
+        <SheetHeader>
+          {head(SheetTitle)}
+          {close}
+        </SheetHeader>
+        <SheetBody>{children}</SheetBody>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -1,8 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
 import { Check, ChevronDown, Copy, Shield } from 'lucide-react';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import Dialog from './Dialog';
-import Button from './Button';
 import { newBackupCodes, newSecret, otpauthUrl, verifyCode } from '../lib/totp';
 
 // Turning on the second factor, in the three steps the standard has: scan,
@@ -21,15 +26,27 @@ const STEPS = [
 
 function Stepper({ at }) {
   return (
-    <ol className="tf-steps">
+    <ol className="flex list-none items-center gap-4 phone:gap-3">
       {STEPS.map((s, i) => {
         const done = i < at;
         return (
-          <li key={s.id} className={`tf-step${i === at ? ' is-on' : ''}${done ? ' is-done' : ''}`}>
-            <span className="tf-step-mark">
+          <li
+            key={s.id}
+            className={cn('flex items-center gap-2 text-small', i <= at ? 'text-foreground' : 'text-disabled')}
+          >
+            <span
+              className={cn(
+                'flex size-5 items-center justify-center rounded-full text-[11px]',
+                done
+                  ? 'bg-success-muted text-success'
+                  : i === at
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+              )}
+            >
               {done ? <Check size={12} strokeWidth={3} /> : i + 1}
             </span>
-            <span className="tf-step-label">{s.label}</span>
+            <span>{s.label}</span>
           </li>
         );
       })}
@@ -37,40 +54,26 @@ function Stepper({ at }) {
   );
 }
 
-// Six boxes, three and three — but one field behind them.
-//
-// The obvious build is six one-character inputs that move the cursor along as
-// you type. It reads well and it drops characters: the focus hops on the
-// keystroke, React re-renders after it, and anything typed in between lands
-// nowhere. Tested at typing speed, five of six digits were lost. So the
-// boxes are a drawing of one input that holds all six — which also makes
-// pasting a code from the phone work without a paste handler.
-function CodeInput({ value, onChange, onDone }) {
-  const ref = useRef(null);
-  const digits = [0, 1, 2, 3, 4, 5];
-
+// Six boxes, three and three, over one field: shadcn's InputOTP. Pasting a
+// code from the phone fills all six, and typing at speed loses nothing.
+function CodeInput({ value, onChange }) {
+  const id = useId();
   return (
-    <div className="tf-code" onClick={() => ref.current?.focus()}>
-      <input
-        ref={ref}
-        className="tf-code-field"
-        inputMode="numeric"
-        autoComplete="one-time-code"
-        aria-label="Kod iz aplikacije"
-        maxLength={6}
-        value={value}
-        onChange={(e) => {
-          const next = e.target.value.replace(/\D/g, '').slice(0, 6);
-          onChange(next);
-          if (next.length === 6) onDone?.();
-        }}
-      />
-      {digits.map((i) => (
-        <span key={i} aria-hidden="true" className="tf-code-group">
-          <span className={`tf-digit${value.length === i ? ' is-next' : ''}`}>{value[i] || ''}</span>
-          {i === 2 && <span className="tf-code-dash">-</span>}
-        </span>
-      ))}
+    <div className="flex flex-col items-center gap-2">
+      <Label htmlFor={id}>Kod iz aplikacije</Label>
+      <InputOTP id={id} maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange}>
+        <InputOTPGroup>
+          <InputOTPSlot index={0} />
+          <InputOTPSlot index={1} />
+          <InputOTPSlot index={2} />
+        </InputOTPGroup>
+        <InputOTPSeparator />
+        <InputOTPGroup>
+          <InputOTPSlot index={3} />
+          <InputOTPSlot index={4} />
+          <InputOTPSlot index={5} />
+        </InputOTPGroup>
+      </InputOTP>
     </div>
   );
 }
@@ -95,32 +98,29 @@ export function TwoFactorDisable({ secret, onDone, onClose }) {
 
   return (
     <Dialog eyebrow="Bezbednost" title="Isključite dvofaktorsku prijavu" onClose={onClose}>
-      <p className="doc-p">
+      <DialogDescription>
         Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za
         prijavu dovoljna lozinka, pa je nalog manje zaštićen.
-      </p>
+      </DialogDescription>
 
-      <div className="tf-verify">
-        <p className="tf-label">Kod iz aplikacije</p>
-        <CodeInput
-          value={code}
-          onChange={(v) => {
-            setCode(v);
-            setError(null);
-          }}
-        />
-      </div>
+      <CodeInput
+        value={code}
+        onChange={(v) => {
+          setCode(v);
+          setError(null);
+        }}
+      />
 
-      {error && <p className="tf-error">{error}</p>}
+      {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
 
-      <div className="panel-card-actions is-end">
+      <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
           Otkaži
         </Button>
-        <Button variant="primary" disabled={code.length !== 6 || checking} onClick={confirm}>
+        <Button disabled={code.length !== 6 || checking} onClick={confirm}>
           Isključi
         </Button>
-      </div>
+      </DialogFooter>
     </Dialog>
   );
 }
@@ -184,18 +184,18 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
   if (step === 2) {
     return (
       <Dialog eyebrow="Bezbednost" title="Rezervni kodovi" dismissible={false} onClose={onClose}>
-        <p className="doc-p">
+        <DialogDescription>
           Sačuvajte ove kodove na sigurnom mestu. Svaki se koristi jednom, za prijavu ako izgubite
           pristup aplikaciji sa kodovima. Prikazujemo ih samo sada.
-        </p>
+        </DialogDescription>
 
-        <ul className="tf-codes">
+        <ul className="grid list-none grid-cols-2 gap-x-4 gap-y-2 rounded-2xl bg-muted p-4 text-center font-mono text-sm text-foreground">
           {codes.map((c) => (
             <li key={c}>{c}</li>
           ))}
         </ul>
 
-        <div className="panel-card-actions">
+        <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
           <Button variant="secondary" onClick={() => copy(codes.join('\n'), 'codes')}>
             {copied === 'codes' ? 'Kopirano' : 'Kopiraj'}
           </Button>
@@ -204,11 +204,11 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
           </Button>
         </div>
 
-        <div className="panel-card-actions is-end">
-          <Button variant="primary" onClick={() => onDone(codes, secret)}>
+        <DialogFooter>
+          <Button onClick={() => onDone(codes, secret)}>
             Sačuvao sam rezervne kodove
           </Button>
-        </div>
+        </DialogFooter>
       </Dialog>
     );
   }
@@ -219,15 +219,15 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
 
       {step === 0 ? (
         <>
-          <p className="doc-p">
+          <DialogDescription>
             Skenirajte ovaj kod aplikacijom za kodove (Google Authenticator, Authy, 1Password…).
-          </p>
+          </DialogDescription>
 
-          <div className="tf-qr-wrap">
+          <div className="flex justify-center rounded-2xl bg-muted p-4">
             {qr ? (
-              <img className="tf-qr-img" src={qr} alt="QR kod za aplikaciju sa kodovima" />
+              <img className="size-48 rounded-lg bg-card" src={qr} alt="QR kod za aplikaciju sa kodovima" />
             ) : (
-              <div className="tf-qr-box">
+              <div className="flex size-48 items-center justify-center rounded-lg border border-dashed bg-card text-disabled">
                 <Shield size={28} strokeWidth={1.5} />
               </div>
             )}
@@ -235,20 +235,26 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
 
           <button
             type="button"
-            className="tf-manual"
+            className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-2xl bg-muted p-3 text-left text-xs text-muted-foreground"
             aria-expanded={manual}
             onClick={() => setManual((v) => !v)}
           >
             <span>Ne možete da skenirate? Unesite ključ ručno</span>
-            <ChevronDown size={14} strokeWidth={2} className={manual ? 'is-open' : ''} />
+            <ChevronDown
+              size={14}
+              strokeWidth={2}
+              className={cn('shrink-0 transition-transform duration-200', manual && 'rotate-180')}
+            />
           </button>
 
           {manual && (
-            <div className="tf-secret">
-              <code>{secret}</code>
+            <div className="flex items-center gap-2 rounded-2xl bg-muted p-3">
+              <code className="min-w-0 flex-1 font-mono text-xs leading-body tracking-[0.04em] break-all text-foreground">
+                {secret}
+              </code>
               <Button
                 variant="secondary"
-                iconOnly
+                size="icon"
                 aria-label="Kopiraj ključ"
                 title="Kopiraj ključ"
                 onClick={() => copy(secret, 'secret')}
@@ -258,39 +264,36 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
             </div>
           )}
 
-          <div className="panel-card-actions is-end">
+          <DialogFooter>
             <Button variant="secondary" onClick={onClose}>
               Otkaži
             </Button>
-            <Button variant="primary" onClick={() => setStep(1)}>
+            <Button onClick={() => setStep(1)}>
               Dalje
             </Button>
-          </div>
+          </DialogFooter>
         </>
       ) : (
         <>
-          <p className="doc-p">
+          <DialogDescription>
             Unesite šestocifreni kod iz aplikacije da potvrdimo da je podešavanje prošlo.
-          </p>
+          </DialogDescription>
 
-          <div className="tf-verify">
-            <p className="tf-label">Kod iz aplikacije</p>
-            <CodeInput value={code} onChange={setCode} />
-          </div>
+          <CodeInput value={code} onChange={setCode} />
 
-          {error && <p className="tf-error">{error}</p>}
+          {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
 
-          <div className="panel-card-actions is-end">
+          <DialogFooter>
             <Button variant="ghost" onClick={onClose}>
               Otkaži
             </Button>
             <Button variant="secondary" onClick={() => setStep(0)}>
               Nazad
             </Button>
-            <Button variant="primary" disabled={code.length !== 6 || checking} onClick={confirm}>
+            <Button disabled={code.length !== 6 || checking} onClick={confirm}>
               Potvrdi
             </Button>
-          </div>
+          </DialogFooter>
         </>
       )}
     </Dialog>

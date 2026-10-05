@@ -4,13 +4,19 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { XIcon } from "lucide-react"
 import { Dialog as SheetPrimitive } from "radix-ui"
+import { paneCloseClass } from "@/components/ui/dialog"
 
-// shadcn's sheet as NANA's side pane. It floats: 12px off the screen's edges
-// (8px on a phone), 24px corners, the container shadow, over a dimmed and
-// slightly blurred page. The header is a title with the square close of every
-// pane beside it, and the footer is the row of buttons, pinned to the bottom
-// under a hairline. `SheetBody` is ours — the part between the two that
-// scrolls, which shadcn leaves to each screen.
+// shadcn's sheet as NANA's drawer (docs/patterns.md §7): the details of
+// something on the page, beside it. It floats 12 off the screen's edges,
+// 432 wide (520 `wide`), 24 corners, the container shadow, over a dimmed and
+// slightly blurred page. It arrives from 28 to the right on a spring
+// (`ease-spring-pane`) and leaves on a short curve.
+//
+// The header is the eyebrow and title with the square close beside them, over
+// a hairline. `SheetBody` is ours: the part that scrolls. The footer is the
+// row of buttons at the end of the body, pinned to the bottom under a
+// hairline. On a phone the same header, body and footer sit in a bottom sheet
+// (`Drawer`).
 
 function Sheet({
   ...props
@@ -25,9 +31,15 @@ function SheetTrigger({
 }
 
 function SheetClose({
+  className,
   ...props
 }) {
-  return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
+  return (
+    <SheetPrimitive.Close data-slot="sheet-close" className={cn(paneCloseClass, className)} {...props}>
+      <XIcon className="size-4" strokeWidth={1.75} />
+      <span className="sr-only">Zatvori panel</span>
+    </SheetPrimitive.Close>
+  );
 }
 
 function SheetPortal({
@@ -44,7 +56,7 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-20 bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px] duration-180 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className
       )}
       {...props} />
@@ -54,8 +66,7 @@ function SheetOverlay({
 function SheetContent({
   className,
   children,
-  side = "right",
-  showCloseButton = true,
+  wide = false,
   ...props
 }) {
   return (
@@ -63,32 +74,22 @@ function SheetContent({
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
+        aria-describedby={undefined}
         className={cn(
-          "fixed z-50 flex flex-col overflow-hidden rounded-3xl bg-card shadow-(--shadow-container) transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500",
-          side === "right" &&
-            "inset-y-3 right-3 w-[min(432px,calc(100%-24px))] data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right max-sm:inset-y-2 max-sm:right-2 max-sm:w-[calc(100%-16px)]",
-          side === "left" &&
-            "inset-y-3 left-3 w-[min(432px,calc(100%-24px))] data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left max-sm:inset-y-2 max-sm:left-2 max-sm:w-[calc(100%-16px)]",
-          side === "top" &&
-            "inset-x-0 top-0 h-auto border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
-          side === "bottom" &&
-            "inset-x-0 bottom-0 h-auto border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+          "fixed inset-y-3 right-3 z-20 flex flex-col overflow-hidden rounded-3xl bg-card shadow-container outline-none",
+          wide ? "w-[min(520px,calc(100%-24px))]" : "w-[min(432px,calc(100%-24px))]",
+          "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-right-7 data-[state=open]:duration-430 data-[state=open]:ease-spring-pane",
+          "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-right-5 data-[state=closed]:duration-160 data-[state=closed]:ease-in",
           className
         )}
         {...props}>
         {children}
-        {showCloseButton && (
-          <SheetPrimitive.Close
-            className="absolute top-4 right-4 flex size-7 cursor-pointer items-center justify-center rounded-lg bg-(image:--gradient-secondary) text-foreground shadow-(--shadow-button) transition-[filter] outline-none hover:brightness-97 focus-visible:ring-[3px] focus-visible:ring-ring/50 pointer-coarse:size-11">
-            <XIcon className="size-4" strokeWidth={1.75} />
-            <span className="sr-only">Zatvori panel</span>
-          </SheetPrimitive.Close>
-        )}
       </SheetPrimitive.Content>
     </SheetPortal>
   );
 }
 
+// on a phone the title sits level with the middle of the 44 close
 function SheetHeader({
   className,
   ...props
@@ -96,7 +97,19 @@ function SheetHeader({
   return (
     <div
       data-slot="sheet-header"
-      className={cn("flex shrink-0 flex-col border-b px-4 pt-4 pb-3 pr-14", className)}
+      className={cn("relative flex shrink-0 items-start gap-2 border-b px-4 pt-4 pb-3 phone:items-center phone:pt-6", className)}
+      {...props} />
+  );
+}
+
+function SheetEyebrow({
+  className,
+  ...props
+}) {
+  return (
+    <p
+      data-slot="sheet-eyebrow"
+      className={cn("text-small text-primary", className)}
       {...props} />
   );
 }
@@ -120,7 +133,10 @@ function SheetFooter({
   return (
     <div
       data-slot="sheet-footer"
-      className={cn("mt-auto flex shrink-0 flex-wrap justify-end gap-2 border-t px-4 py-3", className)}
+      className={cn(
+        "sticky -bottom-4 z-1 -mx-4 mt-auto -mb-4 flex shrink-0 justify-end gap-2 border-t bg-card px-4 py-3",
+        className
+      )}
       {...props} />
   );
 }
@@ -142,9 +158,9 @@ function SheetDescription({
   ...props
 }) {
   return (
-    <SheetPrimitive.Description
+    <p
       data-slot="sheet-description"
-      className={cn("text-xs leading-[18px] text-muted-foreground", className)}
+      className={cn("text-xs leading-body text-muted-foreground", className)}
       {...props} />
   );
 }
@@ -155,6 +171,7 @@ export {
   SheetClose,
   SheetContent,
   SheetHeader,
+  SheetEyebrow,
   SheetBody,
   SheetFooter,
   SheetTitle,

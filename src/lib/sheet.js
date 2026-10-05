@@ -1,15 +1,37 @@
-import { useState } from 'react';
 import { useDragControls } from 'motion/react';
+import { useEffect, useState } from 'react';
 
-// On a phone every pane is a bottom sheet (docs/patterns.md §12): a drawer's
-// details, a dialog's action, choosing a plan. It comes up from the bottom edge,
-// as tall as what it holds, and its head drags it back down to close. On a wider
-// screen the pane keeps its own arrival (`desktop`) and nothing drags.
-//
-// The drag starts only from the head (`grip`), never from the content, so the
-// content still scrolls under a finger. The head takes the whole gesture
-// (touch-action: none): left to the browser, a downward swipe became a page
-// scroll and cancelled the drag.
+// On a phone every pane is a bottom sheet (docs/patterns.md §12), dragged down
+// by its head to close: past 96px, or by a quick flick. shadcn's Drawer (vaul)
+// takes the distance as a share of the sheet's height, so the share is worked
+// out from the height the sheet has: 96 of a 400 tall sheet is 0.24.
+const CLOSE_AT = 96;
+
+export function useCloseThreshold() {
+  const [pane, ref] = useState(null);
+  const [threshold, setThreshold] = useState(0.25);
+  useEffect(() => {
+    if (!pane) return undefined;
+    const measure = () => pane.offsetHeight && setThreshold(Math.min(1, CLOSE_AT / pane.offsetHeight));
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(pane);
+    return () => watch.disconnect();
+  }, [pane]);
+  // a callback ref: the sheet mounts in a portal after the pane that asks
+  return { ref, threshold };
+}
+
+// What a pane does when it opens: keep focus where the content put it (a field
+// with autoFocus), or else take it on the pane itself, so that no button inside
+// it starts out ringed as if it had been tabbed to.
+export function focusPane(e) {
+  e.preventDefault();
+  const pane = e.currentTarget;
+  if (!pane.contains(document.activeElement)) pane.focus({ preventScroll: true });
+}
+
+// The motion-drawn sheet PaywallModal still uses, until it moves onto Drawer.
 const PHONE = '(max-width: 640px)';
 const isPhone = () => Boolean(window.matchMedia?.(PHONE).matches);
 
@@ -20,8 +42,6 @@ const UP = {
   transition: { type: 'spring', stiffness: 380, damping: 38 },
 };
 
-// how far down, or how fast, a let-go closes the sheet rather than settling it back
-const CLOSE_AT = 96;
 const CLOSE_SPEED = 500;
 
 export function useSheet({ desktop, onClose, dismissible = true }) {

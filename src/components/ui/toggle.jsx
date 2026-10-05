@@ -1,29 +1,23 @@
 "use client"
-
 import * as React from "react"
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 import { Toggle as TogglePrimitive } from "radix-ui"
 
-// shadcn's toggle as NANA's chip: a pill, 12px text, and the primary's pale
-// tint for hover and for what is on — the language, a filter, a task.
+// shadcn's toggle as NANA's chip (docs/patterns.md §1, §10): 8px corners,
+// never a full pill; a neutral hairline on white, the primary's pale tint on
+// hover, and the primary's hairline and tint for what is on. 44px tall under
+// a finger. `sm` is the short chip of a filter row.
 const toggleVariants = cva(
-  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full text-xs text-foreground whitespace-nowrap transition-[color,background-color,border-color] duration-150 outline-none hover:bg-(--primary-subtle) focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-(--primary-subtle) data-[state=on]:font-medium data-[state=on]:text-(--primary-subtle-foreground) [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-[13px]",
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-xs text-foreground whitespace-nowrap transition-[color,background-color,border-color] duration-150 outline-none hover:border-primary-300 hover:bg-primary-50 focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:border-primary data-[state=on]:bg-primary-50 data-[state=on]:font-medium data-[state=on]:text-primary-600 pointer-coarse:min-h-11 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
-      variant: {
-        default: "bg-transparent",
-        outline:
-          "border border-border bg-background hover:border-(--color-primary-300) data-[state=on]:border-primary",
-      },
       size: {
-        default: "px-3 py-2 pointer-coarse:min-h-11",
-        sm: "px-2 py-1 pointer-coarse:min-h-11",
-        lg: "px-4 py-2.5 pointer-coarse:min-h-11",
+        default: "py-2",
+        sm: "py-1 leading-body",
       },
     },
     defaultVariants: {
-      variant: "default",
       size: "default",
     },
   }
@@ -31,14 +25,13 @@ const toggleVariants = cva(
 
 function Toggle({
   className,
-  variant,
   size,
   ...props
 }) {
   return (
     <TogglePrimitive.Root
       data-slot="toggle"
-      className={cn(toggleVariants({ variant, size, className }))}
+      className={cn(toggleVariants({ size, className }))}
       {...props} />
   );
 }
