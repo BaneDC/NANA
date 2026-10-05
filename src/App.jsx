@@ -583,6 +583,7 @@ export default function App() {
                   onCare={setCare}
                   onContact={contactCaregiver}
                   onCaregiver={showCaregiver}
+                  onProfile={showProfile}
                   onFind={() => setView('find-caregiver')}
                 />
               )}

@@ -20,7 +20,7 @@ const PILL = { pending: 'is-pending', accepted: 'is-accepted', declined: 'is-dec
 const ICON = { pending: Clock, accepted: CheckCircle2, declined: XCircle };
 const TABS = ['all', 'pending', 'accepted', 'declined'];
 
-export default function RequestsPage({ care, onCare, onCaregiver, onFind, onContact }) {
+export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onFind, onContact }) {
   const [tab, setTab] = useState('all');
   const mine = care.requests;
   useEffect(() => {
@@ -79,16 +79,26 @@ export default function RequestsPage({ care, onCare, onCaregiver, onFind, onCont
               // only the latest request to her can be followed by another
               const askAgain = r.status === 'declined' && latestRequest(care, r.caregiverId) === r && canAsk(care, r.caregiverId);
               return (
-                <section key={r.id || r.caregiverId} className="panel-card fam-request">
+                <section key={r.id || r.caregiverId} className="panel-card fam-request is-clickable">
                   {/* Who she is, and under her name everything about the
                       request, in the same column: the avatar stands apart on
                       the left, as in every row on Moja nega (docs/patterns.md
-                      §6). The state is a pill beside her name. */}
+                      §6). The state is a pill beside her name.
+                      The whole card opens her: her page once they work
+                      together, her profile otherwise (§7). The one button is
+                      "Pitaj ponovo", which sends something rather than opens
+                      it, so it stays on a phone too. */}
                   <div className="fam-request-head">
                     <span className="cg-avatar">{cg.initials}</span>
                     <div className="fam-row-main">
                       <p className="fam-row-title">
-                        {cg.name}
+                        <button
+                          type="button"
+                          className="card-link"
+                          onClick={() => (linked ? onCaregiver(r.caregiverId) : onProfile?.(cg))}
+                        >
+                          {cg.name}
+                        </button>
                         <span className={`status-pill ${PILL[r.status]}`}>
                           <Icon size={12} strokeWidth={2} />
                           {LABEL[r.status]}
@@ -117,13 +127,6 @@ export default function RequestsPage({ care, onCare, onCaregiver, onFind, onCont
                     </div>
                     {/* its one action top right, level with her name; on a
                         phone under what the card says, in its column */}
-                    {linked && (
-                      <div className="panel-card-actions">
-                        <Button variant="secondary" onClick={() => onCaregiver(r.caregiverId)}>
-                          Pogledaj saradnju
-                        </Button>
-                      </div>
-                    )}
                     {askAgain && (
                       <div className="panel-card-actions">
                         <Button variant="primary" onClick={() => onContact?.(cg)}>
