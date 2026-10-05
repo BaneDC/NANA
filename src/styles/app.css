@@ -5319,6 +5319,20 @@ button.svc:hover {
   line-height: var(--text-sm-leading);
 }
 
+/* Her avatar is as tall as what stands beside it: the name's line, the 4
+   between, and the meta line's 16 - 40 with a mouse, 44 under a finger. The
+   same on her card on Pronađi and at the top of her details. */
+.caregiver.is-wide {
+  --cg-indent: calc(var(--text-sm-leading) + var(--spacing-1) + 16px + var(--spacing-3));
+}
+
+:is(.fam-profile-head, .caregiver.is-wide) > .cg-avatar {
+  width: calc(var(--text-sm-leading) + var(--spacing-1) + 16px);
+  height: calc(var(--text-sm-leading) + var(--spacing-1) + 16px);
+  border-radius: var(--radius-2xl);
+  font-size: var(--text-xs-size);
+}
+
 /* where the family stands with her, under her rate at the top of her profile */
 .fam-asked {
   align-self: flex-start;
@@ -6403,14 +6417,24 @@ button.svc:hover {
     margin-left: 44px;
   }
 
+  /* her card's avatar is as tall as her name and meta (44 under a finger),
+     so what goes under them lines up 12 past it */
+  .caregiver.is-wide .cg-main {
+    flex-basis: calc(100% - var(--cg-indent));
+  }
+
+  .caregiver.is-wide > .status-pill {
+    margin-left: var(--cg-indent);
+  }
+
   /* Sending her a message is not opening her details, so on a phone the card
      keeps its button (under what the card says, the text's width) as well as
      the chevron that says a tap opens her. Every other clickable card and row
      still trades its button for the chevron. */
   .caregiver.is-wide.is-clickable > .card-action {
     display: inline-flex;
-    width: calc(100% - 44px);
-    margin-left: 44px;
+    width: calc(100% - var(--cg-indent));
+    margin-left: var(--cg-indent);
   }
 
   /* The title and the page's actions share the top line, and what is said

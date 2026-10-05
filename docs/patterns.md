@@ -272,7 +272,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 **Ocena** se svuda piše isto (`Rating`, `src/components/Rating.jsx`): broj, pa zvezdica, pa broj ocena: „4,9 ★ (64)". Ko još nema ocena je „Nova", bez zvezdice.
 
-**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom.
+**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. **Avatar je visok koliko ime i red ispod njega** (red imena + 4 + 16): 40 sa mišem, 44 na dodir, radius 16. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`).
 | Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |
