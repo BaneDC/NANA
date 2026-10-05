@@ -5,6 +5,7 @@ import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
 import SelectCard from '../components/SelectCard';
 import Button from '../components/Button';
+import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Field, Input, Password, Select } from '../components/TextField';
 import { saveAccount, signIn } from '../lib/account';
 
@@ -162,16 +163,16 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
           <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
         </Field>
         <Field label="Broj telefona" required as="div" labelId="reg-phone">
-          <span className="tf-input has-prefix">
+          {/* the country's code in front, behind a line, then the number */}
+          <InputGroup>
             <Select
               bare
-              className="tf-prefix"
               value={country}
               onChange={setCountry}
               ariaLabel="Pozivni broj države"
               options={COUNTRY_OPTIONS}
             />
-            <input
+            <InputGroupInput
               type="tel"
               value={phone}
               placeholder="40 123 4567"
@@ -179,7 +180,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
               aria-labelledby="reg-phone"
               onChange={(e) => setPhone(e.target.value)}
             />
-          </span>
+          </InputGroup>
         </Field>
         <Field label="Lozinka" required hint={password && password.length < MIN_PASSWORD ? `Još ${MIN_PASSWORD - password.length} karaktera` : null}>
           <Password value={password} onChange={setPassword} onEnter={submit} placeholder="Najmanje 8 karaktera" autoComplete="new-password" />

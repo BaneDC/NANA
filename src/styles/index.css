@@ -173,3 +173,34 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* ---- Bridge, until every screen is on shadcn (removed at the end) ----
+   A screen not yet moved ends its pane with the old action row
+   (`.panel-card-actions`, `.visit-foot`). The old pane pinned it to the bottom
+   under a hairline through its own classes, which the shadcn panes do not
+   have; these give the old row the same place in the new panes. */
+@layer legacy {
+  [data-slot='sheet-body'] > :is(.panel-card-actions, .visit-foot):last-child,
+  [data-slot='drawer-scroll'] > .panel-card-actions:last-child {
+    position: sticky;
+    bottom: calc(-1 * var(--spacing-4));
+    z-index: 1;
+    width: auto;
+    margin: auto calc(-1 * var(--spacing-4)) calc(-1 * var(--spacing-4));
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--surface-elevated);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  @media (min-width: 641px) {
+    [data-slot='dialog-content'] > .panel-card-actions:last-child {
+      position: sticky;
+      bottom: calc(-1 * var(--spacing-6));
+      z-index: 1;
+      width: auto;
+      margin: calc(-1 * var(--spacing-2)) calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6));
+      padding: var(--spacing-3) var(--spacing-6) var(--spacing-6);
+      background: var(--surface-elevated);
+    }
+  }
+}

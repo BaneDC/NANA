@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { linkClass } from "@/components/ui/item"
 
 // shadcn's card as NANA's one card (docs/patterns.md §5): white, 24px
 // corners, 16 inside, 8 between its parts, and the card's hairline-and-lift
@@ -10,6 +11,12 @@ import { cn } from "@/lib/utils"
 // beside it drops under it, 8 lower, when the two do not fit.
 // The footer is the card's buttons, bottom left, at their natural width; on a
 // phone they share the card's width.
+//
+// A card that stands for something with details of its own (a caregiver, a
+// request) opens them from anywhere on it: its name is a `CardLink`, whose
+// ::after covers the card (§7). On hover the card is ringed in the primary's
+// pale line and the name takes its dark ink; its buttons and statuses sit
+// above the stretch.
 
 function Card({
   className,
@@ -19,7 +26,10 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "flex flex-col gap-2 rounded-3xl bg-card p-4 text-card-foreground shadow-card",
+        "group/card flex flex-col gap-2 rounded-3xl bg-card p-4 text-card-foreground shadow-card",
+        "has-[[data-slot=card-link]]:relative has-[[data-slot=card-link]]:cursor-pointer has-[[data-slot=card-link]]:hover:shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]",
+        "has-[[data-slot=card-link]:focus-visible]:outline-2 has-[[data-slot=card-link]:focus-visible]:outline-offset-2 has-[[data-slot=card-link]:focus-visible]:outline-primary",
+        "has-[[data-slot=card-link]]:[&_[data-slot=button]]:relative has-[[data-slot=card-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=card-link]]:[&_[data-slot=badge]]:relative has-[[data-slot=card-link]]:[&_[data-slot=badge]]:z-1",
         className
       )}
       {...props} />
@@ -77,6 +87,19 @@ function CardAction({
   );
 }
 
+function CardLink({
+  className,
+  ...props
+}) {
+  return (
+    <button
+      type="button"
+      data-slot="card-link"
+      className={cn(linkClass, "group-hover/card:text-primary-700", className)}
+      {...props} />
+  );
+}
+
 function CardContent({
   className,
   ...props
@@ -104,4 +127,5 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  CardLink,
 }

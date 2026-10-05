@@ -111,7 +111,7 @@ export function TextArea({ value, onChange, rows = 3, className, ...rest }) {
 // `options` are { value, label, icon?, meta?, display? } — `display` is what the
 // closed field shows when it should be shorter than the row (a country's code).
 // `bare` draws the trigger without the field's box, for a Select inside
-// another field (the country code in front of a phone number).
+// another field (the country code in front of a phone number), behind a line.
 export function Select({ value, onChange, options, placeholder = 'Izaberite', labelledBy, ariaLabel, bare, className }) {
   const id = useContext(FieldId);
   const chosen = options.find((o) => o.value === value);
@@ -121,7 +121,7 @@ export function Select({ value, onChange, options, placeholder = 'Izaberite', la
         id={id}
         aria-labelledby={labelledBy}
         aria-label={ariaLabel}
-        className={cn(bare && 'h-auto self-stretch rounded-none border-0 bg-transparent pr-2', className)}
+        className={cn(bare && 'h-auto w-auto shrink-0 self-stretch rounded-none border-y-0 border-l-0 bg-transparent pr-2 pl-3', className)}
       >
         <SelectValue placeholder={placeholder}>{chosen ? chosen.display ?? chosen.label : null}</SelectValue>
       </SelectTrigger>

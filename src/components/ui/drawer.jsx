@@ -13,6 +13,10 @@ import { Drawer as DrawerPrimitive } from "vaul"
 //
 // `kind`: a "sheet" holds a header and a body that scrolls (the drawer's
 // parts); a "dialog" scrolls as a whole, 16 inside (the dialog's parts).
+// Either way the sheet itself never scrolls, and vaul's strip under it (to
+// show no gap when it is pulled up) is taken away: the sheet clips to its
+// corners, so the strip could never show, and in a sheet that scrolled it was
+// room to scroll into, white and empty.
 
 function Drawer({
   ...props
@@ -67,17 +71,21 @@ function DrawerContent({
         data-kind={kind}
         aria-describedby={undefined}
         className={cn(
-          "group/drawer-content touch-pan-y! fixed inset-x-0 bottom-0 z-20 flex max-h-[calc(100%-48px-env(safe-area-inset-top,0px))] flex-col rounded-t-3xl bg-card shadow-container outline-none",
-          kind === "dialog"
-            ? "gap-3 overflow-y-auto px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]"
-            : "overflow-hidden pb-[env(safe-area-inset-bottom,0px)]",
+          "group/drawer-content touch-pan-y! after:hidden! fixed inset-x-0 bottom-0 z-20 flex max-h-[calc(100%-48px-env(safe-area-inset-top,0px))] flex-col rounded-t-3xl bg-card shadow-container outline-none",
+          kind === "dialog" ? "overflow-hidden" : "overflow-hidden pb-[env(safe-area-inset-bottom,0px)]",
           className
         )}
         {...props}>
         <span
           aria-hidden="true"
           className="pointer-events-none absolute top-2 left-1/2 z-2 -ml-[18px] h-1 w-9 rounded-sm bg-neutral-300" />
-        {children}
+        {kind === "dialog" ? (
+          <div
+            data-slot="drawer-scroll"
+            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]">
+            {children}
+          </div>
+        ) : children}
       </DrawerPrimitive.Content>
     </DrawerPortal>
   );

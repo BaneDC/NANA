@@ -1,9 +1,22 @@
 import * as React from "react"
-import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 import { Slot } from "radix-ui"
 
-import { Separator } from "@/components/ui/separator"
+// shadcn's item as NANA's row inside a card (docs/patterns.md §6, §7): not a
+// box with a border, a row. It reaches 8 into the card's padding, has 8 of
+// its own on every side and 16 corners (seen only on hover), and rows are 8
+// apart with a 1px line in the middle of that gap, in 8 from the edges.
+//
+// A row that opens something has an `ItemLink` for its name: a real button
+// whose ::after stretches over the whole row, so the keyboard and a screen
+// reader get one target. On hover the row goes grey, the lines beside it step
+// aside, the name takes the primary's dark ink and its tags go white. Buttons
+// and statuses in it sit above the stretch and do only what they say. On a
+// phone an `ItemAction` (the button that says the same as the link) is gone:
+// the row opens on a tap.
+//
+// `ItemGroup` holds the rows; last in a card, it lets its last row reach the
+// card's padding too, so the hover ground is 8 from the bottom as from the side.
 
 function ItemGroup({
   className,
@@ -13,49 +26,13 @@ function ItemGroup({
     <div
       role="list"
       data-slot="item-group"
-      className={cn("group/item-group flex flex-col", className)}
+      className={cn("flex flex-col gap-2 [[data-slot=card]>&:last-child]:-mb-2", className)}
       {...props} />
   );
 }
-
-function ItemSeparator({
-  className,
-  ...props
-}) {
-  return (
-    <Separator
-      data-slot="item-separator"
-      orientation="horizontal"
-      className={cn("my-0", className)}
-      {...props} />
-  );
-}
-
-const itemVariants = cva(
-  "group/item flex flex-wrap items-center rounded-md border border-transparent text-sm transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors [a]:hover:bg-accent/50",
-  {
-    variants: {
-      variant: {
-        default: "bg-transparent",
-        outline: "border-border",
-        muted: "bg-muted/50",
-      },
-      size: {
-        default: "gap-4 p-4",
-        sm: "gap-2.5 px-4 py-3",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
 
 function Item({
   className,
-  variant = "default",
-  size = "default",
   asChild = false,
   ...props
 }) {
@@ -63,40 +40,17 @@ function Item({
   return (
     <Comp
       data-slot="item"
-      data-variant={variant}
-      data-size={size}
-      className={cn(itemVariants({ variant, size, className }))}
-      {...props} />
-  );
-}
-
-const itemMediaVariants = cva(
-  "flex shrink-0 items-center justify-center gap-2 group-has-[[data-slot=item-description]]/item:translate-y-0.5 group-has-[[data-slot=item-description]]/item:self-start [&_svg]:pointer-events-none",
-  {
-    variants: {
-      variant: {
-        default: "bg-transparent",
-        icon: "size-8 rounded-sm border bg-muted [&_svg:not([class*='size-'])]:size-4",
-        image:
-          "size-10 overflow-hidden rounded-sm [&_img]:size-full [&_img]:object-cover",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-)
-
-function ItemMedia({
-  className,
-  variant = "default",
-  ...props
-}) {
-  return (
-    <div
-      data-slot="item-media"
-      data-variant={variant}
-      className={cn(itemMediaVariants({ variant, className }))}
+      className={cn(
+        "group/item relative -mx-2 flex rounded-2xl p-2 transition-[background-color] duration-150",
+        // the line between two rows
+        "[[data-slot=item]+&]:before:absolute [[data-slot=item]+&]:before:inset-x-2 [[data-slot=item]+&]:before:-top-1 [[data-slot=item]+&]:before:h-px [[data-slot=item]+&]:before:-translate-y-1/2 [[data-slot=item]+&]:before:bg-border [[data-slot=item]+&]:before:transition-opacity [[data-slot=item]+&]:before:duration-150",
+        // a row that opens something
+        "has-[[data-slot=item-link]]:cursor-pointer has-[[data-slot=item-link]]:hover:bg-muted has-[[data-slot=item-link]]:hover:before:opacity-0 [[data-slot=item]:has([data-slot=item-link]):hover+&]:before:opacity-0",
+        "has-[[data-slot=item-link]]:hover:[&_[data-variant=tag]]:bg-card",
+        "has-[[data-slot=item-link]:focus-visible]:outline-2 has-[[data-slot=item-link]:focus-visible]:outline-offset-2 has-[[data-slot=item-link]:focus-visible]:outline-primary",
+        "has-[[data-slot=item-link]]:[&_[data-slot=button]]:relative has-[[data-slot=item-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=item-link]]:[&_[data-slot=badge]]:relative has-[[data-slot=item-link]]:[&_[data-slot=badge]]:z-1",
+        className
+      )}
       {...props} />
   );
 }
@@ -108,10 +62,7 @@ function ItemContent({
   return (
     <div
       data-slot="item-content"
-      className={cn(
-        "flex flex-1 flex-col gap-1 [&+[data-slot=item-content]]:flex-none",
-        className
-      )}
+      className={cn("flex min-w-0 flex-1 flex-col gap-1", className)}
       {...props} />
   );
 }
@@ -123,10 +74,24 @@ function ItemTitle({
   return (
     <div
       data-slot="item-title"
-      className={cn(
-        "flex w-fit items-center gap-2 text-sm leading-snug font-medium",
-        className
-      )}
+      className={cn("flex items-center gap-2 text-xs font-medium text-foreground", className)}
+      {...props} />
+  );
+}
+
+const linkClass =
+  "cursor-pointer text-left text-inherit outline-none after:absolute after:inset-0 after:rounded-[inherit]"
+
+// the name that opens the row: its ::after covers the lot
+function ItemLink({
+  className,
+  ...props
+}) {
+  return (
+    <button
+      type="button"
+      data-slot="item-link"
+      className={cn(linkClass, "group-hover/item:text-primary-700", className)}
       {...props} />
   );
 }
@@ -138,60 +103,28 @@ function ItemDescription({
   return (
     <p
       data-slot="item-description"
-      className={cn(
-        "line-clamp-2 text-sm leading-normal font-normal text-balance text-muted-foreground",
-        "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
-        className
-      )}
+      className={cn("text-xs leading-body text-muted-foreground", className)}
       {...props} />
   );
 }
 
-function ItemActions({
+// the button that says what the link does: gone on a phone
+function ItemAction({
   className,
   ...props
 }) {
   return (
-    <div
-      data-slot="item-actions"
-      className={cn("flex items-center gap-2", className)}
-      {...props} />
-  );
-}
-
-function ItemHeader({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="item-header"
-      className={cn("flex basis-full items-center justify-between gap-2", className)}
-      {...props} />
-  );
-}
-
-function ItemFooter({
-  className,
-  ...props
-}) {
-  return (
-    <div
-      data-slot="item-footer"
-      className={cn("flex basis-full items-center justify-between gap-2", className)}
-      {...props} />
+    <Slot.Root data-slot="item-action" className={cn("phone:hidden", className)} {...props} />
   );
 }
 
 export {
+  linkClass,
   Item,
-  ItemMedia,
+  ItemAction,
   ItemContent,
-  ItemActions,
-  ItemGroup,
-  ItemSeparator,
-  ItemTitle,
   ItemDescription,
-  ItemHeader,
-  ItemFooter,
+  ItemGroup,
+  ItemLink,
+  ItemTitle,
 }

@@ -4,7 +4,9 @@ import { cn } from "@/lib/utils"
 
 // shadcn's input group in the same box as our field: what sits inside it — an
 // icon in front, a unit or the eye of a password behind — is drawn at the
-// field's own 12px, and the whole box takes the primary on focus.
+// field's own 12px, and the whole box takes the primary on focus. The field
+// inside keeps the box's corners (less its line), so the browser's autofill
+// tint cannot cover the box's line at the corners.
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -132,7 +134,7 @@ function InputGroupInput({
     <Input
       data-slot="input-group-control"
       className={cn(
-        "flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent",
+        "flex-1 rounded-[7px] border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent",
         className
       )}
       {...props} />
