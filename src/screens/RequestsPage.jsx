@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
-import Button from '../components/Button';
-import { Group } from '../components/Tags';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardLink } from '@/components/ui/card';
+import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import { Group, Groups } from '../components/Tags';
 import { caregivers } from '../data/carePlan';
 import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../data/familyCare';
 
@@ -16,7 +22,7 @@ import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../
 // one that arrives while it is open.
 
 const LABEL = { pending: 'Čeka odgovor', accepted: 'Prihvaćeno', declined: 'Odbijeno' };
-const PILL = { pending: 'is-pending', accepted: 'is-accepted', declined: 'is-declined' };
+const BADGE = { pending: 'warning', accepted: 'success', declined: 'destructive' };
 const ICON = { pending: Clock, accepted: CheckCircle2, declined: XCircle };
 const TABS = ['all', 'pending', 'accepted', 'declined'];
 
@@ -29,48 +35,40 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
   const picked = tab === 'all' ? mine : mine.filter((r) => r.status === tab);
 
   return (
-    <div className="view">
-      <div className="view-head">
-        <div className="view-head-text">
-          <h1 className="view-title">Vaši upiti</h1>
-          <p className="view-sub">
-            Sve negovateljice kojima ste poslali upit, i gde je svaki od njih.
-          </p>
-        </div>
-      </div>
+    <Page>
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>Vaši upiti</PageTitle>
+          <PageDescription>Sve negovateljice kojima ste poslali upit, i gde je svaki od njih.</PageDescription>
+        </PageHeaderText>
+      </PageHeader>
 
       {!mine.length && (
-        <div className="empty">
-          <p className="locked-title">Još niste poslali nijedan upit</p>
-          <p className="locked-note">
+        <Empty>
+          <EmptyTitle>Još niste poslali nijedan upit</EmptyTitle>
+          <EmptyDescription>
             Upit šalje plan nege negovateljici i ništa ne košta. Možete da pitate više njih, a ništa nije dogovoreno dok
             zajedno ne postavite uslove.
-          </p>
-          <Button variant="primary" onClick={onFind}>
-            Pronađi negovateljicu
-          </Button>
-        </div>
+          </EmptyDescription>
+          <Button onClick={onFind}>Pronađi negovateljicu</Button>
+        </Empty>
       )}
 
       {mine.length > 0 && (
         <>
-          <div className="fam-filter" role="tablist" aria-label="Upiti po odgovoru">
+          {/* one is always chosen: pressing the chosen one again does nothing */}
+          <ToggleGroup type="single" size="sm" value={tab} onValueChange={(t) => t && setTab(t)} aria-label="Upiti po odgovoru">
             {TABS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                role="tab"
-                aria-selected={tab === t}
-                className={`svc is-sm${tab === t ? ' is-on' : ''}`}
-                onClick={() => setTab(t)}
-              >
+              <ToggleGroupItem key={t} value={t}>
                 {t === 'all' ? 'Svi' : LABEL[t]}
-                <span className="fam-filter-note">{t === 'all' ? mine.length : mine.filter((r) => r.status === t).length}</span>
-              </button>
+                <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">
+                  {t === 'all' ? mine.length : mine.filter((r) => r.status === t).length}
+                </span>
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
 
-          <div className="fam-rows">
+          <div className="flex flex-col gap-2">
             {picked.map((r) => {
               const cg = caregivers.find((c) => c.id === r.caregiverId);
               if (!cg) return null;
@@ -79,7 +77,7 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
               // only the latest request to her can be followed by another
               const askAgain = r.status === 'declined' && latestRequest(care, r.caregiverId) === r && canAsk(care, r.caregiverId);
               return (
-                <section key={r.id || r.caregiverId} className="panel-card fam-request is-clickable">
+                <Card key={r.id || r.caregiverId}>
                   {/* Who she is, and under her name everything about the
                       request, in the same column: the avatar stands apart on
                       the left, as in every row on Moja nega (docs/patterns.md
@@ -88,28 +86,24 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
                       together, her profile otherwise (§7). The one button is
                       "Pitaj ponovo", which sends something rather than opens
                       it, so it stays on a phone too. */}
-                  <div className="fam-request-head">
-                    <span className="cg-avatar">{cg.initials}</span>
-                    <div className="fam-row-main">
-                      <p className="fam-row-title">
-                        <button
-                          type="button"
-                          className="card-link"
-                          onClick={() => (linked ? onCaregiver(r.caregiverId) : onProfile?.(cg))}
-                        >
-                          {cg.name}
-                        </button>
-                        <span className={`status-pill ${PILL[r.status]}`}>
+                  <div className="flex items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+var(--text-body-leading))] phone:flex-wrap">
+                    <Avatar>
+                      <AvatarFallback>{cg.initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex min-w-0 flex-1 flex-col gap-1 phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
+                      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-foreground">
+                        <CardLink onClick={() => (linked ? onCaregiver(r.caregiverId) : onProfile?.(cg))}>{cg.name}</CardLink>
+                        <Badge variant={BADGE[r.status]} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
                           <Icon size={12} strokeWidth={2} />
                           {LABEL[r.status]}
-                        </span>
+                        </Badge>
                       </p>
-                      <p className="fam-row-body">
+                      <p className="text-xs leading-body text-muted-foreground">
                         {cg.area} · {cg.rate} · {r.again ? 'ponovni upit' : 'upit'} poslat {r.requested}
                       </p>
-                      <div className="tag-rows">
+                      <Groups className="mt-2">
                         <Group label="Vaša poruka" text={r.message} />
-                        <p className="fam-sub is-flush">
+                        <p className="text-xs leading-body text-muted-foreground">
                           {r.status === 'declined' ? (
                             <>
                               <strong>Razlog: </strong>
@@ -123,29 +117,27 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
                             `${firstName(cg.name)} je prihvatila. ${r.detail}`
                           )}
                         </p>
-                      </div>
+                      </Groups>
                     </div>
                     {/* its one action top right, level with her name; on a
                         phone under what the card says, in its column */}
                     {askAgain && (
-                      <div className="panel-card-actions">
-                        <Button variant="primary" onClick={() => onContact?.(cg)}>
-                          Pitaj ponovo
-                        </Button>
+                      <div className="flex shrink-0 gap-2 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
+                        <Button onClick={() => onContact?.(cg)}>Pitaj ponovo</Button>
                       </div>
                     )}
                   </div>
-                </section>
+                </Card>
               );
             })}
             {!picked.length && (
-              <div className="panel-card fam-quiet">
-                <p>Ovde nema ničega.</p>
-              </div>
+              <Card>
+                <p className="text-xs leading-body text-muted-foreground">Ovde nema ničega.</p>
+              </Card>
             )}
           </div>
         </>
       )}
-    </div>
+    </Page>
   );
 }
