@@ -1,4 +1,3 @@
-import { useDragControls } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 // On a phone every pane is a bottom sheet (docs/patterns.md §12), dragged down
@@ -33,47 +32,3 @@ export function focusPane(e) {
   const field = pane.querySelector('[data-autofocus]');
   (field || pane).focus({ preventScroll: true });
 }
-
-// The motion-drawn sheet PaywallModal still uses, until it moves onto Drawer.
-const PHONE = '(max-width: 640px)';
-const isPhone = () => Boolean(window.matchMedia?.(PHONE).matches);
-
-const UP = {
-  initial: { y: '100%' },
-  animate: { y: 0 },
-  exit: { y: '100%', transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } },
-  transition: { type: 'spring', stiffness: 380, damping: 38 },
-};
-
-const CLOSE_SPEED = 500;
-
-export function useSheet({ desktop, onClose, dismissible = true }) {
-  const [phone] = useState(isPhone);
-  const controls = useDragControls();
-  if (!phone) return { phone, pane: desktop, grip: {} };
-  if (!dismissible) return { phone, pane: UP, grip: {} };
-  return {
-    phone,
-    pane: {
-      ...UP,
-      drag: 'y',
-      dragListener: false,
-      dragControls: controls,
-      dragConstraints: { top: 0, bottom: 0 },
-      dragElastic: { top: 0, bottom: 1 },
-      dragMomentum: false,
-      onDragEnd: (_, info) => {
-        if (info.offset.y > CLOSE_AT || info.velocity.y > CLOSE_SPEED) onClose();
-      },
-    },
-    grip: {
-      onPointerDown: (e) => {
-        // the close button in the head is pressed, not dragged
-        if (e.target.closest('button, a, input, textarea')) return;
-        controls.start(e);
-      },
-      style: { touchAction: 'none' },
-    },
-  };
-}
-

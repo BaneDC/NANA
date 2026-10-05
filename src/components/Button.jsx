@@ -1,3 +1,6 @@
+// The old button, kept for the onboarding only (Immersive*, which keeps its
+// own look and is not part of the move to shadcn); drawn by .btn in
+// onboarding.css. Everything else uses Button from @/components/ui/button.
 import { motion } from 'motion/react';
 
 export default function Button({
