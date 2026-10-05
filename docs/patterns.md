@@ -45,6 +45,8 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Avatar sa inicijalima | `Avatar` + `AvatarFallback`, visina iz `--avatar` | `.cg-avatar` |
 | Narandžasti deo | `Attention` (`AttentionHead`, `AttentionTitle`, `AttentionDescription`) | `.attention` |
 | Prazna stranica | `Empty`, `EmptyTitle`, `EmptyDescription` | `.empty`, `.locked-title`, `.locked-note` |
+| Strane (Pronađi) | `Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext` | `.pager`, `.pager-page` |
+| Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
 
 ---
 

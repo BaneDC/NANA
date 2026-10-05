@@ -1,12 +1,12 @@
 import * as React from "react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MoreHorizontalIcon,
-} from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-import { buttonVariants } from "@/components/ui/button";
+// shadcn's pagination as NANA's pages (Pronađi): the arrows are square
+// secondary buttons, a page number is a 28 chip (44 under a finger), 8 apart,
+// and the page being read sits on the primary's pale ground. The pages are
+// buttons, not links: the list changes in place, the address does not.
 
 function Pagination({
   className,
@@ -15,7 +15,7 @@ function Pagination({
   return (
     <nav
       role="navigation"
-      aria-label="pagination"
+      aria-label="Strane"
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props} />
@@ -29,7 +29,7 @@ function PaginationContent({
   return (
     <ul
       data-slot="pagination-content"
-      className={cn("flex flex-row items-center gap-1", className)}
+      className={cn("flex list-none flex-row items-center gap-2", className)}
       {...props} />
   );
 }
@@ -43,67 +43,39 @@ function PaginationItem({
 function PaginationLink({
   className,
   isActive,
-  size = "icon",
   ...props
 }) {
   return (
-    <a
+    <button
+      type="button"
       aria-current={isActive ? "page" : undefined}
       data-slot="pagination-link"
       data-active={isActive}
-      className={cn(buttonVariants({
-        variant: isActive ? "outline" : "ghost",
-        size,
-      }), className)}
+      className={cn(
+        "flex h-(--chip-size) min-w-(--chip-size) cursor-pointer items-center justify-center rounded-lg px-2 text-xs text-muted-foreground transition-[background-color,color] duration-150 hover:bg-muted hover:text-foreground data-[active=true]:bg-primary-200 data-[active=true]:font-medium data-[active=true]:text-foreground pointer-coarse:h-11 pointer-coarse:min-w-11",
+        className
+      )}
       {...props} />
   );
 }
 
 function PaginationPrevious({
-  className,
   ...props
 }) {
   return (
-    <PaginationLink
-      aria-label="Go to previous page"
-      size="default"
-      className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
-      {...props}>
-      <ChevronLeftIcon />
-      <span className="hidden sm:block">Previous</span>
-    </PaginationLink>
+    <Button variant="secondary" size="icon" aria-label="Prethodna strana" {...props}>
+      <ChevronLeftIcon size={14} strokeWidth={2} />
+    </Button>
   );
 }
 
 function PaginationNext({
-  className,
   ...props
 }) {
   return (
-    <PaginationLink
-      aria-label="Go to next page"
-      size="default"
-      className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
-      {...props}>
-      <span className="hidden sm:block">Next</span>
-      <ChevronRightIcon />
-    </PaginationLink>
-  );
-}
-
-function PaginationEllipsis({
-  className,
-  ...props
-}) {
-  return (
-    <span
-      aria-hidden
-      data-slot="pagination-ellipsis"
-      className={cn("flex size-9 items-center justify-center", className)}
-      {...props}>
-      <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
-    </span>
+    <Button variant="secondary" size="icon" aria-label="Sledeća strana" {...props}>
+      <ChevronRightIcon size={14} strokeWidth={2} />
+    </Button>
   );
 }
 
@@ -114,5 +86,4 @@ export {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis,
 }
