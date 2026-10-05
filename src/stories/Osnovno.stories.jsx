@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 // The smallest parts, in every variant the app uses (docs/patterns.md §1, §2, §9).
+// Each has a gallery (every variant side by side) and a playground (one, set
+// from the Controls panel under the story).
 
 const Row = ({ label, children }) => (
   <div className="flex flex-col gap-2">
@@ -67,6 +69,39 @@ export const Dugme = {
   ),
 };
 
+const ICONS = { none: null, Search, Send, Plus, Check, ArrowRight, X };
+
+export const DugmeIgraliste = {
+  name: 'Dugme · igralište',
+  args: { children: 'Pronađi negovateljicu', variant: 'default', size: 'default', icon: 'none', iconAfter: false, disabled: false },
+  argTypes: {
+    children: { name: 'text', control: 'text', description: 'Šta piše na dugmetu (kod `icon` veličine je to aria-label).' },
+    variant: {
+      control: 'select',
+      options: ['default', 'secondary', 'ghost', 'outline', 'destructive', 'link'],
+      description: 'default za ono što se tek podešava, secondary za ono što menja ili gasi, destructive samo za brisanje (§9).',
+    },
+    size: { control: 'select', options: ['default', 'sm', 'lg', 'icon'] },
+    icon: { control: { type: 'select', labels: { none: 'bez ikonice' } }, options: Object.keys(ICONS), description: 'Ikonica 14px, ispred teksta.' },
+    iconAfter: { control: 'boolean', description: 'Ikonica posle teksta (strelica ka sledećem).' },
+    disabled: { control: 'boolean' },
+  },
+  render: ({ children, icon, iconAfter, ...props }) => {
+    const Icon = ICONS[icon];
+    const only = props.size === 'icon';
+    const glyph = Icon && <Icon size={only ? 16 : 14} strokeWidth={1.75} />;
+    return (
+      <div>
+        <Button {...props} aria-label={only ? children : undefined}>
+          {!iconAfter && glyph}
+          {!only && children}
+          {iconAfter && glyph}
+        </Button>
+      </div>
+    );
+  },
+};
+
 // a status is 20px, 11 medium, r4, a tint per state; a tag is grey small text
 export const Znacka = {
   name: 'Značka',
@@ -94,6 +129,28 @@ export const Znacka = {
   ),
 };
 
+export const ZnackaIgraliste = {
+  name: 'Značka · igralište',
+  args: { children: 'Već dolazi', variant: 'success', tick: true },
+  argTypes: {
+    children: { name: 'text', control: 'text' },
+    variant: {
+      control: 'select',
+      options: ['default', 'success', 'warning', 'destructive', 'secondary', 'tag'],
+      description: 'success: prihvaćeno, aktivno · warning: čeka nekog drugog · destructive: odbijeno · secondary: neutralno · default: pažnja · tag: oznaka uz ime ili iznos.',
+    },
+    tick: { control: 'boolean', description: 'Kvačica ispred, za ono što je krenulo napred.' },
+  },
+  render: ({ children, tick, ...props }) => (
+    <div>
+      <Badge {...props}>
+        {tick && <Check size={12} strokeWidth={2} />}
+        {children}
+      </Badge>
+    </div>
+  ),
+};
+
 // as tall as the two lines beside it, set by --avatar where it stands (§6)
 export const Avatar_ = {
   name: 'Avatar',
@@ -107,5 +164,24 @@ export const Avatar_ = {
         </div>
       ))}
     </Row>
+  ),
+};
+
+export const AvatarIgraliste = {
+  name: 'Avatar · igralište',
+  args: { initials: 'SV', avatar: 40 },
+  argTypes: {
+    initials: { control: 'text' },
+    avatar: {
+      control: { type: 'range', min: 24, max: 64, step: 2 },
+      description: '`--avatar` u px. Do 36 je izuzet od koncentričnih uglova, veći mora da se uklopi u ugao oko sebe (§1).',
+    },
+  },
+  render: ({ initials, avatar }) => (
+    <div style={{ '--avatar': `${avatar}px` }}>
+      <Avatar>
+        <AvatarFallback>{initials}</AvatarFallback>
+      </Avatar>
+    </div>
   ),
 };

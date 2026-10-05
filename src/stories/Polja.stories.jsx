@@ -46,6 +46,55 @@ export const Tekst = {
   },
 };
 
+const FIELD_ICONS = { none: undefined, Search, Mail };
+
+// one field, set from the Controls panel: its kind, label, hint and state
+export const PoljeIgraliste = {
+  name: 'Polje · igralište',
+  args: {
+    kind: 'text',
+    label: 'E-mail',
+    hint: 'Na njega šaljemo potvrdu.',
+    placeholder: 'ime@primer.fi',
+    required: false,
+    invalid: false,
+    disabled: false,
+    icon: 'none',
+    suffix: '',
+    rows: 3,
+  },
+  argTypes: {
+    kind: {
+      control: { type: 'inline-radio', labels: { text: 'tekst', password: 'lozinka', multiline: 'više redova' } },
+      options: ['text', 'password', 'multiline'],
+    },
+    label: { control: 'text', description: 'Prazno = polje bez oznake.' },
+    hint: { control: 'text', description: 'Napomena ispod polja; prazno = bez nje.' },
+    placeholder: { control: 'text' },
+    required: { control: 'boolean', description: 'Zvezdica uz oznaku.' },
+    invalid: { control: 'boolean', description: '`aria-invalid`: crvena ivica.' },
+    disabled: { control: 'boolean' },
+    icon: { control: { type: 'select', labels: { none: 'bez ikonice' } }, options: Object.keys(FIELD_ICONS), if: { arg: 'kind', eq: 'text' } },
+    suffix: { control: 'text', description: 'Jedinica iza teksta, npr. € / h.', if: { arg: 'kind', eq: 'text' } },
+    rows: { control: { type: 'range', min: 2, max: 8, step: 1 }, description: 'Koliko redova ima na početku.', if: { arg: 'kind', eq: 'multiline' } },
+  },
+  render: function Story({ kind, label, hint, required, invalid, icon, suffix, rows, ...rest }) {
+    const [value, setValue] = useText('');
+    const control = { value, onChange: setValue, 'aria-invalid': invalid || undefined, ...rest };
+    return (
+      <Field label={label} hint={hint} required={required}>
+        {kind === 'password' ? (
+          <Password {...control} />
+        ) : kind === 'multiline' ? (
+          <TextArea {...control} rows={rows} />
+        ) : (
+          <Input {...control} icon={FIELD_ICONS[icon]} suffix={suffix || undefined} />
+        )}
+      </Field>
+    );
+  },
+};
+
 export const TekstualnoPolje = {
   name: 'Polje za tekst',
   render: function Story() {

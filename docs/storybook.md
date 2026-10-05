@@ -24,12 +24,23 @@ Statički build (npr. za Vercel): `npm run build-storybook` → `storybook-stati
 
 | Grupa | Priče |
 |---|---|
-| Osnovno | Dugme (sve varijante, sa ikonicom, veličine, isključeno), Značka (stanja i oznaka), Avatar (po `--avatar`) |
-| Polja | Tekst (sa ikonicom, lozinka, napomena, isključeno), Polje za tekst, Izbor, Prekidač i kvačica, Čipovi (filteri), Kod (2FA) |
-| Kartica | Osnovna (sa podacima), Sa dugmetom u glavi, Kartica koja se otvara („Pronađi"), Sa ikonicom („Pozovite me"), Redovi u kartici |
-| Osoba i poseta | Glava negovateljice (svako stanje), Ocena, Stanje sa njom, Posete (svaki status), Izveštaj posete, Oznake |
-| Prozori | Drawer (`Modal`), Modal (`Dialog`), i svaki drawer porodice na primeru: ugovor, radni nalog, plan posete, informacije o negovateljici, sve posete, šta se desilo, pregled, sve verzije, završetak saradnje |
-| Ostalo | Narandžasti deo, Glava stranice, Prazna stranica, Strane (paginacija), Podaci, Toast |
+| Osnovno | Dugme (sve varijante, sa ikonicom, veličine, isključeno), Značka (stanja i oznaka), Avatar (po `--avatar`), i igralište za svako |
+| Polja | Tekst (sa ikonicom, lozinka, napomena, isključeno), Polje · igralište, Polje za tekst, Izbor, Prekidač i kvačica, Čipovi (filteri), Kod (2FA) |
+| Kartica | Osnovna (sa podacima), Kartica · igralište, Sa dugmetom u glavi, Kartica koja se otvara („Pronađi"), Sa ikonicom („Pozovite me"), Redovi u kartici |
+| Osoba i poseta | Glava negovateljice (svako stanje) i njeno igralište, Ocena i njeno igralište, Stanje sa njom, Posete (svaki status), Poseta · igralište, Izveštaj posete, Oznake |
+| Prozori | Drawer (`Modal`) i Modal (`Dialog`) sa kontrolama, i Drawer porodice: svaki drawer porodice na primeru, bira se u kontrolama |
+| Ostalo | Narandžasti deo i njegovo igralište, Glava stranice, Prazna stranica, Strane (paginacija), Podaci, Toast (tekst u kontrolama) |
+
+## Galerija i igralište
+
+Komponenta ima dve vrste priča:
+
+- **Galerija** (npr. „Dugme"): sve varijante jedna do druge, da se porede odjednom.
+- **Igralište** (npr. „Dugme · igralište"): jedna komponenta koja se podešava u panelu **Controls** ispod priče: tekst, varijanta, veličina, stanje, ikonica. Tu se isprobava ono što galerija ne pokazuje, npr. dugačko ime u glavi negovateljice ili isključeno dugme sa ikonicom.
+
+**Drawer porodice** je jedna priča za svih devet drawer-a: u kontrolama se bira koji (`kind`), za koju negovateljicu (`caregiverId`) ili za koju posetu (`visitId`, kod radnog naloga i plana posete). Ako u primeru za taj izbor nema ničega (npr. ugovor za Liisu, koja nikad nije dolazila), priča kaže koga ili šta da izabereš.
+
+Izbor iz kontrola ostaje u adresi stranice (`&args=...`), pa se tačno stanje može poslati kao link. Dugme **Reset** u panelu vraća početne vrednosti. Storybook nudi i „Update story" / „Create new story": to upisuje izmenu u fajl priče, pa ga ne koristi za QA.
 
 Podaci su isti primer kao u galeriji (`sampleCare` iz `src/screens/CardGallery.jsx`), pa su tu sva stanja koja aplikacija zna. Dugmad u pričama ne menjaju primer.
 
@@ -42,4 +53,4 @@ Podaci su isti primer kao u galeriji (`sampleCare` iz `src/screens/CardGallery.j
 
 ## Nova komponenta ili novo stanje
 
-Priče su u `src/stories/*.stories.jsx`, po grupama iz tabele. Nova komponenta ili novo stanje dobija priču u svojoj grupi: koristi pravu komponentu i pravi primer podataka, ne kopiju markupa. Provera da sve priče rade (bez grešaka na obe širine) je u dnevniku od 5. 10.
+Priče su u `src/stories/*.stories.jsx`, po grupama iz tabele. Nova komponenta ili novo stanje dobija priču u svojoj grupi: koristi pravu komponentu i pravi primer podataka, ne kopiju markupa. Komponenta koja ima varijante dobija i igralište (`args` i `argTypes`, opis kontrole na srpskom). Vrednosti izbora su latinicom bez kvačica (`none`, `badge`), a natpisi na srpskom idu u `control.labels`, jer Storybook u adresu upisuje samo takve vrednosti. Provera da sve priče rade (bez grešaka na obe širine) je u dnevniku od 5. 10.

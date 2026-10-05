@@ -62,6 +62,48 @@ export const NarandzastiDeo = {
   ),
 };
 
+const ATTENTION_ICONS = { none: null, Search, Send };
+
+export const NarandzastiIgraliste = {
+  name: 'Narandžasti deo · igralište',
+  args: {
+    title: 'Sledeći korak',
+    sub: '',
+    text: 'Plan nege je spreman. Pošaljite upit negovateljicama koje mu odgovaraju.',
+    button: 'Pronađi negovateljicu',
+    icon: 'Search',
+    cards: 1,
+  },
+  argTypes: {
+    title: { control: 'text' },
+    sub: { control: 'text', description: 'Rečenica ispod naslova, u tintu; prazno = bez nje.' },
+    text: { control: 'text', description: 'Tekst u beloj kartici.' },
+    button: { control: 'text', description: 'Dugme u kartici; prazno = bez njega.' },
+    icon: { control: { type: 'select', labels: { none: 'bez ikonice' } }, options: Object.keys(ATTENTION_ICONS) },
+    cards: { control: { type: 'range', min: 1, max: 3, step: 1 }, description: 'Koliko belih kartica drži (8 između njih).' },
+  },
+  render: ({ title, sub, text, button, icon, cards }) => {
+    const Icon = ATTENTION_ICONS[icon];
+    return (
+      <Attention title={title} sub={sub || undefined}>
+        {Array.from({ length: cards }, (_, i) => (
+          <Card key={i}>
+            <CardDescription>{text}</CardDescription>
+            {button && (
+              <CardFooter>
+                <Button>
+                  {Icon && <Icon size={14} strokeWidth={1.75} />}
+                  {button}
+                </Button>
+              </CardFooter>
+            )}
+          </Card>
+        ))}
+      </Attention>
+    );
+  },
+};
+
 // the head of a page: 24 from the top, 32 between its words and its button
 export const GlavaStranice = {
   name: 'Glava stranice',
@@ -166,13 +208,15 @@ export const Podaci = {
 // a wide screen, at the top and the width of the screen on a phone.
 export const Obavestenje = {
   name: 'Toast',
-  render: function Story() {
+  args: { text: 'Plaćeno. 54 € ide ka negovateljici.' },
+  argTypes: { text: { control: 'text', description: 'Jedan red o tome šta je urađeno; dugačak tekst se lomi do 520px.' } },
+  render: function Story({ text }) {
     const [flash, setFlash] = useState(null);
     return (
       <>
         <Toast flash={flash} onDone={() => setFlash(null)} />
         <div>
-          <Button variant="secondary" onClick={() => setFlash({ text: 'Plaćeno. 54 € ide ka negovateljici.', at: Date.now() })}>
+          <Button variant="secondary" onClick={() => setFlash({ text, at: Date.now() })}>
             Prikaži toast
           </Button>
         </div>

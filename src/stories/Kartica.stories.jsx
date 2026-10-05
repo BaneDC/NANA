@@ -48,6 +48,57 @@ export const Osnovna = {
   ),
 };
 
+// one card, set from the Controls panel
+export const KarticaIgraliste = {
+  name: 'Kartica · igralište',
+  args: {
+    title: 'Ugovor o nezi',
+    description: 'Kartica se tereti tek kad se poseta obavi i radni nalog prođe.',
+    head: 'badge',
+    headText: 'Verzija 1 · važi',
+    button: 'Dodaj karticu',
+    clickable: false,
+  },
+  argTypes: {
+    title: { control: 'text' },
+    description: { control: 'text', description: 'Prazno = bez opisa.' },
+    head: {
+      control: { type: 'inline-radio', labels: { none: 'ništa', badge: 'značka', button: 'dugme' } },
+      options: ['none', 'badge', 'button'],
+      description: 'Šta stoji desno od naslova.',
+    },
+    headText: { control: 'text', description: 'Tekst značke ili dugmeta u glavi.' },
+    button: { control: 'text', description: 'Dugme u dnu kartice; prazno = bez njega.' },
+    clickable: {
+      control: 'boolean',
+      description: 'Cela kartica otvara detalje: naslov je `CardLink`, a pod mišem se pojavi okvir (§7).',
+    },
+  },
+  render: ({ title, description, head, headText, button, clickable }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>{clickable ? <CardLink onClick={noop}>{title}</CardLink> : title}</CardTitle>
+        {head === 'badge' && (
+          <CardAction>
+            <Badge variant="success">{headText}</Badge>
+          </CardAction>
+        )}
+        {head === 'button' && (
+          <CardAction>
+            <Button variant="secondary">{headText}</Button>
+          </CardAction>
+        )}
+      </CardHeader>
+      {description && <CardDescription>{description}</CardDescription>}
+      {button && (
+        <CardFooter>
+          <Button>{button}</Button>
+        </CardFooter>
+      )}
+    </Card>
+  ),
+};
+
 // a head with a button over rows: the rows start 8 lower (24 from the button)
 export const SaDugmetomUGlavi = {
   name: 'Sa dugmetom u glavi',
