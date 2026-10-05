@@ -49,7 +49,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
 | Delovi drawer-a i modala | `PaneLabel`, `PaneHint`, `Callout`, `ReportRows` › `ReportRow`, `Concern`, `Total`, `Stats` › `Stat` (`src/components/pane.jsx`) | `.ag-label`, `.ag-hint`, `.fam-callout`, `.report-rows`, `.visit-concern`, `.bc-total`, `.fam-stats` |
 | Stranica osobe (avatar uz ime) | `PagePerson` u `PageHeader` (`src/components/page.jsx`) | `.fam-person` |
-| Bočni meni | `AppNav` (`src/components/AppNav.jsx`, Tailwind; liste se sklapaju preko `Collapsible`) | `.app-nav`, `.nav-item`, `.nav-sub`, `.nav-badge` |
+| Bočni meni | shadcn `Sidebar` (`@/components/ui/sidebar`), sklopljen u `src/components/AppNav.jsx`: `SidebarMenuButton` za red, `SidebarMenuAction` za strelicu „Planova nege", `SidebarMenuBadge` za broj, `SidebarMenuSub` za spisak koji se sklapa (`Collapsible`). Na uskom ekranu (≤900) je fioka sleva, a otvara je `SidebarTrigger`. | `.app-nav`, `.nav-item`, `.nav-sub`, `.nav-badge` |
 | Saglasnost (registracija) | `Checkbox` | `.reg-check`, `.reg-box` |
 
 ---
@@ -88,7 +88,7 @@ Dve skale: sa mišem i na dodir (`pointer: coarse`). Na dodir je sve osim sitnog
 | Polje, chat | `TextField`, composer | 12 / 16 (chat 14 / 20) | 16 / 24 | normal | primary |
 | Naslov reda u kartici | `ItemTitle` (`text-xs font-medium`) | 12 / 16 | 14 / 20 | medium | primary |
 | Tekst kartice, podnaslov stranice | `CardDescription`, `DialogDescription`, `PageDescription`, `ItemDescription` (`text-xs leading-body`) | 12 / 18 | 14 / 20 | normal | secondary |
-| Dugme | `Button` | 12 | 14 | medium | — |
+| Dugme | `Button` | 12 | 14 | normal (odlučeno 5. 10.) | — |
 | Sitan tekst: naslov grupe, oznaka, napomena, meta, eyebrow | `text-small`: naslov u `PageSection`, `FieldLabel`, `FieldDescription`, `DialogEyebrow`, `PaneLabel`, `PaneHint`, oznaka u `Fact`, `Group` | 12 / 16 | 12 / 16 | medium ili normal | secondary |
 | Značka | `Badge` (`text-badge`) | 11 | 11 | medium | po stanju |
 
@@ -505,7 +505,7 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
   return {
     concentric,
     caps: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && !e.closest('[class*="imm-"]') && getComputedStyle(e).textTransform === 'uppercase').map(name)),
-    overflow: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('[data-slot=app-nav]')).map(name)).slice(0, 10),
+    overflow: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('[data-slot=sidebar]')).map(name)).slice(0, 10),
     cards: uniq([...root.querySelectorAll('[data-slot=card]')].filter(vis).map((e) => { const s = getComputedStyle(e); return `${s.borderTopLeftRadius}/${s.paddingTop}`; })),
     titles: uniq([...root.querySelectorAll('[data-slot=card-title], [data-slot=page-section] > h2')].filter(vis).map((e) => `${e.dataset.slot || 'section-title'} ${getComputedStyle(e).fontSize}`)),
   };

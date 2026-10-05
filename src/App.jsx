@@ -7,12 +7,13 @@ import FindCaregiver from './screens/FindCaregiver';
 import Profile from './screens/Profile';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import Logo from './components/Logo';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
-import { FileText, Menu, Plus, X } from 'lucide-react';
+import { FileText, Plus, X } from 'lucide-react';
 import PaywallModal from './components/PaywallModal';
 import AskAssistant from './components/AskAssistant';
 import SharePlanModal from './components/SharePlanModal';
@@ -105,7 +106,6 @@ export default function App() {
   // before it, for "Poništi".
   const [planChange, setPlanChange] = useState(null);
   // the nav, on a screen too narrow to keep it open beside the page
-  const [navOpen, setNavOpen] = useState(false);
   const showCaregiver = (id) => {
     setOpenCaregiver(id);
     setDrawer(null);
@@ -413,40 +413,21 @@ export default function App() {
   }
 
   return (
-    <div className={shell}>
+    <SidebarProvider className={shell}>
       {/* On a phone there is no room for a nav beside the page, so it becomes a
           drawer and this bar is what opens it. Above 900px the bar is not
           drawn at all and the nav is a column again. */}
       {phase === 'app' && !fullscreen && (
         <div className="hidden shrink-0 items-center gap-2 px-3 py-2 narrow:flex">
-          <button
-            type="button"
-            className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-(--nav-text) hover:bg-(--nav-hover) pointer-coarse:size-11"
-            onClick={() => setNavOpen(true)}
-            aria-label="Otvori meni"
-            aria-expanded={navOpen}
-          >
-            <Menu size={18} strokeWidth={1.75} />
-          </button>
+          <SidebarTrigger />
           <Logo width={96} />
           {/* the chat is the assistant, so there it has nothing to open */}
           {view !== 'chat' && <AskAssistant className="ml-auto" onClick={askAssistant} />}
         </div>
       )}
 
-      {phase === 'app' && !fullscreen && navOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 z-30 hidden bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px] narrow:flex"
-          aria-label="Zatvori meni"
-          onClick={() => setNavOpen(false)}
-        />
-      )}
-
       {phase === 'app' && !fullscreen && (
         <AppNav
-          open={navOpen}
-          onClose={() => setNavOpen(false)}
           view={view}
           onView={setView}
           user={user}
@@ -805,6 +786,6 @@ export default function App() {
             onClose={() => setPaywall(null)}
           />
       )}
-    </div>
+    </SidebarProvider>
   );
 }
