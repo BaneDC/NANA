@@ -36,6 +36,7 @@ import { reconcile } from './data/dependencies';
 import { askCaregiver, canAsk, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { requestMessage, startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
+import { useKept } from './hooks/use-kept';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { planEntries, seedThreads } from './data/threads';
@@ -92,6 +93,7 @@ export default function App() {
   // The family's decisions open as a drawer from whichever page shows the thing
   // they concern, and a short line afterwards says what happened.
   const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
+  const shownDrawer = useKept(drawer);
   const [flash, setFlash] = useState(null);
   const [openCaregiver, setOpenCaregiver] = useState(null);
   // The last change to the plan, kept so the plan can say what changed and take
@@ -140,6 +142,7 @@ export default function App() {
   // coordinator would do is done by hand from the hidden simulation panel,
   // which Ctrl+H opens and closes.
   const [sim, setSim] = useState(false);
+  const shownSim = useKept(sim && phase === 'app');
   useEffect(() => {
     const onKey = (e) => {
       if (!e.ctrlKey || e.altKey || e.metaKey || e.key.toLowerCase() !== 'h') return;
@@ -228,6 +231,7 @@ export default function App() {
   const [openPane, setOpenPane] = useState(null);
   // the plan sent to someone outside the app, and who it has gone to so far
   const [sharing, setSharing] = useState(false);
+  const shownSharing = useKept(sharing);
   const [sharedWith, setSharedWith] = useState([]);
   const chatCtx = useRef({});
   useEffect(() => {
@@ -757,11 +761,13 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {drawer && (
+      {/* The panes stay mounted while they close, so shadcn plays its own
+          closing; `useKept` holds what they show until it has. */}
+      {shownDrawer && (
           <FamilyDrawer
-            key={`${drawer.kind}-${drawer.caregiverId || drawer.visitId}`}
-            drawer={drawer}
+            key={`${shownDrawer.kind}-${shownDrawer.caregiverId || shownDrawer.visitId}`}
+            drawer={shownDrawer}
+            open={Boolean(drawer)}
             care={care}
             unlocked={unlocked}
             onCare={setCare}
@@ -774,25 +780,21 @@ export default function App() {
             }}
             onCaregiver={showCaregiver}
           />
-        )}
-      </AnimatePresence>
+      )}
 
-      <AnimatePresence>
-        {sim && phase === 'app' && (
+      {shownSim && (
           <SimPanel
-            key="sim"
+            open={sim && phase === 'app'}
             care={care}
             onCare={setCare}
             onFlash={say}
             onClose={() => setSim(false)}
           />
-        )}
-      </AnimatePresence>
+      )}
 
-      <AnimatePresence>
-        {sharing && plan && (
+      {shownSharing && plan && (
           <SharePlanModal
-            key="share-plan"
+            open={sharing}
             plan={plan}
             sentTo={sharedWith}
             onSend={(emails) => {
@@ -806,8 +808,7 @@ export default function App() {
             }}
             onClose={() => setSharing(false)}
           />
-        )}
-      </AnimatePresence>
+      )}
 
       {conversations.map((c) => (
         <ChatSource key={c.id} id={c.id} ctx={chatCtx} onTitle={titleConversation} />

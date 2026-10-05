@@ -81,7 +81,7 @@ function CodeInput({ value, onChange }) {
 // Turning it off takes a code from the phone too. Otherwise anyone who finds
 // the account signed in could take the second factor away with one click, and
 // the second factor is there for exactly that person.
-export function TwoFactorDisable({ secret, onDone, onClose }) {
+export function TwoFactorDisable({ open = true, secret, onDone, onClose }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState(null);
   const [checking, setChecking] = useState(false);
@@ -97,7 +97,7 @@ export function TwoFactorDisable({ secret, onDone, onClose }) {
   };
 
   return (
-    <Dialog eyebrow="Bezbednost" title="Isključite dvofaktorsku prijavu" onClose={onClose}>
+    <Dialog eyebrow="Bezbednost" title="Isključite dvofaktorsku prijavu" open={open} onClose={onClose}>
       <DialogDescription>
         Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za
         prijavu dovoljna lozinka, pa je nalog manje zaštićen.
@@ -125,7 +125,7 @@ export function TwoFactorDisable({ secret, onDone, onClose }) {
   );
 }
 
-export default function TwoFactorSetup({ email, onDone, onClose }) {
+export default function TwoFactorSetup({ open = true, email, onDone, onClose }) {
   const [step, setStep] = useState(0);
   const [manual, setManual] = useState(false);
   const [code, setCode] = useState('');
@@ -183,7 +183,7 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
   // click past the pane would lose them.
   if (step === 2) {
     return (
-      <Dialog eyebrow="Bezbednost" title="Rezervni kodovi" dismissible={false} onClose={onClose}>
+      <Dialog eyebrow="Bezbednost" title="Rezervni kodovi" dismissible={false} open={open} onClose={onClose}>
         <DialogDescription>
           Sačuvajte ove kodove na sigurnom mestu. Svaki se koristi jednom, za prijavu ako izgubite
           pristup aplikaciji sa kodovima. Prikazujemo ih samo sada.
@@ -214,7 +214,7 @@ export default function TwoFactorSetup({ email, onDone, onClose }) {
   }
 
   return (
-    <Dialog eyebrow="Bezbednost" title="Uključite dvofaktorsku prijavu" onClose={onClose}>
+    <Dialog eyebrow="Bezbednost" title="Uključite dvofaktorsku prijavu" open={open} onClose={onClose}>
       <Stepper at={step} />
 
       {step === 0 ? (

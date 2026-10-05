@@ -109,7 +109,7 @@ function changesBetween(was, now) {
   return rows;
 }
 
-function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
+function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
   const [declining, setDeclining] = useState(false);
   const a = arrangementOf(care, caregiverId);
   const pen = pendingVersion(a);
@@ -132,7 +132,7 @@ function Terms({ care, caregiverId, onCare, onClose, onFlash }) {
 
   return (
     <>
-    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title={`Ugovor o nezi, verzija ${pen.version}`} wide onClose={onClose}>
+    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title={`Ugovor o nezi, verzija ${pen.version}`} wide open={open} onClose={onClose}>
       <p className="ag-lead">
         {first} je {pen.sentOn.toLowerCase()} poslala {act ? 'nove uslove' : 'svoje uslove'}.{' '}
         {act
@@ -242,7 +242,7 @@ const QUERY_REASONS = [
   { id: 'other', label: 'Nešto drugo' },
 ];
 
-function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
+function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const [querying, setQuerying] = useState(false);
   const [reason, setReason] = useState('hours');
   const [text, setText] = useState('');
@@ -288,7 +288,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
 
   return (
     <>
-    <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title="Radni nalog" wide onClose={onClose}>
+    <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title="Radni nalog" wide open={open} onClose={onClose}>
       <p className="ag-lead">{lead}</p>
 
       <dl className="report-rows">
@@ -424,7 +424,7 @@ function WorkOrder({ care, visitId, onCare, onClose, onFlash }) {
 const OTHER = 'Drugo';
 const CALL_OFF_REASONS = ['Nije nam potrebna', 'Hitan slučaj u porodici', OTHER];
 
-function Plan({ care, visitId, onCare, onClose, onFlash }) {
+function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const [mode, setMode] = useState('idle'); // idle | query | call-off
   const [text, setText] = useState('');
   const [reason, setReason] = useState(CALL_OFF_REASONS[0]);
@@ -450,7 +450,7 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
 
   return (
     <>
-    <Modal eyebrow={`${v.caregiver.name} · ${v.date} · ${v.time}`} title="Plan posete" wide onClose={onClose}>
+    <Modal eyebrow={`${v.caregiver.name} · ${v.date} · ${v.time}`} title="Plan posete" wide open={open} onClose={onClose}>
       <p className="ag-lead">
         {first} planira da dođe na {v.hours} h. {money(held)} je rezervisano na vašoj kartici, nije
         naplaćeno - novac se uzima tek posle posete, kad pošalje radni nalog.
@@ -548,7 +548,7 @@ function Plan({ care, visitId, onCare, onClose, onFlash }) {
 
 // ── ending it ───────────────────────────────────────────────────────────────
 
-function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
+function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen }) {
   const a = arrangementOf(care, caregiverId);
   const first = firstName(a.caregiver.name);
   const blocked = unsettled(a);
@@ -561,7 +561,7 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
   };
 
   return (
-    <Dialog eyebrow={`${a.caregiver.name} · samo ova saradnja`} title="Završiti saradnju?" onClose={onClose}>
+    <Dialog eyebrow={`${a.caregiver.name} · samo ova saradnja`} title="Završiti saradnju?" open={open} onClose={onClose}>
       {blocked.length ? (
         <>
           <p className="ag-lead">
@@ -607,7 +607,7 @@ function End({ care, caregiverId, onCare, onClose, onFlash, onOpen }) {
 
 // ── someone they might ask ──────────────────────────────────────────────────
 
-function Profile({ care, caregiverId, unlocked, onContact, onCaregiver, onClose }) {
+function Profile({ open = true, care, caregiverId, unlocked, onContact, onCaregiver, onClose }) {
   const c = caregivers.find((x) => x.id === caregiverId);
   if (!c) return null;
   // where the family stands with her is said at the top, under who she is,
@@ -618,7 +618,7 @@ function Profile({ care, caregiverId, unlocked, onContact, onCaregiver, onClose 
   const ask = () => onContact(c);
 
   return (
-    <Modal title="Informacije o negovateljici" wide onClose={onClose}>
+    <Modal title="Informacije o negovateljici" wide open={open} onClose={onClose}>
       <CaregiverHead caregiver={c} standing={standing} />
 
       <p className="ag-label">O sebi</p>
@@ -681,12 +681,12 @@ function Profile({ care, caregiverId, unlocked, onContact, onCaregiver, onClose 
 
 // Every visit she has made, when her page shows only the latest ten. A visit's
 // own button opens its plan or work order in this drawer's place.
-function Visits({ care, caregiverId, onOpen, onClose }) {
+function Visits({ open = true, care, caregiverId, onOpen, onClose }) {
   const a = arrangementOf(care, caregiverId);
   if (!a) return null;
   const visits = herVisits(a);
   return (
-    <Modal eyebrow={`${a.caregiver.name} · ${pl(visits.length, 'poseta', 'posete', 'poseta')}`} title="Sve posete" wide onClose={onClose}>
+    <Modal eyebrow={`${a.caregiver.name} · ${pl(visits.length, 'poseta', 'posete', 'poseta')}`} title="Sve posete" wide open={open} onClose={onClose}>
       <ul className="fam-visits">
         {visits.map((v) => (
           <VisitRow key={v.id} visit={v} onDrawer={onOpen} />
@@ -698,7 +698,7 @@ function Visits({ care, caregiverId, onOpen, onClose }) {
 
 // Everything that has happened, newest first, by day, with a filter by kind:
 // one caregiver's from her page, everyone's from Moja nega.
-function ActivityDrawer({ care, caregiverId, onClose }) {
+function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
   const [kind, setKind] = useState('all');
   const all = (care.log || []).filter((e) => !caregiverId || e.caregiverId === caregiverId);
   const kinds = LOG_KINDS.filter((k) => all.some((e) => e.kind === k.id));
@@ -713,7 +713,7 @@ function ActivityDrawer({ care, caregiverId, onClose }) {
   }
   const who = caregiverId ? nameOf(care, caregiverId) : care.elder.name || 'Vaša nega';
   return (
-    <Modal eyebrow={who} title="Šta se desilo" wide onClose={onClose}>
+    <Modal eyebrow={who} title="Šta se desilo" wide open={open} onClose={onClose}>
       <div className="fam-filter" role="group" aria-label="Šta prikazati">
         {[{ id: 'all', label: 'Sve' }, ...kinds].map((k) => (
           <button
@@ -767,7 +767,7 @@ function together(a, today) {
   return { value, sub: a.endedOn ? `${a.since} – ${a.endedOn}` : `od ${a.since}` };
 }
 
-function Overview({ care, caregiverId, onClose }) {
+function Overview({ open = true, care, caregiverId, onClose }) {
   const a = arrangementOf(care, caregiverId);
   if (!a) return null;
   const c = caregivers.find((x) => x.id === caregiverId);
@@ -778,7 +778,7 @@ function Overview({ care, caregiverId, onClose }) {
   const coming = a.visits.filter((v) => v.status === 'planned').length;
   const time = together(a, todayOf(care));
   return (
-    <Modal eyebrow={`${a.caregiver.name} · ${a.caregiver.area}`} title="Pregled" wide onClose={onClose}>
+    <Modal eyebrow={`${a.caregiver.name} · ${a.caregiver.area}`} title="Pregled" wide open={open} onClose={onClose}>
       <div className="fam-stats">
         <div className="fam-stat">
           <p className="fam-stat-value">{done.length}</p>
@@ -862,12 +862,12 @@ const VERSION_STATE = {
   ended: { text: 'Završena', pill: 'is-muted' },
 };
 
-function Versions({ care, caregiverId, onClose }) {
+function Versions({ open = true, care, caregiverId, onClose }) {
   const a = arrangementOf(care, caregiverId);
   if (!a) return null;
   const list = [...a.versions].reverse();
   return (
-    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title="Sve verzije ugovora" wide onClose={onClose}>
+    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title="Sve verzije ugovora" wide open={open} onClose={onClose}>
       {list.map((v) => {
         const prev = a.versions[v.version - 2];
         const st = VERSION_STATE[v.status] || VERSION_STATE.replaced;

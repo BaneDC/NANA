@@ -9,6 +9,7 @@ import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import { Fact, Facts } from '@/components/data-list';
 import Dialog from '../components/Dialog';
+import { useKept } from '@/hooks/use-kept';
 import { Field, Input } from '../components/TextField';
 import AskAssistant from '../components/AskAssistant';
 
@@ -48,12 +49,12 @@ function Section({ title, rows, onEdit }) {
 // Editing it by hand, rather than telling the assistant to. The account's own
 // fields are the account's; everything else is an answer the plan is built
 // from, so saving one goes through the same change the plan shows.
-function FieldEditor({ title, fields, onSave, onClose }) {
+function FieldEditor({ open = true, title, fields, onSave, onClose }) {
   const [values, setValues] = useState(() => Object.fromEntries(fields.map((f) => [f.id, f.value])));
   const complete = fields.every((f) => f.optional || String(values[f.id] || '').trim());
 
   return (
-    <Dialog eyebrow="Profil" title={title} onClose={onClose}>
+    <Dialog eyebrow="Profil" title={title} open={open} onClose={onClose}>
       <div className="flex flex-col gap-3">
         {fields.map((f) => (
           <Field key={f.id} label={f.label}>
@@ -85,6 +86,8 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
   const goal = fieldsOf('family-goal', answers);
   // 'account', or the id of the question being edited
   const [editing, setEditing] = useState(null);
+  // kept while the dialog closes, so it closes on what it showed
+  const shown = useKept(editing);
 
   const questionFields = (id) => {
     const q = questionById[id];
@@ -134,8 +137,9 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
         </Empty>
       )}
 
-      {editing === 'account' && (
+      {shown === 'account' && (
         <FieldEditor
+          open={editing === 'account'}
           title="Vaš nalog"
           fields={[
             { id: 'name', label: 'Ime i prezime', value: user.name || '' },
@@ -150,11 +154,13 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
         />
       )}
 
-      {editing && editing !== 'account' && (
+      {shown && shown !== 'account' && (
         <FieldEditor
-          title={srTitle(questionById[editing])}
-          fields={questionFields(editing)}
-          onSave={saveQuestion(editing)}
+          key={shown}
+          open={editing === shown}
+          title={srTitle(questionById[shown])}
+          fields={questionFields(shown)}
+          onSave={saveQuestion(shown)}
           onClose={() => setEditing(null)}
         />
       )}

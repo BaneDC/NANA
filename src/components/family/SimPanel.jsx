@@ -32,7 +32,7 @@ import {
 // send terms, plan a visit, send a work order, settle a query, and let time
 // pass. Hidden: Ctrl+H opens it, and nothing in it runs on its own.
 
-export default function SimPanel({ care, onCare, onFlash, onClose }) {
+export default function SimPanel({ open = true, care, onCare, onFlash, onClose }) {
   const [reason, setReason] = useState(DECLINE_REASONS[0]);
   const run = (fn, said) => {
     onCare(fn);
@@ -43,7 +43,7 @@ export default function SimPanel({ care, onCare, onFlash, onClose }) {
   const live = care.arrangements.filter((a) => !a.endedOn || canSendTerms(care, a.caregiver.id) || pendingVersion(a));
 
   return (
-    <Modal eyebrow="Samo za demo · Ctrl+H" title="Simulacija" wide onClose={onClose}>
+    <Modal eyebrow="Samo za demo · Ctrl+H" title="Simulacija" wide open={open} onClose={onClose}>
       <p className="ag-lead">
         Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.
       </p>

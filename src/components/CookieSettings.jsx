@@ -87,7 +87,7 @@ function Group({ group, on, onChange }) {
   );
 }
 
-export default function CookieSettings({ cookies, onSave, onClose }) {
+export default function CookieSettings({ open = true, cookies, onSave, onClose }) {
   const [draft, setDraft] = useState(() => ({
     analytics: Boolean(cookies?.analytics),
     recording: Boolean(cookies?.recording),
@@ -97,7 +97,7 @@ export default function CookieSettings({ cookies, onSave, onClose }) {
   const all = (value) => onSave({ analytics: value, recording: value, marketing: value });
 
   return (
-    <Dialog eyebrow="Privatnost" title="Podešavanja kolačića" wide onClose={onClose}>
+    <Dialog eyebrow="Privatnost" title="Podešavanja kolačića" wide open={open} onClose={onClose}>
       <p className="text-xs leading-body text-muted-foreground">
         Izbor važi i za nanaprime.com. Možete ga promeniti kad god želite, odavde.
       </p>

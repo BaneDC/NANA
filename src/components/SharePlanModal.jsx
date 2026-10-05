@@ -20,7 +20,7 @@ const parse = (text) =>
     .map((t) => t.trim())
     .filter(Boolean);
 
-export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
+export default function SharePlanModal({ open = true, plan, sentTo = [], onSend, onClose }) {
   const [text, setText] = useState('');
   const [note, setNote] = useState('');
   const entered = parse(text);
@@ -28,7 +28,7 @@ export default function SharePlanModal({ plan, sentTo = [], onSend, onClose }) {
   const ready = entered.length > 0 && wrong.length === 0;
 
   return (
-    <Dialog eyebrow={`Plan nege · ${plan.name}`} title="Pošaljite plan nekome" wide onClose={onClose}>
+    <Dialog eyebrow={`Plan nege · ${plan.name}`} title="Pošaljite plan nekome" wide open={open} onClose={onClose}>
       <p className="ag-lead">
         Onaj ko ga dobije vidi plan nege onakav kakav je sada: šta preporučujemo, zašto, i ko od
         negovateljica odgovara. Ne vidi vaš nalog, plaćanje ni poruke sa negovateljicama.

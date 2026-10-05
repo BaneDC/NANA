@@ -9,6 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Page, PageHeader, PageHeaderText, PageTitle, PageDescription, PageSection } from '@/components/page';
 import { CheckList, DataList, DataRow } from '@/components/data-list';
 import Dialog from '../components/Dialog';
+import { useKept } from '@/hooks/use-kept';
 import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
@@ -43,7 +44,7 @@ function Toggle({ label, hint, on, onChange }) {
 // Changing the password. The current one has to check out, the new one is
 // typed twice, and neither leaves this dialog: `changePassword` compares and
 // stores hashes (see lib/account).
-function PasswordModal({ email, onDone, onClose }) {
+function PasswordModal({ open = true, email, onDone, onClose }) {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [again, setAgain] = useState('');
@@ -71,7 +72,7 @@ function PasswordModal({ email, onDone, onClose }) {
 
   if (done) {
     return (
-      <Dialog eyebrow="Nalog" title="Lozinka je promenjena" onClose={onDone}>
+      <Dialog eyebrow="Nalog" title="Lozinka je promenjena" open={open} onClose={onDone}>
         <DialogDescription>
           Od sledeće prijave koristite novu lozinku. Ako ste je negde sačuvali, promenite je i tamo.
         </DialogDescription>
@@ -83,7 +84,7 @@ function PasswordModal({ email, onDone, onClose }) {
   }
 
   return (
-    <Dialog eyebrow="Nalog" title="Promenite lozinku" onClose={onClose}>
+    <Dialog eyebrow="Nalog" title="Promenite lozinku" open={open} onClose={onClose}>
       <DialogDescription>Nova lozinka mora imati najmanje 8 karaktera.</DialogDescription>
       <div className="flex flex-col gap-3">
         <Field label="Trenutna lozinka">
@@ -129,6 +130,12 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   const [twoFactorOff, setTwoFactorOff] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  // the dialogs that hold a form stay mounted while they close, then start
+  // over the next time (useKept)
+  const keptCookies = useKept(cookiesOpen);
+  const keptPassword = useKept(passwordOpen);
+  const keptTwoFactor = useKept(twoFactorOpen);
+  const keptTwoFactorOff = useKept(twoFactorOff);
 
   const cookies = user?.cookies || COOKIE_DEFAULT;
   const twoFactor = Boolean(user?.twoFactor);
@@ -376,8 +383,9 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         </Card>
       </PageSection>
 
-      {cookiesOpen && (
+      {keptCookies && (
         <CookieSettings
+          open={cookiesOpen}
           cookies={cookies}
           onSave={(next) => {
             onSaveUser({ cookies: next });
@@ -387,39 +395,39 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         />
       )}
 
-      {cancelling && (
-        <Dialog eyebrow="Pretplata" title="Otkazati pretplatu?" onClose={() => setCancelling(false)}>
-          <DialogDescription>
-            Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju
-            plaćenog perioda. Možete da se pretplatite ponovo kad god želite.
-          </DialogDescription>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setCancelling(false)}>
-              Zadrži pretplatu
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                setCancelling(false);
-                onSubscribe?.(false);
-              }}
-            >
-              Otkaži pretplatu
-            </Button>
-          </DialogFooter>
-        </Dialog>
-      )}
+      <Dialog eyebrow="Pretplata" title="Otkazati pretplatu?" open={cancelling} onClose={() => setCancelling(false)}>
+        <DialogDescription>
+          Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju
+          plaćenog perioda. Možete da se pretplatite ponovo kad god želite.
+        </DialogDescription>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setCancelling(false)}>
+            Zadrži pretplatu
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              setCancelling(false);
+              onSubscribe?.(false);
+            }}
+          >
+            Otkaži pretplatu
+          </Button>
+        </DialogFooter>
+      </Dialog>
 
-      {passwordOpen && (
+      {keptPassword && (
         <PasswordModal
+          open={passwordOpen}
           email={user?.email}
           onDone={() => setPasswordOpen(false)}
           onClose={() => setPasswordOpen(false)}
         />
       )}
 
-      {twoFactorOpen && (
+      {keptTwoFactor && (
         <TwoFactorSetup
+          open={twoFactorOpen}
           email={user?.email}
           onDone={(codes, secret) => {
             // Of the codes, how many are left is the only thing worth keeping:
@@ -433,8 +441,9 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         />
       )}
 
-      {twoFactorOff && (
+      {keptTwoFactorOff && (
         <TwoFactorDisable
+          open={twoFactorOff}
           secret={user?.twoFactorSecret}
           onDone={() => {
             onSaveUser({ twoFactor: false, twoFactorSecret: null, backupCodesLeft: 0 });
@@ -444,31 +453,29 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         />
       )}
 
-      {cardOpen && (
-        <Dialog eyebrow="Plaćanje" title="Dodajte karticu" onClose={() => setCardOpen(false)}>
-          <DialogDescription>
-            Kartice čuva Stripe, ne mi - broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
-            Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.
-          </DialogDescription>
-          <CheckList>
-            <li>
-              <Check size={12} strokeWidth={2.5} /> Naplata 24 sata posle svakog izveštaja o poseti
-            </li>
-            <li>
-              <Check size={12} strokeWidth={2.5} /> Ništa se ne uzima pre nego što se poseta obavi
-            </li>
-            <li>
-              <Check size={12} strokeWidth={2.5} /> U tom roku možete da zaustavite svaku naplatu
-            </li>
-          </CheckList>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setCardOpen(false)}>
-              Otkaži
-            </Button>
-            <Button onClick={connect}>Nastavi na Stripe</Button>
-          </DialogFooter>
-        </Dialog>
-      )}
+      <Dialog eyebrow="Plaćanje" title="Dodajte karticu" open={cardOpen} onClose={() => setCardOpen(false)}>
+        <DialogDescription>
+          Kartice čuva Stripe, ne mi - broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
+          Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.
+        </DialogDescription>
+        <CheckList>
+          <li>
+            <Check size={12} strokeWidth={2.5} /> Naplata 24 sata posle svakog izveštaja o poseti
+          </li>
+          <li>
+            <Check size={12} strokeWidth={2.5} /> Ništa se ne uzima pre nego što se poseta obavi
+          </li>
+          <li>
+            <Check size={12} strokeWidth={2.5} /> U tom roku možete da zaustavite svaku naplatu
+          </li>
+        </CheckList>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => setCardOpen(false)}>
+            Otkaži
+          </Button>
+          <Button onClick={connect}>Nastavi na Stripe</Button>
+        </DialogFooter>
+      </Dialog>
     </Page>
   );
 }
