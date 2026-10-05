@@ -1690,6 +1690,26 @@ textarea {
   margin-left: auto;
 }
 
+/* On a phone a long title kept its line by squeezing beside a long pill or a
+   button and broke in two ("Novi uslovi čekaju / na vas"). The title takes
+   the line it needs; what is beside it moves under it, on the left, when they
+   do not fit together - and stays on the right when they do. */
+@media (max-width: 640px) {
+  .panel-card-head {
+    flex-wrap: wrap;
+    row-gap: var(--spacing-2);
+  }
+
+  .panel-card-head > :first-child {
+    flex: 1 0 auto;
+    max-width: 100%;
+  }
+
+  .panel-card-head > :is(.status-pill, .btn) {
+    margin-left: 0;
+  }
+}
+
 /* a head with a button ("Svi upiti", "Sve posete") over rows: 8 more, so the
    button does not sit on the first row */
 .panel-card-head:has(> .btn) + :is(.fam-rows, .fam-visits) {
@@ -3950,7 +3970,8 @@ textarea {
   min-width: 20px;
   height: 20px;
   padding: 0 8px;
-  border-radius: 999px;
+  /* a badge, never a full round (docs/patterns.md §1) */
+  border-radius: var(--radius-sm);
   background: var(--surface-elevated-4);
   font-size: 11px;
   line-height: 16px;
@@ -5392,6 +5413,11 @@ button.svc:hover {
 }
 
 /* where the family stands with her, under her rate at the top of her profile */
+/* what she wrote with a version, 8 under its lines */
+.fam-version-note {
+  margin-top: var(--spacing-2);
+}
+
 .fam-asked {
   align-self: flex-start;
   margin-left: 0;

@@ -762,7 +762,8 @@ function together(a, today) {
   const to = a.endedOn ? dayOf(a.endedOn, today) : dayOf('danas', today);
   const days = Math.max(0, Math.round((to - from) / 86400000));
   const months = Math.floor(days / 30);
-  const value = months < 1 ? 'Manje od mesec dana' : pl(months, 'mesec', 'meseca', 'meseci');
+  // a short number, as the visits beside it: in days for the first month
+  const value = days < 1 ? 'Od danas' : months < 1 ? pl(days, 'dan', 'dana', 'dana') : pl(months, 'mesec', 'meseca', 'meseci');
   return { value, sub: a.endedOn ? `${a.since} – ${a.endedOn}` : `od ${a.since}` };
 }
 
@@ -853,12 +854,12 @@ function Overview({ care, caregiverId, onClose }) {
 
 // Every version of her terms, newest first, and what each changed.
 const VERSION_STATE = {
-  sent: { text: 'čeka vaš odgovor', pill: 'is-pending' },
-  active: { text: 'važi', pill: 'is-accepted' },
-  replaced: { text: 'zamenjena', pill: 'is-muted' },
-  declined: { text: 'odbijena', pill: 'is-declined' },
-  withdrawn: { text: 'povučena', pill: 'is-muted' },
-  ended: { text: 'završena', pill: 'is-muted' },
+  sent: { text: 'Čeka vaš odgovor', pill: 'is-pending' },
+  active: { text: 'Važi', pill: 'is-accepted' },
+  replaced: { text: 'Zamenjena', pill: 'is-muted' },
+  declined: { text: 'Odbijena', pill: 'is-declined' },
+  withdrawn: { text: 'Povučena', pill: 'is-muted' },
+  ended: { text: 'Završena', pill: 'is-muted' },
 };
 
 function Versions({ care, caregiverId, onClose }) {
@@ -884,7 +885,12 @@ function Versions({ care, caregiverId, onClose }) {
                 <Line key={r.label} label={r.label} value={r.value} />
               ))}
             </div>
-            {v.note && prev && <p className="doc-p">{v.note}</p>}
+            {/* what she wrote with it, under its name (docs/patterns.md §10) */}
+            {v.note && prev && (
+              <div className="tag-rows fam-version-note">
+                <Group label={`${firstName(a.caregiver.name)} je napisala`} text={v.note} />
+              </div>
+            )}
           </div>
         );
       })}

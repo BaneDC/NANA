@@ -132,6 +132,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 ```
 
 - Ikonice u naslovu kartice: vidi §11.
+- **Glava kartice na telefonu:** naslov zauzima red koji mu treba i ne lomi se pored duge značke ili dugmeta. Kad ne staju zajedno, značka ili dugme idu ispod naslova, levo, 8 niže; kad staju, ostaju desno.
 - Footer (`.panel-card-actions`) je uvek poslednji, dole levo, a dugmad su prirodne širine. Na telefonu dugmad dele širinu kartice (CSS to radi sam).
 - `.panel-card-actions.is-end` (desno) je samo za dijaloge i drawer-e.
 
@@ -347,6 +348,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - **Grupa oznaka uvek kaže šta je:** ime grupe (`label`, 12px sivo), a ispod njega oznake, 4 razmaka, kao jedna grupa (`.tag-row`). Sledeća grupa je 12 niže (`.tag-rows`). Primeri: „Poklapa se" i „Klasifikacije" na kartici negovateljice, „Usluge" u redu negovateljice i u ugovoru, „Urađeno" u poslednjoj poseti. U drawer-u ime grupe je `.ag-label` sekcije, pa se `label` ne zadaje.
 - Grupa oznaka u redu stoji 12px ispod teksta reda.
 - **Ono što je neko napisao** (beleška negovateljice, njena poruka uz uslove, „O sebi", vaša poruka u upitu, ono što ste prijavili) je **običan tekst ispod imena dela**: `Group` sa `text` (`src/components/Tags.jsx`, `.tag-row-text`: 12 / 18, boja vrednosti), a u drawer-u `.ag-label` pa `.doc-p`. **Nikad uvučen citat u kurzivu** sa linijom levo (stari `.fam-quote` je uklonjen).
+- Tekst značke počinje velikim slovom („Važi", „Čeka vaš odgovor"), kao i sve značke.
 - **Stanje** se kaže samo značkom `.status-pill` sa jednim od modifikatora: `is-accepted` (zeleno, gotovo), `is-pending` (čeka), `is-declined` (ne), `is-muted` (neutralno), `is-attention` (narandžasto: poklapanje, izmenjeno).
 - **Poklapanje** se svuda piše „Poklapanje · 97%", kao značka `is-attention`.
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.
