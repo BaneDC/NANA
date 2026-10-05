@@ -1,36 +1,16 @@
-import {
-  CircleCheckIcon,
-  InfoIcon,
-  Loader2Icon,
-  OctagonXIcon,
-  TriangleAlertIcon,
-} from "lucide-react"
 import { Toaster as Sonner } from "sonner";
 
+// shadcn's Sonner, without its own look: our toasts draw themselves
+// (src/components/family/Toast.jsx), so the toaster only places them, above
+// everything (60).
 const Toaster = ({
   ...props
 }) => {
-
-
   return (
     <Sonner
       theme="light"
-      className="toaster group"
-      icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
-      }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)"
-        }
-      }
+      className="toaster group z-60"
+      toastOptions={{ unstyled: true, classNames: { toast: "w-full" } }}
       {...props} />
   );
 }

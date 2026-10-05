@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Mail, Send } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { PaneHint } from '@/components/pane';
 import Dialog from './Dialog';
-import Button from './Button';
 import { Field, TextArea } from './TextField';
 import { pl } from '../data/familyCare';
 
@@ -29,27 +32,27 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
 
   return (
     <Dialog eyebrow={`Plan nege · ${plan.name}`} title="Pošaljite plan nekome" wide open={open} onClose={onClose}>
-      <p className="ag-lead">
+      <DialogDescription>
         Onaj ko ga dobije vidi plan nege onakav kakav je sada: šta preporučujemo, zašto, i ko od
         negovateljica odgovara. Ne vidi vaš nalog, plaćanje ni poruke sa negovateljicama.
-      </p>
+      </DialogDescription>
 
       <Field label="Email adrese">
         <TextArea rows={3} value={text} placeholder="ana@mail.com, milan@mail.com" onChange={setText} />
       </Field>
 
       {entered.length > 0 && (
-        <div className="share-list">
+        <div className="flex flex-wrap gap-2">
           {entered.map((e) => (
-            <span key={e} className={`status-pill ${EMAIL.test(e) ? 'is-accepted' : 'is-declined'}`}>
+            <Badge key={e} variant={EMAIL.test(e) ? 'success' : 'destructive'}>
               <Mail size={12} strokeWidth={2} />
               {e}
-            </span>
+            </Badge>
           ))}
         </div>
       )}
       {wrong.length > 0 && (
-        <p className="ag-hint">Ovo ne liči na email adresu: {wrong.join(', ')}.</p>
+        <PaneHint>Ovo ne liči na email adresu: {wrong.join(', ')}.</PaneHint>
       )}
 
       <Field label="Poruka uz plan (nije obavezno)">
@@ -57,18 +60,18 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
       </Field>
 
       {sentTo.length > 0 && (
-        <p className="fam-sub is-flush">Već poslato: {sentTo.join(', ')}.</p>
+        <p className="text-xs leading-body text-muted-foreground">Već poslato: {sentTo.join(', ')}.</p>
       )}
 
-      <div className="panel-card-actions is-end">
+      <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
           Otkaži
         </Button>
-        <Button variant="primary" disabled={!ready} onClick={() => onSend(entered, note.trim())}>
+        <Button disabled={!ready} onClick={() => onSend(entered, note.trim())}>
           <Send size={14} strokeWidth={1.75} />
           {entered.length > 1 ? `Pošalji na ${pl(entered.length, 'adresu', 'adrese', 'adresa')}` : 'Pošalji'}
         </Button>
-      </div>
+      </DialogFooter>
     </Dialog>
   );
 }

@@ -1,6 +1,9 @@
 import { Fragment, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { SheetDescription } from '@/components/ui/sheet';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { PaneHint, PaneLabel } from '@/components/pane';
 import Modal from '../Modal';
-import Button from '../Button';
 import {
   activeVersion,
   firstName,
@@ -44,15 +47,15 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
 
   return (
     <Modal eyebrow="Samo za demo · Ctrl+H" title="Simulacija" wide open={open} onClose={onClose}>
-      <p className="ag-lead">
+      <SheetDescription>
         Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.
-      </p>
+      </SheetDescription>
 
-      <p className="ag-label">Vreme</p>
-      <p className="doc-p">
+      <PaneLabel>Vreme</PaneLabel>
+      <SheetDescription>
         Sada je {dateText(todayOf(care))}, {hourText(now % 24)}.
-      </p>
-      <div className="wo-choice">
+      </SheetDescription>
+      <div className="flex flex-wrap gap-2">
         <Button variant="secondary" onClick={() => run(passTime(1), 'Prošao je sat.')}>
           Prođe sat
         </Button>
@@ -63,25 +66,19 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
 
       {pending.length > 0 && (
         <>
-          <p className="ag-label">Upiti koji čekaju</p>
-          <p className="ag-hint">Razlog ako odbije:</p>
-          <div className="wo-choice">
+          <PaneLabel>Upiti koji čekaju</PaneLabel>
+          <PaneHint>Razlog ako odbije:</PaneHint>
+          <ToggleGroup type="single" size="sm" value={reason} onValueChange={(v) => v && setReason(v)} aria-label="Razlog ako odbije">
             {DECLINE_REASONS.map((r) => (
-              <button
-                key={r}
-                type="button"
-                className={`svc is-sm${reason === r ? ' is-on' : ''}`}
-                aria-pressed={reason === r}
-                onClick={() => setReason(r)}
-              >
+              <ToggleGroupItem key={r} value={r}>
                 {r}
-              </button>
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
           {pending.map((r) => {
             const first = firstName(nameOf(care, r.caregiverId));
             return (
-              <div key={r.id || r.caregiverId} className="wo-choice">
+              <div key={r.id || r.caregiverId} className="flex flex-wrap gap-2">
                 <Button variant="secondary" onClick={() => run(answerRequest(r.caregiverId, true), `${first} je prihvatila upit.`)}>
                   {first}: prihvati
                 </Button>
@@ -105,8 +102,8 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
         const disputed = a.visits.filter((v) => v.status === 'disputed');
         return (
           <Fragment key={id}>
-            <p className="ag-label">{a.caregiver.name}</p>
-            <div className="wo-choice">
+            <PaneLabel>{a.caregiver.name}</PaneLabel>
+            <div className="flex flex-wrap gap-2">
               {canSendTerms(care, id) && (
                 <Button variant="secondary" onClick={() => run(sendTerms(id), `${first} je poslala ${act ? 'nove uslove' : 'ugovor o nezi'}.`)}>
                   {act ? 'Pošalji nove uslove' : a.versions.length ? 'Pošalji nove uslove' : 'Pošalji ugovor'}
@@ -133,12 +130,12 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
                 </Button>
               )}
             </div>
-            {act && noPlan && <p className="ag-hint">Plan posete ne može: {noPlan.toLowerCase()}</p>}
+            {act && noPlan && <PaneHint>Plan posete ne može: {noPlan.toLowerCase()}</PaneHint>}
 
             {awaiting.map((v) => (
               <Fragment key={v.id}>
-                <p className="ag-hint">Poseta {v.date.toLowerCase()} {v.time} je prošla, radni nalog:</p>
-                <div className="wo-choice">
+                <PaneHint>Poseta {v.date.toLowerCase()} {v.time} je prošla, radni nalog:</PaneHint>
+                <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" onClick={() => run(sendWorkOrder(v.id), `${first} je poslala radni nalog.`)}>
                     Kako je planirano
                   </Button>
@@ -157,8 +154,8 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
 
             {planned.map((v) => (
               <Fragment key={v.id}>
-                <p className="ag-hint">Plan posete {v.date.toLowerCase()} {v.time}:</p>
-                <div className="wo-choice">
+                <PaneHint>Plan posete {v.date.toLowerCase()} {v.time}:</PaneHint>
+                <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" onClick={() => run(visitNotHappened(v.id, 'Bila sam bolesna'), `${first} je otkazala posetu.`)}>
                     Negovateljica otkazuje
                   </Button>
@@ -168,8 +165,8 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
 
             {disputed.map((v) => (
               <Fragment key={v.id}>
-                <p className="ag-hint">Koordinatorka, prijava za {v.date.toLowerCase()}:</p>
-                <div className="wo-choice">
+                <PaneHint>Koordinatorka, prijava za {v.date.toLowerCase()}:</PaneHint>
+                <div className="flex flex-wrap gap-2">
                   {RESOLUTIONS[v.queriedFrom === 'planned' ? 'planned' : 'charging'].map((r) => (
                     <Button key={r.id} variant="secondary" onClick={() => run(resolveQuery(v.id, r.id), 'Prijava je rešena.')}>
                       {r.label}
@@ -183,7 +180,7 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
       })}
 
       {!pending.length && !live.length && (
-        <p className="ag-hint">Još nema ničega za simulaciju. Pošaljite upit nekoj negovateljici.</p>
+        <PaneHint>Još nema ničega za simulaciju. Pošaljite upit nekoj negovateljici.</PaneHint>
       )}
     </Modal>
   );
