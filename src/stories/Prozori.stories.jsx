@@ -77,8 +77,9 @@ export const ModalOsnovni = {
       <Opened label="Otvori modal">
         {(open, close) => (
           <Dialog open={open} onClose={close} eyebrow={eyebrow || undefined} title={title}>
-            <Field label="Šta nije u redu">
-              <TextArea value={text} onChange={setText} rows={3} placeholder="Opišite ukratko." />
+            {/* one field: no label, the title says what goes in (§10) */}
+            <Field>
+              <TextArea value={text} onChange={setText} rows={3} placeholder="Opišite ukratko." aria-label={title} />
             </Field>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={close}>

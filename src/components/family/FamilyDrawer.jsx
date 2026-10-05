@@ -378,12 +378,15 @@ function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        <Field label="Vašim rečima">
+        {/* the one field in it: no label, the title and the placeholder say
+            what goes in (docs/patterns.md §10) */}
+        <Field>
           <TextArea
             rows={3}
             value={text}
             autoFocus
             placeholder="Šta ste primetili, i šta ste očekivali umesto toga."
+            aria-label="Šta nije u redu, vašim rečima"
             onChange={setText}
           />
         </Field>
@@ -464,8 +467,15 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
 
     {mode === 'query' && (
       <Dialog eyebrow={`Plan posete · ${v.date}`} title="Šta nije u redu sa planom?" onClose={() => setMode('idle')}>
-        <Field label="Vašim rečima">
-          <TextArea rows={3} value={text} autoFocus placeholder="Dan, sati, šta će raditi…" onChange={setText} />
+        <Field>
+          <TextArea
+            rows={3}
+            value={text}
+            autoFocus
+            placeholder="Dan, sati, šta će raditi…"
+            aria-label="Šta nije u redu sa planom"
+            onChange={setText}
+          />
         </Field>
         <PaneHint>
           Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok se ne
