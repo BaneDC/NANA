@@ -1,11 +1,26 @@
 import { CreditCard, History, IdCard, Phone } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ItemGroup } from '@/components/ui/item';
-import Button from '../components/Button';
+import { DataList } from '@/components/data-list';
+import {
+  Page,
+  PageActions,
+  PageDescription,
+  PageHeader,
+  PageHeaderText,
+  PagePerson,
+  PageTitle,
+} from '@/components/page';
+import { cn } from '@/lib/utils';
+import { statusVariant } from '../components/Standing';
 import Attention from '../components/Attention';
 import BackButton from '../components/BackButton';
 import VisitRow from '../components/family/VisitRow';
 import { Line, ServiceChips } from '../components/family/FamilyDrawer';
-import { Group } from '../components/Tags';
+import { Group, Groups } from '../components/Tags';
 import {
   activeVersion,
   arrangementOf,
@@ -160,37 +175,41 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
   const termsBadge = termsState && { text: `Verzija ${terms.version} · ${termsState.text}`, pill: termsState.pill };
 
   return (
-    <div className="view">
+    <Page>
       <BackButton label="Moja nega" onClick={onBack} />
 
-      <div className="view-head">
-        <div className="fam-person">
-          <span className={`cg-avatar is-lg${ended ? ' is-ended' : ''}`}>{cg.initials}</span>
-          <div className="view-head-text">
-            <h1 className="view-title">{cg.name}</h1>
-            <p className="view-sub">
+      <PageHeader>
+        <PagePerson>
+          <Avatar>
+            <AvatarFallback className={cn(ended && 'bg-muted text-muted-foreground')}>{cg.initials}</AvatarFallback>
+          </Avatar>
+          <PageHeaderText>
+            <PageTitle>{cg.name}</PageTitle>
+            <PageDescription>
               {cg.area} · dolazi kod: {care.elder.name} · {ended ? `završeno ${a.endedOn}` : a.since ? `od ${a.since}` : 'ugovor još nije prihvaćen'}
-            </p>
-          </div>
-        </div>
+            </PageDescription>
+          </PageHeaderText>
+        </PagePerson>
         {/* Everything about her, and everything that has happened with her,
             each a drawer: icons beside her number, as the plan's own actions
             are, so the head keeps its width for her name. */}
-        <div className="view-head-actions">
+        <PageActions>
           {!ended && (
-            <a className="btn secondary" href={`tel:${cg.phone.replace(/\s/g, '')}`}>
-              <Phone size={14} strokeWidth={1.75} />
-              {cg.phone}
-            </a>
+            <Button variant="secondary" asChild>
+              <a href={`tel:${cg.phone.replace(/\s/g, '')}`} className="no-underline">
+                <Phone size={14} strokeWidth={1.75} />
+                {cg.phone}
+              </a>
+            </Button>
           )}
-          <Button variant="secondary" iconOnly aria-label="Pregled" title="Pregled" onClick={() => onDrawer({ kind: 'overview', caregiverId: cg.id })}>
+          <Button variant="secondary" size="icon" aria-label="Pregled" title="Pregled" onClick={() => onDrawer({ kind: 'overview', caregiverId: cg.id })}>
             <IdCard size={14} strokeWidth={1.75} />
           </Button>
-          <Button variant="secondary" iconOnly aria-label="Šta se desilo" title="Šta se desilo" onClick={() => onDrawer({ kind: 'activity', caregiverId: cg.id })}>
+          <Button variant="secondary" size="icon" aria-label="Šta se desilo" title="Šta se desilo" onClick={() => onDrawer({ kind: 'activity', caregiverId: cg.id })}>
             <History size={14} strokeWidth={1.75} />
           </Button>
-        </div>
-      </div>
+        </PageActions>
+      </PageHeader>
 
       {/* something to do about her is the page's tinted place; a plain state
           of things is a card like the rest */}
@@ -198,62 +217,61 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
           place whether or not there is something to press (docs/patterns.md
           §5): its words in a white card, and its button under them if any. */}
       <Attention title={next.eyebrow}>
-        <div className="panel-card">
-          <p className="fam-next">{next.copy}</p>
+        <Card>
+          <p className="text-sm text-foreground">{next.copy}</p>
           {next.label && (
-            <div className="panel-card-actions">
-              <Button
-                variant="primary"
-                onClick={() => (next.contact ? onContact?.(a.caregiver) : onDrawer(next.drawer))}
-              >
-                {next.label}
-              </Button>
-            </div>
+            <CardFooter>
+              <Button onClick={() => (next.contact ? onContact?.(a.caregiver) : onDrawer(next.drawer))}>{next.label}</Button>
+            </CardFooter>
           )}
-        </div>
+        </Card>
       </Attention>
 
-      <section className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">{pen ? 'Novi uslovi čekaju na vas' : 'Ugovor o nezi'}</p>
-          {termsBadge && <span className={`status-pill ${termsBadge.pill}`}>{termsBadge.text}</span>}
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{pen ? 'Novi uslovi čekaju na vas' : 'Ugovor o nezi'}</CardTitle>
+          {termsBadge && (
+            <CardAction>
+              <Badge variant={statusVariant(termsBadge.pill)}>{termsBadge.text}</Badge>
+            </CardAction>
+          )}
+        </CardHeader>
         {terms ? (
           <>
             {pen && act && (
-              <p className="fam-sub">
+              <CardDescription>
                 Dok ne odgovorite, važi verzija {act.version}: {money(act.rate)}/h za{' '}
                 {services(act.services.length)}.
-              </p>
+              </CardDescription>
             )}
             <ServiceChips ids={terms.services} grouped />
-            <div className="bc-lines ag-terms">
+            <DataList className="mt-2">
               <Line label={terms.status === 'sent' ? 'Poslato' : terms.agreedOn ? 'Prihvaćeno' : 'Poslato'} value={terms.status === 'sent' || !terms.agreedOn ? terms.sentOn : terms.agreedOn} />
               <Line label="Cena po satu" value={`${money(terms.rate)} / h`} />
               <Line label="Dogovoreni sati" value={`${terms.hours} h nedeljno`} />
               <Line label="Raspored" value={terms.schedule} />
-            </div>
+            </DataList>
             {terms.terms && (
-              <div className="tag-rows">
+              <Groups>
                 <Group label="Dodatni uslovi" text={terms.terms} />
-              </div>
+              </Groups>
             )}
             {a.versions.length > 1 && (
-              <div className="panel-card-actions">
+              <CardFooter>
                 <Button variant="secondary" onClick={() => onDrawer({ kind: 'versions', caregiverId: cg.id })}>
                   Sve verzije ({a.versions.length})
                 </Button>
-              </div>
+              </CardFooter>
             )}
           </>
         ) : (
-          <p className="fam-sub">{first} još nije poslala uslove.</p>
+          <CardDescription>{first} još nije poslala uslove.</CardDescription>
         )}
-      </section>
+      </Card>
 
-      <section className="panel-card">
-        <p className="doc-section-title">Ukratko</p>
-        <div className="bc-lines ag-terms">
+      <Card>
+        <CardTitle>Ukratko</CardTitle>
+        <DataList className="mt-2">
           <Line label="Zajedno" value={ended ? `${a.since || '-'} – ${a.endedOn}` : a.since ? `od ${a.since}` : 'još niste počeli'} />
           <Line label="Posete do sada" value={paid.length ? `${paid.length} · ${hoursSoFar} h` : 'još nijedna'} />
           {(a.periods || []).map((p) => (
@@ -264,9 +282,9 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
             label="Način plaćanja"
             value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'}
           />
-        </div>
+        </DataList>
         {!care.payment.connected && (
-          <div className="panel-card-actions">
+          <CardFooter>
             <Button
               variant="secondary"
               onClick={() => {
@@ -277,46 +295,51 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
               <CreditCard size={14} strokeWidth={1.75} />
               Dodaj karticu
             </Button>
-          </div>
+          </CardFooter>
         )}
-      </section>
+      </Card>
 
-      <section className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">Posete</p>
-          <span className="status-pill is-muted">{a.visits.length}</span>
-        </div>
-        <p className="fam-sub">
+      <Card>
+        <CardHeader>
+          <CardTitle>Posete</CardTitle>
+          <CardAction>
+            <Badge variant="secondary">{a.visits.length}</Badge>
+          </CardAction>
+        </CardHeader>
+        <CardDescription>
           {pen && act
             ? 'Nove posete su pauzirane dok ne odgovorite na nove uslove. Zakazane ostaju.'
             : act || ended
               ? 'Svaka se unapred rezerviše, a naplaćuje kad potvrdi šta je uradila.'
               : 'Posete počinju kad se uslovi prihvate.'}
-        </p>
+        </CardDescription>
         {visits.length > 0 && (
-          <ItemGroup className="fam-visits">
+          <ItemGroup>
             {visits.slice(0, SHOWN).map((v) => (
               <VisitRow key={v.id} visit={v} onDrawer={onDrawer} />
             ))}
           </ItemGroup>
         )}
         {visits.length > SHOWN && (
-          <div className="panel-card-actions">
+          // right under the rows, 16 from the last one's text (docs/patterns.md §6)
+          <CardFooter className="mt-0">
             <Button variant="secondary" onClick={() => onDrawer({ kind: 'visits', caregiverId: cg.id })}>
               Pogledaj sve ({visits.length})
             </Button>
-          </div>
+          </CardFooter>
         )}
-      </section>
+      </Card>
 
+      {/* Ending is quiet: a sentence and a red ghost button under the cards,
+          not a card of its own. */}
       {act && !ended && (
-        <div className="fam-end">
-          <p>Kad završite saradnju, nove posete prestaju. Sve što je već izmireno ostaje u vašoj evidenciji.</p>
-          <Button variant="ghost" className="fam-end-btn" onClick={() => onDrawer({ kind: 'end', caregiverId: cg.id })}>
+        <div className="flex items-center gap-3 px-4 py-3 text-xs leading-body text-disabled phone:flex-col phone:items-start phone:gap-1">
+          <p className="flex-1">Kad završite saradnju, nove posete prestaju. Sve što je već izmireno ostaje u vašoj evidenciji.</p>
+          <Button variant="ghost" className="text-destructive phone:-ml-3" onClick={() => onDrawer({ kind: 'end', caregiverId: cg.id })}>
             Završi saradnju
           </Button>
         </div>
       )}
-    </div>
+    </Page>
   );
 }

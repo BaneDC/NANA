@@ -48,7 +48,7 @@ const keys = (onEnter) => (e) => e.key === 'Enter' && onEnter?.();
 // an icon in front (a search), or a unit behind (€ / h)
 export function Input({ value, onChange, onEnter, icon: Icon, suffix, className, ...rest }) {
   const id = useContext(FieldId);
-  const control = { id, value, onChange: (e) => onChange(e.target.value), onKeyDown: keys(onEnter), ...rest };
+  const control = { id, value, onChange: (e) => onChange(e.target.value), onKeyDown: keys(onEnter), 'data-autofocus': rest.autoFocus || undefined, ...rest };
   if (!Icon && !suffix) return <InputBox className={className} {...control} />;
   return (
     <InputGroup className={className}>
@@ -71,6 +71,7 @@ export function Password({ value, onChange, onEnter, autoComplete = 'current-pas
     <InputGroup className={className}>
       <InputGroupInput
         id={id}
+        data-autofocus={rest.autoFocus || undefined}
         type={shown ? 'text' : 'password'}
         value={value}
         autoComplete={autoComplete}
@@ -98,6 +99,7 @@ export function TextArea({ value, onChange, rows = 3, className, ...rest }) {
   return (
     <Textarea
       id={id}
+      data-autofocus={rest.autoFocus || undefined}
       value={value}
       rows={rows}
       style={{ '--rows': rows }}

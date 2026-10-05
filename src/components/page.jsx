@@ -45,6 +45,8 @@ export function PageHeader({ className, ...props }) {
         'mb-2 flex items-start gap-8',
         'phone:grid phone:grid-cols-[minmax(0,1fr)_auto] phone:gap-x-3 phone:gap-y-0',
         'phone:[&>:not([data-slot=page-header-text])]:col-start-2 phone:[&>:not([data-slot=page-header-text])]:row-start-2',
+        // a person's page: her name keeps the first line, the actions go under it
+        'phone:[&>[data-slot=page-person]]:col-span-full phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:col-span-full phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:row-start-3 phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:mt-3 phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:justify-start',
         className
       )}
       {...props}
@@ -58,6 +60,24 @@ export function PageHeaderText({ className, ...props }) {
       data-slot="page-header-text"
       className={cn(
         'min-w-0 flex-1 phone:contents phone:*:col-span-full phone:*:row-start-3',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+// A person's page (her avatar beside the name, docs/patterns.md §4): the
+// avatar aligned with the top of the name, as tall as the title and the line
+// under it (42, 48 under a finger), 12 from them. On a phone the avatar and
+// the name take the whole first line, and the page's actions go under them.
+export function PagePerson({ className, ...props }) {
+  return (
+    <div
+      data-slot="page-person"
+      className={cn(
+        'flex min-w-0 flex-1 items-start gap-3 [--avatar:calc(var(--text-base-leading)+var(--text-body-leading))]',
+        'phone:[&>[data-slot=page-header-text]]:block',
         className
       )}
       {...props}

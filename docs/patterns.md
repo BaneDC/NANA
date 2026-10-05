@@ -47,6 +47,8 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Prazna stranica | `Empty`, `EmptyTitle`, `EmptyDescription` | `.empty`, `.locked-title`, `.locked-note` |
 | Strane (Pronađi) | `Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext` | `.pager`, `.pager-page` |
 | Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
+| Delovi drawer-a i modala | `PaneLabel`, `PaneHint`, `Callout`, `ReportRows` › `ReportRow`, `Concern`, `Total`, `Stats` › `Stat` (`src/components/pane.jsx`) | `.ag-label`, `.ag-hint`, `.fam-callout`, `.report-rows`, `.visit-concern`, `.bc-total`, `.fam-stats` |
+| Stranica osobe (avatar uz ime) | `PagePerson` u `PageHeader` (`src/components/page.jsx`) | `.fam-person` |
 
 ---
 
@@ -148,7 +150,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Vašim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
 - **Moja nega pre prve saradnje (odlučeno 5. 10.):** Moja nega nema karticu „Vaši upiti"; upiti su samo na stranici „Vaši upiti". Dok nije poslat nijedan upit, narandžasti deo „Sledeći korak" ima samo „Pronađi negovateljicu". Čim je poslat prvi upit, a još niko ne dolazi, isti deo kaže gde su stvari („Čeka se odgovor": ko još nije odgovorio; „Stigli su odgovori": svi su odbili) i ima samo „Pogledaj upite", koji vodi na „Vaši upiti"; „Pronađi negovateljicu" se tu više ne nudi (ostaje u meniju). Kad neko dolazi, stranica je o njoj i o upitima ne govori.
-- **Stranica osobe** (avatar pored imena, `.fam-person`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
+- **Stranica osobe** (avatar pored imena, `PagePerson`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava `PageHeader`; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici. „Pronađi negovateljicu" za sada nema pretragu (odlučeno 2. 10.): lista je poređana po poklapanju sa planom, sa stranama po 10.
 - **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog, dodatni sati; `waitingOnYou`), a „Vaši upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Vaših upita" odgovori su viđeni.

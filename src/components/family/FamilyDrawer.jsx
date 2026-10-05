@@ -1,17 +1,24 @@
 import { Fragment, useState } from 'react';
-import { ItemGroup } from '@/components/ui/item';
 import { AlertTriangle, Check, CreditCard } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
+import { SheetDescription, SheetFooter } from '@/components/ui/sheet';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { DataList, DataRow } from '@/components/data-list';
+import { Callout, Concern, PaneHint, PaneLabel, ReportRow, ReportRows, Stat, Stats, Total } from '@/components/pane';
+import { statusVariant } from '../Standing';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
-import Tags, { Group } from '../Tags';
+import Tags, { Group, Groups } from '../Tags';
 import { groupServices } from '../../data/serviceCatalog';
 import CaregiverHead from '../CaregiverHead';
 import Rating from '../Rating';
 import VisitRow from './VisitRow';
 import { careSignals } from './VisitReport';
 import { ActivityRows } from './Activity';
-import Button from '../Button';
 import { Field, TextArea } from '../TextField';
 import {
   LATE_HOURS,
@@ -63,7 +70,7 @@ export function ServiceChips({ ids, missing = [], label, grouped }) {
   const groups = grouped ? groupServices([...ids, ...missing]) : [];
   if (groups.length) {
     return (
-      <div className="tag-rows">
+      <Groups>
         {groups.map((g) => (
           <Tags
             key={g.id}
@@ -72,7 +79,7 @@ export function ServiceChips({ ids, missing = [], label, grouped }) {
             off={g.items.filter((id) => missing.includes(id)).map((id) => `${serviceTitle(id)} - ovog puta ne`)}
           />
         ))}
-      </div>
+      </Groups>
     );
   }
   return (
@@ -80,13 +87,9 @@ export function ServiceChips({ ids, missing = [], label, grouped }) {
   );
 }
 
+// a short value right of its label (docs/patterns.md §8)
 export function Line({ label, value }) {
-  return (
-    <p className="bc-line">
-      <span className="bc-line-label">{label}</span>
-      <span className="bc-line-value">{value}</span>
-    </p>
-  );
+  return <DataRow label={label}>{value}</DataRow>;
 }
 
 // ── the terms ───────────────────────────────────────────────────────────────
@@ -134,52 +137,52 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
   return (
     <>
     <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title={`Ugovor o nezi, verzija ${pen.version}`} wide open={open} onClose={onClose}>
-      <p className="ag-lead">
+      <SheetDescription>
         {first} je {pen.sentOn.toLowerCase()} poslala {act ? 'nove uslove' : 'svoje uslove'}.{' '}
         {act
           ? `Verzija ${act.version} važi dok ne odgovorite.`
           : 'Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.'}
-      </p>
+      </SheetDescription>
 
       {pen.note && (
         <>
-          <p className="ag-label">{act ? 'Zašto menja uslove' : `${first} je napisala`}</p>
-          <p className="doc-p">{pen.note}</p>
+          <PaneLabel>{act ? 'Zašto menja uslove' : `${first} je napisala`}</PaneLabel>
+          <SheetDescription>{pen.note}</SheetDescription>
         </>
       )}
 
       {act && (
         <>
-          <p className="ag-label">Šta se menja</p>
-          <div className="bc-lines ag-terms">
+          <PaneLabel>Šta se menja</PaneLabel>
+          <DataList className="mt-2">
             {changesBetween(act, pen).map((r) => (
               <Line key={r.label} label={r.label} value={r.value} />
             ))}
-          </div>
+          </DataList>
         </>
       )}
 
-      <p className="ag-label">{act ? `Verzija ${pen.version} obuhvata` : 'Usluge'}</p>
+      <PaneLabel>{act ? `Verzija ${pen.version} obuhvata` : 'Usluge'}</PaneLabel>
       <ServiceChips ids={pen.services} grouped />
-      <div className="bc-lines ag-terms">
+      <DataList className="mt-2">
         <Line label="Cena po satu" value={`${money(pen.rate)} / h`} />
         <Line label="Dogovoreni sati" value={`${pen.hours} h nedeljno`} />
         <Line label="Raspored" value={pen.schedule} />
-      </div>
+      </DataList>
       {pen.terms && (
         <>
-          <p className="ag-label">Dodatni uslovi</p>
-          <p className="doc-p">{pen.terms}</p>
+          <PaneLabel>Dodatni uslovi</PaneLabel>
+          <SheetDescription>{pen.terms}</SheetDescription>
         </>
       )}
 
-      <p className="ag-hint">
+      <PaneHint>
         Prihvatanjem uslova {first} može da zakazuje posete. Svaka se unapred rezerviše na vašoj
         kartici, a naplaćuje tek kad se obavi.
-      </p>
+      </PaneHint>
 
       {!hasCard && (
-        <div className="fam-callout">
+        <Callout>
           <p>
             Prvo dodajte način plaćanja. Prihvatanjem uslova {first} može da rezerviše posetu na vašoj
             kartici - sada se ništa ne naplaćuje, niti pre nego što se poseta obavi.
@@ -194,18 +197,18 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
             <CreditCard size={14} strokeWidth={1.75} />
             Dodaj karticu
           </Button>
-        </div>
+        </Callout>
       )}
 
-      <div className="panel-card-actions is-end">
+      <SheetFooter>
         <Button variant="secondary" onClick={() => setDeclining(true)}>
           Odbij
         </Button>
-        <Button variant="primary" disabled={!hasCard} onClick={agree}>
+        <Button disabled={!hasCard} onClick={agree}>
           <Check size={14} strokeWidth={2} />
           Prihvati uslove
         </Button>
-      </div>
+      </SheetFooter>
     </Modal>
 
     {/* declining is an action, so it is asked in a dialog over the terms */}
@@ -215,19 +218,19 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
         title={`Odbiti verziju ${pen.version}?`}
         onClose={() => setDeclining(false)}
       >
-        <p className="doc-p">
+        <DialogDescription>
           Ništa novo ne počinje i ništa se ne naplaćuje. {first} će biti obaveštena, a koordinatorka će vas
           pozvati da se dogovore uslovi koji vam odgovaraju.
           {act && ` Verzija ${act.version} i dalje važi.`}
-        </p>
-        <div className="panel-card-actions is-end">
+        </DialogDescription>
+        <DialogFooter>
           <Button variant="secondary" onClick={() => setDeclining(false)}>
             Nazad
           </Button>
-          <Button variant="danger" onClick={decline}>
+          <Button variant="destructive" onClick={decline}>
             Odbij verziju {pen.version}
           </Button>
-        </div>
+        </DialogFooter>
       </Dialog>
     )}
     </>
@@ -290,65 +293,48 @@ function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
   return (
     <>
     <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title="Radni nalog" wide open={open} onClose={onClose}>
-      <p className="ag-lead">{lead}</p>
+      <SheetDescription>{lead}</SheetDescription>
 
-      <dl className="report-rows">
-        <div className="report-row">
-          <dt>Poseta</dt>
-          <dd>
-            {v.date} · {v.time}
-          </dd>
-        </div>
-        <div className="report-row">
-          <dt>Sati</dt>
-          <dd>{hoursText}</dd>
-        </div>
-        <div className="report-row">
-          <dt>Šta je uradila</dt>
-          <dd>{r.note}</dd>
-        </div>
-        {v.notes && (
-          <div className="report-row">
-            <dt>Traženo je</dt>
-            <dd>{v.notes}</dd>
-          </div>
-        )}
-        <div className="report-row">
-          <dt>Kako je bila</dt>
-          <dd>
-            <Tags items={careSignals(r)} />
-          </dd>
-        </div>
-      </dl>
+      <ReportRows>
+        <ReportRow label="Poseta">
+          {v.date} · {v.time}
+        </ReportRow>
+        <ReportRow label="Sati">{hoursText}</ReportRow>
+        <ReportRow label="Šta je uradila">{r.note}</ReportRow>
+        {v.notes && <ReportRow label="Traženo je">{v.notes}</ReportRow>}
+        <ReportRow label="Kako je bila">
+          <Tags items={careSignals(r)} />
+        </ReportRow>
+      </ReportRows>
 
-      <p className="ag-label">Šta je urađeno</p>
+      <PaneLabel>Šta je urađeno</PaneLabel>
       <ServiceChips ids={r.done} missing={skipped} grouped />
 
       {r.concern && (
-        <p className="visit-concern">
+        <Concern>
           <AlertTriangle size={12} strokeWidth={2} />
           {first} je napomenula: {r.concern}
-        </p>
+        </Concern>
       )}
 
       {/* Hours over the reserved ones are never taken on their own: the
           family says yes or no, here, whether or not the visit is charged yet. */}
       {extra && (
         <>
-          <p className="ag-label">Dodatni sati</p>
-          <p className="doc-p">
+          <PaneLabel>Dodatni sati</PaneLabel>
+          <SheetDescription>
             {extra.status === 'asked'
               ? `${first} je radila ${pl(extra.hours, 'sat', 'sata', 'sati')} duže nego što je rezervisano. To se ne naplaćuje samo od sebe: odobrite ${money(chargedFor(extra.hours, v.rate))} ili odbijte.`
               : extra.status === 'approved'
                 ? `Odobrili ste ${pl(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati')}, ${money(chargedFor(extra.hours, v.rate))}.`
                 : `Odbili ste ${pl(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati')}. Ništa više se ne naplaćuje.`}
-          </p>
+          </SheetDescription>
           {extra.status === 'asked' && (
-            <div className="panel-card-actions">
+            <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
               <Button variant="secondary" onClick={() => answer(false)}>
                 Odbij dodatne sate
               </Button>
-              <Button variant="primary" onClick={() => answer(true)}>
+              <Button onClick={() => answer(true)}>
                 Odobri {money(chargedFor(extra.hours, v.rate))}
               </Button>
             </div>
@@ -356,46 +342,42 @@ function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
         </>
       )}
 
-      <div className="bc-total">
+      <Total>
         <Line label={`Rezervisano: ${v.hours} h po ${money(v.rate)}/h`} value={money(chargedFor(v.hours, v.rate))} />
         {back > 0 && <Line label={`Vraća se: ${v.hours - r.hours} h manje`} value={money(back)} />}
         {extra?.status === 'approved' && <Line label={`Dodatni sati: ${extra.hours} h`} value={money(chargedFor(extra.hours, v.rate))} />}
-        <p className="bc-line is-net">
-          <span className="bc-line-label">
-            {v.status === 'charging' ? `Naplaćuje se za ${v.chargesInHours} h` : v.status === 'disputed' ? 'Zadržano dok se ne proveri' : v.status === 'cancelled' ? 'Ništa nije naplaćeno' : 'Naplaćeno'}
-          </span>
-          <span className="bc-line-value">{v.status === 'cancelled' ? money(0) : money(charge)}</span>
-        </p>
-      </div>
+        <DataRow
+          total
+          label={
+            v.status === 'charging' ? `Naplaćuje se za ${v.chargesInHours} h` : v.status === 'disputed' ? 'Zadržano dok se ne proveri' : v.status === 'cancelled' ? 'Ništa nije naplaćeno' : 'Naplaćeno'
+          }
+        >
+          {v.status === 'cancelled' ? money(0) : money(charge)}
+        </DataRow>
+      </Total>
 
       {v.status === 'charging' && (
-        <div className="panel-card-actions is-end">
+        <SheetFooter>
           <Button variant="secondary" onClick={() => setQuerying(true)}>
             Nešto nije u redu
           </Button>
-          <Button variant="primary" onClick={confirm}>
+          <Button onClick={confirm}>
             <Check size={14} strokeWidth={2} />
             Sve je u redu - plati sada
           </Button>
-        </div>
+        </SheetFooter>
       )}
     </Modal>
 
     {v.status === 'charging' && querying && (
       <Dialog eyebrow={`Radni nalog · ${v.date}`} title="Šta nije u redu?" onClose={() => setQuerying(false)}>
-        <div className="wo-choice">
+        <ToggleGroup type="single" size="sm" value={reason} onValueChange={(id) => id && setReason(id)} aria-label="Šta nije u redu">
           {QUERY_REASONS.map((q) => (
-            <button
-              key={q.id}
-              type="button"
-              className={`svc is-sm${reason === q.id ? ' is-on' : ''}`}
-              onClick={() => setReason(q.id)}
-              aria-pressed={reason === q.id}
-            >
+            <ToggleGroupItem key={q.id} value={q.id}>
               {q.label}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         <Field label="Vašim rečima">
           <TextArea
             rows={3}
@@ -405,15 +387,15 @@ function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
             onChange={setText}
           />
         </Field>
-        <p className="ag-hint">Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.</p>
-        <div className="panel-card-actions is-end">
+        <PaneHint>Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.</PaneHint>
+        <DialogFooter>
           <Button variant="secondary" onClick={() => setQuerying(false)}>
             Nazad
           </Button>
-          <Button variant="primary" disabled={!text.trim()} onClick={query}>
+          <Button disabled={!text.trim()} onClick={query}>
             Pošalji koordinatorki
           </Button>
-        </div>
+        </DialogFooter>
       </Dialog>
     )}
     </>
@@ -452,32 +434,32 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   return (
     <>
     <Modal eyebrow={`${v.caregiver.name} · ${v.date} · ${v.time}`} title="Plan posete" wide open={open} onClose={onClose}>
-      <p className="ag-lead">
+      <SheetDescription>
         {first} planira da dođe na {v.hours} h. {money(held)} je rezervisano na vašoj kartici, nije
         naplaćeno - novac se uzima tek posle posete, kad pošalje radni nalog.
-      </p>
+      </SheetDescription>
 
-      <p className="ag-label">Šta će raditi</p>
+      <PaneLabel>Šta će raditi</PaneLabel>
       <ServiceChips ids={v.services} grouped />
       {v.notes && (
         <>
-          <p className="ag-label">Napomene za ovu posetu</p>
-          <p className="visit-note">{v.notes}</p>
+          <PaneLabel>Napomene za ovu posetu</PaneLabel>
+          <SheetDescription>{v.notes}</SheetDescription>
         </>
       )}
-      <div className="bc-lines ag-terms">
+      <DataList className="mt-2">
         <Line label="Poslato" value={v.sentOn} />
         <Line label="Rezervisano" value={`${money(held)} · ${v.hours} h po ${money(v.rate)}/h`} />
-      </div>
+      </DataList>
 
-      <div className="panel-card-actions is-end">
+      <SheetFooter>
         <Button variant="secondary" onClick={() => setMode('call-off')}>
           Otkaži posetu
         </Button>
         <Button variant="secondary" onClick={() => setMode('query')}>
           Nešto nije u redu
         </Button>
-      </div>
+      </SheetFooter>
     </Modal>
 
     {mode === 'query' && (
@@ -485,37 +467,31 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
         <Field label="Vašim rečima">
           <TextArea rows={3} value={text} autoFocus placeholder="Dan, sati, šta će raditi…" onChange={setText} />
         </Field>
-        <p className="ag-hint">
+        <PaneHint>
           Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok se ne
           reši. Čita koordinatorka, ne negovateljica.
-        </p>
-        <div className="panel-card-actions is-end">
+        </PaneHint>
+        <DialogFooter>
           <Button variant="secondary" onClick={() => setMode('idle')}>
             Nazad
           </Button>
-          <Button variant="primary" disabled={!text.trim()} onClick={query}>
+          <Button disabled={!text.trim()} onClick={query}>
             Pošalji koordinatorki
           </Button>
-        </div>
+        </DialogFooter>
       </Dialog>
     )}
 
     {mode === 'call-off' && (
       <Dialog eyebrow={`Plan posete · ${v.date} · ${v.time}`} title="Otkazati posetu?" onClose={() => setMode('idle')}>
-        <p className="ag-label">Zašto se otkazuje</p>
-        <div className="wo-choice">
+        <PaneLabel>Zašto se otkazuje</PaneLabel>
+        <ToggleGroup type="single" size="sm" value={reason} onValueChange={(id) => id && setReason(id)} aria-label="Zašto se otkazuje">
           {CALL_OFF_REASONS.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={`svc is-sm${reason === r ? ' is-on' : ''}`}
-              onClick={() => setReason(r)}
-              aria-pressed={reason === r}
-            >
+            <ToggleGroupItem key={r} value={r}>
               {r}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         {reason === OTHER && (
           <Field>
             <TextArea
@@ -528,19 +504,19 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
             />
           </Field>
         )}
-        <p className="ag-hint">
+        <PaneHint>
           {late
             ? `Do dolaska je ostalo manje od sat vremena, pa se rezervisanih ${money(held)} naplaćuje u celosti umesto da se vrati. Negovateljica je čuvala to vreme i sada ne može da ga popuni.`
             : `Rezervisanih ${money(held)} se odmah vraća i ništa se ne naplaćuje. Negovateljica je obaveštena, a koordinatorka će pomoći da se dogovori drugi dan ako je potrebno. U poslednjem satu pre dolaska naplaćuje se u celosti.`}
-        </p>
-        <div className="panel-card-actions is-end">
+        </PaneHint>
+        <DialogFooter>
           <Button variant="secondary" onClick={() => setMode('idle')}>
             Nazad
           </Button>
-          <Button variant="danger" disabled={!okReason} onClick={callOff}>
+          <Button variant="destructive" disabled={!okReason} onClick={callOff}>
             {late ? `Otkaži i plati ${money(held)}` : 'Otkaži i vrati novac'}
           </Button>
-        </div>
+        </DialogFooter>
       </Dialog>
     )}
     </>
@@ -565,41 +541,41 @@ function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen 
     <Dialog eyebrow={`${a.caregiver.name} · samo ova saradnja`} title="Završiti saradnju?" open={open} onClose={onClose}>
       {blocked.length ? (
         <>
-          <p className="ag-lead">
+          <DialogDescription>
             {first} je obavila posao koji još nije izmiren. To prvo mora da se završi - da sada prekinete,
             ostala bi neplaćena za posetu koju je već obavila.
-          </p>
-          <p className="ag-hint">Prvo rešite otvoreni radni nalog, pa se vratite na ovo.</p>
-          <div className="panel-card-actions is-end">
+          </DialogDescription>
+          <PaneHint>Prvo rešite otvoreni radni nalog, pa se vratite na ovo.</PaneHint>
+          <DialogFooter>
             <Button variant="secondary" onClick={onClose}>
               Ne sada
             </Button>
             {blocked[0].status === 'charging' && (
-              <Button variant="primary" onClick={() => onOpen({ kind: 'work-order', visitId: blocked[0].id })}>
+              <Button onClick={() => onOpen({ kind: 'work-order', visitId: blocked[0].id })}>
                 Pogledaj radni nalog
               </Button>
             )}
-          </div>
+          </DialogFooter>
         </>
       ) : (
         <>
-          <p className="ag-lead">
+          <DialogDescription>
             Posle ovoga {first} ne može da šalje nove posete i ništa više ne može da se naplati. Sve što je
             već izmireno ostaje u vašoj evidenciji.
             {booked &&
               ` Poseta zakazana za ${booked.date.toLowerCase()} se otkazuje, a ${money(chargedFor(booked.hours, booked.rate))} se vraća na vašu karticu.`}
-          </p>
-          <p className="ag-hint">
+          </DialogDescription>
+          <PaneHint>
             Koordinatorka će biti obaveštena i pomoći će da se organizuje druga nega ako je potrebna.
-          </p>
-          <div className="panel-card-actions is-end">
+          </PaneHint>
+          <DialogFooter>
             <Button variant="secondary" onClick={onClose}>
               Zadrži
             </Button>
-            <Button variant="danger" onClick={end}>
+            <Button variant="destructive" onClick={end}>
               Završi saradnju
             </Button>
-          </div>
+          </DialogFooter>
         </>
       )}
     </Dialog>
@@ -622,44 +598,44 @@ function Profile({ open = true, care, caregiverId, unlocked, onContact, onCaregi
     <Modal title="Informacije o negovateljici" wide open={open} onClose={onClose}>
       <CaregiverHead caregiver={c} standing={standing} />
 
-      <p className="ag-label">O sebi</p>
-      <p className="doc-p">{c.bio}</p>
+      <PaneLabel>O sebi</PaneLabel>
+      <SheetDescription>{c.bio}</SheetDescription>
 
-      <p className="ag-label">Klasifikacije</p>
+      <PaneLabel>Klasifikacije</PaneLabel>
       <Tags items={c.classifications} />
 
-      <p className="ag-label">Kvalifikacije</p>
-      <div className="bc-lines ag-terms">
+      <PaneLabel>Kvalifikacije</PaneLabel>
+      <DataList className="mt-2">
         <Line label="Obrazovanje" value={c.education} />
         <Line label="Jezici" value={c.languages.join(', ')} />
-      </div>
+      </DataList>
 
-      <p className="ag-label">Kada može da dolazi</p>
-      <div className="bc-lines ag-terms">
+      <PaneLabel>Kada može da dolazi</PaneLabel>
+      <DataList className="mt-2">
         <Line label="Dani" value={daysText(c.days)} />
         <Line label="Doba dana" value={c.slots.map((s) => `${SLOTS[s].label.toLowerCase()} ${SLOTS[s].hours}`).join(', ')} />
         <Line label="Radijus" value={`do ${c.radius} km`} />
         <Line label="Cena" value={c.rate} />
-      </div>
+      </DataList>
 
       {/* Her phone and e-mail open with the subscription, as on the platform. */}
-      <p className="ag-label">Kontakt</p>
-      <div className="bc-lines ag-terms">
+      <PaneLabel>Kontakt</PaneLabel>
+      <DataList className="mt-2">
         <Line label="Telefon" value={unlocked ? c.phone : MASKED_PHONE} />
         <Line label="E-mail" value={unlocked ? c.email : MASKED_EMAIL} />
-      </div>
-      {!unlocked && <p className="ag-hint">Telefon i e-mail se otključavaju pretplatom.</p>}
+      </DataList>
+      {!unlocked && <PaneHint>Telefon i e-mail se otključavaju pretplatom.</PaneHint>}
 
-      <p className="ag-hint">
+      <PaneHint>
         Upit joj šalje plan nege. Ništa ne košta i nikoga ne obavezuje - ona odgovara, a ništa nije
         dogovoreno dok zajedno ne postavite uslove.
-      </p>
+      </PaneHint>
 
       {/* Never asked: write to her. Asked before and free to ask again (a no,
           or a cooperation that ended): the same, said as again; and when she
           came before, her page with everything from then. */}
       {(!standing || canAsk(care, c.id) || arrangementOf(care, c.id)) && (
-        <div className="panel-card-actions is-end">
+        <SheetFooter>
           {arrangementOf(care, c.id) ? (
             <Button variant="secondary" onClick={() => onCaregiver(c.id)}>
               Njena stranica
@@ -670,11 +646,11 @@ function Profile({ open = true, care, caregiverId, unlocked, onContact, onCaregi
             </Button>
           )}
           {canAsk(care, c.id) && (
-            <Button variant="primary" onClick={ask}>
+            <Button onClick={ask}>
               {!standing ? 'Pošalji poruku' : arrangementOf(care, c.id) ? 'Ponovo sarađujte' : 'Pitaj ponovo'}
             </Button>
           )}
-        </div>
+        </SheetFooter>
       )}
     </Modal>
   );
@@ -688,7 +664,7 @@ function Visits({ open = true, care, caregiverId, onOpen, onClose }) {
   const visits = herVisits(a);
   return (
     <Modal eyebrow={`${a.caregiver.name} · ${pl(visits.length, 'poseta', 'posete', 'poseta')}`} title="Sve posete" wide open={open} onClose={onClose}>
-      <ItemGroup className="fam-visits">
+      <ItemGroup>
         {visits.map((v) => (
           <VisitRow key={v.id} visit={v} onDrawer={onOpen} />
         ))}
@@ -715,35 +691,33 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
   const who = caregiverId ? nameOf(care, caregiverId) : care.elder.name || 'Vaša nega';
   return (
     <Modal eyebrow={who} title="Šta se desilo" wide open={open} onClose={onClose}>
-      <div className="fam-filter" role="group" aria-label="Šta prikazati">
+      <ToggleGroup type="single" size="sm" className="items-center" value={kind} onValueChange={(id) => id && setKind(id)} aria-label="Šta prikazati">
         {[{ id: 'all', label: 'Sve' }, ...kinds].map((k) => (
-          <button
-            key={k.id}
-            type="button"
-            className={`svc is-sm${kind === k.id ? ' is-on' : ''}`}
-            aria-pressed={kind === k.id}
-            onClick={() => setKind(k.id)}
-          >
+          <ToggleGroupItem key={k.id} value={k.id}>
             {k.label}
-            <span className="fam-filter-note">{k.id === 'all' ? all.length : all.filter((e) => e.kind === k.id).length}</span>
-          </button>
+            <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">
+              {k.id === 'all' ? all.length : all.filter((e) => e.kind === k.id).length}
+            </span>
+          </ToggleGroupItem>
         ))}
-      </div>
-      <p className="ag-hint">
+      </ToggleGroup>
+      <PaneHint>
         {picked.length === all.length
           ? `${pl(all.length, 'stavka', 'stavke', 'stavki')} · najnovije prvo`
           : `${picked.length} od ${all.length} · najnovije prvo`}
-      </p>
+      </PaneHint>
       {days.map((d) => (
         <Fragment key={d.day}>
-          <div className="panel-card-head">
-            <p className="ag-label">{d.day}</p>
-            <span className="status-pill is-muted">{d.entries.length}</span>
+          <div className="flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
+            <PaneLabel>{d.day}</PaneLabel>
+            <Badge variant="secondary" className="ml-auto phone:ml-0">
+              {d.entries.length}
+            </Badge>
           </div>
           <ActivityRows care={care} entries={d.entries} showWho={!caregiverId} />
         </Fragment>
       ))}
-      {!picked.length && <p className="ag-hint">Ovde još nema ničega.</p>}
+      {!picked.length && <PaneHint>Ovde još nema ničega.</PaneHint>}
     </Modal>
   );
 }
@@ -780,75 +754,71 @@ function Overview({ open = true, care, caregiverId, onClose }) {
   const time = together(a, todayOf(care));
   return (
     <Modal eyebrow={`${a.caregiver.name} · ${a.caregiver.area}`} title="Pregled" wide open={open} onClose={onClose}>
-      <div className="fam-stats">
-        <div className="fam-stat">
-          <p className="fam-stat-value">{done.length}</p>
-          <p className="fact-label">{pl(done.length, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '')} do sada</p>
-          <p className="ag-hint">{coming ? `${coming} zakazano` : 'nijedna nije zakazana'}</p>
-        </div>
-        <div className="fam-stat">
-          <p className="fam-stat-value">{time.value}</p>
-          <p className="fact-label">zajedno</p>
-          <p className="ag-hint">{time.sub}</p>
-        </div>
-      </div>
+      <Stats>
+        <Stat
+          value={done.length}
+          label={`${pl(done.length, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '')} do sada`}
+          note={coming ? `${coming} zakazano` : 'nijedna nije zakazana'}
+        />
+        <Stat value={time.value} label="zajedno" note={time.sub} />
+      </Stats>
 
-      <p className="ag-label">Kontakt</p>
-      <div className="bc-lines ag-terms">
+      <PaneLabel>Kontakt</PaneLabel>
+      <DataList className="mt-2">
         <Line label="Telefon" value={a.endedOn ? 'Skriven posle kraja saradnje' : a.caregiver.phone} />
         {c?.email && <Line label="E-mail" value={a.endedOn ? 'Skriven posle kraja saradnje' : c.email} />}
         <Line label="Opština" value={a.caregiver.area} />
         {c?.languages && <Line label="Jezici" value={c.languages.join(', ')} />}
-      </div>
-      <p className="ag-hint">
+      </DataList>
+      <PaneHint>
         Ako nešto nije u redu tokom posete, prvo pozovite negovateljicu. Sve oko novca rešava koordinatorka.
-      </p>
+      </PaneHint>
 
       {agreed && (
         <>
-          <p className="ag-label">Dogovorena nega</p>
-          <div className="bc-lines ag-terms">
+          <PaneLabel>Dogovorena nega</PaneLabel>
+          <DataList className="mt-2">
             <Line label="Ugovor koji važi" value={`verzija ${act.version}`} />
             <Line label="Cena po satu" value={`${money(act.rate)} / h, PDV uključen`} />
-          </div>
+          </DataList>
           <ServiceChips ids={act.services} grouped />
           {act.terms && (
-            <div className="tag-rows">
+            <Groups>
               <Group label="Dodatni uslovi" text={act.terms} />
-            </div>
+            </Groups>
           )}
         </>
       )}
 
-      <p className="ag-label">Kvalifikacije</p>
+      <PaneLabel>Kvalifikacije</PaneLabel>
       <Tags items={a.caregiver.classifications || c?.classifications || []} />
       {c?.education && (
-        <div className="bc-lines ag-terms">
+        <DataList className="mt-2">
           <Line label="Obrazovanje" value={c.education} />
-        </div>
+        </DataList>
       )}
 
       {c?.bio && (
         <>
-          <p className="ag-label">O negovateljici</p>
-          <p className="doc-p">{c.bio}</p>
+          <PaneLabel>O negovateljici</PaneLabel>
+          <SheetDescription>{c.bio}</SheetDescription>
         </>
       )}
 
-      <p className="ag-label">Ocene</p>
+      <PaneLabel>Ocene</PaneLabel>
       {/* the platform's one way of saying it (docs/patterns.md §8) */}
-      <p className="doc-p">{c ? <Rating caregiver={c} /> : 'Nova'}</p>
+      <SheetDescription>{c ? <Rating caregiver={c} /> : 'Nova'}</SheetDescription>
 
-      <p className="ag-label">Kako se plaća</p>
-      <div className="bc-lines ag-terms">
+      <PaneLabel>Kako se plaća</PaneLabel>
+      <DataList className="mt-2">
         <Line label="Način plaćanja" value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'} />
         <Line label="Rezerviše se" value="kad stigne plan posete" />
         <Line label="Naplaćuje se" value="24 sata posle radnog naloga" />
-      </div>
-      <p className="ag-hint">
+      </DataList>
+      <PaneHint>
         Naplaćuje se samo poseta koja se desila i za koju je {first} poslala radni nalog. Sati preko
         rezervisanih se naplaćuju samo ako ih odobrite.
-      </p>
+      </PaneHint>
     </Modal>
   );
 }
@@ -875,22 +845,22 @@ function Versions({ open = true, care, caregiverId, onClose }) {
         const changes = prev ? changesBetween(prev, v) : [];
         return (
           <div key={v.version}>
-            <p className="ag-label">
-              Verzija {v.version} <span className={`status-pill ${st.pill}`}>{st.text}</span>
-            </p>
-            <div className="bc-lines ag-terms">
+            <PaneLabel>
+              Verzija {v.version} <Badge variant={statusVariant(st.pill)}>{st.text}</Badge>
+            </PaneLabel>
+            <DataList className="mt-2">
               <Line label="Poslato" value={v.sentOn} />
               <Line label="Cena po satu" value={`${money(v.rate)} / h`} />
               <Line label="Usluge" value={services(v.services.length)} />
               {changes.map((r) => (
                 <Line key={r.label} label={r.label} value={r.value} />
               ))}
-            </div>
+            </DataList>
             {/* what she wrote with it, under its name (docs/patterns.md §10) */}
             {v.note && prev && (
-              <div className="tag-rows fam-version-note">
+              <Groups className="mt-2">
                 <Group label={`${firstName(a.caregiver.name)} je napisala`} text={v.note} />
-              </div>
+              </Groups>
             )}
           </div>
         );

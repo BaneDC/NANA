@@ -28,7 +28,10 @@ export function useCloseThreshold() {
 export function focusPane(e) {
   e.preventDefault();
   const pane = e.currentTarget;
-  if (!pane.contains(document.activeElement)) pane.focus({ preventScroll: true });
+  if (pane.contains(document.activeElement)) return;
+  // a field asked for it (autoFocus, which TextField marks as data-autofocus)
+  const field = pane.querySelector('[data-autofocus]');
+  (field || pane).focus({ preventScroll: true });
 }
 
 // The motion-drawn sheet PaywallModal still uses, until it moves onto Drawer.
