@@ -193,10 +193,13 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
 
       {/* something to do about her is the page's tinted place; a plain state
           of things is a card like the rest */}
-      {next.label ? (
-        <Attention title={next.eyebrow}>
-          <div className="panel-card">
-            <p className="fam-next">{next.copy}</p>
+      {/* Where things stand with her is a notice, so it is the page's tinted
+          place whether or not there is something to press (docs/patterns.md
+          §5): its words in a white card, and its button under them if any. */}
+      <Attention title={next.eyebrow}>
+        <div className="panel-card">
+          <p className="fam-next">{next.copy}</p>
+          {next.label && (
             <div className="panel-card-actions">
               <Button
                 variant="primary"
@@ -205,14 +208,9 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
                 {next.label}
               </Button>
             </div>
-          </div>
-        </Attention>
-      ) : (
-        <section className="panel-card">
-          <p className="doc-section-title">{next.eyebrow}</p>
-          <p className="fam-next">{next.copy}</p>
-        </section>
-      )}
+          )}
+        </div>
+      </Attention>
 
       <section className="panel-card">
         <div className="panel-card-head">

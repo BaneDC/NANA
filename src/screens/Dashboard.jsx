@@ -182,10 +182,13 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
         </Attention>
       )}
 
+      {/* the same notice as on her page when nothing waits and nothing is booked */}
       {quiet && (
-        <div className="panel-card fam-quiet">
-          <p>Sve je sređeno - ništa ne čeka vaš odgovor i ništa nije zakazano.</p>
-        </div>
+        <Attention title="Ništa ne čeka">
+          <div className="panel-card">
+            <p className="fam-next">Sve je sređeno - ništa ne čeka vaš odgovor i ništa nije zakazano.</p>
+          </div>
+        </Attention>
       )}
 
       {waiting.length > 0 && (

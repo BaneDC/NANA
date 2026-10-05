@@ -150,7 +150,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 - Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice.
 - Stavka koja nešto otvara je `.panel-card.is-row.is-clickable`: avatar, naslov kartice kao `.card-link` (14), tekst, dugme desno (`.card-action`); na telefonu bez dugmeta i bez strelice, otvara se tapom.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
-- Samo za: ono što čeka na porodicu („Čeka na vas", sledeći korak na njenoj stranici), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Nema druge narandžaste kartice; `.panel-card.is-attention` više ne postoji.
+- Samo za: ono što čeka na porodicu („Čeka na vas"), obaveštenje gde su stvari (sledeći korak na njenoj stranici **uvek, i kad nema dugmeta** — „Ništa ne čeka", „Prihvatila je", „Uslovi su odbijeni"…; „Ništa ne čeka" na Mojoj nezi; „Čeka se odgovor" i „Stigli su odgovori"), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Obaveštenje bez dugmeta je i dalje narandžasti deo sa belom karticom, a ne bela kartica sama. Nema druge narandžaste kartice; `.panel-card.is-attention` više ne postoji.
 
 **Grupa kartica** se koristi samo kad stranica ima više od jedne grupe:
 
@@ -186,7 +186,7 @@ Mere (sve radi CSS u bloku „Rows inside a card" u `app.css`):
 
 Klase redova koje ovo već dobijaju: `.caregiver` (bez `.is-wide`), `.fam-row`, `.contact-row`, `.fam-visit`, `.visit`. Kontejneri: `.rec-providers`, `.fam-rows`, `.contact-rows`, `.fam-visits`, `.visit-list`.
 
-**Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, dugme 16 ispod, a stanje je značka pored imena (`.fam-row-title`). Tako je kartica upita („Vaši upiti"). Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
+**Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, a stanje je značka pored imena (`.fam-row-title`). Jedno dugme je **na desktopu gore desno**, u visini imena (16 od ivice, koncentrično sa uglom), a **na telefonu ispod sadržaja**, u koloni teksta i široko koliko ona, 16 ispod. Tako je kartica upita („Vaši upiti"), po istoj logici kao kartica na „Pronađi". Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
 
 **Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + razmak + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa raste zajedno sa tekstom na dodir:
 

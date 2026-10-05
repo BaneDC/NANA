@@ -114,21 +114,23 @@ export default function RequestsPage({ care, onCare, onCaregiver, onFind, onCont
                           )}
                         </p>
                       </div>
-                      {linked && (
-                        <div className="panel-card-actions">
-                          <Button variant="secondary" onClick={() => onCaregiver(r.caregiverId)}>
-                            Pogledaj saradnju
-                          </Button>
-                        </div>
-                      )}
-                      {askAgain && (
-                        <div className="panel-card-actions">
-                          <Button variant="primary" onClick={() => onContact?.(cg)}>
-                            Pitaj ponovo
-                          </Button>
-                        </div>
-                      )}
                     </div>
+                    {/* its one action top right, level with her name; on a
+                        phone under what the card says, in its column */}
+                    {linked && (
+                      <div className="panel-card-actions">
+                        <Button variant="secondary" onClick={() => onCaregiver(r.caregiverId)}>
+                          Pogledaj saradnju
+                        </Button>
+                      </div>
+                    )}
+                    {askAgain && (
+                      <div className="panel-card-actions">
+                        <Button variant="primary" onClick={() => onContact?.(cg)}>
+                          Pitaj ponovo
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </section>
               );

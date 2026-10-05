@@ -5360,9 +5360,27 @@ button.svc:hover {
   margin-bottom: var(--spacing-3);
 }
 
-/* a request's action, 16 under what it says, as a card's footer */
-.fam-request .fam-row-main > .panel-card-actions {
-  margin-top: var(--spacing-3);
+/* A request's one action: top right, level with her name, as her card on
+   Pronađi has it. On a phone it goes under what the card says, in the text's
+   column and as wide as it, 16 below (the head's 12 and 4 more). */
+.fam-request-head > .panel-card-actions {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .fam-request-head {
+    flex-wrap: wrap;
+  }
+
+  .fam-request-head > .fam-row-main {
+    flex-basis: calc(100% - var(--avatar) - var(--spacing-3));
+  }
+
+  .fam-request-head > .panel-card-actions {
+    width: calc(100% - var(--avatar) - var(--spacing-3));
+    margin: var(--spacing-1) 0 0 calc(var(--avatar) + var(--spacing-3));
+  }
 }
 
 .modal > .modal-head {
