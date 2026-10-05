@@ -173,9 +173,25 @@ function sampleCare() {
   };
 }
 
+// A family that has asked and has nobody coming yet: two requests waiting, or
+// both answered no.
+function askedCare(status) {
+  const base = startCare(demoUser);
+  const req = (caregiverId, requested) => ({
+    caregiverId,
+    status,
+    requested,
+    message: 'Treba nam pomoć ujutru, tri puta nedeljno.',
+    detail: status === 'pending' ? 'Još nije odgovorila. Javićemo vam u svakom slučaju.' : 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.',
+  });
+  return { ...base, requests: [req('sanna', 'juče'), req('paivi', 'danas')] };
+}
+
 const SECTIONS = [
-  { id: 'moja-nega', title: 'Moja nega', where: 'Čeka na vas, Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti' },
+  { id: 'moja-nega', title: 'Moja nega', where: 'Čeka na vas, Predstoji, poslednja poseta, Vaše negovateljice' },
   { id: 'prvi-korak', title: 'Moja nega, pre prvog upita', where: 'Sledeći korak' },
+  { id: 'upit-poslat', title: 'Moja nega, upit poslat', where: 'Čeka se odgovor, pa „Pogledaj upite"' },
+  { id: 'svi-odbili', title: 'Moja nega, svi su odbili', where: 'Stigli su odgovori, pa „Pogledaj upite"' },
   { id: 'njena-stranica', title: 'Njena stranica', where: 'Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Pogledaj sve")' },
   { id: 'nove-uslove', title: 'Njena stranica, novi uslovi čekaju', where: 'Čeka na vas, Novi uslovi' },
   { id: 'zavrsena', title: 'Njena stranica, završena saradnja', where: 'Ponovni upit poslat, ugovor koji više ne važi' },
@@ -190,6 +206,8 @@ const SECTIONS = [
   { id: 'profil', title: 'Profil', where: 'O kome brinemo, Glavni kontakt, Čemu se nadate' },
   { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },
 ];
+
+const S = (id) => SECTIONS.find((x) => x.id === id);
 
 function Frame({ id, title, where, tall, children }) {
   return (
@@ -239,37 +257,43 @@ export default function CardGallery() {
         ))}
       </nav>
 
-      <Frame {...SECTIONS[0]}>
+      <Frame {...S('moja-nega')}>
         <Dashboard care={care} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
       </Frame>
-      <Frame {...SECTIONS[1]}>
+      <Frame {...S('prvi-korak')}>
         <Dashboard care={startCare(user)} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
       </Frame>
-      <Frame {...SECTIONS[2]}>
+      <Frame {...S('upit-poslat')}>
+        <Dashboard care={askedCare('pending')} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+      </Frame>
+      <Frame {...S('svi-odbili')}>
+        <Dashboard care={askedCare('declined')} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+      </Frame>
+      <Frame {...S('njena-stranica')}>
         <CaregiverPage care={care} caregiverId="sanna" onBack={noop} {...family} />
       </Frame>
-      <Frame {...SECTIONS[3]}>
+      <Frame {...S('nove-uslove')}>
         <CaregiverPage care={care} caregiverId="paivi" onBack={noop} {...family} />
       </Frame>
-      <Frame {...SECTIONS[4]}>
+      <Frame {...S('zavrsena')}>
         <CaregiverPage care={care} caregiverId="tuula" onBack={noop} {...family} />
       </Frame>
-      <Frame {...SECTIONS[5]}>
+      <Frame {...S('bez-ugovora')}>
         <CaregiverPage care={care} caregiverId="riitta" onBack={noop} {...family} />
       </Frame>
-      <Frame {...SECTIONS[6]}>
+      <Frame {...S('odbijeni-uslovi')}>
         <CaregiverPage care={care} caregiverId="anneli" onBack={noop} {...family} />
       </Frame>
-      <Frame {...SECTIONS[7]}>
+      <Frame {...S('posete')}>
         <VisitsPage care={care} onDrawer={noop} onBack={noop} />
       </Frame>
-      <Frame {...SECTIONS[8]}>
+      <Frame {...S('upiti')}>
         <RequestsPage care={care} onCaregiver={noop} onFind={noop} />
       </Frame>
-      <Frame {...SECTIONS[9]}>
+      <Frame {...S('pronadji')}>
         <FindCaregiver care={care} onContact={noop} onDrawer={noop} onFlash={noop} onAskAssistant={noop} />
       </Frame>
-      <Frame {...SECTIONS[10]}>
+      <Frame {...S('plan')}>
         <PlanDetail
           entry={live}
           unlocked
@@ -285,16 +309,16 @@ export default function CardGallery() {
           standingOf={(id) => standingWith(care, id)}
         />
       </Frame>
-      <Frame {...SECTIONS[11]}>
+      <Frame {...S('planovi')}>
         <Plans entries={entries} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} onAskAssistant={noop} />
       </Frame>
-      <Frame {...SECTIONS[12]}>
+      <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onAskAssistant={noop} onSubscribe={noop} />
       </Frame>
-      <Frame {...SECTIONS[13]}>
+      <Frame {...S('profil')}>
         <Profile user={user} answers={answers} onGoToChat={noop} onAskAssistant={noop} onSaveUser={noop} onEditAnswers={noop} />
       </Frame>
-      <Frame {...SECTIONS[14]} tall>
+      <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />
       </Frame>
     </div>

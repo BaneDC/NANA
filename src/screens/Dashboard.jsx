@@ -1,4 +1,4 @@
-import { ArrowRight, Check, ChevronRight, Clock, Search } from 'lucide-react';
+import { ArrowRight, ChevronRight, Clock, Search, Send } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import {
   activeVersion,
@@ -9,6 +9,7 @@ import {
   lastVisit,
   money,
   pendingVersion,
+  pl,
   services,
   visitCharge,
   waitingOnYou,
@@ -51,12 +52,6 @@ function SeeAll({ label, onClick }) {
     </Button>
   );
 }
-
-const REQUEST_PILL = {
-  pending: { className: 'is-pending', label: 'Čeka odgovor' },
-  accepted: { className: 'is-accepted', label: 'Prihvatila' },
-  declined: { className: 'is-declined', label: 'Ne može' },
-};
 
 // A row that opens something: the title is the link and stretches over the
 // row, the button says the same thing on a wide screen, and on a phone a chevron
@@ -107,6 +102,15 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
   const quiet = care.arrangements.length > 0 && !waiting.length && !coming.length;
   // nobody asked yet: the one thing to do is ask
   const fresh = !care.arrangements.length && !care.requests.length;
+  // Asked, and nobody has come yet: the requests live on "Vaši upiti", so
+  // this page only says where things stand and takes them there. Once someone
+  // comes, the page is about her and the requests are not repeated here.
+  const asked = !care.arrangements.length && care.requests.length > 0;
+  const latest = care.requests.filter((r, i, all) => all.findIndex((x) => x.caregiverId === r.caregiverId) === i);
+  const pendingNames = latest
+    .filter((r) => r.status === 'pending')
+    .map((r) => caregivers.find((c) => c.id === r.caregiverId)?.name)
+    .filter(Boolean);
 
   const hasTerms = waiting.some((w) => w.kind === 'terms');
   const hasOrder = waiting.some((w) => w.kind === 'work-order' || w.kind === 'extra');
@@ -148,6 +152,30 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
               <Button variant="primary" onClick={onFindCaregiver} disabled={!plan}>
                 <Search size={14} strokeWidth={1.75} />
                 Pronađi negovateljicu
+              </Button>
+            </div>
+          </div>
+        </Attention>
+      )}
+
+      {asked && (
+        <Attention title={pendingNames.length ? 'Čeka se odgovor' : 'Stigli su odgovori'}>
+          <div className="panel-card">
+            <p className="tip-body">
+              {pendingNames.length === 1
+                ? `${pendingNames[0]} još nije odgovorila na vaš upit. Javićemo vam čim odgovori, a upit i odgovor su na stranici „Vaši upiti".`
+                : pendingNames.length > 1
+                  ? `Čeka se odgovor od ${pl(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica')}. Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Vaši upiti".`
+                  : latest.length === 1
+                    ? `${caregivers.find((c) => c.id === latest[0].caregiverId)?.name || 'Negovateljica'} ne može da preuzme. Na stranici „Vaši upiti" piše zašto.`
+                    : 'Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Vaši upiti" piše zašto.'}
+            </p>
+            <div className="panel-card-actions">
+              {/* once a request is out, finding someone is in the menu; the one
+                  step here is where the requests are */}
+              <Button variant="primary" onClick={() => onView('requests')}>
+                <Send size={14} strokeWidth={1.75} />
+                Pogledaj upite
               </Button>
             </div>
           </div>
@@ -310,35 +338,6 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
 
       )}
 
-      {care.requests.length > 0 && (
-        <Section
-          title="Vaši upiti"
-          action={<SeeAll label="Svi upiti" onClick={() => onView('requests')} />}
-        >
-          <div className="fam-rows">
-            {/* the latest request to each of them; every earlier one is on "Vaši upiti" */}
-            {care.requests.filter((r, i, all) => all.findIndex((x) => x.caregiverId === r.caregiverId) === i).map((r) => {
-              const c = caregivers.find((x) => x.id === r.caregiverId);
-              const pill = REQUEST_PILL[r.status];
-              return (
-                <div key={r.id || r.caregiverId} className="fam-row">
-                  <span className="cg-avatar">{c?.initials}</span>
-                  <div className="fam-row-main">
-                    <p className="fam-row-title">{c?.name}</p>
-                    <p className="fam-row-body">
-                      {r.status === 'pending' ? `Poslato ${r.requested}. ${r.detail}` : r.detail}
-                    </p>
-                  </div>
-                  <span className={`status-pill ${pill.className}`}>
-                    {r.status !== 'declined' && <Check size={12} strokeWidth={2} />}
-                    {pill.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </Section>
-      )}
     </div>
   );
 }
