@@ -29,8 +29,8 @@ export default function PhotoCarousel({ interval = 3200 }) {
   }, [interval]);
 
   return (
-    <div className="photo-carousel">
-      <div className="rail">
+    <div className="w-[480px] max-w-full shrink-0 px-4">
+      <div className="flex w-full overflow-hidden">
         {/* keys are virtual positions, so the leftmost item exits while a new
             one is appended right — no element ever flies across the rail */}
         <AnimatePresence initial={false}>
@@ -39,7 +39,7 @@ export default function PhotoCarousel({ interval = 3200 }) {
             return (
               <motion.div
                 key={position}
-                className="slot"
+                className="h-[190px] shrink-0"
                 // the gap is carried inside the animated width, so an item that
                 // has shrunk to nothing occupies nothing — removing it can no
                 // longer collapse a leftover 8px and jolt the whole rail
@@ -49,8 +49,13 @@ export default function PhotoCarousel({ interval = 3200 }) {
                 transition={{ duration: DURATION, ease: EASE }}
               >
                 {/* fixed-width image, so narrowing the slot crops instead of squashing */}
-                <div className="slot-mask">
-                  <img src={PHOTOS[position % PHOTOS.length]} alt="" style={{ width: HERO_WIDTH }} />
+                <div className="relative h-full w-[calc(100%-8px)] overflow-hidden rounded-3xl">
+                  <img
+                    src={PHOTOS[position % PHOTOS.length]}
+                    alt=""
+                    className="absolute top-0 left-1/2 block h-full -translate-x-1/2 object-cover"
+                    style={{ width: HERO_WIDTH }}
+                  />
                 </div>
               </motion.div>
             );

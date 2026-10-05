@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Check, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
 import SelectCard from '../components/SelectCard';
-import Button from '../components/Button';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Field, Input, Password, Select } from '../components/TextField';
 import { saveAccount, signIn } from '../lib/account';
@@ -63,20 +65,22 @@ const SOURCE_OPTIONS = SOURCES.map((s) => ({ value: s, label: s }));
 
 const MIN_PASSWORD = 8;
 
+// A consent: the box and its sentence, the whole line its label.
 function Consent({ checked, onChange, children, required }) {
   return (
-    <label className={`reg-check${checked ? ' is-on' : ''}`}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="reg-box" aria-hidden="true">
-        {checked && <Check size={12} strokeWidth={2.5} />}
-      </span>
+    <label className="flex cursor-pointer items-start gap-2 text-xs text-foreground">
+      <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} />
       <span>
         {children}
-        {required && <span className="tf-required"> *</span>}
+        {required && <span className="text-primary-600"> *</span>}
       </span>
     </label>
   );
 }
+
+// The sign-up's parts, all 480 wide at most: a heading, a grey form card
+// (24 corners, 16 inside, fields 16 apart) and the actions under it.
+const column = 'w-[480px] max-w-full shrink-0';
 
 // the role picker is hidden while only the family side is being shown
 const SHOW_ROLES = false;
@@ -127,15 +131,12 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
 
   return (
     <>
-      <div className="welcome">
-        <h1>Dobro došli u NANA Prime</h1>
-        <p>Polja označena zvezdicom su obavezna</p>
-      </div>
+      <Welcome title="Dobro došli u NANA Prime" sub="Polja označena zvezdicom su obavezna" />
 
       {SHOW_ROLES && (
-      <div className="form-card">
-        <div className="role-choice">
-          <p className="tf-label">Ovde sam kao</p>
+      <FormCard>
+        <div className="flex flex-col gap-2">
+          <Label className="px-3">Ovde sam kao</Label>
           {ROLES.map((r) => (
             <SelectCard
               key={r.id}
@@ -147,11 +148,11 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             />
           ))}
         </div>
-      </div>
+      </FormCard>
       )}
 
-      <div className="form-card">
-        <div className="reg-row">
+      <FormCard>
+        <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
           <Field label="Ime" required>
             <Input value={firstName} onChange={setFirstName} placeholder="Anna" autoComplete="given-name" />
           </Field>
@@ -189,7 +190,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
           <Select value={source} onChange={setSource} labelledBy="reg-source" options={SOURCE_OPTIONS} />
         </Field>
 
-        <div className="reg-checks">
+        <div className="flex flex-col gap-2 px-1">
           <Consent checked={processing} onChange={setProcessing} required>
             Saglasan/na sam sa obradom podataka
           </Consent>
@@ -200,13 +201,13 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             Želim da primam novosti i posebne ponude na email
           </Consent>
         </div>
-      </div>
+      </FormCard>
 
-      <div className="actions">
-        <Button variant="primary" size="lg" full disabled={!valid || busy} onClick={submit}>
+      <Actions>
+        <Button size="lg" className="w-full" disabled={!valid || busy} onClick={submit}>
           Napravi nalog
         </Button>
-        <p className="reg-legal">
+        <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
           Registracijom prihvatate naše{' '}
           <a href="#uslovi" onClick={(e) => e.preventDefault()}>
             uslove korišćenja
@@ -220,8 +221,8 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             Podešavanja kolačića
           </a>
         </p>
-        <p className="reg-gdpr">
-          <ShieldCheck size={16} strokeWidth={1.75} />
+        <p className="mt-2 flex w-full items-start gap-2 border-t-[0.8px] pt-4 text-small text-muted-foreground">
+          <ShieldCheck size={16} strokeWidth={1.75} className="shrink-0 text-primary-600" />
           NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o
           zaštiti podataka.
         </p>
@@ -229,21 +230,42 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
           Već imate nalog? Prijavite se
         </Button>
         <DemoLink onDemo={onDemo} />
-      </div>
+      </Actions>
     </>
   );
 }
+
+function Welcome({ title, sub }) {
+  return (
+    <div className={`${column} px-7 text-center text-foreground`}>
+      <h1 className="text-base font-medium">{title}</h1>
+      <p className="text-sm">{sub}</p>
+    </div>
+  );
+}
+
+function FormCard(props) {
+  return <div className={`${column} flex flex-col gap-4 rounded-3xl bg-muted p-4`} {...props} />;
+}
+
+function Actions(props) {
+  return <div className={`${column} flex flex-col items-center gap-2 px-4`} {...props} />;
+}
+
+// for testing only, so plain underlined text rather than a button
+const demoLink =
+  'cursor-pointer text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground';
 
 // Straight into the app on a finished plan, for trying the chat and everything
 // after the plan without running (and paying for) the onboarding each time.
 function DemoLink({ onDemo }) {
   return (
     <>
-      <button type="button" className="reg-demo" onClick={onDemo}>
+      <button type="button" className={demoLink} onClick={onDemo}>
         Za testiranje: otvori demo sa gotovim planom
       </button>
       {/* every card on one page (/?kartice), for comparing them */}
-      <button type="button" className="reg-demo" onClick={() => (window.location.href = '/?kartice')}>
+      <button type="button" className={demoLink} onClick={() => (window.location.href = '/?kartice')}>
         Za pregled: sve kartice na jednoj stranici
       </button>
     </>
@@ -265,27 +287,24 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
 
   return (
     <>
-      <div className="welcome">
-        <h1>Prijavite se</h1>
-        <p>Email adresom i lozinkom kojima ste napravili nalog</p>
-      </div>
-      <div className="form-card">
+      <Welcome title="Prijavite se" sub="Email adresom i lozinkom kojima ste napravili nalog" />
+      <FormCard>
         <Field label="Email" required>
           <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
         </Field>
         <Field label="Lozinka" required hint={failed ? 'Email ili lozinka nisu tačni.' : null}>
           <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} onEnter={submit} placeholder="Vaša lozinka" />
         </Field>
-      </div>
-      <div className="actions">
-        <Button variant="primary" size="lg" full disabled={!valid} onClick={submit}>
+      </FormCard>
+      <Actions>
+        <Button size="lg" className="w-full" disabled={!valid} onClick={submit}>
           Prijavi se
         </Button>
         <Button variant="ghost" size="lg" onClick={onSignUp}>
           Nemate nalog? Napravite ga
         </Button>
         <DemoLink onDemo={onDemo} />
-      </div>
+      </Actions>
     </>
   );
 }
@@ -293,8 +312,10 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
 export default function Register({ onContinue, onDemo }) {
   const [mode, setMode] = useState('sign-up');
   return (
+    // the whole screen, its column centred and scrolling (safe: a tall form is
+    // not cut off at the top)
     <motion.div
-      className="register"
+      className="flex min-h-0 flex-1 flex-col items-center justify-[safe_center] gap-6 overflow-y-auto px-6 py-12 *:shrink-0"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }}
       exit={{ opacity: 0, y: -16, transition: { duration: 0.2, ease: 'easeIn' } }}

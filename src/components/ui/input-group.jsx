@@ -30,6 +30,8 @@ function InputGroup({
         "has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3",
         // Focus state.
         "has-[[data-slot=input-group-control]:focus-visible]:border-primary",
+        // a select in it (a country code) whose list is open
+        "has-[[data-slot=select-trigger][data-state=open]]:border-primary",
         // Error state.
         "has-[[data-slot][aria-invalid=true]]:border-destructive",
         className

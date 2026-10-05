@@ -6,7 +6,8 @@ import { CheckIcon, ChevronDownIcon } from "lucide-react"
 import { Select as SelectPrimitive } from "radix-ui"
 
 // shadcn's select as NANA's dropdown, in place of the browser's: the trigger
-// is the field itself (36, 44 under a finger; the chevron turns when open),
+// is the field itself (36, 44 under a finger; the chevron turns when open,
+// and it keeps the focus line while its list is open, the list being out of it),
 // and the list floats 4 under it (or over it, when there is no room below),
 // at least as wide as the field, 16 corners, 8 inside, at most 320 tall. The
 // option under the pointer or the arrows is grey; the chosen one is medium
@@ -40,7 +41,7 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "group/select flex h-(--input-size) w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-left text-xs text-foreground transition-[border-color] duration-180 outline-none focus-visible:border-primary data-[placeholder]:text-muted-foreground pointer-coarse:text-[16px] pointer-coarse:leading-6 [&>span]:min-w-0 [&>span]:flex-1 [&>span]:truncate",
+        "group/select flex h-(--input-size) w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-left text-xs text-foreground transition-[border-color] duration-180 outline-none focus-visible:border-primary data-[state=open]:border-primary data-[placeholder]:text-muted-foreground pointer-coarse:text-[16px] pointer-coarse:leading-6 [&>span]:min-w-0 [&>span]:flex-1 [&>span]:truncate",
         className
       )}
       {...props}>
