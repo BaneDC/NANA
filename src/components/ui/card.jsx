@@ -29,7 +29,7 @@ function Card({
         "group/card flex flex-col gap-2 rounded-3xl bg-card p-4 text-card-foreground shadow-card",
         "has-[[data-slot=card-link]]:relative has-[[data-slot=card-link]]:cursor-pointer has-[[data-slot=card-link]]:hover:shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]",
         "has-[[data-slot=card-link]:focus-visible]:outline-2 has-[[data-slot=card-link]:focus-visible]:outline-offset-2 has-[[data-slot=card-link]:focus-visible]:outline-primary",
-        "has-[[data-slot=card-link]]:[&_[data-slot=button]]:relative has-[[data-slot=card-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=card-link]]:[&_[data-slot=badge]]:relative has-[[data-slot=card-link]]:[&_[data-slot=badge]]:z-1",
+        "has-[[data-slot=card-link]]:[&_[data-slot=button]]:relative has-[[data-slot=card-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=card-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:relative has-[[data-slot=card-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:z-1",
         className
       )}
       {...props} />

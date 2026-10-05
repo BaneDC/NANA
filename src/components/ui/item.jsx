@@ -11,7 +11,7 @@ import { Slot } from "radix-ui"
 // whose ::after stretches over the whole row, so the keyboard and a screen
 // reader get one target. On hover the row goes grey, the lines beside it step
 // aside, the name takes the primary's dark ink and its tags go white. Buttons
-// and statuses in it sit above the stretch and do only what they say. On a
+// and statuses in it (not its tags) sit above the stretch and do only what they say. On a
 // phone an `ItemAction` (the button that says the same as the link) is gone:
 // the row opens on a tap.
 //
@@ -50,7 +50,7 @@ function Item({
         "has-[[data-slot=item-link]]:cursor-pointer has-[[data-slot=item-link]]:hover:bg-muted has-[[data-slot=item-link]]:hover:before:opacity-0 [[data-slot=item]:has([data-slot=item-link]):hover+&]:before:opacity-0",
         "has-[[data-slot=item-link]]:hover:[&_[data-variant=tag]]:bg-card",
         "has-[[data-slot=item-link]:focus-visible]:outline-2 has-[[data-slot=item-link]:focus-visible]:outline-offset-2 has-[[data-slot=item-link]:focus-visible]:outline-primary",
-        "has-[[data-slot=item-link]]:[&_[data-slot=button]]:relative has-[[data-slot=item-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=item-link]]:[&_[data-slot=badge]]:relative has-[[data-slot=item-link]]:[&_[data-slot=badge]]:z-1",
+        "has-[[data-slot=item-link]]:[&_[data-slot=button]]:relative has-[[data-slot=item-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=item-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:relative has-[[data-slot=item-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:z-1",
         className
       )}
       {...props} />

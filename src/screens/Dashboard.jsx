@@ -14,7 +14,21 @@ import {
   visitCharge,
   waitingOnYou,
 } from '../data/familyCare';
-import Button from '../components/Button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardAction,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardLink,
+  CardTitle,
+} from '@/components/ui/card';
+import { Item, ItemAction, ItemContent, ItemGroup, ItemLink } from '@/components/ui/item';
+import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import { cn } from '@/lib/utils';
 import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
 import Tags from '../components/Tags';
@@ -30,16 +44,18 @@ import VisitReport from '../components/family/VisitReport';
 // goes through on its own unless someone says it was wrong. The note under
 // "Waiting for you" says which, so neither reads like the other.
 
-function Section({ title, sub, action, className = '', children }) {
+// A card with a title, an action beside it (a "see all"), a sentence and rows.
+// Rows under a head that has a button start 8 lower (docs/patterns.md §7).
+function Section({ title, sub, action, children }) {
   return (
-    <section className={`panel-card ${className}`}>
-      <div className="panel-card-head">
-        <p className="doc-section-title">{title}</p>
-        {action}
-      </div>
-      {sub && <p className="fam-sub">{sub}</p>}
+    <Card className={cn(action && '[&>[data-slot=item-group]]:mt-2')}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {action && <CardAction>{action}</CardAction>}
+      </CardHeader>
+      {sub && <CardDescription>{sub}</CardDescription>}
       {children}
-    </section>
+    </Card>
   );
 }
 
@@ -53,44 +69,73 @@ function SeeAll({ label, onClick }) {
   );
 }
 
+// A row in a card (docs/patterns.md §6): the avatar as tall as the title and the
+// sentence under it (38, 44 under a finger), the text beside it, and on the
+// right whatever the row has. Everything starts on the first line.
+function Row({ initials, ended, className, children }) {
+  return (
+    <Item
+      className={cn(
+        'items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-1)+var(--text-body-leading))] phone:flex-wrap',
+        className
+      )}
+    >
+      <Avatar>
+        <AvatarFallback className={cn(ended && 'bg-muted text-muted-foreground')}>{initials}</AvatarFallback>
+      </Avatar>
+      {children}
+    </Item>
+  );
+}
+
+const rowTitle = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
+const rowBody = 'text-xs leading-body text-muted-foreground';
+const rowInline = 'flex flex-wrap items-center gap-x-2 gap-y-1';
+// a badge in a row's title crosses its 16px line rather than heightening it
+const titleBadge = 'my-[calc((var(--text-xs-leading)-20px)/2)]';
+
 // A row that opens something: the title is the link and stretches over the
-// row, the button says the same thing on a wide screen, and on a phone a chevron
-// takes the button's place (docs/patterns.md §7).
+// row, and the button says the same thing on a wide screen; on a phone the row
+// opens on a tap (docs/patterns.md §7).
 function OpenRow({ initials, title, body, action, variant = 'secondary', onOpen }) {
   return (
-    <div className="fam-row is-clickable">
-      <span className="cg-avatar">{initials}</span>
-      <div className="fam-row-main">
-        <button type="button" className="fam-row-title card-link" onClick={onOpen}>
-          {title}
-        </button>
+    <Row initials={initials}>
+      <ItemContent>
+        <p className={rowTitle}>
+          <ItemLink onClick={onOpen}>{title}</ItemLink>
+        </p>
         {body}
-      </div>
-      <Button variant={variant} className="card-action" onClick={onOpen}>
-        {action}
-      </Button>
-      <ChevronRight size={16} strokeWidth={1.75} className="card-go" aria-hidden="true" />
-    </div>
+      </ItemContent>
+      <ItemAction>
+        <Button variant={variant} onClick={onOpen}>
+          {action}
+        </Button>
+      </ItemAction>
+    </Row>
   );
 }
 
 // The same, as a card of its own in the tinted tray of what waits on the
-// family: white like every card, its title a card's title.
+// family: white like every card, its title a card's title, its avatar as tall
+// as that title and the sentence under it (42, 48 under a finger).
 function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen }) {
   return (
-    <div className="panel-card is-row is-clickable">
-      <span className="cg-avatar">{initials}</span>
-      <div className="fam-row-main">
-        <button type="button" className="doc-section-title card-link" onClick={onOpen}>
-          {title}
-        </button>
+    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+var(--text-body-leading))]">
+      <Avatar>
+        <AvatarFallback>{initials}</AvatarFallback>
+      </Avatar>
+      <ItemContent>
+        <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <CardLink onClick={onOpen}>{title}</CardLink>
+        </p>
         {body}
-      </div>
-      <Button variant={variant} className="card-action" onClick={onOpen}>
-        {action}
-      </Button>
-      <ChevronRight size={16} strokeWidth={1.75} className="card-go" aria-hidden="true" />
-    </div>
+      </ItemContent>
+      <ItemAction>
+        <Button variant={variant} onClick={onOpen}>
+          {action}
+        </Button>
+      </ItemAction>
+    </Card>
   );
 }
 
@@ -122,46 +167,46 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
         : 'Naplaćuje se automatski, osim ako kažete da nešto nije u redu.';
 
   return (
-    <div className="view">
-      <div className="view-head">
-        <div className="view-head-text">
-          <h1 className="view-title">Zdravo, {firstName(user?.name || care.family.name)}</h1>
-          <p className="view-sub">
+    <Page>
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>Zdravo, {firstName(user?.name || care.family.name)}</PageTitle>
+          <PageDescription>
             {[care.elder.name && `Nega · ${care.elder.name}`, care.elder.area, care.payment.connected ? 'kartica je sačuvana' : 'kartica još nije dodata']
               .filter(Boolean)
               .join(' · ')}
-          </p>
-        </div>
+          </PageDescription>
+        </PageHeaderText>
         {/* Finding a caregiver is in the side menu, so the head does not say
             it again. Only a family that has asked nobody yet gets it, as the
             one step in the card below. */}
-        <div className="view-head-actions">
+        <PageActions>
           <AskAssistant onClick={onAskAssistant} />
-        </div>
-      </div>
+        </PageActions>
+      </PageHeader>
 
       {fresh && (
         <Attention title="Sledeći korak">
-          <div className="panel-card">
-            <p className="tip-body">
+          <Card>
+            <CardDescription>
               {plan
                 ? 'Plan nege je spreman. Pošaljite upit negovateljicama koje mu odgovaraju: upit šalje plan i ništa ne košta, a možete da pitate više njih.'
                 : 'Kad završite razgovor sa Minnom, ovde će biti plan nege i negovateljice koje mu odgovaraju.'}
-            </p>
-            <div className="panel-card-actions">
-              <Button variant="primary" onClick={onFindCaregiver} disabled={!plan}>
+            </CardDescription>
+            <CardFooter>
+              <Button onClick={onFindCaregiver} disabled={!plan}>
                 <Search size={14} strokeWidth={1.75} />
                 Pronađi negovateljicu
               </Button>
-            </div>
-          </div>
+            </CardFooter>
+          </Card>
         </Attention>
       )}
 
       {asked && (
         <Attention title={pendingNames.length ? 'Čeka se odgovor' : 'Stigli su odgovori'}>
-          <div className="panel-card">
-            <p className="tip-body">
+          <Card>
+            <CardDescription>
               {pendingNames.length === 1
                 ? `${pendingNames[0]} još nije odgovorila na vaš upit. Javićemo vam čim odgovori, a upit i odgovor su na stranici „Vaši upiti".`
                 : pendingNames.length > 1
@@ -169,25 +214,25 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                   : latest.length === 1
                     ? `${caregivers.find((c) => c.id === latest[0].caregiverId)?.name || 'Negovateljica'} ne može da preuzme. Na stranici „Vaši upiti" piše zašto.`
                     : 'Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Vaši upiti" piše zašto.'}
-            </p>
-            <div className="panel-card-actions">
+            </CardDescription>
+            <CardFooter>
               {/* once a request is out, finding someone is in the menu; the one
                   step here is where the requests are */}
-              <Button variant="primary" onClick={() => onView('requests')}>
+              <Button onClick={() => onView('requests')}>
                 <Send size={14} strokeWidth={1.75} />
                 Pogledaj upite
               </Button>
-            </div>
-          </div>
+            </CardFooter>
+          </Card>
         </Attention>
       )}
 
       {/* the same notice as on her page when nothing waits and nothing is booked */}
       {quiet && (
         <Attention title="Ništa ne čeka">
-          <div className="panel-card">
-            <p className="fam-next">Sve je sređeno - ništa ne čeka vaš odgovor i ništa nije zakazano.</p>
-          </div>
+          <Card>
+            <p className="text-sm text-foreground">Sve je sređeno - ništa ne čeka vaš odgovor i ništa nije zakazano.</p>
+          </Card>
         </Attention>
       )}
 
@@ -200,7 +245,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                 initials={w.arrangement.caregiver.initials}
                 title={`${firstName(w.arrangement.caregiver.name)} je poslala ${activeVersion(w.arrangement) ? 'nove uslove' : 'ugovor o nezi'}`}
                 body={
-                  <p className="fam-row-body">
+                  <p className={rowBody}>
                     {services(w.version.services.length)} po {money(w.version.rate)} na sat.{' '}
                     {activeVersion(w.arrangement)
                       ? `Verzija ${activeVersion(w.arrangement).version} važi dok ne odgovorite.`
@@ -208,7 +253,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                   </p>
                 }
                 action="Pogledaj uslove"
-                variant="primary"
+                variant="default"
                 onOpen={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}
               />
             ) : w.kind === 'extra' ? (
@@ -217,7 +262,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                 initials={w.visit.caregiver.initials}
                 title={`${firstName(w.visit.caregiver.name)} traži dodatne sate za ${w.visit.date.toLowerCase()}`}
                 body={
-                  <p className="fam-row-body">
+                  <p className={rowBody}>
                     Radila je {w.visit.extra.hours} h duže nego što je rezervisano. Naplaćuje se samo ako odobrite.
                   </p>
                 }
@@ -231,8 +276,8 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                 title={`${firstName(w.visit.caregiver.name)} je poslala radni nalog za ${w.visit.date.toLowerCase()}`}
                 body={
                   <>
-                    <p className="fam-row-body">Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.</p>
-                    <p className="fam-row-meta">
+                    <p className={rowBody}>Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.</p>
+                    <p className="mt-1 inline-flex items-center gap-1 text-small font-medium text-primary-700">
                       <Clock size={12} strokeWidth={2} />
                       {money(visitCharge(w.visit))} se naplaćuje za {w.visit.chargesInHours} h
                     </p>
@@ -251,23 +296,23 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
           title="Predstoji"
           sub="Zakazane posete. Novac se unapred rezerviše, a naplaćuje tek posle posete."
         >
-          <div className="fam-rows">
+          <ItemGroup>
             {coming.map((v) => (
               <OpenRow
                 key={v.id}
                 initials={v.caregiver.initials}
                 title={`${v.date} · ${v.time}`}
                 body={
-                  <p className="fam-row-body is-inline">
+                  <p className={cn(rowBody, rowInline)}>
                     {v.caregiver.name} · {v.hours} h po {money(v.rate)}/h
-                    <span className="cg-tag">{money(chargedFor(v.hours, v.rate))} rezervisano</span>
+                    <Badge variant="tag">{money(chargedFor(v.hours, v.rate))} rezervisano</Badge>
                   </p>
                 }
                 action="Pogledaj plan posete"
                 onOpen={() => onDrawer({ kind: 'plan', visitId: v.id })}
               />
             ))}
-          </div>
+          </ItemGroup>
         </Section>
       )}
 
@@ -276,47 +321,51 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
           title="Kako je prošla poslednja poseta"
           action={<SeeAll label="Sve posete" onClick={() => onView('visits')} />}
         >
-          <div className="fam-rows">
-            <div className="fam-row is-clickable">
-              <span className="cg-avatar">{last.caregiver.initials}</span>
-              <div className="fam-row-main">
-                <p className="fam-row-title">
-                  <button type="button" className="card-link" onClick={() => onDrawer({ kind: 'work-order', visitId: last.id })}>
+          <ItemGroup>
+            <Row initials={last.caregiver.initials}>
+              <ItemContent>
+                <p className={rowTitle}>
+                  <ItemLink onClick={() => onDrawer({ kind: 'work-order', visitId: last.id })}>
                     {last.date} · {last.time}
-                  </button>
+                  </ItemLink>
                 </p>
-                <p className="fam-row-body is-inline">
+                <p className={cn(rowBody, rowInline)}>
                   {last.caregiver.name} · {last.hours} h po {money(last.rate)}/h
-                  <span className="cg-tag">{money(visitCharge(last))} naplaćeno</span>
+                  <Badge variant="tag">{money(visitCharge(last))} naplaćeno</Badge>
                 </p>
-                <VisitReport report={last.report} first={firstName(last.caregiver.name)} done />
-              </div>
-              <ChevronRight size={16} strokeWidth={1.75} className="fam-row-chevron" aria-hidden="true" />
-            </div>
-          </div>
+                <VisitReport report={last.report} first={firstName(last.caregiver.name)} done className="mt-2" />
+              </ItemContent>
+              <ChevronRight size={16} strokeWidth={1.75} className="shrink-0 text-disabled phone:hidden" aria-hidden="true" />
+            </Row>
+          </ItemGroup>
         </Section>
       )}
 
       {care.arrangements.length > 0 && (
       <Section title={care.arrangements.length === 1 ? 'Vaša negovateljica' : 'Vaše negovateljice'}>
-        <div className="fam-rows">
+        <ItemGroup>
           {care.arrangements.map((a) => {
             const act = activeVersion(a);
             const pen = pendingVersion(a);
             const paid = a.visits.filter((v) => v.status === 'paid').length;
             const ended = Boolean(a.endedOn);
             return (
-              <div key={a.caregiver.id} className={`fam-row is-clickable${ended ? ' is-ended' : ''}`}>
-                <span className="cg-avatar">{a.caregiver.initials}</span>
-                <div className="fam-row-main">
-                  <p className="fam-row-title">
-                    <button type="button" className="card-link" onClick={() => onCaregiver(a.caregiver.id)}>
-                      {a.caregiver.name}
-                    </button>
-                    {pen && <span className="status-pill is-pending">{act ? 'Novi uslovi' : 'Ugovor čeka'}</span>}
-                    {!pen && !act && !ended && lastVersion(a)?.status === 'declined' && <span className="status-pill is-declined">Uslovi odbijeni</span>}
+              <Row key={a.caregiver.id} initials={a.caregiver.initials} ended={ended}>
+                <ItemContent>
+                  <p className={cn(rowTitle, ended && 'text-muted-foreground')}>
+                    <ItemLink onClick={() => onCaregiver(a.caregiver.id)}>{a.caregiver.name}</ItemLink>
+                    {pen && (
+                      <Badge variant="warning" className={titleBadge}>
+                        {act ? 'Novi uslovi' : 'Ugovor čeka'}
+                      </Badge>
+                    )}
+                    {!pen && !act && !ended && lastVersion(a)?.status === 'declined' && (
+                      <Badge variant="destructive" className={titleBadge}>
+                        Uslovi odbijeni
+                      </Badge>
+                    )}
                   </p>
-                  <p className="fam-row-body">
+                  <p className={rowBody}>
                     {ended
                       ? `Završeno ${a.endedOn}`
                       : a.since
@@ -329,18 +378,18 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
                   </p>
                   {/* a row says which kinds of help, not every service: the
                       agreement itself lists those on her page */}
-                  {act && !ended && <Tags label="Usluge" items={groupServices(act.services).map((g) => g.title)} />}
-                </div>
-                <span className="fam-row-side">Plaćenih poseta: {paid}</span>
-                <ChevronRight size={16} strokeWidth={1.75} className="fam-row-chevron" aria-hidden="true" />
-              </div>
+                  {act && !ended && (
+                    <Tags label="Usluge" items={groupServices(act.services).map((g) => g.title)} className="mt-2" />
+                  )}
+                </ItemContent>
+                <span className="shrink-0 text-small text-disabled phone:hidden">Plaćenih poseta: {paid}</span>
+                <ChevronRight size={16} strokeWidth={1.75} className="shrink-0 text-disabled phone:hidden" aria-hidden="true" />
+              </Row>
             );
           })}
-        </div>
+        </ItemGroup>
       </Section>
-
       )}
-
-    </div>
+    </Page>
   );
 }
