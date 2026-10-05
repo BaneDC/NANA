@@ -19,6 +19,22 @@ import { cn } from '@/lib/utils';
 // apart and at most 720 wide; with a back button first it starts 16 from the
 // top. Groups are 32 apart (12 + 20).
 
+// The white pane the app's pages, the chat and the caregiver's board sit in:
+// the rest of the screen beside the menu, 24 corners and the container's
+// shadow; on a narrow screen it runs to the bottom edge, square there.
+export function AppPane({ className, ...props }) {
+  return (
+    <div
+      data-slot="app-pane"
+      className={cn(
+        'relative flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-3xl bg-card shadow-container narrow:rounded-b-none',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 export function Page({ className, ...props }) {
   return (
     <div

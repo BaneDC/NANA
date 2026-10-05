@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { KeyRound } from 'lucide-react';
-import Button from './Button';
+import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import { Field, Input } from './TextField';
+
+// a warning on the waiting tint
+const warning = 'rounded-lg bg-warning-muted p-3 text-xs leading-body text-warning';
 
 // Bring-your-own-key, so whoever pulls the repo can try this with their own
 // account and nothing secret is ever committed. It is also the reason this
@@ -11,56 +17,58 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
   const valid = /^sk-ant-/.test(value.trim());
 
   return (
-    <div className="view">
-      <div className="view-head">
-        <div className="view-head-text">
-          <h1 className="view-title">AI razgovor</h1>
-          <p className="view-sub">Ova varijanta priča sa Claude-om uživo, pa joj treba tvoj ključ.</p>
-        </div>
-      </div>
+    <Page>
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>AI razgovor</PageTitle>
+          <PageDescription>Ova varijanta priča sa Claude-om uživo, pa joj treba tvoj ključ.</PageDescription>
+        </PageHeaderText>
+      </PageHeader>
 
-      <div className="panel-card">
-        <div className="panel-card-head">
-          <p className="doc-section-title">Anthropic API ključ</p>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Anthropic API ključ</CardTitle>
+        </CardHeader>
 
         {rejected && (
-          <p className="key-warning" role="alert">
+          <p className={warning} role="alert">
             Anthropic nije prihvatio ključ koji je bio sačuvan (401) - obrisan je, istekao ili je
             pogrešno kopiran. Upiši ključ koji radi; ako je stari u <code>.env.local</code>, zameni
             ga i tamo.
           </p>
         )}
 
-        <label className="key-field">
-          <KeyRound size={14} strokeWidth={1.75} />
-          <input
+        {/* the one field, as every field (docs/patterns.md §10) */}
+        <Field>
+          <Input
+            icon={KeyRound}
             type="password"
             value={value}
             placeholder="sk-ant-..."
             autoComplete="off"
             spellCheck={false}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && valid && onSave(value.trim())}
+            aria-label="Anthropic API ključ"
+            onChange={setValue}
+            onEnter={() => valid && onSave(value.trim())}
           />
-        </label>
+        </Field>
 
-        <p className="doc-p">
+        <CardDescription>
           Ostaje u <code>localStorage</code> ovog browsera i ne odlazi nigde osim ka Anthropic-u.
           Nije u repozitorijumu - svako ko povuče kod upisuje svoj.
-        </p>
-        <p className="doc-p">
+        </CardDescription>
+        <CardDescription>
           Browser ga pamti samo za ovu adresu, pa ga posle promene porta traži ponovo. Da ga ne
           upisuješ svaki put, stavi ga u <code>.env.local</code> u korenu projekta kao{' '}
           <code>ANTHROPIC_API_KEY=…</code> i restartuj server.
-        </p>
-        <p className="key-warning">
+        </CardDescription>
+        <p className={warning}>
           Ovako se radi samo lokalni demo. Ključ u browseru može da pročita bilo koja skripta na
           stranici, pa ovo ne sme da ide u produkciju - tamo poziv ide preko servera.
         </p>
 
-        <div className="panel-card-actions">
-          <Button variant="primary" disabled={!valid} onClick={() => onSave(value.trim())}>
+        <CardFooter>
+          <Button disabled={!valid} onClick={() => onSave(value.trim())}>
             Sačuvaj i počni
           </Button>
           {onCancel && (
@@ -68,8 +76,8 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
               Nazad
             </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </CardFooter>
+      </Card>
+    </Page>
   );
 }

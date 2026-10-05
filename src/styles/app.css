@@ -5706,49 +5706,6 @@ button.svc:hover {
   gap: var(--spacing-1);
 }
 
-/* ── the assistant, beyond the plan ────────────────────────────────────────── */
-
-/* ── the assistant, drawn by inline-chat-kit ───────────────────────────────── */
-
-/* The kit reads --ick- properties; these point it at NANA's own: its type,
-   its ink, white paper, and the warm primary where the kit marks something. */
-.nana-chat {
-  --ick-font-sans: var(--font-sans);
-  /* One size for the whole conversation. The kit sets the prose at 12 and the
-     composer at 12 while the sent bubble carries the app's 14, so a question
-     and its answer were set in different type. All three are the app's body
-     size now, on the app's leading. */
-  --ick-answer-size: var(--text-sm-size);
-  --ick-answer-leading: var(--text-sm-leading);
-  --ick-composer-size: var(--text-sm-size);
-  --ick-ink-rgb: 62 62 62;
-  --ick-paper-rgb: 255 255 255;
-  --ick-marker-rgb: 252 112 60;
-  /* the pane is white, like every other page */
-  --ick-page: var(--surface-elevated);
-  /* The artifact pane sits inside the chat's section, so its corner follows
-     the section's: 8 in from a 24 edge takes 16 (8 + 16 = 24), the app's card
-     corner. The kit's own 24 inset under a 40 corner came out rounder than the
-     section around it. */
-  /* The corner chain reaches the composer too: an 8 button inside 8 of
-     padding makes a 16 box, the app's own card corner. The kit's buttons are
-     pills; here they take the app's 8. */
-  --ick-input-radius: var(--radius-2xl);
-  --ick-artifact-pane-inset: var(--spacing-2);
-  --ick-artifact-pane-radius: var(--radius-2xl);
-  --ick-artifact-pane-pad: var(--spacing-4);
-  flex: 1;
-  min-height: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.nana-chat > * {
-  flex: 1;
-  min-height: 0;
-}
-
 /* NANA's cards inside the kit's answer, on the kit's own surfaces and corner
    chain, so they sit beside its approval and questions as one system:
    ground (40, 16 around) → card (24, 8 inside) → row (16, 8 inside) → chip (8). */
@@ -5919,39 +5876,6 @@ button.svc:hover {
   justify-content: flex-end;
   gap: var(--ick-nest-pad);
   padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
-}
-
-/* The question, once sent, as NANA's own bubble: flat primary with white
-   text, the composer's corner, and no glass, rim, highlight or shadow. */
-.nana-chat [class*='ick-surface-'][class*='ick-glass-'] {
-  --ick-input-fill: var(--primary);
-  --ick-input-text: var(--primary-foreground);
-  --ick-ink-glass: var(--primary-foreground);
-  --ick-ink-glass-strong: var(--primary-foreground);
-  --ick-ink-soft: var(--primary-foreground);
-  /* the same padding and corner as the composer it was typed into */
-  padding: var(--ick-space-4);
-  border-radius: var(--ick-input-radius) !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-.nana-chat [class*='ick-surface-'][class*='ick-glass-']::before,
-.nana-chat [class*='ick-surface-'][class*='ick-glass-']::after {
-  display: none;
-}
-
-/* the composer's own leading, on the app's grid rather than the kit's ratio */
-.nana-chat [class*='ick-editor-'] {
-  line-height: var(--text-sm-leading);
-}
-
-.nana-chat [class*='ick-surface-'][class*='ick-glass-'] [class*='ick-editor-'] {
-  color: var(--primary-foreground);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: 400;
 }
 
 /* ── registration ──────────────────────────────────────────────────────────── */
@@ -6242,12 +6166,6 @@ button.svc:hover {
   color: var(--text-primary);
 }
 
-/* The composer keeps the kit's own look; only its hint takes the app's
-   secondary text, dark enough to be read as a place to type. */
-.nana-chat [class*='ick-surface-']:not([class*='ick-glass-']) [data-placeholder]::before {
-  color: var(--text-secondary);
-}
-
 /* What opens in the chat's pane: the app's own rows, stacked on the pane's
    rhythm, the plan's letter and recommendations at the pane's width. */
 .nana-pane {
@@ -6291,111 +6209,6 @@ button.svc:hover {
 
 .kc-name-link:hover {
   text-decoration-color: currentColor;
-}
-
-/* The composer sets its own --ick-input-radius on its root, so the app's is
-   repointed there rather than on the chat around it. */
-.nana-chat [class*='ick-root-'] {
-  --ick-input-radius: var(--radius-2xl);
-}
-
-/* ---------- The chat kit's buttons, drawn as ours ----------
-   The kit draws its own buttons and takes none of ours: its header actions are
-   described to it, not handed over (docs/kit-issues.md). So each one is dressed
-   as the Button it stands for (Button.jsx, .btn; docs/patterns.md §9):
-   - primary: send, as every "Pošalji" is, and as onboarding's send already is;
-   - secondary: stop, the header's actions and "…", the suggestions, a
-     question's steps — the kit's primary, secondary and outline;
-   - ghost: copy, again, thumbs — the kit's ghost.
-   Same height, corner, type, border and shadow as .btn: text buttons are
-   --button-size, glyphs --chip-size, both 44 under a finger. Only the in-app
-   chat (.nana-chat); onboarding keeps its own. */
-
-.nana-chat [class*='ick-btn-'] {
-  border-radius: var(--radius-lg);
-  font-family: var(--font-sans);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-normal); /* .btn sets none, so it reads at the page's 400 */
-  color: var(--text-primary);
-  transition: opacity 0.18s ease, filter 0.15s ease, background 0.15s ease;
-}
-
-.nana-chat [class*='ick-btn-'][class*='ick-hasText-'] {
-  height: var(--button-size);
-  padding: 0 12px;
-  gap: var(--spacing-2);
-}
-
-.nana-chat [class*='ick-btn-']:not([class*='ick-hasText-']) {
-  width: var(--chip-size);
-  min-width: 0;
-  height: var(--chip-size);
-  padding: 0;
-}
-
-.nana-chat [class*='ick-btn-']:is([class*='ick-primary-'], [class*='ick-secondary-'], [class*='ick-outline-']) {
-  outline: 0;
-  border: 1px solid var(--surface-elevated-2);
-  background: var(--gradient-secondary);
-  box-shadow: var(--shadow-button);
-  color: var(--text-primary);
-}
-
-.nana-chat [class*='ick-btn-']:is([class*='ick-primary-'], [class*='ick-secondary-'], [class*='ick-outline-']):is(
-    :hover,
-    :active
-  ):not(:disabled) {
-  outline: 0;
-  background: var(--gradient-secondary);
-  box-shadow: var(--shadow-button);
-  filter: brightness(0.98);
-}
-
-/* send; stop is the same button while an answer comes, and stopping is not
-   something to set up, so it goes back to secondary (label from
-   data/chatLabels.sr.js) */
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-'][class*='ick-primary-']:not([aria-label='Zaustavi odgovor']),
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-'][class*='ick-primary-']:not([aria-label='Zaustavi odgovor']):is(
-    :hover,
-    :active
-  ):not(:disabled) {
-  border-color: var(--primary);
-  background: var(--gradient-primary);
-  color: var(--primary-foreground);
-}
-
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-'][class*='ick-primary-']:not([aria-label='Zaustavi odgovor']):hover:not(:disabled) {
-  filter: brightness(1.05);
-}
-
-.nana-chat [class*='ick-btn-'][class*='ick-ghost-'] {
-  background: none;
-  box-shadow: none;
-  color: var(--text-primary);
-}
-
-.nana-chat [class*='ick-btn-'][class*='ick-ghost-']:is(:hover, :active):not(:disabled) {
-  background: var(--surface-2);
-  color: var(--text-primary);
-}
-
-/* The composer's own glyphs (send, stop) stay the 28 the kit builds its row
-   around: it fixes their width inline, and its own ::after already reaches 44
-   under a finger. */
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-']:not([class*='ick-hasText-']) {
-  width: 28px;
-  height: 28px;
-}
-
-/* Button presses in to 0.97; the kit's went to 0.92–0.94 */
-.nana-chat [class*='ick-btn-']:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.nana-chat [class*='ick-btn-']:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
 }
 
 /* the reasoning's row, once it folds: a chevron that turns with it */
@@ -7442,8 +7255,7 @@ button.svc:hover {
   .btn.icon-only,
   .ci-btn,
   .imm-ctl,
-  .imm-send.btn,
-  .nana-chat [class*='ick-btn-']:not([class*='ick-hasText-']) {
+  .imm-send.btn {
     width: 44px;
     height: 44px;
   }
@@ -7469,24 +7281,6 @@ button.svc:hover {
     font-size: 16px !important;
   }
 
-  /* The chat's composer is not an input but an editable div, and the 14 set on
-     .nana-chat below was keeping it under 16 — so focusing it zoomed the page
-     on an iPhone and left the composer off to one side. Under a finger the
-     whole conversation is 16: the composer, the sent bubble and the answer stay
-     one size, as they are with a mouse, where all three are 14. (The kit's own
-     touch size is at least 16 too; ours was overriding it.) */
-  .nana-chat {
-    --ick-answer-size: 16px;
-    --ick-answer-leading: 24px;
-    --ick-composer-size: 16px;
-  }
-
-  .nana-chat [class*='ick-editor-'],
-  .nana-chat [class*='ick-surface-'][class*='ick-glass-'] [class*='ick-editor-'] {
-    font-size: 16px;
-    line-height: 24px;
-  }
-
   /* several lines of 16px need the room of 16px lines */
   .text-field textarea {
     line-height: 24px;
@@ -7495,10 +7289,6 @@ button.svc:hover {
   /* the rating line is meta, and meta is 12 under a finger */
   .cg-meta {
     font-size: var(--text-small-size);
-  }
-
-  .ick-theme {
-    --ick-control-m: 44px;
   }
 
   .app-topbar-btn,

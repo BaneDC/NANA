@@ -485,7 +485,7 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
 
 ```js
 (() => {
-  const root = document.querySelector('.chat-container') || document.body;
+  const root = document.querySelector("[data-slot=app-pane], .chat-container") || document.body;
   const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
   const name = (e) => (e.dataset?.slot ? `[${e.dataset.slot}]` : '') + e.className.toString().slice(0, 30);
   const exempt = (e) => e.parentElement?.closest('.cg-avatar, [data-slot=avatar]') || e.matches('.status-pill, .cg-tag, [data-slot=badge]') || (e.matches('.cg-avatar, [data-slot=avatar]') && e.getBoundingClientRect().width <= 36);
@@ -513,7 +513,7 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
 })();
 ```
 
-Na `/?kartice` skript uzima `.chat-container` strane negovateljice za koren, pa tamo pokreni telo funkcije nad svakim `.gallery-frame` (umesto `root`), a tablu negovateljice (`.board`, skroluje se vodoravno) izuzmi iz `overflow`.
+Na `/?kartice` skript uzima glavni panel strane negovateljice (`AppPane`, `[data-slot=app-pane]`) za koren, pa tamo pokreni telo funkcije nad svakim `.gallery-frame` (umesto `root`), a tablu negovateljice (skroluje se vodoravno) izuzmi iz `overflow`.
 
 Skript prepoznaje i shadcn komponente po `data-slot` atributu (`[data-slot=card]`, `[data-slot=card-title]`, `[data-slot=badge]`), jer one nemaju stare klase. Bez toga bi stranica na shadcn-u prošla sa nula prekršaja zato što skript ne bi našao nijednu karticu.
 

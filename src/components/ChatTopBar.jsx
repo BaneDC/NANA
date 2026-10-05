@@ -1,13 +1,16 @@
 import { FileText, Plus } from 'lucide-react';
-import Button from './Button';
+import { Button } from '@/components/ui/button';
+import { paneCloseClass } from '@/components/ui/dialog';
 
-// Sits above the thread: what this chat is called, and the artifacts it produced.
+// Sits above the thread: what this chat is called, and the artifacts it
+// produced. 12 by 16 (24 on the left, where the thread's text starts), over a
+// hairline.
 export default function ChatTopBar({ title, subtitle, artifactLabel, onArtifacts, onNewChat }) {
   return (
-    <div className="chat-topbar">
-      <div className="chat-topbar-text">
-        <p className="chat-topbar-title">{title}</p>
-        {subtitle && <p className="chat-topbar-sub">{subtitle}</p>}
+    <div className="flex shrink-0 items-center gap-2 border-b py-3 pr-4 pl-6">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground">{title}</p>
+        {subtitle && <p className="text-[11px] leading-[14px] text-disabled">{subtitle}</p>}
       </div>
 
       {artifactLabel && (
@@ -18,7 +21,7 @@ export default function ChatTopBar({ title, subtitle, artifactLabel, onArtifacts
       )}
 
       {onNewChat && (
-        <button type="button" className="ci-btn" onClick={onNewChat} aria-label="Novi razgovor" title="Novi razgovor">
+        <button type="button" className={paneCloseClass} onClick={onNewChat} aria-label="Novi razgovor" title="Novi razgovor">
           <Plus size={16} strokeWidth={2} />
         </button>
       )}

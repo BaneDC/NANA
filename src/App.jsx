@@ -15,7 +15,6 @@ import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Menu, Plus, X } from 'lucide-react';
-import { motion } from 'motion/react';
 import PaywallModal from './components/PaywallModal';
 import AskAssistant from './components/AskAssistant';
 import SharePlanModal from './components/SharePlanModal';
@@ -29,7 +28,10 @@ import RequestsPage from './screens/RequestsPage';
 import Toast from './components/family/Toast';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import ApiKeyPanel from './components/ApiKeyPanel';
-import Button from './components/Button';
+import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardFooter } from '@/components/ui/card';
+import { AppPane, Page } from '@/components/page';
+import { SidePanelFrame } from './components/SidePanel';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
@@ -52,6 +54,10 @@ const demoStart = DEMO ? reconcile({}, demoAnswers).answers : null;
 // What registration already told us about the person writing, as the answer the
 // onboarding would otherwise ask for, so Minna does not ask it again.
 const aboutYou = (u) => ({ values: { 'your-name': u.name, 'your-phone': u.phone } });
+
+// The screen: the menu and the pane beside it, 12 from the window's edges;
+// on a narrow screen the top bar above the pane, edge to edge.
+const shell = 'flex h-full overflow-hidden p-3 narrow:flex-col narrow:p-0';
 
 export default function App() {
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
@@ -411,22 +417,22 @@ export default function App() {
 
   if (phase === 'app' && isCaregiver) {
     return (
-      <div className="app">
+      <div className={shell}>
         <CaregiverApp user={user} />
       </div>
     );
   }
 
   return (
-    <div className="app">
+    <div className={shell}>
       {/* On a phone there is no room for a nav beside the page, so it becomes a
           drawer and this bar is what opens it. Above 900px the bar is not
           drawn at all and the nav is a column again. */}
       {phase === 'app' && !fullscreen && (
-        <div className="app-topbar">
+        <div className="hidden shrink-0 items-center gap-2 px-3 py-2 narrow:flex">
           <button
             type="button"
-            className="app-topbar-btn"
+            className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-(--nav-text) hover:bg-(--nav-hover) pointer-coarse:size-11"
             onClick={() => setNavOpen(true)}
             aria-label="Otvori meni"
             aria-expanded={navOpen}
@@ -435,12 +441,17 @@ export default function App() {
           </button>
           <Logo width={96} />
           {/* the chat is the assistant, so there it has nothing to open */}
-          {view !== 'chat' && <AskAssistant className="app-topbar-ask" onClick={askAssistant} />}
+          {view !== 'chat' && <AskAssistant className="ml-auto" onClick={askAssistant} />}
         </div>
       )}
 
       {phase === 'app' && !fullscreen && navOpen && (
-        <button type="button" className="nav-scrim" aria-label="Zatvori meni" onClick={() => setNavOpen(false)} />
+        <button
+          type="button"
+          className="fixed inset-0 z-30 hidden bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px] narrow:flex"
+          aria-label="Zatvori meni"
+          onClick={() => setNavOpen(false)}
+        />
       )}
 
       {phase === 'app' && !fullscreen && (
@@ -467,7 +478,7 @@ export default function App() {
       )}
 
       {phase === 'register' ? (
-        <div className="chat-container">
+        <AppPane>
           <AnimatePresence mode="wait">
             <Register
               key="register"
@@ -496,13 +507,13 @@ export default function App() {
               }}
             />
           </AnimatePresence>
-        </div>
+        </AppPane>
       ) : (
         <>
           {/* Razgovor: once the plan exists, the assistant, for anything; before
               it, the way back into the conversation with Minna. */}
           {view === 'chat' && !openThread && !fullscreen && (
-            <div className="chat-container">
+            <AppPane>
               {plan ? (
                 <KitAssistant
                   id={conversation}
@@ -513,26 +524,24 @@ export default function App() {
                   onOpenPane={setOpenPane}
                 />
               ) : (
-                <div className="view">
+                <Page>
                   <Attention title="Upoznavanje nije završeno">
-                    <div className="panel-card">
-                      <p className="tip-body">
+                    <Card>
+                      <CardDescription>
                         Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.
-                      </p>
-                      <div className="panel-card-actions">
-                        <Button variant="primary" onClick={() => startVariant('ai')}>
-                          Nastavite razgovor
-                        </Button>
-                      </div>
-                    </div>
+                      </CardDescription>
+                      <CardFooter>
+                        <Button onClick={() => startVariant('ai')}>Nastavite razgovor</Button>
+                      </CardFooter>
+                    </Card>
                   </Attention>
-                </div>
+                </Page>
               )}
-            </div>
+            </AppPane>
           )}
 
           {view === 'chat' && openThread && !fullscreen && (
-            <div className="chat-container">
+            <AppPane>
               <ChatTopBar
                 title={openThread.title}
                 subtitle={`Archived · ${openThread.date}`}
@@ -550,11 +559,11 @@ export default function App() {
                 user={user}
                 onNewChat={newChat}
               />
-            </div>
+            </AppPane>
           )}
 
           {view !== 'chat' && !fullscreen && (
-            <div className="chat-container">
+            <AppPane>
               {view === 'dashboard' && (
                 <Dashboard
                   care={care}
@@ -660,7 +669,7 @@ export default function App() {
                   onAskAssistant={askAssistant}
                 />
               )}
-            </div>
+            </AppPane>
           )}
         </>
       )}
@@ -681,25 +690,16 @@ export default function App() {
           />
         )}
         {rightPanel === 'copilot' && (
-          <motion.div
-            key="copilot-panel"
-            className="sidebar-wrap"
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 432, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 32 }}
-          >
-            <div className="sidebar is-chat">
-              <KitAssistant id={conversation} ctx={chatCtx} title="Asistent" actions={panelActions} />
-            </div>
-          </motion.div>
+          <SidePanelFrame key="copilot-panel">
+            <KitAssistant id={conversation} ctx={chatCtx} title="Asistent" actions={panelActions} />
+          </SidePanelFrame>
         )}
       </AnimatePresence>
 
       {/* The AI variant asks for a key first; it is fullscreen, so the gate is too. */}
       <AnimatePresence>
         {phase === 'app' && variant === 'ai' && (askingKey || !apiKey) && (
-          <div className="chat-container key-overlay" key="key-gate">
+          <AppPane key="key-gate" className="fixed inset-0 z-40 bg-primary-100">
             <ApiKeyPanel
               initial={apiKey}
               rejected={keyRejected}
@@ -714,7 +714,7 @@ export default function App() {
                 setVariant('classic');
               }}
             />
-          </div>
+          </AppPane>
         )}
         {phase === 'app' && variant === 'ai' && apiKey && !askingKey && (
           <ImmersiveConversation

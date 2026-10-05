@@ -30,6 +30,8 @@
 
 @import './tokens.css' layer(tokens);
 @import './app.css' layer(legacy);
+/* the chat kit's own dressing, in no layer, as the kit's CSS is (chat-kit.css) */
+@import './chat-kit.css';
 
 @custom-variant dark (&:is(.dark *));
 

@@ -1,5 +1,11 @@
 import { Check, Send } from 'lucide-react';
-import { ItemGroup } from '@/components/ui/item';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { SheetDescription } from '@/components/ui/sheet';
+import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
+import { DataList, DataRow } from '@/components/data-list';
+import { PaneLabel } from '@/components/pane';
 import { caregivers, daysText, slotsText } from '../data/carePlan';
 import { allVisits, firstName, money, pendingVersion, services, standingWith, waitingOnYou } from '../data/familyCare';
 import { priceLine } from '../data/plans';
@@ -7,7 +13,6 @@ import PlanContents from './PlanContents';
 import VisitRow from './family/VisitRow';
 import CaregiverHead from './CaregiverHead';
 import Rating from './Rating';
-import Button from './Button';
 import Tags from './Tags';
 
 // What opens beside the conversation when the family presses a card in the
@@ -20,30 +25,51 @@ import Tags from './Tags';
 // `previewFor` into the few lines the card in the answer shows.
 
 const STATUS = { pending: 'Čeka odgovor', accepted: 'Prihvatila', declined: 'Ne može' };
-const PILL = { pending: 'is-pending', accepted: 'is-accepted', declined: 'is-declined' };
+const BADGE = { pending: 'warning', accepted: 'success', declined: 'destructive' };
 
 function Empty({ children }) {
-  return <p className="fam-sub is-flush">{children}</p>;
+  return <p className="text-xs leading-body text-muted-foreground">{children}</p>;
 }
+
+// a pane's contents, 12 apart (16 for the plan)
+function Pane({ plan, children }) {
+  return <div className={plan ? 'flex flex-col gap-4' : 'flex flex-col gap-3'}>{children}</div>;
+}
+
+// A row in a pane: the avatar as tall as the title and the line under it, the
+// text, and on the right a state or a button (on a phone the button goes
+// under the text, the full width).
+function Row({ initials, title, children, end }) {
+  return (
+    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-1)+var(--text-body-leading))] phone:flex-wrap">
+      <Avatar>
+        <AvatarFallback>{initials}</AvatarFallback>
+      </Avatar>
+      <ItemContent>
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">{title}</p>
+        {children}
+      </ItemContent>
+      {end}
+    </Item>
+  );
+}
+
+const body = 'text-xs leading-body text-muted-foreground';
+const groupTitle = 'text-small font-medium text-muted-foreground';
 
 function RequestsPane({ care }) {
   if (!care.requests.length) return <Empty>Još niste pisali nijednoj negovateljici.</Empty>;
   return (
-    <div className="fam-rows">
+    <ItemGroup>
       {care.requests.map((r) => {
         const c = caregivers.find((x) => x.id === r.caregiverId);
         return (
-          <div key={r.caregiverId} className="fam-row">
-            <span className="cg-avatar">{c?.initials}</span>
-            <div className="fam-row-main">
-              <p className="fam-row-title">{c?.name}</p>
-              <p className="fam-row-body">{r.detail}</p>
-            </div>
-            <span className={`status-pill ${PILL[r.status]}`}>{STATUS[r.status]}</span>
-          </div>
+          <Row key={r.caregiverId} initials={c?.initials} title={c?.name} end={<Badge variant={BADGE[r.status]}>{STATUS[r.status]}</Badge>}>
+            <p className={body}>{r.detail}</p>
+          </Row>
         );
       })}
-    </div>
+    </ItemGroup>
   );
 }
 
@@ -55,37 +81,40 @@ function CarePane({ care, onDrawer }) {
   }
   return (
     <>
-      {waiting.length > 0 && <p className="section-title">Čeka na vas</p>}
-      <div className="fam-rows">
+      {waiting.length > 0 && <p className={groupTitle}>Čeka na vas</p>}
+      <ItemGroup>
         {waiting.map((w) =>
           w.kind === 'terms' ? (
-            <div key={`t-${w.arrangement.caregiver.id}`} className="fam-row is-action">
-              <span className="cg-avatar">{w.arrangement.caregiver.initials}</span>
-              <div className="fam-row-main">
-                <p className="fam-row-title">{firstName(w.arrangement.caregiver.name)} je poslala uslove</p>
-                <p className="fam-row-body">
-                  {services(w.version.services.length)} po {money(w.version.rate)} na sat
-                </p>
-              </div>
-              <Button variant="primary" onClick={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}>
-                Pogledaj
-              </Button>
-            </div>
+            <Row
+              key={`t-${w.arrangement.caregiver.id}`}
+              initials={w.arrangement.caregiver.initials}
+              title={`${firstName(w.arrangement.caregiver.name)} je poslala uslove`}
+              end={
+                <Button className="phone:w-full" onClick={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}>
+                  Pogledaj
+                </Button>
+              }
+            >
+              <p className={body}>
+                {services(w.version.services.length)} po {money(w.version.rate)} na sat
+              </p>
+            </Row>
           ) : (
-            <div key={`w-${w.visit.id}`} className="fam-row is-action">
-              <span className="cg-avatar">{w.visit.caregiver.initials}</span>
-              <div className="fam-row-main">
-                <p className="fam-row-title">Radni nalog za {w.visit.date}</p>
-              </div>
-              <Button variant="secondary" onClick={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}>
-                Pogledaj
-              </Button>
-            </div>
+            <Row
+              key={`w-${w.visit.id}`}
+              initials={w.visit.caregiver.initials}
+              title={`Radni nalog za ${w.visit.date}`}
+              end={
+                <Button variant="secondary" className="phone:w-full" onClick={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}>
+                  Pogledaj
+                </Button>
+              }
+            />
           )
         )}
-      </div>
-      {coming.length > 0 && <p className="section-title">Predstoji</p>}
-      <ItemGroup className="fam-rows">
+      </ItemGroup>
+      {coming.length > 0 && <p className={groupTitle}>Predstoji</p>}
+      <ItemGroup>
         {coming.map((v) => (
           <VisitRow key={v.id} visit={v} showWho onDrawer={onDrawer} />
         ))}
@@ -98,7 +127,7 @@ function VisitsPane({ care, onDrawer }) {
   const visits = allVisits(care);
   if (!visits.length) return <Empty>Još nema nijedne posete.</Empty>;
   return (
-    <ItemGroup className="fam-rows">
+    <ItemGroup>
       {visits.map((v) => (
         <VisitRow key={v.id} visit={v} showWho onDrawer={onDrawer} />
       ))}
@@ -109,55 +138,51 @@ function VisitsPane({ care, onDrawer }) {
 function CaregiversPane({ care, onContact }) {
   const list = [...caregivers].sort((a, b) => b.match - a.match);
   return (
-    <div className="fam-rows">
+    <ItemGroup>
       {list.map((c) => {
         const asked = care.requests.some((r) => r.caregiverId === c.id);
         return (
-          <div key={c.id} className="fam-row">
-            <span className="cg-avatar">{c.initials}</span>
-            <div className="fam-row-main">
-              <p className="fam-row-title">{c.name}</p>
-              <p className="fam-row-body">
-                <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
-              </p>
-            </div>
-            {asked ? (
-              <span className="status-pill is-accepted">
-                <Check size={12} strokeWidth={2} />
-                Poslato
-              </span>
-            ) : (
-              <Button variant="primary" onClick={() => onContact(c)}>
-                <Send size={14} strokeWidth={1.75} />
-                Poruka
-              </Button>
-            )}
-          </div>
+          <Row
+            key={c.id}
+            initials={c.initials}
+            title={c.name}
+            end={
+              asked ? (
+                <Badge variant="success">
+                  <Check size={12} strokeWidth={2} />
+                  Poslato
+                </Badge>
+              ) : (
+                <Button className="phone:w-full" onClick={() => onContact(c)}>
+                  <Send size={14} strokeWidth={1.75} />
+                  Poruka
+                </Button>
+              )
+            }
+          >
+            <p className={body}>
+              <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
+            </p>
+          </Row>
         );
       })}
-    </div>
+    </ItemGroup>
   );
 }
 
 function SettingsPane({ care, unlocked, country, onUnlock }) {
   return (
-    <div className="bc-lines ag-terms">
-      <div className="bc-line">
-        <span className="bc-line-label">Pretplata</span>
-        <span>{unlocked ? `Aktivna · ${priceLine(country)}` : 'Nije aktivna'}</span>
-      </div>
-      <div className="bc-line">
-        <span className="bc-line-label">Kartica</span>
-        <span>{care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodata'}</span>
-      </div>
+    <DataList className="mt-2">
+      <DataRow label="Pretplata">{unlocked ? `Aktivna · ${priceLine(country)}` : 'Nije aktivna'}</DataRow>
+      <DataRow label="Kartica">
+        {care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodata'}
+      </DataRow>
       {!unlocked && (
-        <div className="panel-card-actions">
-          <Button variant="primary" onClick={onUnlock}>
-            Pretplati se
-          </Button>
+        <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
+          <Button onClick={onUnlock}>Pretplati se</Button>
         </div>
       )}
-    </div>
+    </DataList>
   );
 }
 
@@ -172,7 +197,7 @@ export function paneFor(openId, ctx) {
             title: `Plan nege · ${plan.name}`,
             meta: 'Aktivan',
             children: (
-              <div className="nana-pane is-plan">
+              <Pane plan>
                 <PlanContents
                   plan={plan}
                   unlocked={unlocked}
@@ -181,20 +206,20 @@ export function paneFor(openId, ctx) {
                   onFindCaregivers={() => onOpenPage('find-caregiver')}
                   change={planChange}
                 />
-              </div>
+              </Pane>
             ),
           }
         : null;
     case 'my-care':
-      return { title: 'Moja nega', children: <div className="nana-pane"><CarePane care={care} onDrawer={onDrawer} /></div> };
+      return { title: 'Moja nega', children: <Pane><CarePane care={care} onDrawer={onDrawer} /></Pane> };
     case 'requests':
-      return { title: 'Vaši upiti', meta: `${care.requests.length}`, children: <div className="nana-pane"><RequestsPane care={care} /></div> };
+      return { title: 'Vaši upiti', meta: `${care.requests.length}`, children: <Pane><RequestsPane care={care} /></Pane> };
     case 'visits':
-      return { title: 'Posete', children: <div className="nana-pane"><VisitsPane care={care} onDrawer={onDrawer} /></div> };
+      return { title: 'Posete', children: <Pane><VisitsPane care={care} onDrawer={onDrawer} /></Pane> };
     case 'find-caregiver':
-      return { title: 'Negovateljice za vas', meta: `${caregivers.length}`, children: <div className="nana-pane"><CaregiversPane care={care} onContact={onContact} /></div> };
+      return { title: 'Negovateljice za vas', meta: `${caregivers.length}`, children: <Pane><CaregiversPane care={care} onContact={onContact} /></Pane> };
     case 'settings':
-      return { title: 'Pretplata i plaćanje', children: <div className="nana-pane"><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></div> };
+      return { title: 'Pretplata i plaćanje', children: <Pane><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></Pane> };
     case 'caregiver': {
       const c = caregivers.find((x) => x.id === id);
       if (!c) return null;
@@ -202,35 +227,29 @@ export function paneFor(openId, ctx) {
       return {
         title: 'Informacije o negovateljici',
         children: (
-          <div className="nana-pane">
+          <Pane>
             <CaregiverHead caregiver={c} standing={standingWith(care, c.id)} />
-            <p className="ag-label">O sebi</p>
-            <p className="doc-p">{c.bio}</p>
-            <p className="ag-label">Klasifikacije</p>
+            <PaneLabel>O sebi</PaneLabel>
+            <SheetDescription>{c.bio}</SheetDescription>
+            <PaneLabel>Klasifikacije</PaneLabel>
             <Tags items={c.classifications} />
-            <div className="bc-lines ag-terms">
-              <p className="bc-line">
-                <span className="bc-line-label">Dolazi</span>
-                <span className="bc-line-value">
-                  {daysText(c.days)} · {slotsText(c.slots)}
-                </span>
-              </p>
-              <p className="bc-line">
-                <span className="bc-line-label">Jezici</span>
-                <span className="bc-line-value">{c.languages.join(', ')}</span>
-              </p>
-            </div>
+            <DataList className="mt-2">
+              <DataRow label="Dolazi">
+                {daysText(c.days)} · {slotsText(c.slots)}
+              </DataRow>
+              <DataRow label="Jezici">{c.languages.join(', ')}</DataRow>
+            </DataList>
             {asked ? (
-              <p className="fam-sub is-flush">{asked.detail}</p>
+              <p className={body}>{asked.detail}</p>
             ) : (
-              <div className="panel-card-actions">
-                <Button variant="primary" onClick={() => onContact(c)}>
+              <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
+                <Button onClick={() => onContact(c)}>
                   <Send size={14} strokeWidth={1.75} />
                   Pošalji poruku
                 </Button>
               </div>
             )}
-          </div>
+          </Pane>
         ),
       };
     }

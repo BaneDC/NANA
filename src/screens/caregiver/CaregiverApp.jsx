@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
+import { AppPane } from '@/components/page';
 import CaregiverTopBar from '../../components/caregiver/CaregiverTopBar';
 import Board from './Board';
 import ClientPage from './ClientPage';
@@ -142,7 +143,7 @@ export default function CaregiverApp({ user }) {
   const open = clients.find((c) => c.id === openId);
 
   return (
-    <div className="chat-container">
+    <AppPane>
       <CaregiverTopBar user={user} />
       <AnimatePresence mode="wait">
         {open ? (
@@ -160,6 +161,6 @@ export default function CaregiverApp({ user }) {
           <Board key="board" user={user} clients={clients} paid={paid} actions={actions} />
         )}
       </AnimatePresence>
-    </div>
+    </AppPane>
   );
 }
