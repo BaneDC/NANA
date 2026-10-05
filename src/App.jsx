@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import Register from './screens/Register';
-import ArchivedChat from './screens/ArchivedChat';
 import Dashboard from './screens/Dashboard';
 import Plans from './screens/Plans';
 import FindCaregiver from './screens/FindCaregiver';
@@ -9,7 +8,6 @@ import Profile from './screens/Profile';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
 import Logo from './components/Logo';
-import ChatTopBar from './components/ChatTopBar';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
 import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
@@ -81,7 +79,6 @@ export default function App() {
   const [paywall, setPaywall] = useState(null);
   const shownPaywall = useKept(paywall);
   const [threads, setThreads] = useState(seedThreads);
-  const [activeThread, setActiveThread] = useState('live');
   // the history of conversations opens when asked for
   const [chatListOpen, setChatListOpen] = useState(false);
   const [planListOpen, setPlanListOpen] = useState(true);
@@ -346,12 +343,6 @@ export default function App() {
     setView('chat');
   };
 
-  const selectThread = (id) => {
-    setActiveThread(id);
-    setView('chat');
-    setRightPanel(null);
-  };
-
   // From the Care plans side a plan opens as its own page; from the chat it stays
   // a side panel, because there it is an artifact of the conversation.
   const openPlanPage = (id) => {
@@ -375,12 +366,10 @@ export default function App() {
     if (next === 'ai' && !apiKey) setAskingKey(true);
     if (next !== 'classic') {
       setRightPanel(null);
-      setActiveThread('live');
       setView('chat');
     }
   };
 
-  const openThread = threads.find((t) => t.id === activeThread);
 
   const entries = planEntries({
     plan,
@@ -512,7 +501,7 @@ export default function App() {
         <>
           {/* Razgovor: once the plan exists, the assistant, for anything; before
               it, the way back into the conversation with Minna. */}
-          {view === 'chat' && !openThread && !fullscreen && (
+          {view === 'chat' && !fullscreen && (
             <AppPane>
               {plan ? (
                 <KitAssistant
@@ -537,28 +526,6 @@ export default function App() {
                   </Attention>
                 </Page>
               )}
-            </AppPane>
-          )}
-
-          {view === 'chat' && openThread && !fullscreen && (
-            <AppPane>
-              <ChatTopBar
-                title={openThread.title}
-                subtitle={`Archived · ${openThread.date}`}
-                artifactLabel="Care plan"
-                onArtifacts={() => {
-                  document
-                    .getElementById('archived-artifact')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                onNewChat={newChat}
-              />
-              <ArchivedChat
-                key={openThread.id}
-                thread={openThread}
-                user={user}
-                onNewChat={newChat}
-              />
             </AppPane>
           )}
 
