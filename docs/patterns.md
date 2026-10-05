@@ -76,7 +76,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 | Između grupa | 32 (`.view > .section + .section`: gap 12 + 20) |
 | Od ivice panela do sadržaja stranice | 24 sa svih strana (`.view`; na telefonu 16) |
 | Unutar kartice, između delova | 8 (gap kartice) |
-| Od glave sa avatarom do sadržaja ispod nje preko cele širine (upit, kartica na tabli, poruka negovateljici, profil) | 20 (gap 8 + 12) |
+| Od glave sa avatarom do sadržaja ispod nje preko cele širine (kartica na tabli, poruka negovateljici, profil) | 20 (gap 8 + 12) |
 | Unutar grupe sadržaja (npr. ime i ocena) | 4 |
 | Između grupa sadržaja u kartici | 12 |
 | Od sadržaja do footera kartice | 16 |
@@ -185,6 +185,8 @@ Mere (sve radi CSS u bloku „Rows inside a card" u `app.css`):
 - na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`.cg-tag`) u njemu postanu bele, da ne nestanu u sivom.
 
 Klase redova koje ovo već dobijaju: `.caregiver` (bez `.is-wide`), `.fam-row`, `.contact-row`, `.fam-visit`, `.visit`. Kontejneri: `.rec-providers`, `.fam-rows`, `.contact-rows`, `.fam-visits`, `.visit-list`.
+
+**Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, dugme 16 ispod, a stanje je značka pored imena (`.fam-row-title`). Tako je kartica upita („Vaši upiti"). Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
 
 **Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + razmak + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa raste zajedno sa tekstom na dodir:
 

@@ -80,50 +80,56 @@ export default function RequestsPage({ care, onCare, onCaregiver, onFind, onCont
               const askAgain = r.status === 'declined' && latestRequest(care, r.caregiverId) === r && canAsk(care, r.caregiverId);
               return (
                 <section key={r.id || r.caregiverId} className="panel-card fam-request">
+                  {/* Who she is, and under her name everything about the
+                      request, in the same column: the avatar stands apart on
+                      the left, as in every row on Moja nega (docs/patterns.md
+                      §6). The state is a pill beside her name. */}
                   <div className="fam-request-head">
                     <span className="cg-avatar">{cg.initials}</span>
                     <div className="fam-row-main">
-                      <p className="fam-row-title">{cg.name}</p>
+                      <p className="fam-row-title">
+                        {cg.name}
+                        <span className={`status-pill ${PILL[r.status]}`}>
+                          <Icon size={12} strokeWidth={2} />
+                          {LABEL[r.status]}
+                        </span>
+                      </p>
                       <p className="fam-row-body">
                         {cg.area} · {cg.rate} · {r.again ? 'ponovni upit' : 'upit'} poslat {r.requested}
                       </p>
+                      <div className="tag-rows">
+                        <Group label="Vaša poruka" text={r.message} />
+                        <p className="fam-sub is-flush">
+                          {r.status === 'declined' ? (
+                            <>
+                              <strong>Razlog: </strong>
+                              {r.detail}
+                            </>
+                          ) : r.status === 'pending' ? (
+                            `${firstName(cg.name)} još nije odgovorila. Javićemo vam u svakom slučaju.`
+                          ) : linked ? (
+                            `${firstName(cg.name)} je prihvatila. Ugovor i posete su na njenoj stranici.`
+                          ) : (
+                            `${firstName(cg.name)} je prihvatila. ${r.detail}`
+                          )}
+                        </p>
+                      </div>
+                      {linked && (
+                        <div className="panel-card-actions">
+                          <Button variant="secondary" onClick={() => onCaregiver(r.caregiverId)}>
+                            Pogledaj saradnju
+                          </Button>
+                        </div>
+                      )}
+                      {askAgain && (
+                        <div className="panel-card-actions">
+                          <Button variant="primary" onClick={() => onContact?.(cg)}>
+                            Pitaj ponovo
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    <span className={`status-pill ${PILL[r.status]}`}>
-                      <Icon size={12} strokeWidth={2} />
-                      {LABEL[r.status]}
-                    </span>
                   </div>
-                  <div className="tag-rows">
-                    <Group label="Vaša poruka" text={r.message} />
-                  </div>
-                  <p className="fam-sub is-flush">
-                    {r.status === 'declined' ? (
-                      <>
-                        <strong>Razlog: </strong>
-                        {r.detail}
-                      </>
-                    ) : r.status === 'pending' ? (
-                      `${firstName(cg.name)} još nije odgovorila. Javićemo vam u svakom slučaju.`
-                    ) : linked ? (
-                      `${firstName(cg.name)} je prihvatila. Ugovor i posete su na njenoj stranici.`
-                    ) : (
-                      `${firstName(cg.name)} je prihvatila. ${r.detail}`
-                    )}
-                  </p>
-                  {linked && (
-                    <div className="panel-card-actions">
-                      <Button variant="secondary" onClick={() => onCaregiver(r.caregiverId)}>
-                        Pogledaj saradnju
-                      </Button>
-                    </div>
-                  )}
-                  {askAgain && (
-                    <div className="panel-card-actions">
-                      <Button variant="primary" onClick={() => onContact?.(cg)}>
-                        Pitaj ponovo
-                      </Button>
-                    </div>
-                  )}
                 </section>
               );
             })}

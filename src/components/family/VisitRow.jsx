@@ -80,7 +80,7 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
       : v.status === 'planned'
         ? { label: 'Pogledaj plan posete', variant: 'secondary', drawer: { kind: 'plan', visitId: v.id } }
         : (v.status === 'paid' || v.status === 'disputed' || v.resolution) && v.report
-          ? { label: 'Radni nalog', variant: 'ghost', drawer: { kind: 'work-order', visitId: v.id } }
+          ? { label: 'Radni nalog', variant: 'secondary', drawer: { kind: 'work-order', visitId: v.id } }
           : null;
 
   const open = action && (() => onDrawer(action.drawer));
