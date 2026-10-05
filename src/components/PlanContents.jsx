@@ -3,15 +3,16 @@ import { coordinator } from '../data/carePlan';
 import CoordinatorMessage from './CoordinatorMessage';
 import RecommendationCard from './RecommendationCard';
 import { CoordinatorContact } from './PlanFooterBlocks';
-import Button from './Button';
+import { Button } from '@/components/ui/button';
+import { PageSection } from '@/components/page';
 
 // The body of a care plan, in the order the client's document lays it out: the
 // coordinator's letter, then what we recommend — each saying why it is being
 // recommended for this person — then the way to reach the coordinator. Shared by
 // the side panel and the full page so they never drift apart.
 //
-// Three groups, and the spacing says so: 8px between the cards, 12px from the
-// group's title to them, 32px between one group and the next (docs/patterns.md). The caregivers
+// Three groups, and the spacing says so: 12px between the cards and from the
+// group's title to them, 32px between one group and the next (docs/patterns.md §3). The caregivers
 // live inside the recommendation that proposes them — a second full list under
 // the plan was the same names again, with nothing new to say.
 export default function PlanContents({
@@ -29,13 +30,12 @@ export default function PlanContents({
   const locked = (plan.recommendations || []).filter((r) => r.locked);
 
   return (
-    <div className="plan-doc">
+    <div className="flex flex-col gap-8">
       {plan.letter && (
         <CoordinatorMessage letter={plan.letter} changed={Boolean(change?.letter)} changeKey={change?.at} />
       )}
 
-      <section className="section">
-        <p className="section-title">Šta preporučujemo</p>
+      <PageSection title="Šta preporučujemo">
 
           {open.map((rec) => (
             <RecommendationCard
@@ -71,28 +71,32 @@ export default function PlanContents({
               />
             ))
           ) : (
-            <div className="locked-region">
-              <div className="locked-content" aria-hidden="true">
+            // the rest, blurred and fading out under what opens it
+            <div className="relative min-h-[300px] overflow-hidden">
+              <div
+                className="pointer-events-none -mx-4 flex max-h-[300px] flex-col gap-3 overflow-hidden px-4 blur-[3.5px] select-none [mask-image:linear-gradient(180deg,#000_0%,#000_40%,transparent_95%)]"
+                aria-hidden="true"
+              >
                 {locked.map((rec) => (
                   <RecommendationCard key={rec.id} rec={rec} unlocked={false} />
                 ))}
               </div>
-              <div className="locked-overlay">
-                <span className="locked-badge">
+              <div className="absolute inset-0 flex flex-col items-center justify-end gap-2 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.6)_45%,var(--surface-elevated)_72%)] p-4 text-center">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
                   <Lock size={14} strokeWidth={2} />
                 </span>
-                <p className="locked-title">Još {locked.length} preporuke u punom planu</p>
-                <p className="locked-note">
+                <p className="text-sm font-medium text-foreground">Još {locked.length} preporuke u punom planu</p>
+                <p className="mb-2 text-xs leading-body text-muted-foreground">
                   Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Minna, promene
                   koje stan čine bezbednijim{archived ? '.' : ', i direktan broj svake negovateljice.'}
                 </p>
-                <Button variant="primary" size="lg" onClick={onUnlock}>
+                <Button size="lg" onClick={onUnlock}>
                   <Lock size={12} strokeWidth={2} /> Otključajte ceo plan nege
                 </Button>
               </div>
             </div>
           )}
-      </section>
+      </PageSection>
 
       {!archived && <CoordinatorContact coordinator={plan.coordinator || coordinator} />}
     </div>

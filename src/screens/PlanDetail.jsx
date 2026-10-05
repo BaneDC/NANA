@@ -1,9 +1,11 @@
-import { AnimatePresence } from 'motion/react';
 import { Send } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardDescription } from '@/components/ui/card';
+import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import PlanContents from '../components/PlanContents';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
-import Button from '../components/Button';
 import BackButton from '../components/BackButton';
 
 // A care plan as its own page, reached from the Care plans list or the nav.
@@ -30,39 +32,40 @@ export default function PlanDetail({
   const shownChange = archived ? null : change;
 
   return (
-    <div className="view">
+    <Page>
       <BackButton label="Planovi nege" onClick={onBack} />
-      <div className="view-head">
-        <div className="view-head-text">
-          <h1 className="view-title">{title}</h1>
-          <p className="view-sub">
-            {date} · <span className={`status-pill is-${archived ? 'muted' : 'accepted'}`}>{status}</span>
-          </p>
-        </div>
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>{title}</PageTitle>
+          <PageDescription>
+            {date} ·{' '}
+            <Badge variant={archived ? 'secondary' : 'success'} className="align-middle">
+              {status}
+            </Badge>
+          </PageDescription>
+        </PageHeaderText>
         {/* Two ways to change the plan, side by side: by hand, or by telling the
             assistant what is different. Only the live plan can change. Icons
             alone here: three labelled buttons took the width the title needs,
             and on a phone they wrapped under it. */}
-        <div className="view-head-actions">
+        <PageActions>
           <AskAssistant iconOnly onClick={onAskAssistant} />
           {onShare && (
-            <Button variant="secondary" iconOnly onClick={onShare} aria-label="Pošalji plan" title="Pošalji plan">
+            <Button variant="secondary" size="icon" onClick={onShare} aria-label="Pošalji plan" title="Pošalji plan">
               <Send size={14} strokeWidth={1.75} />
             </Button>
           )}
-        </div>
-      </div>
+        </PageActions>
+      </PageHeader>
 
-      <AnimatePresence>
-        {shownChange && (
-          <PlanChangeBanner key={shownChange.at} change={shownChange} onUndo={onUndoChange} onDismiss={onDismissChange} />
-        )}
-      </AnimatePresence>
+      {shownChange && (
+        <PlanChangeBanner key={shownChange.at} change={shownChange} onUndo={onUndoChange} onDismiss={onDismissChange} />
+      )}
 
       {archived && (
-        <div className="panel-card">
-          <p className="doc-p">{entry.summary}</p>
-        </div>
+        <Card>
+          <CardDescription>{entry.summary}</CardDescription>
+        </Card>
       )}
 
       <PlanContents
@@ -78,12 +81,12 @@ export default function PlanDetail({
       />
 
       {archived && (
-        <div className="panel-card-actions">
+        <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
           <Button variant="secondary" onClick={onBack}>
             Nazad na sve planove
           </Button>
         </div>
       )}
-    </div>
+    </Page>
   );
 }

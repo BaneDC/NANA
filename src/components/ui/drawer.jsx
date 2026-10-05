@@ -59,6 +59,7 @@ function DrawerOverlay({
 
 function DrawerContent({
   className,
+  bodyClassName,
   children,
   kind = "sheet",
   ...props
@@ -82,7 +83,7 @@ function DrawerContent({
         {kind === "dialog" ? (
           <div
             data-slot="drawer-scroll"
-            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]">
+            className={cn("flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]", bodyClassName)}>
             {children}
           </div>
         ) : children}

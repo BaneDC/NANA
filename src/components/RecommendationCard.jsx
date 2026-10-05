@@ -1,15 +1,22 @@
 import { useState } from 'react';
 import { ArrowRight, CalendarCheck, Check, Package } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ItemGroup } from '@/components/ui/item';
+import { cn } from '@/lib/utils';
 import { caregiversFor } from '../data/carePlan';
 import { PARTNERS, discounted, price } from '../data/partners';
 import CaregiverRow from './CaregiverRow';
-import Button from './Button';
 
 // One recommendation, in the shape the client's document sketched: what we suggest,
 // *why we suggest it for this person*, and who would do it. Where a partner does
 // it, the card shows their price and the lower one the family pays when Minna
 // books it — that difference is the reason to go through us — and a single action
 // that hands it to her.
+//
+// A recommendation the assistant just rewrote is ringed and says "Izmenjeno";
+// the ring flares once and settles.
 export default function RecommendationCard({
   rec,
   standingOf,
@@ -23,51 +30,59 @@ export default function RecommendationCard({
 }) {
   return (
     // keyed by the change, so the highlight plays again for a second change
-    <div className={`panel-card rec-card${changed ? ' is-changed' : ''}`} key={changed ? changeKey : 'rec'}>
-      <div className="panel-card-head">
-        <p className="doc-section-title">{rec.title}</p>
-        {changed && <span className="status-pill is-attention">Izmenjeno</span>}
-      </div>
+    <Card
+      className={cn(changed && 'animate-plan-changed shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]')}
+      key={changed ? changeKey : 'rec'}
+    >
+      <CardHeader>
+        <CardTitle>{rec.title}</CardTitle>
+        {changed && (
+          <CardAction>
+            <Badge>Izmenjeno</Badge>
+          </CardAction>
+        )}
+      </CardHeader>
 
-      <p className="card-label">Zašto ovo preporučujemo</p>
-      <p className="rec-why">{rec.why}</p>
+      <p className="text-small font-medium text-muted-foreground">Zašto ovo preporučujemo</p>
+      <CardDescription>{rec.why}</CardDescription>
 
       {rec.kind === 'caregivers' && (
-        <div className="rec-providers">
+        <ItemGroup>
           {caregiversFor(unlocked)
             .slice(0, 5)
             .map((c) => (
               <CaregiverRow key={c.id} caregiver={c} standing={standingOf?.(c.id)} onSelect={onSelectCaregiver} onOpen={onOpenCaregiver} />
             ))}
           {onFindCaregivers && (
-            <div className="panel-card-actions">
+            <CardFooter className="mt-0">
               <Button variant="secondary" onClick={onFindCaregivers}>
                 Pogledajte još negovateljica
                 <ArrowRight size={14} strokeWidth={1.75} />
               </Button>
-            </div>
+            </CardFooter>
           )}
-        </div>
+        </ItemGroup>
       )}
 
       {rec.kind === 'offer' && <Offer rec={rec} bookable={unlocked && bookable} />}
 
       {rec.kind === 'list' && (
-        <ul className="rec-list">
+        <ul className="mt-1 flex list-none flex-col gap-2">
           {rec.items.map((item) => (
-            <li key={item}>
-              <Check size={13} strokeWidth={2} />
+            <li key={item} className="flex items-start gap-2 text-xs leading-body text-muted-foreground">
+              <Check size={13} strokeWidth={2} className="h-[1lh] shrink-0 text-primary-600" />
               <span>{item}</span>
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
 // A partner's price list. Every row shows what the partner charges and what the
-// family pays through Minna, so the saving is read row by row, not worked out.
+// family pays through Minna, so the saving is read row by row, not worked out
+// (docs/patterns.md §8: the one exception to label and value).
 function Offer({ rec, bookable }) {
   const partner = PARTNERS[rec.partner];
   const [sent, setSent] = useState(false);
@@ -75,26 +90,30 @@ function Offer({ rec, bookable }) {
   const Icon = ordering ? Package : CalendarCheck;
 
   return (
-    <div className="rec-offer">
-      <div className="rec-partner">
+    <div className="mt-1 flex flex-col gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         {partner.logo ? (
-          <img className="rec-partner-logo" src={partner.logo} alt={partner.name} />
+          <img className="block h-5 w-auto rounded-sm" src={partner.logo} alt={partner.name} />
         ) : (
-          <span className="rec-partner-name">{partner.name}</span>
+          <span className="text-sm leading-5 font-medium text-foreground">{partner.name}</span>
         )}
-        {partner.what && <span className="rec-partner-what">{partner.what}</span>}
-        <span className="status-pill is-accepted">−{partner.discount}% preko Minne</span>
+        {partner.what && <span className="min-w-0 truncate text-xs text-muted-foreground">{partner.what}</span>}
+        <Badge variant="success" className="ml-auto">
+          −{partner.discount}% preko Minne
+        </Badge>
       </div>
 
-      <ul className="rec-prices">
+      <ul className="flex list-none flex-col">
         {rec.items.map((item) => (
-          <li key={item.title} className="rec-price">
-            <span className="rec-price-what">
-              <span className="rec-price-title">{item.title}</span>
-              {item.who && <span className="rec-price-who">{item.who}</span>}
+          <li key={item.title} className="flex items-start justify-between gap-3 border-t py-2 last:border-b">
+            <span className="flex min-w-0 flex-col text-xs leading-body">
+              <span className="font-medium text-foreground">{item.title}</span>
+              {item.who && <span className="text-muted-foreground">{item.who}</span>}
             </span>
-            <span className="rec-price-amount">
-              <s aria-label={`Redovna cena ${price(item.price)}`}>{price(item.price)}</s>
+            <span className="flex shrink-0 flex-col items-end text-xs leading-body font-medium whitespace-nowrap text-foreground">
+              <s className="font-normal text-disabled" aria-label={`Redovna cena ${price(item.price)}`}>
+                {price(item.price)}
+              </s>
               <span>{price(discounted(item.price, partner.discount))}</span>
             </span>
           </li>
@@ -103,17 +122,17 @@ function Offer({ rec, bookable }) {
 
       {bookable &&
         (sent ? (
-          <p className="rec-sent" role="status">
-            <Check size={14} strokeWidth={2} />
+          <p className="flex items-start gap-2 text-xs leading-body text-success" role="status">
+            <Check size={14} strokeWidth={2} className="h-[1lh] shrink-0" />
             Minna je dobila zahtev i javiće vam se danas {ordering ? 'sa danom isporuke' : 'sa terminom'}.
           </p>
         ) : (
-          <div className="panel-card-actions">
-            <Button variant="primary" onClick={() => setSent(true)}>
+          <CardFooter className="mt-1">
+            <Button onClick={() => setSent(true)}>
               <Icon size={14} strokeWidth={1.75} />
               Neka Minna {ordering ? 'naruči' : 'zakaže'}
             </Button>
-          </div>
+          </CardFooter>
         ))}
     </div>
   );

@@ -13,9 +13,10 @@ import { cn } from '@/lib/utils';
 // `head` replaces the title and sentence when the head is more than that
 // (Minna's letter folds from its head); `AttentionHead` gives it the same
 // place.
-export default function Attention({ title, sub, head, className, children }) {
+export default function Attention({ title, sub, head, className, children, ...props }) {
   return (
     <section
+      {...props}
       data-slot="attention"
       className={cn(
         'flex flex-col gap-2 rounded-4xl bg-primary-50 p-2 shadow-[inset_0_0_0_1px_var(--color-primary-200)]',
@@ -33,7 +34,7 @@ export default function Attention({ title, sub, head, className, children }) {
   );
 }
 
-export function AttentionHead({ className, asChild, ...props }) {
+export function AttentionHead({ className, ...props }) {
   return <div data-slot="attention-head" className={cn('flex flex-col gap-1 px-4 pt-2 pb-1', className)} {...props} />;
 }
 

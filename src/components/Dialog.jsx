@@ -24,27 +24,48 @@ import { focusPane, useCloseThreshold } from '../lib/sheet';
 // It may open over a drawer (cancelling a visit from its plan); then it is the
 // one Escape closes, and the drawer stays. `dismissible={false}` takes away the
 // close, Escape and a click past it: backup codes are shown once.
-export default function Dialog({ title, eyebrow, wide, dismissible = true, open = true, onClose, children }) {
+//
+// `header` replaces the eyebrow and title when the head is more than that (the
+// plans' larger title, a caregiver's avatar); it is handed the Title to use.
+// `className` reaches the dialog's own box (a width, a gap), and on a phone the
+// part that scrolls; `closeClassName` moves the close on a phone, to sit level
+// with a head of another height.
+export default function Dialog({
+  title,
+  eyebrow,
+  header,
+  wide,
+  className,
+  closeClassName,
+  dismissible = true,
+  open = true,
+  onClose,
+  children,
+}) {
   const phone = useIsPhone();
   const sheet = useCloseThreshold();
   const onOpenChange = (next) => !next && onClose?.();
-  const head = (Title) => (
-    <>
-      {eyebrow && <DialogEyebrow>{eyebrow}</DialogEyebrow>}
-      <Title>{title}</Title>
-    </>
-  );
+  const head = (Title) =>
+    header ? (
+      header(Title)
+    ) : (
+      <DialogHeader>
+        {eyebrow && <DialogEyebrow>{eyebrow}</DialogEyebrow>}
+        <Title>{title}</Title>
+      </DialogHeader>
+    );
 
   if (phone) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible} closeThreshold={sheet.threshold}>
-        <DrawerContent ref={sheet.ref} kind="dialog" tabIndex={-1} onOpenAutoFocus={focusPane}>
-          <DialogHeader className="relative">
+        <DrawerContent ref={sheet.ref} kind="dialog" bodyClassName={className} tabIndex={-1} onOpenAutoFocus={focusPane}>
+          {/* the head, with the part a finger drags the sheet by laid over it */}
+          <div className="relative">
             {dismissible && <DrawerHandle />}
             <div className="pointer-events-none relative">{head(DrawerTitle)}</div>
-          </DialogHeader>
+          </div>
           {dismissible && (
-            <DrawerClose className={cn(paneCloseClass, 'absolute top-[22px] right-4 z-3')}>
+            <DrawerClose className={cn(paneCloseClass, 'absolute top-[22px] right-4 z-3', closeClassName)}>
               <X className="size-4" strokeWidth={1.75} />
               <span className="sr-only">Zatvori</span>
             </DrawerClose>
@@ -59,13 +80,14 @@ export default function Dialog({ title, eyebrow, wide, dismissible = true, open 
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogContent
         wide={wide}
+        className={className}
         tabIndex={-1}
         showCloseButton={dismissible}
         onOpenAutoFocus={focusPane}
         onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
         onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
       >
-        <DialogHeader>{head(DialogTitle)}</DialogHeader>
+        {head(DialogTitle)}
         {children}
       </DialogContent>
     </DialogRoot>

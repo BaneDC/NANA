@@ -54,7 +54,7 @@ export function Input({ value, onChange, onEnter, icon: Icon, suffix, className,
     <InputGroup className={className}>
       {Icon && (
         <InputGroupAddon>
-          <Icon strokeWidth={1.75} />
+          <Icon size={14} strokeWidth={1.75} />
         </InputGroupAddon>
       )}
       <InputGroupInput {...control} />
@@ -84,7 +84,7 @@ export function Password({ value, onChange, onEnter, autoComplete = 'current-pas
           onClick={() => setShown((s) => !s)}
           aria-label={shown ? 'Sakrij lozinku' : 'Prikaži lozinku'}
         >
-          {shown ? <EyeOff strokeWidth={1.75} /> : <Eye strokeWidth={1.75} />}
+          {shown ? <EyeOff size={14} strokeWidth={1.75} /> : <Eye size={14} strokeWidth={1.75} />}
         </InputGroupButton>
       </InputGroupAddon>
     </InputGroup>

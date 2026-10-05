@@ -148,6 +148,42 @@
   --radius-md: 8px;
   --radius-xl: 16px;
 
+  /* a card or the letter the assistant just rewrote: a wider pale ring that
+     settles into the hairline of a card that changed */
+  --animate-plan-changed: plan-changed 1.6s ease-out 1;
+  @keyframes plan-changed {
+    0% {
+      box-shadow: 0 0 0 4px var(--color-primary-200), var(--shadow-card);
+    }
+    100% {
+      box-shadow: 0 0 0 1px var(--color-primary-300), var(--shadow-card);
+    }
+  }
+
+  /* what a Collapsible opens and closes: its height, from Radix */
+  --animate-collapsible-down: collapsible-down 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
+  --animate-collapsible-up: collapsible-up 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+      opacity: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+  }
+  @keyframes collapsible-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+    }
+    to {
+      height: 0;
+      opacity: 0;
+    }
+  }
+
   /* the caret shadcn's one-time code draws in the box being typed into */
   --animate-caret-blink: caret-blink 1.25s ease-out infinite;
   @keyframes caret-blink {

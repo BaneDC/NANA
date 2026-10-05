@@ -73,6 +73,7 @@ export default function App() {
   // null when closed, otherwise { caregiver } — a caregiver means the user tapped one
   // to request their number, no caregiver means they unlocked the recommendations.
   const [paywall, setPaywall] = useState(null);
+  const shownPaywall = useKept(paywall);
   const [threads, setThreads] = useState(seedThreads);
   const [activeThread, setActiveThread] = useState('live');
   // the history of conversations opens when asked for
@@ -815,13 +816,12 @@ export default function App() {
       ))}
       <Toast flash={flash} onDone={() => setFlash(null)} />
 
-      <AnimatePresence>
-        {paywall && plan && (
+      {shownPaywall && plan && (
           <PaywallModal
-            key="paywall"
-            caregiver={paywall.caregiver}
+            open={Boolean(paywall)}
+            caregiver={shownPaywall.caregiver}
             unlocked={unlocked}
-            alreadyAsked={Boolean(paywall.caregiver && !canAsk(care, paywall.caregiver.id))}
+            alreadyAsked={Boolean(shownPaywall.caregiver && !canAsk(care, shownPaywall.caregiver.id))}
             country={user.country}
             onPay={(chosen) => {
               setUnlocked(true);
@@ -837,8 +837,7 @@ export default function App() {
             }}
             onClose={() => setPaywall(null)}
           />
-        )}
-      </AnimatePresence>
+      )}
     </div>
   );
 }

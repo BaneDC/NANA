@@ -10,7 +10,7 @@ import { Slot } from "radix-ui"
 // Edited in place, as shadcn intends — `shadcn add button --overwrite` would
 // put the stock one back.
 const buttonVariants = cva(
-  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg text-xs whitespace-nowrap transition-[filter,background-color,opacity,scale] duration-150 outline-none select-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg text-xs whitespace-nowrap transition-[filter,background-color,opacity,scale] duration-150 outline-none select-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {

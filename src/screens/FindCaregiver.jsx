@@ -86,7 +86,7 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
                   are set afterwards, by both of them. Top right, level with
                   her name; on a phone the card opens her profile, which has it. */}
               {standing ? (
-                <Standing standing={standing} />
+                <Standing standing={standing} className="status-pill" />
               ) : (
                 <Button variant="primary" className="card-action" onClick={() => ask(c)}>
                   Pošalji poruku

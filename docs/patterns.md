@@ -38,6 +38,13 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Nešto što se rasklapa | `Collapsible` | — |
 | Oznaka — vrednost | `DataList` › `DataRow` (`src/components/data-list.jsx`) | `.bc-lines` › `.bc-line` |
 | Spisak sa kvačicama | `CheckList` (`src/components/data-list.jsx`) | `.paywall-list` |
+| Oznaka iznad vrednosti | `Facts` › `Fact` (`src/components/data-list.jsx`) | `.facts.is-stacked` › `.fact` |
+| Red u kartici | `ItemGroup` › `Item` (`ItemContent`, `ItemTitle`, `ItemDescription`) | `.fam-rows`, `.rec-providers`, `.contact-rows` › `.fam-row`, `.caregiver`, `.contact-row` |
+| Ime koje otvara red ili karticu | `ItemLink` (red), `CardLink` (kartica) | `.card-link` |
+| Dugme koje kaže isto što i link (nema ga na telefonu) | `ItemAction` | `.card-action` |
+| Avatar sa inicijalima | `Avatar` + `AvatarFallback`, visina iz `--avatar` | `.cg-avatar` |
+| Narandžasti deo | `Attention` (`AttentionHead`, `AttentionTitle`, `AttentionDescription`) | `.attention` |
+| Prazna stranica | `Empty`, `EmptyTitle`, `EmptyDescription` | `.empty`, `.locked-title`, `.locked-note` |
 
 ---
 
@@ -175,8 +182,8 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 
 ```jsx
 <Attention title="Čeka na vas" sub="Jedna rečenica šta je ovde.">
-  <div className="panel-card is-row is-clickable">…</div>   {/* stavka koja nešto otvara */}
-  <div className="panel-card">…</div>                       {/* tekst i dugme */}
+  <Card>…<CardLink>…</CardLink>…</Card>   {/* stavka koja nešto otvara */}
+  <Card>…</Card>                           {/* tekst i dugme */}
 </Attention>
 ```
 
@@ -194,7 +201,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 </PageSection>
 ```
 
-**Prazna stranica:** `.empty` sa `.locked-title`, `.locked-note` i jednom akcijom.
+**Prazna stranica:** `Empty` sa `EmptyTitle`, `EmptyDescription` i jednom akcijom.
 
 **Izbor plana** (`PaywallModal`, `.modal.is-plans`):
 - Svaki plan je `.panel-card.pw-plan-card` sa svim sadržajem: naziv, cena (24px), ušteda kao značka, rečenica za koga je, spisak šta uključuje i dugme „Izaberite" + naziv plana („Izaberite Premium"). Naslov dijaloga je „Izaberite pretplatu", a dugme koje ga otvara iz plana nege „Otključajte ceo plan nege": u naslovima i dugmadima „plan" znači samo plan nege, da se dva značenja ne sretnu na istom putu.
@@ -209,14 +216,27 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 
 Stavka unutar kartice (negovateljica u preporuci, poseta, upit, kanal kontakta) je **red**, a ne kutija sa ivicom i ne kartica u kartici.
 
-Mere (sve radi CSS u bloku „Rows inside a card" u `app.css`):
+Red je `Item` u `ItemGroup` (`src/components/ui/item.jsx`). Mere (sve radi `Item` sam):
 - red zalazi 8px u padding kartice: `margin: 0 -8px`;
 - padding reda je 8 sa svih strana, pa je podloga na hover-u isto daleko od teksta gore, dole i sa strane (odlučeno 1. 10.; bilo je 16 gore i dole a 8 sa strane);
 - između redova je 8, a linija od 1px je na sredini tog razmaka, uvučena 8 da bude poravnata sa tekstom;
 - radius reda je 16 (vidi se samo na hover-u);
 - na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`.cg-tag`) u njemu postanu bele, da ne nestanu u sivom.
 
-Klase redova koje ovo već dobijaju: `.caregiver` (bez `.is-wide`), `.fam-row`, `.contact-row`, `.fam-visit`, `.visit`. Kontejneri: `.rec-providers`, `.fam-rows`, `.contact-rows`, `.fam-visits`, `.visit-list`.
+```jsx
+<ItemGroup>
+  <Item className="items-start gap-3 [--avatar:…]">
+    <Avatar><AvatarFallback>SV</AvatarFallback></Avatar>
+    <ItemContent>
+      <ItemTitle><ItemLink onClick={open}>Sanna Virtanen</ItemLink><Badge>…</Badge></ItemTitle>
+      <ItemDescription>…</ItemDescription>
+    </ItemContent>
+    <ItemAction><Button>Pošalji poruku</Button></ItemAction>
+  </Item>
+</ItemGroup>
+```
+
+Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</a></Item>`.
 
 **Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, a stanje je značka pored imena (`.fam-row-title`). Jedno dugme je **na desktopu gore desno**, u visini imena (16 od ivice, koncentrično sa uglom), a **na telefonu ispod sadržaja**, u koloni teksta i široko koliko ona, 16 ispod. Tako je kartica upita („Vaši upiti"), po istoj logici kao kartica na „Pronađi".
 
@@ -240,7 +260,7 @@ Značka u naslovu reda (20) ne povećava red od 16, nego prelazi preko njega, pa
 
 **Stanje u redu** je kratka značka pored naslova (`.fam-row-title` › `.status-pill`), a ne poseban red. Kod posete značka kaže samo korak („Plan posete", „Radni nalog stigao", „Plaćeno"), jer iznos desno već kaže šta je sa novcem, a linija ispod kaže ostalo. Iznos posete stoji u liniji ispod datuma kao oznaka (`.fam-row-body.is-inline` › `.cg-tag`): „54 € rezervisano" u „Predstoji", „54 € naplaćeno" u poslednjoj poseti. Oznaka je ista kao sve ostale oznake (bez ikonice), a ne značka.
 
-Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj posebnu ivicu, podlogu, senku ili radius.
+Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius.
 
 **Kartica koja se završava redovima** ima 16 od teksta poslednjeg reda do donje ivice, kao 16 od vrha do naslova. Poslednji red ulazi 8 u padding kartice, pa je njegova podloga na hover-u 8 od dna kao i sa strane (24 = 16 + 8). Ako posle redova ide footer (npr. „Prikaži još"), on je 16 od teksta poslednjeg reda. CSS to radi sam.
 
@@ -269,8 +289,8 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 </div>
 ```
 
-- `.is-clickable` na kartici ili redu, a `.card-link` na imenu. Ime je pravo `<button>`: `::after` ga razvlači preko cele kartice, pa radi i tastatura i čitač ekrana.
-- Dugme u takvoj kartici ima `.card-action` i uvek radi samo ono što kaže, iznad linka. Ne stavljaj `onClick` na div kartice.
+- Ime je `ItemLink` u redu, a `CardLink` u kartici. Ime je pravo `<button>`: `::after` ga razvlači preko celog reda ili kartice, pa radi i tastatura i čitač ekrana. `Item` i `Card` same prepoznaju da imaju link (hover, fokus, kursor).
+- Dugme i značka u takvom redu ili kartici stoje iznad linka i rade samo ono što kažu. Dugme koje kaže isto što i link je u `ItemAction` (na telefonu ga nema). Ne stavljaj `onClick` na div kartice.
 - **Desktop:**
   - kartica ima akciju u footeru; **izuzetak je kartica negovateljice na „Pronađi"**: dugme („Pošalji poruku") ili stanje („Već dolazi", „Čeka odgovor") je gore desno, u visini imena;
   - red ima akciju desno;

@@ -17,7 +17,7 @@ export default function CaregiverHead({ caregiver: c, standing }) {
         <p className="cg-meta">
           <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
         </p>
-        <Standing standing={standing} className="fam-asked" />
+        <Standing standing={standing} className="status-pill fam-asked" />
       </div>
     </div>
   );
