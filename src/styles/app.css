@@ -5321,7 +5321,8 @@ button.svc:hover {
 
 /* Her avatar is as tall as what stands beside it: the name's line, the 4
    between, and the meta line's 16 - 40 with a mouse, 44 under a finger. The
-   same on her card on Pronađi and at the top of her details. */
+   same on her card on Pronađi and at the top of her details. Past 36 it nests
+   like anything else in the card's corner: 24 around 16 of padding is an 8. */
 .caregiver.is-wide {
   --cg-indent: calc(var(--text-sm-leading) + var(--spacing-1) + 16px + var(--spacing-3));
 }
@@ -5329,7 +5330,7 @@ button.svc:hover {
 :is(.fam-profile-head, .caregiver.is-wide) > .cg-avatar {
   width: calc(var(--text-sm-leading) + var(--spacing-1) + 16px);
   height: calc(var(--text-sm-leading) + var(--spacing-1) + 16px);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-lg);
   font-size: var(--text-xs-size);
 }
 
