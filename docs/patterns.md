@@ -49,6 +49,8 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
 | Delovi drawer-a i modala | `PaneLabel`, `PaneHint`, `Callout`, `ReportRows` › `ReportRow`, `Concern`, `Total`, `Stats` › `Stat` (`src/components/pane.jsx`) | `.ag-label`, `.ag-hint`, `.fam-callout`, `.report-rows`, `.visit-concern`, `.bc-total`, `.fam-stats` |
 | Stranica osobe (avatar uz ime) | `PagePerson` u `PageHeader` (`src/components/page.jsx`) | `.fam-person` |
+| Bočni meni | `AppNav` (`src/components/AppNav.jsx`, Tailwind; liste se sklapaju preko `Collapsible`) | `.app-nav`, `.nav-item`, `.nav-sub`, `.nav-badge` |
+| Saglasnost (registracija) | `Checkbox` | `.reg-check`, `.reg-box` |
 
 ---
 
@@ -504,7 +506,7 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
   return {
     concentric,
     caps: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && !e.closest('[class*="imm-"]') && getComputedStyle(e).textTransform === 'uppercase').map(name)),
-    overflow: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('.app-nav')).map(name)).slice(0, 10),
+    overflow: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('.app-nav, [data-slot=app-nav]')).map(name)).slice(0, 10),
     cards: uniq([...root.querySelectorAll('.panel-card, [data-slot=card], .caregiver.is-wide, .plan-row')].filter(vis).map((e) => { const s = getComputedStyle(e); return `${s.borderTopLeftRadius}/${s.paddingTop}`; })),
     titles: uniq([...root.querySelectorAll('.doc-section-title, [data-slot=card-title], .section-title, [data-slot=page-section] > h2, .fam-row-title')].filter(vis).map((e) => `${e.dataset.slot || e.className.split(' ')[0] || 'section-h2'} ${getComputedStyle(e).fontSize}`)),
   };
