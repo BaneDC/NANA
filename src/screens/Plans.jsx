@@ -1,7 +1,7 @@
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardLink } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import AskAssistant from '../components/AskAssistant';
@@ -38,26 +38,17 @@ export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPl
       )}
 
       <div className="flex flex-col gap-3">
-        {/* the whole card is the target — the arrow on hover is the only affordance
-            it needs, so there is no button competing with it */}
+        {/* The whole card opens the plan, as every card that opens something
+            does (docs/patterns.md §7): its title is the link and stretches over
+            it, and on hover the card takes the same pale ring as the rest. The
+            arrow on hover is the only other affordance it needs. */}
         {entries.map((e) => (
-          <Card
-            key={e.id}
-            data-plan-row=""
-            role="button"
-            tabIndex={0}
-            className="group/plan cursor-pointer flex-row items-start gap-2 border border-transparent transition-[border-color,box-shadow] duration-150 outline-none hover:border-primary hover:shadow-[0_2px_10px_rgba(252,112,60,0.14)] focus-visible:border-primary focus-visible:shadow-[0_2px_10px_rgba(252,112,60,0.14)]"
-            onClick={() => onOpenPlan(e.id)}
-            onKeyDown={(ev) => {
-              if (ev.key === 'Enter' || ev.key === ' ') {
-                ev.preventDefault();
-                onOpenPlan(e.id);
-              }
-            }}
-          >
+          <Card key={e.id} data-plan-row="" className="flex-row items-start gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-medium text-foreground">{e.title}</span>
+                <CardLink onClick={() => onOpenPlan(e.id)} className="min-w-0 truncate text-sm font-medium">
+                  {e.title}
+                </CardLink>
                 {/* A change made in the chat is applied to the plan but not yet
                     seen here; the row says so until it is opened and confirmed. */}
                 {!e.archived && change && <Badge className="ml-auto">Izmenjeno</Badge>}
@@ -67,7 +58,7 @@ export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPl
                 <ArrowUpRight
                   size={14}
                   strokeWidth={2}
-                  className="shrink-0 text-disabled opacity-0 transition-opacity duration-150 group-hover/plan:text-primary-600 group-hover/plan:opacity-100 group-focus-visible/plan:text-primary-600 group-focus-visible/plan:opacity-100"
+                  className="shrink-0 text-disabled opacity-0 transition-opacity duration-150 group-hover/card:text-primary-600 group-hover/card:opacity-100 group-has-[[data-slot=card-link]:focus-visible]/card:opacity-100"
                   aria-hidden="true"
                 />
               </div>
