@@ -42,8 +42,10 @@ function Item({
       data-slot="item"
       className={cn(
         "group/item relative -mx-2 flex rounded-2xl p-2 transition-[background-color] duration-150",
-        // the line between two rows
-        "[[data-slot=item]+&]:before:absolute [[data-slot=item]+&]:before:inset-x-2 [[data-slot=item]+&]:before:-top-1 [[data-slot=item]+&]:before:h-px [[data-slot=item]+&]:before:-translate-y-1/2 [[data-slot=item]+&]:before:bg-border [[data-slot=item]+&]:before:transition-opacity [[data-slot=item]+&]:before:duration-150",
+        // the line between two rows: every row has it out of the flow, and it
+        // shows only under a row before it (a ::before in the flow, on the
+        // first row, pushed its content 12 to the right on hover)
+        "before:absolute before:inset-x-2 before:-top-1 before:h-px before:-translate-y-1/2 before:transition-opacity before:duration-150 [[data-slot=item]+&]:before:bg-border",
         // a row that opens something
         "has-[[data-slot=item-link]]:cursor-pointer has-[[data-slot=item-link]]:hover:bg-muted has-[[data-slot=item-link]]:hover:before:opacity-0 [[data-slot=item]:has([data-slot=item-link]):hover+&]:before:opacity-0",
         "has-[[data-slot=item-link]]:hover:[&_[data-variant=tag]]:bg-card",
@@ -80,7 +82,7 @@ function ItemTitle({
 }
 
 const linkClass =
-  "cursor-pointer text-left text-inherit outline-none after:absolute after:inset-0 after:rounded-[inherit]"
+  "cursor-pointer text-left [font:inherit] text-inherit outline-none after:absolute after:inset-0 after:rounded-[inherit]"
 
 // the name that opens the row: its ::after covers the lot
 function ItemLink({
@@ -114,7 +116,9 @@ function ItemAction({
   ...props
 }) {
   return (
-    <Slot.Root data-slot="item-action" className={cn("phone:hidden", className)} {...props} />
+    // no data-slot of its own: it would take the button's, which is what lifts
+    // the button above the row's link
+    <Slot.Root data-item-action="" className={cn("phone:hidden", className)} {...props} />
   );
 }
 
