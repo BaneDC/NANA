@@ -6693,6 +6693,21 @@ button.svc:hover {
   color: var(--text-primary);
 }
 
+/* Two numbers at the top of an overview (her visits, how long together):
+   the plan card's price size, no box around them (docs/patterns.md §8). */
+.fam-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+}
+
+.fam-stat-value {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
 .pw-plan-amount > .status-pill {
   margin-left: 0;
 }

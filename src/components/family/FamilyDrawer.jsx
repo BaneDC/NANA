@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { AlertTriangle, Check, CreditCard, Star } from 'lucide-react';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
-import Tags from '../Tags';
+import Tags, { Group } from '../Tags';
 import { groupServices } from '../../data/serviceCatalog';
 import Standing from '../Standing';
 import VisitRow from './VisitRow';
@@ -25,6 +25,7 @@ import {
   endArrangement,
   LOG_KINDS,
   dayLabel,
+  dayOf,
   findVisit,
   firstName,
   nameOf,
@@ -738,58 +739,122 @@ function ActivityDrawer({ care, caregiverId, onClose }) {
           </button>
         ))}
       </div>
+      <p className="ag-hint">
+        {picked.length === all.length
+          ? `${pl(all.length, 'stavka', 'stavke', 'stavki')} · najnovije prvo`
+          : `${picked.length} od ${all.length} · najnovije prvo`}
+      </p>
       {days.map((d) => (
-        <div key={d.day}>
-          <p className="ag-label">{d.day}</p>
+        <Fragment key={d.day}>
+          <div className="panel-card-head">
+            <p className="ag-label">{d.day}</p>
+            <span className="status-pill is-muted">{d.entries.length}</span>
+          </div>
           <ActivityRows care={care} entries={d.entries} showWho={!caregiverId} />
-        </div>
+        </Fragment>
       ))}
       {!picked.length && <p className="ag-hint">Ovde još nema ničega.</p>}
     </Modal>
   );
 }
 
-// Everything about her in one place: how to reach her, what she is, what her
-// agreement covers, how paying works, and what has been paid so far.
+// Everything about her in one place, in the prototype's order: two numbers
+// (visits, how long together), how to reach her, the care agreed with her,
+// what she is, what she says about herself, her reviews, and how paying works.
+// "Dogovorena nega" shows only while an agreement is in force and no new terms
+// wait: while they do, her page says what changes, and this would be stale.
+
+// How long they have worked together, said roughly.
+function together(a, today) {
+  if (!a.since) return { value: 'Još ne', sub: 'saradnja počinje kad prihvatite uslove' };
+  const from = dayOf(a.since, today);
+  const to = a.endedOn ? dayOf(a.endedOn, today) : dayOf('danas', today);
+  const days = Math.max(0, Math.round((to - from) / 86400000));
+  const months = Math.floor(days / 30);
+  const value = months < 1 ? 'Manje od mesec dana' : pl(months, 'mesec', 'meseca', 'meseci');
+  return { value, sub: a.endedOn ? `${a.since} – ${a.endedOn}` : `od ${a.since}` };
+}
+
 function Overview({ care, caregiverId, onClose }) {
   const a = arrangementOf(care, caregiverId);
   if (!a) return null;
   const c = caregivers.find((x) => x.id === caregiverId);
   const first = firstName(a.caregiver.name);
   const act = activeVersion(a);
+  const agreed = act && !pendingVersion(a) && !a.endedOn;
   const done = a.visits.filter((v) => v.status === 'paid');
-  const hours = done.reduce((n, v) => n + workedHours(v) + (v.extra?.status === 'approved' ? v.extra.hours : 0), 0);
+  const coming = a.visits.filter((v) => v.status === 'planned').length;
+  const time = together(a, todayOf(care));
   return (
     <Modal eyebrow={`${a.caregiver.name} · ${a.caregiver.area}`} title="Pregled" wide onClose={onClose}>
-      <div className="bc-lines ag-terms">
-        <Line label="Posete do sada" value={done.length ? `${done.length} · ${hours} h` : 'još nijedna'} />
-        <Line label="Plaćeno do sada" value={money(paidTo(a))} />
-        <Line label="Cena po satu" value={act ? `${money(act.rate)} / h` : '-'} />
-        <Line label="Ocena" value={c?.reviews ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} · ${pl(c.reviews, 'ocena', 'ocene', 'ocena')}` : 'još bez ocena'} />
+      <div className="fam-stats">
+        <div className="fam-stat">
+          <p className="fam-stat-value">{done.length}</p>
+          <p className="fact-label">{pl(done.length, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '')} do sada</p>
+          <p className="ag-hint">{coming ? `${coming} zakazano` : 'nijedna nije zakazana'}</p>
+        </div>
+        <div className="fam-stat">
+          <p className="fam-stat-value">{time.value}</p>
+          <p className="fact-label">zajedno</p>
+          <p className="ag-hint">{time.sub}</p>
+        </div>
       </div>
 
       <p className="ag-label">Kontakt</p>
       <div className="bc-lines ag-terms">
         <Line label="Telefon" value={a.endedOn ? 'Skriven posle kraja saradnje' : a.caregiver.phone} />
+        {c?.email && <Line label="E-mail" value={a.endedOn ? 'Skriven posle kraja saradnje' : c.email} />}
         <Line label="Opština" value={a.caregiver.area} />
         {c?.languages && <Line label="Jezici" value={c.languages.join(', ')} />}
       </div>
       <p className="ag-hint">
-        Ako nešto nije u redu tokom posete, prvo pozovite {first}. Sve oko novca rešava koordinatorka.
+        Ako nešto nije u redu tokom posete, prvo pozovite negovateljicu. Sve oko novca rešava koordinatorka.
       </p>
 
-      <p className="ag-label">Klasifikacije</p>
-      <Tags items={a.caregiver.classifications || c?.classifications || []} />
+      {agreed && (
+        <>
+          <p className="ag-label">Dogovorena nega</p>
+          <div className="bc-lines ag-terms">
+            <Line label="Ugovor koji važi" value={`verzija ${act.version}`} />
+            <Line label="Cena po satu" value={`${money(act.rate)} / h, PDV uključen`} />
+          </div>
+          <ServiceChips ids={act.services} grouped />
+          {act.terms && (
+            <div className="tag-rows">
+              <Group label="Dodatni uslovi" text={act.terms} />
+            </div>
+          )}
+        </>
+      )}
 
-      <p className="ag-label">Šta pokriva za vas</p>
-      {act ? <ServiceChips ids={act.services} grouped /> : <p className="doc-p">Još ništa nije dogovoreno.</p>}
-      {act && <p className="ag-hint">Iz ugovora koji važi. Sve van njega mora prvo da se dogovori kao nova verzija.</p>}
+      <p className="ag-label">Kvalifikacije</p>
+      <Tags items={a.caregiver.classifications || c?.classifications || []} />
+      {c?.education && (
+        <div className="bc-lines ag-terms">
+          <Line label="Obrazovanje" value={c.education} />
+        </div>
+      )}
+
+      {c?.bio && (
+        <>
+          <p className="ag-label">O negovateljici</p>
+          <p className="doc-p">{c.bio}</p>
+        </>
+      )}
+
+      <p className="ag-label">Ocene</p>
+      <p className="doc-p">
+        {c?.reviews
+          ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} · ${pl(c.reviews, 'ocena', 'ocene', 'ocena')}`
+          : 'Još nema ocena.'}
+      </p>
 
       <p className="ag-label">Kako se plaća</p>
       <div className="bc-lines ag-terms">
         <Line label="Način plaćanja" value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'} />
         <Line label="Rezerviše se" value="kad stigne plan posete" />
         <Line label="Naplaćuje se" value="24 sata posle radnog naloga" />
+        <Line label="Plaćeno do sada" value={money(paidTo(a))} />
       </div>
       <p className="ag-hint">
         Naplaćuje se samo poseta koja se desila i za koju je {first} poslala radni nalog. Sati preko
