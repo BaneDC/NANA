@@ -34,6 +34,29 @@ export function DataRow({ label, off, total, className, children, ...props }) {
   );
 }
 
+// Free text (a name, an address, an answer) sits under its label instead, the
+// rows split by a line, 12 above and under it:
+//
+//   <Facts>
+//     <Fact label="Ime i prezime">Anna Korhonen</Fact>
+//   </Facts>
+export function Facts({ className, ...props }) {
+  return <div data-slot="facts" className={cn('flex flex-col', className)} {...props} />;
+}
+
+export function Fact({ label, className, children, ...props }) {
+  return (
+    <div
+      data-slot="fact"
+      className={cn('flex min-w-0 flex-col border-t py-3 first:border-t-0 first:pt-0 last:pb-0', className)}
+      {...props}
+    >
+      <span className="text-small text-muted-foreground">{label}</span>
+      <span className="text-xs leading-body font-medium wrap-anywhere text-foreground">{children}</span>
+    </div>
+  );
+}
+
 // What something includes, each line after a check in the primary.
 export function CheckList({ className, ...props }) {
   return (

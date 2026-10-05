@@ -168,5 +168,8 @@
 @layer base {
   * {
     border-color: var(--border);
+    /* No blue box over whatever a finger presses: the browser's own tap
+       highlight. A button answers a press itself, by shrinking to 97%. */
+    -webkit-tap-highlight-color: transparent;
   }
 }

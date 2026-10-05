@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { Check, Pencil } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { srField, srTitle } from '../data/flow.sr';
-import Button from '../components/Button';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardHeader, CardTitle } from '@/components/ui/card';
+import { DialogFooter } from '@/components/ui/dialog';
+import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
+import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import { Fact, Facts } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import { Field, Input } from '../components/TextField';
 import AskAssistant from '../components/AskAssistant';
@@ -18,24 +23,25 @@ function fieldsOf(questionId, answers) {
 
 function Section({ title, rows, onEdit }) {
   return (
-    <div className="panel-card">
-      <div className="panel-card-head">
-        <p className="doc-section-title">{title}</p>
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
         {onEdit && (
-          <Button variant="secondary" iconOnly aria-label={`Izmeni: ${title}`} onClick={onEdit}>
-            <Pencil size={14} strokeWidth={1.75} />
-          </Button>
+          <CardAction>
+            <Button variant="secondary" size="icon" aria-label={`Izmeni: ${title}`} onClick={onEdit}>
+              <Pencil size={14} strokeWidth={1.75} />
+            </Button>
+          </CardAction>
         )}
-      </div>
-      <div className="facts is-stacked">
+      </CardHeader>
+      <Facts>
         {rows.map((r) => (
-          <div className="fact" key={r.label}>
-            <span className="fact-label">{r.label}</span>
-            <span className="fact-value">{r.value}</span>
-          </div>
+          <Fact key={r.label} label={r.label}>
+            {r.value}
+          </Fact>
         ))}
-      </div>
-    </div>
+      </Facts>
+    </Card>
   );
 }
 
@@ -48,7 +54,7 @@ function FieldEditor({ title, fields, onSave, onClose }) {
 
   return (
     <Dialog eyebrow="Profil" title={title} onClose={onClose}>
-      <div className="pe-fields">
+      <div className="flex flex-col gap-3">
         {fields.map((f) => (
           <Field key={f.id} label={f.label}>
             <Input
@@ -60,15 +66,15 @@ function FieldEditor({ title, fields, onSave, onClose }) {
           </Field>
         ))}
       </div>
-      <div className="panel-card-actions is-end">
+      <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
           Otkaži
         </Button>
-        <Button variant="primary" disabled={!complete} onClick={() => onSave(values)}>
+        <Button disabled={!complete} onClick={() => onSave(values)}>
           <Check size={14} strokeWidth={2} />
           Sačuvaj
         </Button>
-      </div>
+      </DialogFooter>
     </Dialog>
   );
 }
@@ -91,14 +97,14 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
   };
 
   return (
-    <div className="view">
-      <div className="view-head">
-        <div className="view-head-text">
-          <h1 className="view-title">Profil</h1>
-          <p className="view-sub">Sve što ste podelili, na jednom mestu.</p>
-        </div>
+    <Page>
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>Profil</PageTitle>
+          <PageDescription>Sve što ste podelili, na jednom mestu.</PageDescription>
+        </PageHeaderText>
         <AskAssistant onClick={onAskAssistant} />
-      </div>
+      </PageHeader>
 
       <Section
         title="Vaš nalog"
@@ -121,15 +127,11 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
           )}
         </>
       ) : (
-        <div className="empty">
-          <p className="locked-title">Ovde još nema ničega</p>
-          <p className="locked-note">
-            Odgovorite na pitanja u razgovoru i profil će se sam popuniti.
-          </p>
-          <Button variant="primary" onClick={onGoToChat}>
-            Idi na razgovor
-          </Button>
-        </div>
+        <Empty>
+          <EmptyTitle>Ovde još nema ničega</EmptyTitle>
+          <EmptyDescription>Odgovorite na pitanja u razgovoru i profil će se sam popuniti.</EmptyDescription>
+          <Button onClick={onGoToChat}>Idi na razgovor</Button>
+        </Empty>
       )}
 
       {editing === 'account' && (
@@ -156,6 +158,6 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
           onClose={() => setEditing(null)}
         />
       )}
-    </div>
+    </Page>
   );
 }

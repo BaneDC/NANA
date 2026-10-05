@@ -28,7 +28,7 @@ function Group({ group, on, onChange }) {
       onOpenChange={setOpen}
       className={cn('flex flex-col gap-2 rounded-2xl p-3', on ? 'bg-primary-50' : 'bg-muted')}
     >
-      <div className="group/summary relative flex cursor-pointer flex-col gap-2 rounded-lg has-[[data-slot=group-open]:focus-visible]:outline-2 has-[[data-slot=group-open]:focus-visible]:outline-offset-4 has-[[data-slot=group-open]:focus-visible]:outline-primary">
+      <div className="group/summary relative flex cursor-pointer flex-col gap-2 rounded-lg select-none has-[[data-slot=group-open]:focus-visible]:outline-2 has-[[data-slot=group-open]:focus-visible]:outline-offset-4 has-[[data-slot=group-open]:focus-visible]:outline-primary">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -53,13 +53,13 @@ function Group({ group, on, onChange }) {
             {on ? 'Uključeno' : 'Isključeno'}
           </span>
           {/* what cannot be turned off still has its switch, so the list reads
-              as one; it just does not move */}
+              as one, but a paler one that does not move: it shows it cannot */}
           <Switch
             className="relative z-1"
             checked={on}
             aria-label={group.label}
-            aria-disabled={group.fixed || undefined}
-            onCheckedChange={(v) => !group.fixed && onChange(v)}
+            disabled={group.fixed}
+            onCheckedChange={onChange}
           />
         </div>
 
