@@ -155,7 +155,7 @@
    zooms into anything smaller), and against 12px text they stood out as the
    largest thing on the page. Body text is 14, a field one step above it, titles
    a step above that; labels and hints stay 12 (`--text-small-*`). The
-   onboarding keeps its own scale (see .immersive in app.css). */
+   onboarding keeps its own scale (see .immersive in onboarding.css). */
 @media (pointer: coarse) {
   :root {
     --text-xs-size: 14px;
@@ -165,5 +165,8 @@
     --text-base-size: 20px;
     --text-base-leading: 28px;
     --text-body-leading: 20px;
+    /* a field is tapped as much as a button is, so both grow to 44 */
+    --button-size: 44px;
+    --input-size: 44px;
   }
 }

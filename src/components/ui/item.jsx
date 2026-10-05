@@ -28,8 +28,6 @@ function ItemGroup({
       data-slot="item-group"
       className={cn(
         "flex flex-col gap-2 [[data-slot=card]>&:last-child]:has-[>[data-slot=item]:last-child]:-mb-2",
-        // bridge: the old card, until every screen is moved
-        "[.panel-card>&:last-child]:has-[>[data-slot=item]:last-child]:-mb-2",
         className
       )}
       {...props} />

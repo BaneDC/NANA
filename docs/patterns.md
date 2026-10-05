@@ -19,7 +19,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 - Komponente u `src/components/ui/` se menjaju direktno, kako shadcn i preporučuje. **Ne pokreći `shadcn add … --overwrite`** na postojećoj komponenti: to vraća izvorni izgled. Nova komponenta se dodaje bez `--overwrite`, pa se prilagodi ovom dokumentu.
 - Vrednosti dolaze iz `src/styles/tokens.css`, kao Tailwind klase (`src/styles/index.css`): `text-xs` (12, na dodir 14), `text-sm` (14 / 16), `text-base` (16 / 20), `text-small` (sitan tekst, 12, ne raste), `text-badge` (11), `leading-body` (red paragrafa), `bg-muted`, `text-muted-foreground`, `bg-primary-50` … `text-primary-700`, `bg-success-muted text-success` (i `warning`, `destructive`), `shadow-card`. Ništa se ne kuca ručno.
 - Prelomi: `phone:` (≤640) i `narrow:` (≤900), kao u §12. `pointer-coarse:` je dodir.
-- Nova stranica ili komponenta: samo shadcn komponente i Tailwind klase, bez novih klasa u `app.css`. `app.css` je u sloju `legacy` i prazni se kako ekrani prelaze.
+- Nova stranica ili komponenta: samo shadcn komponente i Tailwind klase, bez novih klasa u CSS fajlovima. `app.css` više ne postoji: globalna pravila su u `src/styles/base.css`, onboarding u `src/styles/onboarding.css`, a ono čime oblačimo chat kit u `src/styles/chat-kit.css`.
 - Pre pravljenja nečeg svog, proveri shadcn katalog (Field, InputGroup, InputOTP, Collapsible, Item, Empty…).
 
 | Šta | Komponenta | Bilo je |
@@ -65,7 +65,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Jedna podloga, jedna boja teksta | na istoj podlozi tekst iste uloge ima istu boju; na narandžastoj podlozi tekst je u boji te podloge (`--color-primary-700`) |
 | Čipovi i značke | nikad pun krug (999px): čip (`ToggleGroupItem`, 32–44px) r8, značka i oznaka (`Badge`, 20px) r4 |
 | Velika slova | nikad (`text-transform: uppercase` je zabranjen van onboardinga) |
-| Najmanji tekst | 12px za sve što se čita; 11px samo u znački (`Badge`) i u meta liniji (`.cg-meta`) |
+| Najmanji tekst | 12px za sve što se čita; 11px samo u znački (`Badge`) i u meta liniji (`text-[11px]`, ocena i mesto negovateljice) |
 
 **Koncentrični uglovi, primeri koji važe u kodu:**
 - kartica r24, padding 16 → ono što je unutra i dodiruje ugao ima r8 (24 = 8 + 16);
@@ -86,10 +86,10 @@ Dve skale: sa mišem i na dodir (`pointer: coarse`). Na dodir je sve osim sitnog
 | Naslov stranice | `PageTitle` (`text-base`) | 16 / 24 | 20 / 28 | medium | primary |
 | Naslov kartice | `CardTitle` (`text-sm`) | 14 / 20 | 16 / 24 | medium | primary |
 | Polje, chat | `TextField`, composer | 12 / 16 (chat 14 / 20) | 16 / 24 | normal | primary |
-| Naslov reda u kartici | `.fam-row-title`, `.cg-name` | 12 / 16 | 14 / 20 | medium | primary |
-| Tekst kartice, podnaslov stranice | `CardDescription`, `DialogDescription`, `PageDescription` (`text-xs leading-body`), `.fam-sub`, `.rec-why` | 12 / 18 | 14 / 20 | normal | secondary |
+| Naslov reda u kartici | `ItemTitle` (`text-xs font-medium`) | 12 / 16 | 14 / 20 | medium | primary |
+| Tekst kartice, podnaslov stranice | `CardDescription`, `DialogDescription`, `PageDescription`, `ItemDescription` (`text-xs leading-body`) | 12 / 18 | 14 / 20 | normal | secondary |
 | Dugme | `Button` | 12 | 14 | medium | — |
-| Sitan tekst: naslov grupe, oznaka, napomena, meta, eyebrow | `text-small`: naslov u `PageSection`, `FieldLabel`, `FieldDescription`, `DialogEyebrow`, `.card-label`, `.fact-label`, `.ag-hint`, `.cg-meta` | 12 / 16 | 12 / 16 | medium ili normal | secondary |
+| Sitan tekst: naslov grupe, oznaka, napomena, meta, eyebrow | `text-small`: naslov u `PageSection`, `FieldLabel`, `FieldDescription`, `DialogEyebrow`, `PaneLabel`, `PaneHint`, oznaka u `Fact`, `Group` | 12 / 16 | 12 / 16 | medium ili normal | secondary |
 | Značka | `Badge` (`text-badge`) | 11 | 11 | medium | po stanju |
 
 **Tokeni:**
@@ -113,7 +113,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 | Odnos | Razmak |
 |---|---|
 | Između elemenata stranice (`Page`), tj. kartica jedne ispod druge | 12 (odlučeno 2. 10.; 16 je bilo previše) |
-| Između kartica u listi ili grupi (`.view-list`, `PageSection`) | 12 (bilo je 8) |
+| Između kartica u listi ili grupi (`PageSection`, lista kartica) | 12 (bilo je 8) |
 | Od naslova grupe do prve kartice | 12 (gap grupe) |
 | Između grupa | 32 (`PageSection` + `PageSection`: gap 12 + 20) |
 | Od ivice panela do sadržaja stranice | 24 sa svih strana (`Page`; na telefonu 16) |
@@ -147,7 +147,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (`AskAssistant` to radi sam, kad je u `PageHeader`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (32, na dodir 44), a ne koliko čip (28).
-- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `.view-head`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice 12 i 4 dugmeta). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari `.back-link` je uklonjen).
+- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `PageHeader`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice 12 i 4 dugmeta). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari „nazad" link je uklonjen).
 - **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") i jedino on započinje razgovor. Ispod njega je **„Istorija razgovora"** (odlučeno 2. 10.; ranije „Razgovor"): ceo red samo otvara i zatvara spisak ranijih razgovora i ne vodi nigde, a strelica je na kraju reda. Po defaultu je zatvoren. Prazan spisak kaže „Još nema razgovora.". „Vaši upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Vašim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
@@ -184,7 +184,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - Footer (`CardFooter`) je uvek poslednji, dole levo, 16 ispod sadržaja, a dugmad su prirodne širine. Na telefonu dugmad dele širinu kartice (`CardFooter` to radi sam).
 - Red dugmadi desno je samo u dijalozima i drawer-ima (`DialogFooter`, `SheetFooter`).
 
-**Narandžasti deo (odlučeno 1. 10.):** `Attention` (`src/components/Attention.jsx`, `.attention`). Narandžasto je podloga oko belih kartica, a ne kartica: naslov (i rečenica) stoje na narandžastom, u njegovoj boji (`--color-primary-700`), a sve što deo drži su obične bele `.panel-card` sa senkom.
+**Narandžasti deo (odlučeno 1. 10.):** `Attention` (`src/components/Attention.jsx`). Narandžasto je podloga oko belih kartica, a ne kartica: naslov (i rečenica) stoje na narandžastom, u njegovoj boji (`--color-primary-700`), a sve što deo drži su obične bele `Card` sa senkom.
 
 ```jsx
 <Attention title="Čeka na vas" sub="Jedna rečenica šta je ovde.">
@@ -194,9 +194,9 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 ```
 
 - Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice.
-- Stavka koja nešto otvara je `.panel-card.is-row.is-clickable`: avatar, naslov kartice kao `.card-link` (14), tekst, dugme desno (`.card-action`); na telefonu bez dugmeta i bez strelice, otvara se tapom.
+- Stavka koja nešto otvara je `Card` u redu (avatar levo): naslov kartice kao `CardLink` (14), tekst, dugme desno u `ItemAction`; na telefonu bez dugmeta i bez strelice, otvara se tapom.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
-- Samo za: ono što čeka na porodicu („Čeka na vas"), obaveštenje gde su stvari (sledeći korak na njenoj stranici **uvek, i kad nema dugmeta** — „Ništa ne čeka", „Prihvatila je", „Uslovi su odbijeni"…; „Ništa ne čeka" na Mojoj nezi; „Čeka se odgovor" i „Stigli su odgovori"), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Obaveštenje bez dugmeta je i dalje narandžasti deo sa belom karticom, a ne bela kartica sama. Nema druge narandžaste kartice; `.panel-card.is-attention` više ne postoji.
+- Samo za: ono što čeka na porodicu („Čeka na vas"), obaveštenje gde su stvari (sledeći korak na njenoj stranici **uvek, i kad nema dugmeta** — „Ništa ne čeka", „Prihvatila je", „Uslovi su odbijeni"…; „Ništa ne čeka" na Mojoj nezi; „Čeka se odgovor" i „Stigli su odgovori"), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Obaveštenje bez dugmeta je i dalje narandžasti deo sa belom karticom, a ne bela kartica sama. Nema druge narandžaste kartice.
 
 **Grupa kartica** se koristi samo kad stranica ima više od jedne grupe:
 
@@ -209,10 +209,10 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 
 **Prazna stranica:** `Empty` sa `EmptyTitle`, `EmptyDescription` i jednom akcijom.
 
-**Izbor plana** (`PaywallModal`, `.modal.is-plans`):
-- Svaki plan je `.panel-card.pw-plan-card` sa svim sadržajem: naziv, cena (24px), ušteda kao značka, rečenica za koga je, spisak šta uključuje i dugme „Izaberite" + naziv plana („Izaberite Premium"). Naslov dijaloga je „Izaberite pretplatu", a dugme koje ga otvara iz plana nege „Otključajte ceo plan nege": u naslovima i dugmadima „plan" znači samo plan nege, da se dva značenja ne sretnu na istom putu.
-- Kartice su jedna pored druge (`.pw-plan-grid`), a na telefonu jedna ispod druge, sa preporučenom prvom.
-- Preporučeni plan (`recommended` u `src/data/plans.js`) ima prsten u primarnoj boji (`.is-recommended`), značku „Najpopularniji" i primary dugme; ostali imaju secondary.
+**Izbor plana** (`PaywallModal`, `Dialog` širok 880, sa jednim planom 480):
+- Svaki plan je `Card` sa svim sadržajem: naziv, cena (24px), ušteda kao značka, rečenica za koga je, spisak šta uključuje i dugme „Izaberite" + naziv plana („Izaberite Premium"). Naslov dijaloga je „Izaberite pretplatu", a dugme koje ga otvara iz plana nege „Otključajte ceo plan nege": u naslovima i dugmadima „plan" znači samo plan nege, da se dva značenja ne sretnu na istom putu.
+- Kartice su jedna pored druge (mreža, najmanje 280 po kartici), a na telefonu jedna ispod druge, sa preporučenom prvom.
+- Preporučeni plan (`recommended` u `src/data/plans.js`) ima prsten u primarnoj boji, značku „Najpopularniji" i primary dugme; ostali imaju secondary.
 - Ovo je jedini obrazac gde je dugme u footeru kartice preko cele širine i spušteno na dno kartice, da se dugmad poravnaju kad su spiskovi različite dužine.
 - Ceo tekst planova je u `src/data/plans.js`, a ne u komponenti.
 
@@ -227,7 +227,7 @@ Red je `Item` u `ItemGroup` (`src/components/ui/item.jsx`). Mere (sve radi `Item
 - padding reda je 8 sa svih strana, pa je podloga na hover-u isto daleko od teksta gore, dole i sa strane (odlučeno 1. 10.; bilo je 16 gore i dole a 8 sa strane);
 - između redova je 8, a linija od 1px je na sredini tog razmaka, uvučena 8 da bude poravnata sa tekstom;
 - radius reda je 16 (vidi se samo na hover-u);
-- na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`.cg-tag`) u njemu postanu bele, da ne nestanu u sivom.
+- na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`Badge variant="tag"`) u njemu postanu bele, da ne nestanu u sivom.
 
 ```jsx
 <ItemGroup>
@@ -244,16 +244,16 @@ Red je `Item` u `ItemGroup` (`src/components/ui/item.jsx`). Mere (sve radi `Item
 
 Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</a></Item>`.
 
-**Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, a stanje je značka pored imena (`.fam-row-title`). Jedno dugme je **na desktopu gore desno**, u visini imena (16 od ivice, koncentrično sa uglom), a **na telefonu ispod sadržaja**, u koloni teksta i široko koliko ona, 16 ispod. Tako je kartica upita („Vaši upiti"), po istoj logici kao kartica na „Pronađi".
+**Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, a stanje je značka pored imena. Jedno dugme je **na desktopu gore desno**, u visini imena (16 od ivice, koncentrično sa uglom), a **na telefonu ispod sadržaja**, u koloni teksta i široko koliko ona, 16 ispod. Tako je kartica upita („Vaši upiti"), po istoj logici kao kartica na „Pronađi".
 
-**Kartica upita (odlučeno 5. 10.)** je cela klikabilna (ime je `.card-link`): kad saradnja postoji, otvara njenu stranicu, a inače njen profil. Nema dugme za otvaranje („Pogledaj saradnju" je uklonjeno). Jedino dugme je **„Pitaj ponovo"**, samo na odbijenom upitu kad sme ponovo da joj se piše (`canAsk`), jer šalje novi upit, a ne otvara nešto; zato ostaje i na telefonu. Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
+**Kartica upita (odlučeno 5. 10.)** je cela klikabilna (ime je `CardLink`): kad saradnja postoji, otvara njenu stranicu, a inače njen profil. Nema dugme za otvaranje („Pogledaj saradnju" je uklonjeno). Jedino dugme je **„Pitaj ponovo"**, samo na odbijenom upitu kad sme ponovo da joj se piše (`canAsk`), jer šalje novi upit, a ne otvara nešto; zato ostaje i na telefonu. Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
 
 **Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + razmak + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa raste zajedno sa tekstom na dodir:
 
 | Gde | Naslov + red ispod | Miš / dodir |
 |---|---|---|
-| Red u kartici (`.fam-row`: Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti, chat) | 12 i rečenica | 38 / 44 |
-| Negovateljica u planu (`.caregiver`) | 12 i meta | 36 / 40 |
+| Red u kartici (`Item`: Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti, chat) | 12 i rečenica | 38 / 44 |
+| Negovateljica u planu (`CaregiverRow`) | 12 i meta | 36 / 40 |
 | Kartica na „Pronađi", glava detalja | 14 i meta | 40 / 44 |
 | Kartica u „Čeka na vas", upit (Vaši upiti) | 14 i rečenica | 42 / 48 |
 | Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 42 / 48 |
@@ -262,9 +262,9 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 
 Značka u naslovu reda (20) ne povećava red od 16, nego prelazi preko njega, pa naslov ostaje u visini avatara. Kad se naslov prelomi u dva reda, avatar ostaje poravnat sa vrhom. Novo mesto sa avatarom dobija svoj `--avatar` po ovom pravilu; avatar nema fiksnu veličinu.
 
-**Poravnanje u redu (`.fam-row`):** sve počinje od prve linije. Avatar je poravnat po vrhu sa naslovom, a ono desno (dugme, broj, strelica) počinje u istoj visini kao naslov. Ništa se ne centrira po visini reda, jer red sa oznakama ima tri i više linija.
+**Poravnanje u redu (`Item`):** sve počinje od prve linije. Avatar je poravnat po vrhu sa naslovom, a ono desno (dugme, broj, strelica) počinje u istoj visini kao naslov. Ništa se ne centrira po visini reda, jer red sa oznakama ima tri i više linija.
 
-**Stanje u redu** je kratka značka pored naslova (`.fam-row-title` › `.status-pill`), a ne poseban red. Kod posete značka kaže samo korak („Plan posete", „Radni nalog stigao", „Plaćeno"), jer iznos desno već kaže šta je sa novcem, a linija ispod kaže ostalo. Iznos posete stoji u liniji ispod datuma kao oznaka (`.fam-row-body.is-inline` › `.cg-tag`): „54 € rezervisano" u „Predstoji", „54 € naplaćeno" u poslednjoj poseti. Oznaka je ista kao sve ostale oznake (bez ikonice), a ne značka.
+**Stanje u redu** je kratka značka pored naslova (`Badge` u `ItemTitle`), a ne poseban red. Kod posete značka kaže samo korak („Plan posete", „Radni nalog stigao", „Plaćeno"), jer iznos desno već kaže šta je sa novcem, a linija ispod kaže ostalo. Iznos posete stoji u liniji ispod datuma kao oznaka (`Badge variant="tag"`): „54 € rezervisano" u „Predstoji", „54 € naplaćeno" u poslednjoj poseti. Oznaka je ista kao sve ostale oznake (bez ikonice), a ne značka.
 
 Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius.
 
@@ -279,20 +279,18 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 **Kartica ili red koji predstavlja nešto sa svojim detaljima** (negovateljica, plan, poseta) ceo je klikabilan i otvara te detalje.
 
 ```jsx
-<div className="caregiver is-wide is-clickable">               {/* ili red: className="caregiver is-clickable" */}
-  <div className="cg-avatar">VM</div>
-  <div className="cg-main">
-    <div className="cg-top">
-      <button type="button" className="cg-name card-link" onClick={openDetails}>Vesna Mitrović</button>
-      <span className="status-pill is-attention">Poklapanje · 97%</span>
-      <ChevronRight className="card-go" size={16} strokeWidth={1.75} aria-hidden="true" />
-    </div>
+<Card className="flex-row items-start gap-3 [--avatar:…]">     {/* ili red: <Item> u <ItemGroup> */}
+  <Avatar><AvatarFallback>VM</AvatarFallback></Avatar>
+  <div className="flex min-w-0 flex-1 flex-col gap-1">
+    <p className="text-sm font-medium">
+      <CardLink onClick={openDetails}>Vesna Mitrović</CardLink>      {/* u redu: <ItemLink> */}
+    </p>
     …
-    <div className="panel-card-actions">                        {/* kod reda: dugme je direktno u redu, desno */}
-      <Button variant="primary" className="card-action" onClick={act}>Pošalji poruku</Button>
-    </div>
   </div>
-</div>
+  <ItemAction>                                                   {/* dugme koje kaže isto što i link */}
+    <Button onClick={act}>Pošalji poruku</Button>
+  </ItemAction>
+</Card>
 ```
 
 - Ime je `ItemLink` u redu, a `CardLink` u kartici. Ime je pravo `<button>`: `::after` ga razvlači preko celog reda ili kartice, pa radi i tastatura i čitač ekrana. `Item` i `Card` same prepoznaju da imaju link (hover, fokus, kursor).
@@ -302,11 +300,11 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
   - red ima akciju desno;
   - hover: kartica se uokviri, a red posivi.
 - **Telefon (≤640px):**
-  - `.card-action` se ne prikazuje, a **nema ni strelice** (`.card-go`, `.fam-row-chevron`; odlučeno 5. 10.): kartica ili red se otvara tapom;
+  - `ItemAction` se ne prikazuje, a **nema ni strelice** (odlučeno 5. 10.): kartica ili red se otvara tapom;
   - tap otvara detalje, pa **detalji moraju imati istu akciju** (profil negovateljice ima „Pošalji poruku");
   - pre nego što sakriješ akciju, proveri da je ima u detaljima.
   - **izuzetak je kartica negovateljice na „Pronađi":** „Pošalji poruku" je posebna akcija od otvaranja detalja, pa na telefonu ostaje, ispod sadržaja kartice, poravnata sa tekstom i široka koliko on. Tap na karticu otvara profil kao i svaka kartica. Stanje („Već dolazi", „Čeka odgovor") stoji na istom mestu.
-- **Grupa koja se sklapa** (npr. grupa kolačića): ceo njen gornji deo (naziv, stanje, opis) otvara i zatvara grupu. Naziv je dugme razvučeno preko tog dela (`.ck-summary` + `.ck-open`). Prekidač stoji iznad i samo menja stanje. Spisak koji se otvori nije deo mete, pa se čitanjem ne zatvara.
+- **Grupa koja se sklapa** (npr. grupa kolačića): ceo njen gornji deo (naziv, stanje, opis) otvara i zatvara grupu. Naziv je dugme razvučeno preko tog dela (`::after`), u shadcn `Collapsible`. Prekidač stoji iznad i samo menja stanje. Spisak koji se otvori nije deo mete, pa se čitanjem ne zatvara.
 ### Drawer ili modal (odlučeno 30. 9.)
 
 - **Drawer** (`Modal`, sa strane; shadcn `Sheet`) je za **detalje**: kad treba prikazati više o nečemu, a akcija nije jedino što je bitno. Ugovor o nezi, radni nalog, plan posete, profil negovateljice. Drawer može imati akciju koja završava pregled (npr. „Prihvati uslove", „Sve je u redu — plati sada").
@@ -322,13 +320,13 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
 - **Dugme desno** ide samo u redu čiji sadržaj staje u dve linije. U kartici sa više teksta dugme ide u footer.
-- **Red koji nešto otvara** (`.fam-row.is-clickable`, `.fam-visit.is-clickable`): naslov je `.card-link`, dugme desno je `.card-action` i kaže isto; na telefonu ga nema, a red se otvara tapom. Tako su redovi u Mojoj nezi („Čeka na vas", „Predstoji", „Vaše negovateljice") i posete. Red ima jednu akciju; „Njena stranica" pored „Pogledaj plan posete" je bila druga, a njena stranica je jedan klik dalje preko reda „Vaše negovateljice".
+- **Red koji nešto otvara** (`Item` sa `ItemLink`): naslov je `ItemLink`, dugme desno je u `ItemAction` i kaže isto; na telefonu ga nema, a red se otvara tapom. Tako su redovi u Mojoj nezi („Čeka na vas", „Predstoji", „Vaše negovateljice") i posete. Red ima jednu akciju; „Njena stranica" pored „Pogledaj plan posete" je bila druga, a njena stranica je jedan klik dalje preko reda „Vaše negovateljice".
 - **Poseta** ima tri dela (datum i sati, izveštaj, rečenica šta je sa njom i dugme), 12 jedan od drugog, pa joj je dugme ispod rečenice, levo, kao footer kartice, a ne desno.
 - **Izveštaj posete** (`VisitReport` u `src/components/family/FamilyDrawer.jsx`) je uvek isti, gde god se prikazuje na stranici: delovi sa imenom, 12 jedan od drugog: „Urađeno" (oznake, samo u poslednjoj poseti), „Kako je bila" (oznake „Raspoloženje: dobro", „Ishrana: kao i obično", „Kretanje: kao i obično", bez ikonice) i „Sanna je zapisala" (običan tekst). U radnom nalogu (drawer) „Kako je bila" su iste oznake.
 - **„Sve posete" i „Svi upiti"** u glavi kartice su `Button` `secondary` (sa strelicom, kao i ranije), desno, a redovi ispod glave sa dugmetom počinju 8 niže (24 od dugmeta do teksta prvog reda). **„Prikaži još"** je `Button` `secondary` u footeru, levo. Nema dugmeta-linka ni dugmeta koje je samo tekst.
-- **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima strelicu desno (`.fam-row-chevron`), samo na širem ekranu. Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
+- **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima strelicu desno, samo na širem ekranu (`phone:hidden`). Broj pored nje se na telefonu ne prikazuje.
 - **Posete na njenoj stranici:** najviše 10, a ako ih ima više, „Pogledaj sve (N)" (`secondary`, dole levo) otvara drawer „Sve posete" sa svim njenim posetama (`kind: 'visits'`). Redosled je isti (`herVisits`): prvo ono što je u toku, pa izmireno.
-- **„Šta se desilo"** (odlučeno 3. 10., izmenjeno 5. 10.): sve što se desilo sa negom, najnovije prvo (`care.log`, upisuju ga `familyCare` i `sim`). Otvara se **ikonicom u glavi stranice** (`History`, `secondary iconOnly`, `aria-label` i `title` „Šta se desilo"): samo na njenoj stranici, pored broja telefona, i samo za nju, kao u prototipu (ikonica sa Moje nege je uklonjena 5. 10.). Nema kartice na stranici. Drawer (`kind: 'activity'`) ima filtere (Sve, Upiti, Ugovor, Posete, Novac), ispod njih „N stavki · najnovije prvo", i stavke po danima, sa brojem stavki pored dana. Stavka je red bez akcije: naslov (`.fam-row-title`), pa linija „ko · kada" (`vi`, njeno ime ili `koordinatorka`) i rečenica šta tačno. Naslov nikad ne menja njeno ime po padežu („Poslali ste upit", ne „Poslali ste upit Sanni").
+- **„Šta se desilo"** (odlučeno 3. 10., izmenjeno 5. 10.): sve što se desilo sa negom, najnovije prvo (`care.log`, upisuju ga `familyCare` i `sim`). Otvara se **ikonicom u glavi stranice** (`History`, `secondary iconOnly`, `aria-label` i `title` „Šta se desilo"): samo na njenoj stranici, pored broja telefona, i samo za nju, kao u prototipu (ikonica sa Moje nege je uklonjena 5. 10.). Nema kartice na stranici. Drawer (`kind: 'activity'`) ima filtere (Sve, Upiti, Ugovor, Posete, Novac), ispod njih „N stavki · najnovije prvo", i stavke po danima, sa brojem stavki pored dana. Stavka je red bez akcije (`Item`): naslov, pa linija „ko · kada" (`vi`, njeno ime ili `koordinatorka`) i rečenica šta tačno. Naslov nikad ne menja njeno ime po padežu („Poslali ste upit", ne „Poslali ste upit Sanni").
 - **Pregled negovateljice** (`kind: 'overview'`, izmenjeno 5. 10. po prototipu): ikonica u glavi njene stranice (`IdCard`, „Pregled"), između telefona i „Šta se desilo". Redom: dva broja (posete do sada, ispod koliko je zakazano; koliko traju zajedno, ispod od kada), „Kontakt" (telefon, e-mail, opština, jezici; telefon i e-mail se skrivaju kad se saradnja završi), „Dogovorena nega" (verzija koja važi, cena po satu, usluge po grupama, dodatni uslovi; **samo dok ugovor važi i ne čekaju novi uslovi**), „Kvalifikacije" (klasifikacije, obrazovanje), „O negovateljici", „Ocene", „Kako se plaća". Bez zbira plaćenog (vidi §8).
 - **Sve verzije ugovora** (`kind: 'versions'`, „Sve verzije (N)" u footeru kartice „Ugovor o nezi", samo kad ih ima više od jedne): svaka verzija sa značkom stanja (važi, čeka vaš odgovor, zamenjena, odbijena, povučena, završena) i šta je promenila u odnosu na prethodnu.
 - **Sledeći korak na njenoj stranici** pokriva i: prihvatila je a ugovor još nije stigao; uslovi su odbijeni ili povučeni (ništa ne važi); poseta je obavljena a radni nalog još nije stigao; dodatni sati čekaju odgovor; saradnja je završena (dugme „Ponovo sarađujte"); ponovni upit čeka, prihvaćen ili odbijen („Pitaj ponovo").
@@ -343,13 +341,13 @@ Vrsta vrednosti određuje raspored:
 
 | Vrednost | Raspored | Klase | Primeri |
 |---|---|---|---|
-| Kratka (iznos, datum, stanje, broj) | oznaka levo, vrednost desno | `.bc-lines` › `.bc-line` › `.bc-line-label` + `.bc-line-value` | obračun posete, stanje kolačića, uslovi |
-| Slobodan tekst (ime, adresa, odgovor) | oznaka iznad vrednosti, redovi razdvojeni linijom | `.facts.is-stacked` › `.fact` › `.fact-label` + `.fact-value` | profil, arhivirani plan |
+| Kratka (iznos, datum, stanje, broj) | oznaka levo, vrednost desno | `DataList` › `DataRow` (`src/components/data-list.jsx`) | obračun posete, stanje kolačića, uslovi |
+| Slobodan tekst (ime, adresa, odgovor) | oznaka iznad vrednosti, redovi razdvojeni linijom | `Facts` › `Fact` | profil |
 
 - Oznaka je u oba slučaja 12px secondary, a vrednost primary.
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
-- **Jedini izuzetak je cenovnik partnera** (`.rec-prices`): naziv levo, redovna i Minnina cena u koloni desno.
-- **Dva broja na vrhu pregleda** (`.fam-stats` › `.fam-stat` › `.fam-stat-value` + `.fact-label` + `.ag-hint`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. Za sada samo u pregledu negovateljice.
+- **Jedini izuzetak je cenovnik partnera** (u `RecommendationCard`): naziv levo, redovna i Minnina cena u koloni desno.
+- **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. Za sada samo u pregledu negovateljice.
 - **Nikad zbir plaćenog** (odlučeno 5. 10.): porodici se ne prikazuje koliko je ukupno platila, ni do sada, ni po mesecu, ni po negovateljici. Iznos stoji samo uz pojedinačnu posetu (rezervisano, biće naplaćeno, naplaćeno) i uz ono što se sada dešava („Rezervisano za zakazane posete", „Naplaćuje se sada" u Podešavanjima). Broj poseta je u redu, zbir novca nije.
 
 ### Negovateljica: šta se o njoj prikazuje
@@ -404,18 +402,18 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - `Button` je iz `@/components/ui/button`. Varijante: `default` (narandžasto, glavna radnja), `secondary`, `ghost` (tiha radnja pored `secondary`, npr. „Odbij sve"), `destructive`. Veličine: `default` (32), `lg` (40, samo ekrani preko celog prozora), `icon` (28; u `PageActions` 32). Na pritisak se smanji na 97%.
 - **Na ekranu na dodir** (`pointer: coarse`) sva dugmad, polja, redovi i čipovi imaju najmanje 44px. Tokeni `--button-size` i `--input-size` to rade sami, pa ne zadaji fiksnu visinu manju od 44 bez `pointer-coarse:` varijante.
 - Ikonice u dugmadima: vidi §11.
-- **Dugmad chat kita** (`inline-chat-kit`) crta kit, a ne `Button`, pa su u `app.css` („The chat kit's buttons, drawn as ours") obučena kao naša, po ulozi: „Pošalji" je `primary`; „Zaustavi", akcije u zaglavlju chata, „…", predlozi pitanja i koraci pitanja su `secondary`; kopiraj, ponovo i ocena odgovora su `ghost`. Iste visine (32, glif 28, na dodir 44), ugao 8, tekst 12 / 14 na dodir. Novo dugme koje mi dajemo kitu (kartice u chatu) je uvek naš `Button`.
+- **Dugmad chat kita** (`inline-chat-kit`) crta kit, a ne `Button`, pa su u `src/styles/chat-kit.css` („The chat kit's buttons, drawn as ours"; van CSS slojeva, kao i kitov CSS, inače ga ne nadjačavaju) obučena kao naša, po ulozi: „Pošalji" je `primary`; „Zaustavi", akcije u zaglavlju chata, „…", predlozi pitanja i koraci pitanja su `secondary`; kopiraj, ponovo i ocena odgovora su `ghost`. Iste visine (32, glif 28, na dodir 44), ugao 8, tekst 12 / 14 na dodir. Novo dugme koje mi dajemo kitu (kartice u chatu) je uvek naš `Button`.
 
 ---
 
 ## 10. Stanje i polja
 
-- **Čip je samo za ono što se bira.** `ToggleGroupItem` (ivica, a popunjen kad je izabran) je dugme: izbor usluga u ugovoru, filteri, odgovor u tri reči, jezik. **Ono što se samo čita** (usluge iz ugovora, šta je urađeno na poseti, šta će raditi, zašto se negovateljica poklapa, njene klasifikacije, šta je porodica tražila) je oznaka: komponenta `Tags` (`src/components/Tags.jsx`, `.cg-tags` › `.cg-tag`), siva podloga, bez ivice i **bez ikonice** (ni kvačice), 12px. Ono što je izostavljeno je `.cg-tag.is-off` i to kaže rečima („— ovog puta ne"). `ServiceChips` crta oznake.
+- **Čip je samo za ono što se bira.** `ToggleGroupItem` (ivica, a popunjen kad je izabran) je dugme: izbor usluga u ugovoru, filteri, odgovor u tri reči, jezik. **Ono što se samo čita** (usluge iz ugovora, šta je urađeno na poseti, šta će raditi, zašto se negovateljica poklapa, njene klasifikacije, šta je porodica tražila) je oznaka: komponenta `Tags` (`src/components/Tags.jsx`, oznaka je `Badge variant="tag"`), siva podloga, bez ivice i **bez ikonice** (ni kvačice), 12px. Ono što je izostavljeno je bleđa oznaka (`off`) i to kaže rečima („— ovog puta ne"). `ServiceChips` crta oznake.
 - **Usluge su iz jednog kataloga** (`src/data/serviceCatalog.js`, odlučeno 3. 10.): 57 usluga u 4 grupe, kao u aplikaciji za negovateljice (Pomoć u svakodnevici, Lična nega i kuća, Praktična nega, Medicinska nega). Ugovor, plan posete, radni nalog i pregled ih prikazuju po grupama (`ServiceChips grouped`: ime grupe, pa oznake). Red negovateljice na Mojoj nezi pokazuje samo imena grupa, a ceo spisak je na njenoj stranici. Ceo katalog (svih 57) se vidi samo u formi gde negovateljica bira šta nudi.
 - **Dodatni sati** (odlučeno 3. 10.): radni nalog sa više sati nego što je rezervisano naplaćuje samo rezervisano. Višak je deo „Dodatni sati" u radnom nalogu sa „Odbij dodatne sate" (secondary) i „Odobri X €" (primary), a do odgovora je i stavka u „Čeka na vas". Manje sati: naplaćuje se koliko je radila, a razlika se vraća („Vraća se" u obračunu).
-- **Grupa oznaka uvek kaže šta je:** ime grupe (`label`, 12px sivo), a ispod njega oznake, 4 razmaka, kao jedna grupa (`.tag-row`). Sledeća grupa je 12 niže (`.tag-rows`). Primeri: „Poklapa se" i „Klasifikacije" na kartici negovateljice, „Usluge" u redu negovateljice i u ugovoru, „Urađeno" u poslednjoj poseti. U drawer-u ime grupe je `.ag-label` sekcije, pa se `label` ne zadaje.
+- **Grupa oznaka uvek kaže šta je:** ime grupe (`label`, 12px sivo), a ispod njega oznake, 4 razmaka, kao jedna grupa (`Group`). Sledeća grupa je 12 niže (`Groups`). Primeri: „Poklapa se" i „Klasifikacije" na kartici negovateljice, „Usluge" u redu negovateljice i u ugovoru, „Urađeno" u poslednjoj poseti. U drawer-u ime grupe je `PaneLabel` sekcije, pa se `label` ne zadaje.
 - Grupa oznaka u redu stoji 12px ispod teksta reda.
-- **Ono što je neko napisao** (beleška negovateljice, njena poruka uz uslove, „O sebi", vaša poruka u upitu, ono što ste prijavili) je **običan tekst ispod imena dela**: `Group` sa `text` (`src/components/Tags.jsx`, `.tag-row-text`: 12 / 18, boja vrednosti), a u drawer-u `.ag-label` pa `.doc-p`. **Nikad uvučen citat u kurzivu** sa linijom levo (stari `.fam-quote` je uklonjen).
+- **Ono što je neko napisao** (beleška negovateljice, njena poruka uz uslove, „O sebi", vaša poruka u upitu, ono što ste prijavili) je **običan tekst ispod imena dela**: `Group` sa `text` (`src/components/Tags.jsx`: 12 / 18, boja vrednosti), a u drawer-u `PaneLabel` pa `SheetDescription`. **Nikad uvučen citat u kurzivu** sa linijom levo (stari citat je uklonjen).
 - Tekst značke počinje velikim slovom („Važi", „Čeka vaš odgovor"), kao i sve značke.
 - **Stanje** se kaže samo značkom `Badge` sa jednom od varijanti: `success` (zeleno, gotovo; ranije `is-accepted`), `warning` (čeka; `is-pending`), `destructive` (ne; `is-declined`), `secondary` (neutralno; `is-muted`), `default` (narandžasto: poklapanje, izmenjeno; `is-attention`). Oznaka je `Badge variant="tag"`.
 - **Poklapanje** se svuda piše „Poklapanje · 97%", kao značka `Badge` `default`.
@@ -424,7 +422,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - **Kod od šest cifara** je `InputOTP`: tri i tri kućice (44×52, na telefonu 40×48), kratka crta između, a kućica u koju ide sledeća cifra ima narandžastu ivicu dok je polje u fokusu. Labela „Kod iz aplikacije" je sitan tekst iznad.
 - **Prekidač** (`Switch`) je za podešavanje koje je uključeno ili isključeno. Ceo red je labela (naziv, opis ispod, prekidač desno), pa klik bilo gde u redu menja stanje. Podešavanje koje se ne može menjati (neophodni kolačići) i dalje ima prekidač, da lista izgleda kao celina, ali je on `disabled`: bleđi je i ne pomera se, pa se vidi da ne može da se isključi (odlučeno 5. 10.).
 - **Nešto što se rasklapa** (grupa kolačića, ručni unos 2FA ključa) je `Collapsible` ili dugme sa `aria-expanded`, sa strelicom koja se okreće kad je otvoreno.
-- **`TextArea` se razvlači samo na dole**, od visine sa kojom se otvara (`rows`, to je i minimum). Polje nema svoju gornju granicu, jer koliko teksta treba zavisi od polja. Granicu daje prozor: sadržaj se skroluje, a red dugmadi je zakačen za dno (§7), pa ga polje ne može izgurati. Zato svaki prozor sa poljem mora biti `Dialog` ili `.modal.is-dialog`. U širinu se ne razvlači. Na telefonu ručice nema.
+- **`TextArea` se razvlači samo na dole**, od visine sa kojom se otvara (`rows`, to je i minimum). Polje nema svoju gornju granicu, jer koliko teksta treba zavisi od polja. Granicu daje prozor: sadržaj se skroluje, a red dugmadi je zakačen za dno (§7), pa ga polje ne može izgurati. Zato svaki prozor sa poljem mora biti `Dialog`. U širinu se ne razvlači. Na telefonu ručice nema.
 - **Bez plavog okvira na pritisak:** pregledačev „tap highlight" je isključen za sve (`index.css`). Na pritisak odgovara samo dugme, smanjenjem na 97%. Dug pritisak na delu koji je ceo dugme (glava grupe kolačića) ne selektuje tekst (`select-none`).
 - **Na dodir je svako polje najmanje 16px**, i `input`/`textarea`/`select` i svaki `contenteditable` (composer u chatu je `contenteditable`). Ispod 16px iOS zumira stranicu kad se polje fokusira i ostavi je zumiranu. To je globalno pravilo sa `!important`; ne obaraj ga, ni preko `--ick-*` promenljivih kita.
 - **Chat na dodir:** composer, poslata poruka i odgovor su svi 16/24 (sa mišem 14/20). Uvek su iste veličine.
@@ -473,7 +471,7 @@ Ova aplikacija je samo porodična, pa sve što bi uradile negovateljice i koordi
 - **Negovateljica:** prihvati ili odbij upit (sa razlogom), pošalji ugovor ili nove uslove, povuci predlog, plan posete za sutra ili za pola sata, radni nalog kako je planirano / sat manje / sat više, poseta se nije desila, otkaže posetu, završi saradnju.
 - **Koordinatorka:** reši prijavu (radni nalog: naplati kako je poslato, umanji za sat, ne naplaćuj; plan: plan ostaje, otkaži posetu).
 - Pravila kao u aplikaciji za negovateljice: jedan plan posete u isto vreme; nijedan dok novi uslovi čekaju, dok je prijava otvorena ili dok prošla poseta čeka radni nalog; najviše dva nenaplaćena radna naloga. Zašto plan ne može, drawer kaže ispod dugmeta.
-- Drawer je alat za demo, ne deo proizvoda: ne ide u galeriju i ne proverava se skriptom iz §13. Dugmad su `secondary`, grupe su `.wo-choice`.
+- Drawer je alat za demo, ne deo proizvoda: ne ide u galeriju i ne proverava se skriptom iz §13. Dugmad su `secondary`, u redovima sa razmakom 8.
 
 ---
 
@@ -485,10 +483,11 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
 
 ```js
 (() => {
-  const root = document.querySelector("[data-slot=app-pane], .chat-container") || document.body;
+  const root = document.querySelector('[data-slot=app-pane]') || document.body;
   const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
-  const name = (e) => (e.dataset?.slot ? `[${e.dataset.slot}]` : '') + e.className.toString().slice(0, 30);
-  const exempt = (e) => e.parentElement?.closest('.cg-avatar, [data-slot=avatar]') || e.matches('.status-pill, .cg-tag, [data-slot=badge]') || (e.matches('.cg-avatar, [data-slot=avatar]') && e.getBoundingClientRect().width <= 36);
+  const name = (e) => (e.dataset?.slot ? `[${e.dataset.slot}] ` : '') + e.className.toString().slice(0, 30);
+  // §1: avatars up to 36 are exempt, larger ones nest like anything else; badges and tags are 20 tall
+  const exempt = (e) => e.parentElement?.closest('[data-slot=avatar]') || e.matches('[data-slot=badge]') || (e.matches('[data-slot=avatar]') && e.getBoundingClientRect().width <= 36);
   const concentric = [];
   root.querySelectorAll('*').forEach((e) => {
     const s = getComputedStyle(e), r = parseFloat(s.borderTopLeftRadius), box = e.getBoundingClientRect();
@@ -506,18 +505,18 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
   return {
     concentric,
     caps: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && !e.closest('[class*="imm-"]') && getComputedStyle(e).textTransform === 'uppercase').map(name)),
-    overflow: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('.app-nav, [data-slot=app-nav]')).map(name)).slice(0, 10),
-    cards: uniq([...root.querySelectorAll('.panel-card, [data-slot=card], .caregiver.is-wide, .plan-row')].filter(vis).map((e) => { const s = getComputedStyle(e); return `${s.borderTopLeftRadius}/${s.paddingTop}`; })),
-    titles: uniq([...root.querySelectorAll('.doc-section-title, [data-slot=card-title], .section-title, [data-slot=page-section] > h2, .fam-row-title')].filter(vis).map((e) => `${e.dataset.slot || e.className.split(' ')[0] || 'section-h2'} ${getComputedStyle(e).fontSize}`)),
+    overflow: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('[data-slot=app-nav]')).map(name)).slice(0, 10),
+    cards: uniq([...root.querySelectorAll('[data-slot=card]')].filter(vis).map((e) => { const s = getComputedStyle(e); return `${s.borderTopLeftRadius}/${s.paddingTop}`; })),
+    titles: uniq([...root.querySelectorAll('[data-slot=card-title], [data-slot=page-section] > h2')].filter(vis).map((e) => `${e.dataset.slot || 'section-title'} ${getComputedStyle(e).fontSize}`)),
   };
 })();
 ```
 
-Na `/?kartice` skript uzima glavni panel strane negovateljice (`AppPane`, `[data-slot=app-pane]`) za koren, pa tamo pokreni telo funkcije nad svakim `.gallery-frame` (umesto `root`), a tablu negovateljice (skroluje se vodoravno) izuzmi iz `overflow`.
+Na `/?kartice` skript uzima glavni panel strane negovateljice (`AppPane`, `[data-slot=app-pane]`) za koren, pa tamo pokreni telo funkcije nad svakim okvirom galerije (`[data-slot=gallery-frame]`, umesto `root`), a tablu negovateljice (skroluje se vodoravno) izuzmi iz `overflow`.
 
-Skript prepoznaje i shadcn komponente po `data-slot` atributu (`[data-slot=card]`, `[data-slot=card-title]`, `[data-slot=badge]`), jer one nemaju stare klase. Bez toga bi stranica na shadcn-u prošla sa nula prekršaja zato što skript ne bi našao nijednu karticu.
+Skript prepoznaje komponente po njihovom `data-slot` atributu (`[data-slot=card]`, `[data-slot=card-title]`, `[data-slot=badge]`, `[data-slot=avatar]`), a ne po klasama: shadcn komponente klase nemaju. Ako skript ne nađe nijednu karticu (`cards: []`), proveri da li je selektor tačan, inače bi stranica „prošla" a da ništa nije izmereno.
 
-Očekivano: `cards` → `24px/16px`; `titles` → `card-title 14px` (`doc-section-title` na starim ekranima), `section-h2 12px` (`section-title`), `fam-row-title 12px` (14px samo za naslov kartice koja je sama stavka). Na dodir je naslov kartice 16px.
+Očekivano: `cards` → `24px/16px`; `titles` → `card-title 14px` i `section-title 12px` (na dodir je naslov kartice 16px). Kartica na tabli negovateljice je r16 sa 12 paddinga i nije `Card`.
 
 ---
 
@@ -528,12 +527,12 @@ Očekivano: `cards` → `24px/16px`; `titles` → `card-title 14px` (`doc-sectio
 - uvučen citat u kurzivu; tekst kao dugme-link umesto `Button`;
 - velika slova van onboardinga;
 - duga crta (—) u tekstu interfejsa: piše se kratka (-), a prazna vrednost je takođe „-". Raspon ostaje sa – (`16–20 €/h`, `09:00–12:00`);
-- `onClick` na div kartice umesto `.card-link`;
+- `onClick` na div kartice umesto `CardLink` / `ItemLink`;
 - sakrivena akcija na telefonu koje nema u detaljima;
 - `default` (narandžasto) za gašenje ili otkazivanje, ili boja dugmeta po stanju;
 - svoje `<input>` ili native `<select>` umesto `TextField`;
 - `shadcn add … --overwrite` na komponenti koja je već prilagođena;
-- nova klasa u `app.css`;
+- nova klasa u CSS fajlu (sve je Tailwind, osim onboardinga i chat kita);
 - hex boje u komponentama, razmak koji nije deljiv sa 4;
 - pretraga ili jedno polje u kartici;
 - ikonica u dugmetu sa tekstom u Podešavanjima; dodavanje ili uklanjanje ikonica van Podešavanja dok §11 ne dobije odluku.

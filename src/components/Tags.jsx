@@ -9,19 +9,16 @@ import { cn } from '@/lib/utils';
 // A group always says what it is: its name above, what it holds under it, 4
 // apart. In a drawer the section's own label above says it, and `label` is
 // left out. `off` is what was left out, said in so many words.
-//
-// (`cg-tags`, `cg-tag`, `tag-row`, `tag-rows` stay on until the screens that
-// still place these by those classes are moved.)
 export default function Tags({ label, items, off = [], className }) {
   const tags = (
-    <div className={cn('cg-tags flex flex-wrap gap-1', !label && className)}>
+    <div className={cn('flex flex-wrap gap-1', !label && className)}>
       {items.map((t) => (
-        <Badge key={t} variant="tag" className="cg-tag">
+        <Badge key={t} variant="tag">
           {t}
         </Badge>
       ))}
       {off.map((t) => (
-        <Badge key={t} variant="tag" className="cg-tag is-off text-disabled">
+        <Badge key={t} variant="tag" className="text-disabled">
           {t}
         </Badge>
       ))}
@@ -41,7 +38,7 @@ export default function Tags({ label, items, off = [], className }) {
 // never an indented italic quote (docs/patterns.md §10).
 export function Group({ label, text, className, children }) {
   return (
-    <div className={cn('tag-row flex flex-col gap-1', className)}>
+    <div className={cn('flex flex-col gap-1', className)}>
       <p className="text-small text-muted-foreground">{label}</p>
       {text ? <p className="text-xs leading-body text-foreground">{text}</p> : children}
     </div>
@@ -49,5 +46,5 @@ export function Group({ label, text, className, children }) {
 }
 
 export function Groups({ className, ...props }) {
-  return <div className={cn('tag-rows flex flex-col gap-3', className)} {...props} />;
+  return <div className={cn('flex flex-col gap-3', className)} {...props} />;
 }

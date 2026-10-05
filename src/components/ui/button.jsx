@@ -5,7 +5,7 @@ import { Slot } from "radix-ui"
 
 // shadcn's button, drawn as NANA's: the variant and size names are shadcn's,
 // what they draw is ours, and every value comes from tokens.css. Heights go
-// through --button-size and --chip-size, which tokens and app.css raise to
+// through --button-size and --chip-size, which tokens.css raises to
 // 44px on a touch screen, so a finger gets the target a mouse does not need.
 // Edited in place, as shadcn intends — `shadcn add button --overwrite` would
 // put the stock one back.

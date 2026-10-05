@@ -12,10 +12,7 @@ export default function AskAssistant({ onClick, label = 'Pitaj asistenta', iconO
       variant="secondary"
       size={iconOnly ? 'icon' : 'default'}
       className={cn(
-        'narrow:in-data-[slot=page-header]:hidden ask-assistant',
-        // until every page is on PageActions: the old header's actions
-        iconOnly && '[.view-head-actions_&]:size-(--button-size)',
-        'narrow:[.view-head_&]:hidden',
+        'narrow:in-data-[slot=page-header]:hidden',
         className
       )}
       onClick={onClick}

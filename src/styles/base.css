@@ -1,0 +1,97 @@
+/* What every screen stands on, from before shadcn: the page's ground and type,
+   the reset the old screens were drawn on, the scrollbars that show only while
+   something scrolls, and the 16px fields under a finger (docs/patterns.md §10).
+   In the `base` layer, under Tailwind's utilities. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--primary-subtle-highlight);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+/* ---------- Scrollbars ----------
+   Only while something is actually being scrolled. The track keeps its width at
+   all times so nothing reflows when the thumb appears; what changes is the
+   thumb's colour, faded in by `is-scrolling` (see lib/scrollbars.js) and out
+   again when the scrolling stops. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-color: transparent;
+  background-clip: padding-box;
+  transition: background-color 0.3s ease;
+}
+
+.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(76, 34, 18, 0.22);
+}
+
+/* Firefox has no thumb-only control, so it gets the same two states through
+   `scrollbar-color`. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.is-scrolling {
+  scrollbar-color: rgba(76, 34, 18, 0.22) transparent;
+}
+
+@media (pointer: coarse) {
+
+/* Every field is 16px under a finger. Below that iOS zooms the page in on
+     focus and leaves it zoomed, the layout slid off to one side. Important
+     because each field sets its own size, and none of them may win here. */
+input:not([type='checkbox']):not([type='radio']),
+textarea,
+select,
+[contenteditable]:not([contenteditable='false']) {
+    font-size: 16px !important;
+  }
+}
+
+@media (pointer: coarse) {
+
+html,
+body,
+#root {
+    height: var(--app-height, 100%);
+  }
+}

@@ -13,7 +13,7 @@
 //   frame later. Safari finds it already in view and does not scroll — the page
 //   stays where it is, header and all.
 // - The keyboard now covers the bottom of the page instead, so when it opens
-//   the app is made as tall as what the keyboard leaves (--app-height, app.css)
+//   the app is made as tall as what the keyboard leaves (--app-height, base.css)
 //   and its bottom, the composer, sits on the keyboard. That is the one thing
 //   that moves.
 //

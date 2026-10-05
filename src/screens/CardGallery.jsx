@@ -5,7 +5,10 @@ import { reconcile } from '../data/dependencies';
 import { planEntries, seedThreads } from '../data/threads';
 import { startCare } from '../data/familyStart';
 import { standingWith } from '../data/familyCare';
-import Button from '../components/Button';
+import { Button } from '@/components/ui/button';
+import { toggleVariants } from '@/components/ui/toggle';
+import { PageDescription, PageTitle } from '@/components/page';
+import { cn } from '@/lib/utils';
 import Dashboard from './Dashboard';
 import CaregiverPage from './CaregiverPage';
 import VisitsPage from './VisitsPage';
@@ -211,12 +214,19 @@ const S = (id) => SECTIONS.find((x) => x.id === id);
 
 function Frame({ id, title, where, tall, children }) {
   return (
-    <section className="gallery-section" id={id}>
-      <div className="gallery-section-head">
-        <h2 className="doc-section-title">{title}</h2>
-        <p className="tip-body">{where}</p>
+    // each screen in a frame of its own: r32, the container's shadow; the
+    // caregiver's board in a fixed 860, scrolling
+    <section className="flex scroll-mt-6 flex-col gap-3" id={id}>
+      <div>
+        <h2 className="flex items-center gap-2 text-sm font-medium text-foreground">{title}</h2>
+        <p className="text-xs leading-body text-muted-foreground">{where}</p>
       </div>
-      <div className={`gallery-frame${tall ? ' is-tall' : ''}`}>{children}</div>
+      <div
+        data-slot="gallery-frame"
+        className={cn('overflow-hidden rounded-4xl bg-card shadow-container', tall && 'h-[860px] overflow-auto')}
+      >
+        {children}
+      </div>
     </section>
   );
 }
@@ -235,23 +245,24 @@ export default function CardGallery() {
   const family = { onDrawer: noop, onCare: noop, onFlash: noop };
 
   return (
-    <div className="gallery">
-      <header className="gallery-head">
+    <div className="flex h-full flex-col gap-8 overflow-y-auto px-6 py-8 *:mx-auto *:w-full *:max-w-[960px] phone:p-4">
+      <header className="flex items-start justify-between gap-4 phone:flex-col">
         <div>
-          <h1 className="view-title">Sve kartice</h1>
-          <p className="view-sub">
+          <PageTitle>Sve kartice</PageTitle>
+          <PageDescription>
             Prave komponente aplikacije sa primerom podataka u kom je svaka kartica u svakom stanju. Dugmad ovde ne rade
             ništa. Za telefon otvorite stranicu na telefonu ili suzite prozor.
-          </p>
+          </PageDescription>
         </div>
         <Button variant="secondary" onClick={() => (window.location.href = '/')}>
           Nazad na prijavu
         </Button>
       </header>
 
-      <nav className="gallery-toc" aria-label="Delovi">
+      {/* the parts, as chips */}
+      <nav className="flex flex-wrap gap-2" aria-label="Delovi">
         {SECTIONS.map((s) => (
-          <a key={s.id} className="svc is-sm" href={`#${s.id}`}>
+          <a key={s.id} className={cn(toggleVariants({ size: 'sm' }), 'no-underline')} href={`#${s.id}`}>
             {s.title}
           </a>
         ))}

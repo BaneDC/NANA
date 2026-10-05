@@ -1,35 +1,33 @@
 /* The one stylesheet main.jsx imports: Tailwind for the shadcn components,
-   and under it everything the app had before them.
+   our tokens under it, and what is left from before shadcn.
 
-   The order of the layers is the whole trick. `app.css` starts with a reset
-   (`* { padding: 0 }`, `button { background: none; border: none }`), and CSS
-   that is in no layer at all beats every layer, whatever its specificity. Left
-   as it was, that reset would take the padding and the background off every
-   shadcn button. So the old CSS goes into `legacy`, below Tailwind's utilities:
-   a class on a shadcn component wins, and nothing drawn by the old classes
-   notices, because no element carries both.
+   The order of the layers is the whole trick. CSS in no layer beats every
+   layer, whatever its specificity, so everything here sits in one:
+   - `theme`: Tailwind's own values;
+   - `tokens`: the design system from Figma (tokens.css), right above, so where
+     the two share a name (`--font-sans`, `--radius-lg`) ours counts; shadcn's
+     roles below point into it;
+   - `base`: the page's ground and the reset the screens are drawn on
+     (base.css); its `button { background: none }` would take the background
+     off every shadcn button if it were not under the utilities;
+   - `onboarding`: the onboarding's own look and the old Button it uses
+     (onboarding.css), which is not part of the move to shadcn;
+   - `utilities`: Tailwind's classes, which win.
 
-   The chat kit ships its CSS in its own `inline-chat-kit` layer. It is named
-   here, below `legacy`, so app.css keeps overriding it as it did while app.css
-   was in no layer.
+   The chat kit's CSS is in no layer (the kit injects it so), and so is our
+   dressing of it, chat-kit.css: the two meet on equal terms, as before. */
+@layer theme, tokens, base, onboarding, components, utilities;
 
-   `legacy` is meant to empty out: every screen moved onto shadcn frees its
-   part of app.css, and that part is deleted. `tokens` is not legacy and
-   stays — it is the design system from Figma, and shadcn's roles below point
-   into it. It sits right above Tailwind's theme so that where the two share a
-   name (`--font-sans`, `--radius-lg`), ours is the one that counts. */
-@layer theme, tokens, base, inline-chat-kit, legacy, components, utilities;
-
-/* Tailwind without its preflight. The reset in app.css already does that job,
-   and preflight does more than app.css ever undid (`svg { display: block }`,
-   headings at the body's size, lists without bullets): taking it would move
-   things all over screens nobody is touching yet. */
+/* Tailwind without its preflight. The reset in base.css does that job, and
+   preflight does more (`svg { display: block }`, headings at the body's size,
+   lists without bullets): taking it would move things on every screen. */
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import 'tw-animate-css';
 
 @import './tokens.css' layer(tokens);
-@import './app.css' layer(legacy);
+@import './base.css' layer(base);
+@import './onboarding.css' layer(onboarding);
 /* the chat kit's own dressing, in no layer, as the kit's CSS is (chat-kit.css) */
 @import './chat-kit.css';
 
@@ -209,36 +207,5 @@
     /* No blue box over whatever a finger presses: the browser's own tap
        highlight. A button answers a press itself, by shrinking to 97%. */
     -webkit-tap-highlight-color: transparent;
-  }
-}
-
-/* ---- Bridge, until every screen is on shadcn (removed at the end) ----
-   A screen not yet moved ends its pane with the old action row
-   (`.panel-card-actions`, `.visit-foot`). The old pane pinned it to the bottom
-   under a hairline through its own classes, which the shadcn panes do not
-   have; these give the old row the same place in the new panes. */
-@layer legacy {
-  [data-slot='sheet-body'] > :is(.panel-card-actions, .visit-foot):last-child,
-  [data-slot='drawer-scroll'] > .panel-card-actions:last-child {
-    position: sticky;
-    bottom: calc(-1 * var(--spacing-4));
-    z-index: 1;
-    width: auto;
-    margin: auto calc(-1 * var(--spacing-4)) calc(-1 * var(--spacing-4));
-    padding: var(--spacing-3) var(--spacing-4);
-    background: var(--surface-elevated);
-    border-top: 1px solid var(--border-subtle);
-  }
-
-  @media (min-width: 641px) {
-    [data-slot='dialog-content'] > .panel-card-actions:last-child {
-      position: sticky;
-      bottom: calc(-1 * var(--spacing-6));
-      z-index: 1;
-      width: auto;
-      margin: calc(-1 * var(--spacing-2)) calc(-1 * var(--spacing-6)) calc(-1 * var(--spacing-6));
-      padding: var(--spacing-3) var(--spacing-6) var(--spacing-6);
-      background: var(--surface-elevated);
-    }
   }
 }

@@ -1,0 +1,1792 @@
+/* The onboarding's own look (Immersive*, imm-*), which keeps its visual
+   language and is not part of the move to shadcn (CLAUDE.md), and the old
+   Button (.btn) it is built with. In the `onboarding` layer, under Tailwind's
+   utilities, as app.css was. */
+
+/* ---------- Logo ---------- */
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  height: var(--button-size);
+  padding: 0 12px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  white-space: nowrap;
+  transition: opacity 0.18s ease, filter 0.15s ease;
+}
+
+.btn.lg {
+  height: 40px;
+}
+
+.btn.full {
+  width: 100%;
+}
+
+.btn.primary {
+  background: var(--gradient-primary);
+  border: 1px solid var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-button);
+}
+
+.btn.primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn.secondary {
+  background: var(--gradient-secondary);
+  border: 1px solid var(--surface-elevated-2);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-button);
+}
+
+.btn.secondary:hover {
+  filter: brightness(0.98);
+}
+
+/* The one button that destroys something. It is the app's only red: a colour
+   that means nothing anywhere else cannot be misread here. */
+.btn.danger {
+  background: var(--status-no-fg);
+  border: 1px solid var(--status-no-fg);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-button);
+}
+
+/* darker, the way primary goes lighter: the text stays white on red */
+.btn.danger:hover {
+  filter: brightness(0.9);
+}
+
+.btn.ghost {
+  color: var(--text-primary);
+  padding: 0 var(--spacing-3);
+}
+
+.btn.ghost:hover {
+  background: var(--surface-2);
+}
+
+.btn.icon-only {
+  width: var(--chip-size);
+  height: var(--chip-size);
+  padding: 0;
+}
+
+/* In a page head an icon stands beside buttons with words (her number), so it
+   is as tall as they are; a touch screen makes all of them 44 anyway. */
+.view-head-actions .btn.icon-only {
+  width: var(--button-size);
+  height: var(--button-size);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* the menu's one button, over the list it adds to */
+.btn.nav-new-chat {
+  flex-shrink: 0;
+}
+
+.archived-bar .btn {
+  margin-left: auto;
+}
+
+.panel-card-head > .btn {
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+
+.panel-card-head > :is(.status-pill, .btn) {
+    margin-left: 0;
+  }
+}
+
+/* a head with a button ("Svi upiti", "Sve posete") over rows: 8 more, so the
+   button does not sit on the first row */
+.panel-card-head:has(> .btn) + :is(.fam-rows, .fam-visits) {
+  margin-top: var(--spacing-2);
+}
+
+/* ---------- Immersive questionnaire ---------- */
+
+/* The onboarding has its own type, and the phone's larger scale (tokens.css) is
+   not for it: it keeps the scale it was designed on. */
+.immersive {
+  --text-xs-size: 12px;
+  --text-xs-leading: 16px;
+  --text-sm-size: 14px;
+  --text-sm-leading: 20px;
+  --text-base-size: 16px;
+  --text-base-leading: 24px;
+  --text-body-leading: 18px;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  /* fallback sky if WebGL is unavailable — the canvas paints over this */
+  background: linear-gradient(180deg, #cbd8ed 0%, #f2e1dc 55%, #ffeeda 100%);
+}
+
+.imm-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.imm-chrome {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* above the scale's bar: `.imm-chrome` makes its own stacking context, so
+     the controls inside it cannot climb over the dock on their own */
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4) var(--spacing-4) 0;
+}
+
+.imm-progress {
+  width: 180px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+}
+
+.imm-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(252, 112, 60, 0.55);
+  transition: width 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Understanding panel — the AI variant's replacement for the bar above.
+   It lives in the left margin, which the centred conversation never occupies,
+   so it can grow downward without ever pushing the question around. */
+/* How well Minna understands the situation, docked at the top centre: the
+   label, five steps and the step's name stacked and centred. What she knows and
+   lacks is said in her thinking. */
+.imm-know-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--spacing-4);
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--spacing-3);
+  pointer-events: none;
+}
+
+/* The page scrolls under the scale rather than into it: a band of blur that
+   fades out downward, so a card passing beneath softens instead of colliding
+   with the words. */
+.imm-know::before {
+  content: '';
+  position: absolute;
+  /* only as wide as the scale: a band across the whole top blurred the
+     controls in the corner too */
+  inset: -16px -56px -40px;
+  /* behind the words: a positioned pseudo paints over them, and the blur took
+     the scale's own label with it */
+  z-index: -1;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  pointer-events: none;
+}
+
+/* no surface of its own: it sits on the gradient like the rest of the text */
+.imm-know {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.imm-know-label {
+  /* 24px to the scale, with the stack's 6px gap */
+  margin-bottom: 16px;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7a6d;
+}
+
+.imm-know-scale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  width: 120px;
+}
+
+.imm-know-step {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(70, 61, 53, 0.1);
+  overflow: hidden;
+}
+
+.imm-know-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transform-origin: left center;
+}
+
+/* a step back is shown, not smoothed over */
+.imm-know.is-dropped .imm-know-fill {
+  background: #e0a35c;
+}
+
+.imm-know-word {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+/* below the stack, so it does not push the scale down */
+.imm-know-drop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  text-align: center;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: #b0703a;
+}
+
+/* The plan starts at the very top of the stage, where the dock now is; the
+   conversation screen already begins a fifth of the way down. */
+.imm-screen.is-plan {
+  padding-top: 76px;
+}
+
+.imm-ctls {
+  position: absolute;
+  right: var(--spacing-4);
+  top: var(--spacing-3);
+  /* above the understanding dock: the dock's blur band reaches across the top
+     and was painting over this corner, which read as the control being cut off */
+  z-index: 4;
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.imm-ctl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #6b5f55;
+  transition: background 0.2s ease;
+}
+
+/* the one named control: the glyph keeps its 32px box, the label sits beside it */
+.imm-ctl.has-label {
+  width: auto;
+  gap: var(--spacing-2);
+  padding: 0 var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+}
+
+.imm-ctl:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.imm-stage {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  overflow-y: auto;
+}
+
+.imm-screen {
+  width: min(560px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.imm-count {
+  margin-bottom: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7a6d;
+}
+
+.imm-title {
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-subtitle {
+  margin-top: 8px;
+  margin-bottom: var(--spacing-6);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #7d6f63;
+}
+
+.imm-intro-text {
+  max-width: 24ch;
+  font-size: 28px;
+  line-height: 40px;
+  font-weight: var(--font-normal);
+  color: #463d35;
+}
+
+/* glass cards over the clouds */
+.imm-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+/* Adjacent-sibling, so it only fires when nothing sits between the title and
+   the answer. The classic variant always has a subtitle there carrying its own
+   margin; the AI screens don't, which is why the cards were touching the text. */
+.imm-title + .imm-options,
+.imm-title + .imm-write,
+.imm-title + .imm-answer,
+.imm-title + .imm-composer-slot,
+.imm-title + .imm-actions {
+  margin-top: var(--spacing-7);
+}
+
+.imm-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  /* 12 + 24 + 12 plus the 1px border each side would be 50; the card is held
+     on the grid at 52 and the badge sits centred inside it */
+  min-height: 52px;
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
+  text-align: left;
+  /* No `transform` here. Framer drives this element's transform every frame via
+     inline style, and a CSS transition on the same property intercepts each of
+     those writes and eases them over its own 250ms — so the entrance arrived
+     lagged, and when Framer settled, each card played one last 250ms glide into
+     place. Staggered, that trailing glide read as a second ripple after the
+     animation had visibly finished. The hover lift lives in `whileHover` now. */
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.imm-option:hover {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.imm-option.is-selected {
+  background: rgba(255, 244, 238, 0.85);
+  border-color: rgba(253, 155, 119, 0.7);
+}
+
+.imm-letter {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-lg);
+  /* White on a white-ish glass card left this all but invisible. The warm brown
+     the card's own shadow uses reads against it without shouting. */
+  background: rgba(122, 92, 70, 0.13);
+  font-size: var(--text-xs-size);
+  color: #6d5c4e;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.imm-option.is-selected .imm-letter {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.imm-option-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.imm-option-title {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-option-desc {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: #7d6f63;
+}
+
+.imm-actions {
+  margin-top: var(--spacing-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* with a Back button the row spans the card and the two sit at opposite ends */
+.imm-actions.has-back {
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* ---------- Questionnaire variant switch (nav) ---------- */
+
+/* one field on its own screen */
+.imm-single-field {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
+  transition: border-color 0.25s ease, background 0.25s ease;
+  cursor: text;
+}
+
+.imm-single-field:focus-within {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(253, 155, 119, 0.7);
+}
+
+.imm-single-field input {
+  width: 100%;
+  font-size: 19px;
+  line-height: 28px;
+  text-align: center;
+  color: #463d35;
+  caret-color: var(--primary);
+}
+
+.imm-single-field input::placeholder {
+  color: #b3a496;
+}
+
+/* the care plan, shown without leaving the experience */
+.imm-screen.is-wide {
+  width: min(600px, 100%);
+}
+
+.imm-plan-summary {
+  margin-top: var(--spacing-3);
+  font-size: var(--text-sm-size);
+  line-height: 24px;
+  color: #6d6157;
+}
+
+.imm-plan-note {
+  margin-top: var(--spacing-6);
+  margin-bottom: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: #8a7a6d;
+}
+
+.imm-option.is-static {
+  cursor: default;
+}
+
+.imm-option.is-static:hover {
+  background: rgba(255, 255, 255, 0.52);
+}
+
+/* the same scale, inside the immersive variant */
+/* The scale, with everything needed to read it: what it is called, where this
+   person sits on it, which way it runs, and what that level means. */
+.imm-scale {
+  width: 100%;
+  /* --spacing-5 was used here and does not exist, so this was 0 and the title
+     sat on top of the scale */
+  margin-top: var(--spacing-6);
+}
+
+.imm-scale-name {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #7d6f63;
+}
+
+.imm-scale-name strong {
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-scale-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 16px;
+  color: #a2917f;
+}
+
+.imm-scale-blurb {
+  margin-top: var(--spacing-3);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #7d6f63;
+}
+
+.imm-scale-note {
+  margin-top: var(--spacing-2);
+  font-size: 11px;
+  line-height: 16px;
+  color: #a2917f;
+}
+
+.imm-cfs {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: var(--spacing-3);
+}
+
+.imm-cfs-step {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #a2917f;
+  font-size: var(--text-xs-size);
+  line-height: 16px;
+  text-align: center;
+}
+
+.imm-cfs-step.is-passed {
+  background: rgba(255, 244, 238, 0.75);
+  color: var(--color-primary-600);
+}
+
+.imm-cfs-step.is-current {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: var(--font-medium);
+}
+
+/* ---------- AI plan screen: an overview to read ---------- */
+
+/* Seven centred paragraphs in one size and colour gave the eye nowhere to
+   start. Left-aligned and set in steps, it reads in order: who she is, how she
+   is, what is happening, what to watch, what the family said, and what we
+   recommend. */
+.imm-screen.is-plan {
+  align-items: stretch;
+  text-align: left;
+  /* taller than the viewport now: auto margins centre it when it fits and,
+     unlike the stage's centring, never cut its top off when it does not */
+  max-height: none;
+  margin-block: auto;
+}
+
+.imm-screen.is-plan .imm-count {
+  margin-bottom: var(--spacing-2);
+}
+
+.imm-plan-lead {
+  margin-top: var(--spacing-4);
+  font-size: 19px;
+  line-height: 28px;
+  color: #463d35;
+}
+
+.imm-screen.is-plan .imm-scale {
+  padding: var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.imm-plan-section {
+  margin-top: var(--spacing-7);
+}
+
+.imm-plan-label {
+  margin-bottom: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7a6d;
+}
+
+.imm-plan-text {
+  font-size: 15px;
+  line-height: 24px;
+  color: #5f5249;
+}
+
+.imm-plan-text + .imm-plan-text {
+  margin-top: var(--spacing-2);
+}
+
+.imm-plan-risks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  list-style: none;
+}
+
+.imm-plan-risks li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #463d35;
+}
+
+.imm-plan-risks li::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+/* One under the other: side by side, the two rules read as columns of a table
+   and the shorter quote left a ragged hole beside the taller one. */
+.imm-plan-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.imm-plan-quote {
+  margin: 0;
+  padding-left: var(--spacing-4);
+  border-left: 2px solid var(--color-primary-300);
+}
+
+.imm-plan-quote.is-worry {
+  border-left-color: rgba(138, 122, 109, 0.35);
+}
+
+.imm-plan-quote blockquote {
+  margin: 0;
+  font-size: 17px;
+  line-height: 26px;
+  color: #463d35;
+}
+
+.imm-plan-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  list-style: none;
+}
+
+.imm-plan-notes li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 15px;
+  line-height: 24px;
+  color: #5f5249;
+}
+
+.imm-plan-notes li::before {
+  /* short dash: the house voice keeps long dashes off the screen, marker or not */
+  content: '-';
+  position: absolute;
+  left: 0;
+  color: #b3a397;
+}
+
+.imm-plan-reco {
+  margin-top: var(--spacing-8);
+  padding: var(--spacing-6);
+  border-radius: var(--radius-3xl);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
+}
+
+.imm-plan-reco-title {
+  margin-bottom: var(--spacing-2);
+  font-size: 22px;
+  line-height: 30px;
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-plan-reco-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-6);
+}
+
+.imm-plan-count {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  color: #8a7a6d;
+}
+
+/* ---------- Immersive: review + coordinator's note ---------- */
+.imm-review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  width: 100%;
+  max-height: 46vh;
+  overflow-y: auto;
+  /* The mask is anchored to the visible box, not to the scrolled content, so the
+     fade always sits in the same place — which left the last row washed out even
+     when you had scrolled all the way to it. The padding gives the fade its own
+     scroll space: at the bottom of the list the band covers empty padding, and
+     the last answer is fully opaque. Both are the same length, so they track. */
+  --review-fade: 52px;
+  padding-right: var(--spacing-3);
+  /* a few px past the fade so sub-pixel rounding can never tip the last row into it */
+  padding-bottom: calc(var(--review-fade) + var(--spacing-1));
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 calc(100% - var(--review-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 calc(100% - var(--review-fade)),
+    transparent 100%
+  );
+}
+
+@supports (-moz-appearance: none) {
+
+.imm-review.is-scrolling {
+    scrollbar-color: rgba(151, 67, 36, 0.28) transparent;
+  }
+}
+
+/* The default bar is a hard grey slab over the clouds — far too loud for this
+   screen. A hairline in the primary's own brown, on no track at all. */
+.imm-review::-webkit-scrollbar {
+  width: 4px;
+}
+
+.imm-review::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.imm-review::-webkit-scrollbar-thumb {
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.imm-review.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(151, 67, 36, 0.28);
+}
+
+.imm-review-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(8px);
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.imm-review-row:hover {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.imm-review-label {
+  flex-shrink: 0;
+  width: 152px;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--color-primary-800);
+  opacity: 0.65;
+}
+
+.imm-review-value {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imm-review-pencil {
+  flex-shrink: 0;
+  color: var(--color-primary-800);
+  opacity: 0.5;
+}
+
+.imm-warning {
+  display: flex;
+  gap: var(--spacing-3);
+  width: 100%;
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+
+.imm-warning > svg {
+  flex-shrink: 0;
+  color: var(--status-wait-fg);
+  height: 1lh;
+}
+
+.imm-warning-title {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-900);
+}
+
+.imm-warning-note {
+  margin-top: 4px;
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--color-primary-800);
+  opacity: 0.8;
+}
+
+.imm-warning-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+.imm-note {
+  width: 100%;
+  margin-top: var(--spacing-2);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+
+.imm-note-greeting {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-900);
+}
+
+.imm-note-body {
+  margin-top: var(--spacing-1);
+  font-size: var(--text-sm-size);
+  line-height: 22px;
+  color: var(--color-primary-800);
+}
+
+.imm-note-sign {
+  margin-top: var(--spacing-2);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--color-primary-800);
+  opacity: 0.7;
+}
+
+.imm-option.is-other {
+  cursor: text;
+}
+
+.imm-option-input {
+  width: 100%;
+  padding: 0;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-900);
+}
+
+.imm-option-input::placeholder {
+  font-weight: var(--font-normal);
+  color: rgba(76, 34, 18, 0.42);
+}
+
+/* the blank page and the always-present escape hatch */
+.imm-write {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-4);
+}
+
+.imm-write textarea {
+  width: 100%;
+  padding: var(--spacing-4);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
+  font-family: inherit;
+  font-size: var(--text-base-size);
+  line-height: 26px;
+  color: var(--color-primary-900);
+  resize: none;
+  outline: none;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.imm-write textarea:focus {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(253, 155, 119, 0.6);
+}
+
+.imm-write textarea::placeholder {
+  color: rgba(76, 34, 18, 0.38);
+}
+
+.imm-write-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* soft chips Minna can offer alongside her own follow-up question */
+.imm-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-2);
+}
+
+/* These are answers, one tap away — they have to feel pressable. They had a
+   single faint background change and nothing else: no border response, no
+   shadow, nothing under the finger. */
+.imm-suggestion {
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 2px rgba(76, 34, 18, 0.05);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--color-primary-900);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.imm-suggestion:hover {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(253, 155, 119, 0.55);
+  box-shadow: 0 4px 12px rgba(76, 34, 18, 0.09);
+}
+
+.imm-suggestion:active {
+  background: rgba(255, 244, 238, 0.95);
+  border-color: var(--primary);
+  box-shadow: 0 1px 2px rgba(76, 34, 18, 0.05);
+}
+
+.imm-error {
+  margin-top: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--status-no-fg);
+}
+
+/* ---------- Opening screen: starters ---------- */
+.imm-starters-label {
+  margin-top: var(--spacing-8);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: var(--font-medium);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary-800);
+  opacity: 0.45;
+}
+
+.imm-starters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  width: 100%;
+  margin-top: var(--spacing-3);
+}
+
+.imm-starter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-2xl);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
+  text-align: left;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.imm-starter:hover {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.imm-starter-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.imm-starter-title {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-900);
+}
+
+.imm-starter-sub {
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--color-primary-800);
+  opacity: 0.6;
+}
+
+.imm-starter-arrow {
+  flex-shrink: 0;
+  color: var(--primary-highlight);
+  opacity: 0.55;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.imm-starter:hover .imm-starter-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* a chat is the wrong channel for an emergency, and saying so costs nothing */
+.imm-urgent {
+  margin-top: var(--spacing-6);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: var(--color-primary-800);
+  opacity: 0.6;
+}
+
+.imm-urgent strong {
+  font-weight: var(--font-medium);
+  opacity: 1;
+}
+
+/* ---------- Streamed title: words resolving out of a blur ---------- */
+.imm-answer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Why we ask ---------- */
+
+/* The reason is the question's subtitle — the same voice as the subtitle on the
+   opening screen, centred under the question and tight to it — so it reads as
+   the rest of what Minna is saying, not as a note pinned beside it. */
+.imm-why {
+  /* the question's own width, so the two read as one block */
+  width: 100%;
+  margin-top: var(--spacing-3);
+  font-size: 16px;
+  line-height: 24px;
+  color: #7d6f63;
+}
+
+/* One gap between what Minna says and what can be answered, whether the
+   question has a subtitle or not. */
+.imm-screen.is-conversation .imm-answer {
+  margin-top: 0;
+}
+
+/* Two groups on this screen, and one gap between them: the question (with its
+   reason, when it has one) and the answers. The gap is the same either way, so
+   the answers always start the same distance below whatever was asked. */
+.imm-answer > .imm-options,
+.imm-answer > .imm-composer-slot,
+.imm-answer > .imm-pick-hint {
+  margin-top: var(--spacing-10);
+}
+
+/* "Choose one" belongs to the cards, not to the question: the gap between the
+   groups sits above it, and it keeps close to the cards it describes. */
+.imm-answer > .imm-pick-hint + .imm-options {
+  margin-top: 0;
+}
+
+/* ---------- One composer for everything typed ---------- */
+.imm-composer-slot {
+  width: 100%;
+  margin-top: var(--spacing-3);
+}
+
+.imm-composer-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  width: 100%;
+}
+
+/* it inherits .imm-option wholesale — same glass, padding, radius and badge
+   slot as a select card; only the cursor and the focus state differ */
+.imm-option.is-composer {
+  cursor: text;
+}
+
+.imm-option.is-composer:focus-within {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(253, 155, 119, 0.7);
+}
+
+.imm-option.is-composer textarea {
+  display: block;
+  width: 100%;
+  /* it grows with what is typed, so nothing is ever scrolled out of sight */
+  max-height: 40vh;
+  resize: none;
+  overflow-y: auto;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: var(--color-primary-900);
+}
+
+.imm-option.is-composer textarea::placeholder {
+  font-weight: var(--font-normal);
+  color: rgba(76, 34, 18, 0.42);
+}
+
+/* The send control is the shared Button — primary, icon-only. All that is left
+   here is a size matching the badge on the other side of the card; the corner
+   radius is Button's own, like every other button in the app. */
+.imm-send.btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+/* ---------- Conversation screen: the line stays put ---------- */
+
+/* The stage centres its child, so every card that mounted or unmounted
+   re-centred the whole block and the question drifted. Anchoring it near the
+   top means the cards grow downward and the line never moves. */
+.imm-screen.is-conversation {
+  align-self: flex-start;
+  margin-top: 20vh;
+  /* as tall as what is in it: capped at the stage, the column squeezed her
+     reasoning on a phone; the stage scrolls instead */
+  max-height: none;
+}
+
+/* The line takes the height of what Minna wrote, starting under the section
+   label, and everything below follows it at a fixed distance. Three lines used
+   to be reserved with the text centred inside them, which left a shorter
+   question floating in empty space with an uneven gap above the answers. Nothing
+   below the line is on screen while it changes height: the answers leave when
+   she starts thinking and only come back once the question is written. */
+.imm-line {
+  min-height: 36px;
+}
+
+/* The shimmer passes a narrow, slightly lighter band over text that keeps its
+   own colour, as reasoning labels in AI chats do it. */
+.imm-shimmer {
+  display: inline-block;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 40px), #b9aa9e 50%, transparent calc(50% + 40px)),
+    linear-gradient(#8a7a6d, #8a7a6d);
+  background-size: 250% 100%, auto;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: imm-shimmer 2.8s linear infinite;
+}
+
+@keyframes imm-shimmer {
+  from {
+    background-position: 100% center, 0 0;
+  }
+  to {
+    background-position: 0% center, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+.imm-shimmer {
+    animation: none;
+    background: none;
+    color: #8a7a6d;
+  }
+}
+
+/* How she got to the question, folded above it. The row keeps its height while
+   she is thinking too, so neither the question nor what is under it shifts. */
+.imm-cot {
+  /* a column, not a line of text: an inline button in a line box picks up the
+     descender space under it, and the row came out taller than the 20px it
+     holds while she thinks — enough to nudge everything below it */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 20px;
+  margin-bottom: var(--spacing-2);
+}
+
+.imm-cot-toggle {
+  display: inline-flex;
+  height: 20px;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #a2917f;
+  transition: color 0.2s ease;
+}
+
+/* A ring the size of the text's x-height, turning slowly: something moves
+   while she works, and it is quiet enough to sit beside a reasoning line. */
+.imm-cot-spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(138, 122, 109, 0.2);
+  border-top-color: #8a7a6d;
+  animation: imm-cot-spin 0.9s linear infinite;
+}
+
+@keyframes imm-cot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* while it streams, the rule beside the reasoning breathes with it */
+.imm-cot-text.is-live {
+  animation: imm-cot-breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes imm-cot-breathe {
+  0%,
+  100% {
+    border-left-color: rgba(138, 122, 109, 0.2);
+  }
+  50% {
+    border-left-color: rgba(138, 122, 109, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+.imm-cot-spinner,
+.imm-cot-text.is-live {
+    animation: none;
+  }
+}
+
+.imm-cot-body {
+  align-self: stretch;
+  /* the column must not squeeze it: with overflow hidden a flex item may
+     shrink to nothing, and on a short phone her reasoning was cut mid-line */
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.imm-cot-text {
+  max-width: 480px;
+  margin: var(--spacing-1) auto var(--spacing-3);
+  padding-left: var(--spacing-3);
+  border-left: 1px solid rgba(138, 122, 109, 0.25);
+  font-size: 12px;
+  line-height: var(--text-body-leading);
+  color: #9a8a7d;
+  text-align: left;
+}
+
+.imm-cot-missing {
+  margin-top: var(--spacing-2);
+}
+
+.imm-cot-missing strong {
+  font-weight: var(--font-medium);
+  color: #8a7a6d;
+}
+
+/* A word is the unit that wraps: the characters inside it are inline-blocks
+   with no whitespace between them, so a line can only ever break where a real
+   space is. The spaces themselves stay ordinary text between these boxes —
+   inside an inline-block a lone space collapses to nothing, which used to close
+   up every gap the write head passed over. */
+.imm-word {
+  display: inline-block;
+}
+
+/* The blur needs room to bleed rather than clip, which is what the inline-block
+   is for. It is on every character, settled ones included, so the line's
+   metrics are fixed from the first frame and only opacity and blur change. */
+.imm-word > span {
+  display: inline-block;
+  will-change: filter;
+}
+
+.bc-actions .btn {
+  flex: 1;
+}
+
+.caregiver.is-wide > .btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-left: 0;
+}
+
+/* ---------- What has been asked so far ---------- */
+
+/* An assistant panel down the right side: the questions already answered, read
+   without leaving the one on screen. Glass, like the controls it opens from. */
+.imm-history {
+  position: fixed;
+  /* below the controls it opens from, so the button that closes it stays
+     reachable */
+  top: 56px;
+  right: var(--spacing-4);
+  bottom: var(--spacing-4);
+  z-index: 4;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-3xl);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.1);
+  overflow-y: auto;
+  text-align: left;
+}
+
+.imm-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+}
+
+.imm-history-title {
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a7a6d;
+}
+
+.imm-history-close {
+  display: flex;
+  color: #a2917f;
+  transition: color 0.2s ease;
+}
+
+.imm-history-close:hover {
+  color: #6d6157;
+}
+
+.imm-history-empty {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  color: #8a7a6d;
+}
+
+.imm-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  list-style: none;
+}
+
+.imm-history-item {
+  display: flex;
+  gap: var(--spacing-3);
+}
+
+.imm-history-index {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  line-height: 1;
+  color: #a2917f;
+}
+
+.imm-history-pair {
+  min-width: 0;
+}
+
+.imm-history-question {
+  font-size: 13px;
+  line-height: 19px;
+  color: #6d6157;
+}
+
+/* the answer is the part someone scans for, so it carries the weight */
+.imm-history-answer {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-ctl.is-on {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* the history's chevron turns over as the panel opens and back as it closes;
+   the text stays the colour it was */
+.imm-ctl-chevron {
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.imm-ctl[aria-expanded='true'] .imm-ctl-chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+.imm-ctl-chevron {
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+
+.imm-history {
+    left: var(--spacing-3);
+    right: var(--spacing-3);
+    width: auto;
+  }
+
+/* There is no room beside the scale for a named control on a phone, so the
+     name comes off and the glyph keeps its box. The label stays for anyone
+     reading the page rather than looking at it. */
+.imm-ctl.has-label {
+    width: 32px;
+    padding: 0;
+  }
+
+/* a glyph only on a phone: the chevron goes with the words */
+.imm-ctl.has-label .imm-ctl-chevron {
+    display: none;
+  }
+
+.imm-ctl.has-label span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Which kind of question this is: one answer, or as many as apply. Set above
+   the cards in the subtitle's voice, so it reads as part of the question. */
+.imm-pick-hint {
+  width: 100%;
+  margin-bottom: var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a2917f;
+}
+
+/* The confirm belongs to the cards above it, so it ends where they end rather
+   than floating in the middle of the column. */
+.imm-answer .imm-actions {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+/* ── the family's side ─────────────────────────────────────────────────────
+   Home, her page, visits and requests. Rows sit on the same cards, pills and
+   avatars as the rest of the app; the only new pieces are a row that can hold
+   an action and the quoted lines a caregiver writes. */
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.view-head-actions a.btn {
+  text-decoration: none;
+}
+
+.btn.ghost.fam-end-btn {
+  color: var(--status-no-fg);
+}
+
+@media (max-width: 640px) {
+
+/* a row's action drops under it and takes the width, as a caregiver's does */
+.fam-row > .btn {
+    width: 100%;
+  }
+
+.fam-end .btn.ghost {
+    margin-left: calc(var(--spacing-3) * -1);
+  }
+}
+
+@keyframes plan-changed {
+  0% {
+    box-shadow: 0 0 0 4px var(--color-primary-200), var(--shadow-card);
+  }
+  100% {
+    box-shadow: 0 0 0 1px var(--color-primary-300), var(--shadow-card);
+  }
+}
+
+/* the reasoning's row, once it folds: a chevron that turns with it */
+.imm-cot-toggle svg {
+  transition: transform 0.25s ease;
+}
+
+.imm-cot-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 640px) {
+
+.caregiver > .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+
+.panel-card-actions:not(.is-end) > .btn {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 640px) {
+
+/* The bars are the page's own sky, not white panels on it: no tint and no
+     line, only a blur that fades out toward the question, so what scrolls under
+     softens without the bar ever showing an edge. */
+.imm-know-dock {
+    top: 0;
+    padding: var(--spacing-3) var(--spacing-3) var(--spacing-2);
+  }
+
+.imm-know-dock::before,
+.imm-actions::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+.imm-know-dock::before {
+    top: 0;
+    bottom: -24px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  }
+
+.imm-actions::before {
+    top: -24px;
+    bottom: 0;
+    -webkit-mask-image: linear-gradient(to top, #000 65%, transparent 100%);
+    mask-image: linear-gradient(to top, #000 65%, transparent 100%);
+  }
+
+/* the bar is the band now, so the blur that used to stand in for one goes */
+.imm-know::before {
+    display: none;
+  }
+
+/* room for both bars, and no 20vh drop under a bar that is already there */
+.immersive.has-scale .imm-stage {
+    padding-top: 104px;
+  }
+
+.imm-stage {
+    padding-bottom: 88px;
+  }
+
+.imm-screen.is-conversation {
+    margin-top: var(--spacing-6);
+  }
+
+/* The confirm, always within reach of a thumb. Fixed rather than sticky:
+     the stage is the scroller and its child is centred, which sticky has
+     nothing to hold on to. */
+.imm-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    margin-top: 0;
+    padding: var(--spacing-3) var(--spacing-4);
+    padding-bottom: calc(var(--spacing-3) + env(safe-area-inset-bottom, 0px));
+  }
+
+/* one button takes the bar; two keep their ends */
+.imm-actions > .btn:only-child {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+
+.imm-title {
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+.imm-intro-text {
+    font-size: 22px;
+    line-height: 32px;
+  }
+
+.imm-title + .imm-options,
+.imm-title + .imm-write,
+.imm-title + .imm-answer,
+.imm-title + .imm-composer-slot,
+.imm-title + .imm-actions {
+    margin-top: 20px;
+  }
+}
+
+@media (pointer: coarse) {
+
+.btn.lg {
+    height: 48px;
+  }
+
+.btn.icon-only,
+.imm-ctl,
+.imm-send.btn {
+    width: 44px;
+    height: 44px;
+  }
+
+/* a line of text that opens: the target grows, the line does not move */
+.imm-cot-toggle {
+    height: 44px;
+    margin: -12px 0;
+  }
+}
+
+.is-clickable .btn {
+  position: relative;
+  z-index: 1;
+}

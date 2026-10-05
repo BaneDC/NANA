@@ -5,7 +5,7 @@ import text from '../assets/logo-text.svg';
 export default function Logo({ width = 120 }) {
   const height = width * (16.089 / 120);
   return (
-    <div className="logo" style={{ width, height }}>
+    <div className="relative block *:absolute *:block" style={{ width, height }}>
       <img
         src={mark}
         alt=""

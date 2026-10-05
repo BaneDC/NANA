@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 export default function BackButton({ label, onClick }) {
   return (
     // the row takes the page's column (720, centred); the button keeps its size
-    <div data-slot="back-button" className="back-row mb-1 shrink-0">
+    <div data-slot="back-button" className="mb-1 shrink-0">
       <Button variant="ghost" className="-ml-3" onClick={onClick}>
         <ArrowLeft size={14} strokeWidth={1.75} />
         {label}

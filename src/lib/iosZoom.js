@@ -1,6 +1,6 @@
 // iPhone and iPad zoom the page into any field whose text is under 16px when it
 // is focused, and leave it zoomed after — the chat's composer ended up off to
-// one side with the keyboard up. Every field is 16px under a finger (app.css),
+// one side with the keyboard up. Every field is 16px under a finger (base.css),
 // and this is the guard behind that: `maximum-scale=1` stops Safari zooming
 // on focus at all.
 //
