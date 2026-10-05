@@ -8,7 +8,7 @@ import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
 import { describeChanges } from '../data/planEdits';
 import { caregivers } from '../data/carePlan';
 import { chatLabelsSr } from '../data/chatLabels.sr';
-import Button from './Button';
+import { Button } from '@/components/ui/button';
 import { paneFor, previewFor } from './ChatPanes';
 import { dropKeyboardAfterSend } from '../lib/keyboardViewport';
 
@@ -168,7 +168,7 @@ function PlanDiffCard({ data, onDecide }) {
             <Button variant="secondary" onClick={() => onDecide(false)}>
               Ne sada
             </Button>
-            <Button variant="primary" onClick={() => onDecide(true)}>
+            <Button onClick={() => onDecide(true)}>
               <Check size={14} strokeWidth={2} />
               Primeni na plan
             </Button>
@@ -260,7 +260,7 @@ function SendRequestCard({ data, onSend, onOpen }) {
                   Poslato
                 </span>
               ) : (
-                <Button variant="primary" onClick={() => onSend(id)}>
+                <Button onClick={() => onSend(id)}>
                   <Send size={14} strokeWidth={1.75} />
                   Pošalji upit
                 </Button>

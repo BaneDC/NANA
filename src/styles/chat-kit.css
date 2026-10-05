@@ -222,3 +222,241 @@
     --ick-control-m: 44px;
   }
 }
+
+/* ---------- What we put in the chat: its cards and its pane ----------
+   The cards in an answer (a plan change, a request to send, a note) are built
+   on the kit's own surfaces and tokens, so they read as part of the chat; the
+   pane beside it is the kit's ArtifactPane. Both meet the kit's CSS here, in no
+   layer, as they did on main. */
+
+
+/* NANA's cards inside the kit's answer, on the kit's own surfaces and corner
+   chain, so they sit beside its approval and questions as one system:
+   ground (40, 16 around) → card (24, 8 inside) → row (16, 8 inside) → chip (8). */
+.kc-ground {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--ick-nest-ground-pad);
+  border-radius: var(--ick-nest-ground);
+  background: var(--ick-ground);
+}
+
+.kc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ick-nest-pad);
+  padding: var(--ick-nest-pad);
+  border-radius: var(--ick-nest-card);
+  background: var(--ick-card);
+  box-shadow: var(--ick-shadow-1);
+}
+
+/* the title and the foot start on the rows' text column */
+.kc-title,
+.kc-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--ick-space-3);
+  margin: 0;
+  padding: var(--ick-nest-pad) var(--ick-nest-pad) 0;
+  font-size: var(--ick-text-md);
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ick-ink);
+}
+
+.kc-foot {
+  padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
+  font-size: var(--ick-text-sm);
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--ick-ink-faint);
+}
+
+.kc-ground[data-status='applied'] .kc-title {
+  color: var(--status-ok-fg);
+}
+
+.kc-ground[data-status='danger'] .kc-title {
+  color: var(--status-no-fg);
+}
+
+/* What was written down is not an action to take: the title is the quiet one
+   and the note itself carries the weight. */
+.kc-ground[data-status='note'] .kc-title {
+  font-weight: 400;
+  color: var(--ick-ink-faint);
+}
+
+.kc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ick-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kc-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ick-space-2);
+  padding: var(--ick-nest-pad);
+  border-radius: var(--ick-nest-row);
+  background: var(--ick-inset);
+}
+
+.kc-row.is-person {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ick-nest-pad);
+}
+
+.kc-row-label {
+  font-size: var(--ick-text-sm);
+  line-height: 16px;
+  color: var(--ick-ink-faint);
+}
+
+.kc-change,
+.kc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ick-space-2);
+  font-size: var(--ick-text-md);
+  line-height: 20px;
+}
+
+.kc-was {
+  color: var(--ick-ink-faint);
+  text-decoration: line-through;
+}
+
+.kc-now {
+  color: var(--ick-ink);
+}
+
+.kc-change svg {
+  color: var(--ick-ink-faint);
+}
+
+.kc-person {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--ick-text-md);
+  line-height: 20px;
+}
+
+/* the one mark: which answer came off and which went on */
+.kc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ick-space-2);
+  padding: var(--ick-space-2) var(--ick-nest-pad);
+  border-radius: var(--ick-nest-inner);
+  font-size: var(--ick-text-sm);
+  line-height: 16px;
+}
+
+.kc-chip.is-removed {
+  background: var(--status-no-bg);
+  color: var(--status-no-fg);
+}
+
+.kc-chip.is-added {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+}
+
+/* an avatar in a row: 8 in a 16 corner, 8 in */
+.kc-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ick-nest-inner);
+  background: var(--color-primary-200);
+  color: var(--color-primary-700);
+  font-size: var(--ick-text-sm);
+  font-weight: 500;
+}
+
+.kc-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ick-nest-pad);
+  /* on the answer's text column, like the sentence it follows */
+  padding: 0 var(--ick-answer-column);
+}
+
+/* the answers sit on the card, under what they answer, and start on its column */
+.kc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ick-nest-pad);
+  padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
+}
+
+/* The chat's pane, in the shell's own column beside the conversation: the same
+   card as every other pane here, so it reads as a second surface rather than a
+   strip cut off the chat. */
+.chat-pane-wrap {
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-pane-wrap .chat-pane {
+  width: 420px;
+  height: 100%;
+  margin-left: 12px;
+  border-radius: var(--radius-3xl);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-container);
+}
+
+/* a caregiver's name in a card, pressed to open her beside the conversation */
+.kc-name-link {
+  align-self: flex-start;
+  color: var(--ick-ink);
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgb(62 62 62 / 0.25);
+}
+
+.kc-name-link:hover {
+  text-decoration-color: currentColor;
+}
+
+@media (max-width: 900px) {
+
+.chat-pane-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    width: auto !important;
+    height: auto;
+    padding: var(--spacing-2);
+    background: rgba(42, 42, 42, 0.3);
+    backdrop-filter: blur(2px);
+  }
+
+.chat-pane-wrap .chat-pane {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 900px) {
+
+.chat-pane-wrap {
+    bottom: calc(100% - var(--app-height, 100%));
+  }
+}
