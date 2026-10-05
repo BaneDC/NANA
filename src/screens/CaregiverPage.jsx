@@ -1,4 +1,5 @@
 import { CreditCard, History, IdCard, Phone } from 'lucide-react';
+import { ItemGroup } from '@/components/ui/item';
 import Button from '../components/Button';
 import Attention from '../components/Attention';
 import BackButton from '../components/BackButton';
@@ -293,11 +294,11 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
               : 'Posete počinju kad se uslovi prihvate.'}
         </p>
         {visits.length > 0 && (
-          <ul className="fam-visits">
+          <ItemGroup className="fam-visits">
             {visits.slice(0, SHOWN).map((v) => (
               <VisitRow key={v.id} visit={v} onDrawer={onDrawer} />
             ))}
-          </ul>
+          </ItemGroup>
         )}
         {visits.length > SHOWN && (
           <div className="panel-card-actions">

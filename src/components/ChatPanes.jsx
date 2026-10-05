@@ -1,4 +1,5 @@
 import { Check, Send } from 'lucide-react';
+import { ItemGroup } from '@/components/ui/item';
 import { caregivers, daysText, slotsText } from '../data/carePlan';
 import { allVisits, firstName, money, pendingVersion, services, standingWith, waitingOnYou } from '../data/familyCare';
 import { priceLine } from '../data/plans';
@@ -84,11 +85,11 @@ function CarePane({ care, onDrawer }) {
         )}
       </div>
       {coming.length > 0 && <p className="section-title">Predstoji</p>}
-      <div className="fam-rows">
+      <ItemGroup className="fam-rows">
         {coming.map((v) => (
           <VisitRow key={v.id} visit={v} showWho onDrawer={onDrawer} />
         ))}
-      </div>
+      </ItemGroup>
     </>
   );
 }
@@ -97,11 +98,11 @@ function VisitsPane({ care, onDrawer }) {
   const visits = allVisits(care);
   if (!visits.length) return <Empty>Još nema nijedne posete.</Empty>;
   return (
-    <div className="fam-rows">
+    <ItemGroup className="fam-rows">
       {visits.map((v) => (
         <VisitRow key={v.id} visit={v} showWho onDrawer={onDrawer} />
       ))}
-    </div>
+    </ItemGroup>
   );
 }
 

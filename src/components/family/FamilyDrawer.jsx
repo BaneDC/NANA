@@ -1,4 +1,5 @@
 import { Fragment, useState } from 'react';
+import { ItemGroup } from '@/components/ui/item';
 import { AlertTriangle, Check, CreditCard } from 'lucide-react';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
@@ -687,11 +688,11 @@ function Visits({ open = true, care, caregiverId, onOpen, onClose }) {
   const visits = herVisits(a);
   return (
     <Modal eyebrow={`${a.caregiver.name} · ${pl(visits.length, 'poseta', 'posete', 'poseta')}`} title="Sve posete" wide open={open} onClose={onClose}>
-      <ul className="fam-visits">
+      <ItemGroup className="fam-visits">
         {visits.map((v) => (
           <VisitRow key={v.id} visit={v} onDrawer={onOpen} />
         ))}
-      </ul>
+      </ItemGroup>
     </Modal>
   );
 }

@@ -1,6 +1,8 @@
-import { ChevronRight } from 'lucide-react';
-import Button from '../Button';
-import { Group } from '../Tags';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Item, ItemAction, ItemLink } from '@/components/ui/item';
+import { statusVariant } from '../Standing';
+import { Group, Groups } from '../Tags';
 import VisitReport from './VisitReport';
 import { chargedFor, firstName, money, returnedFor, visitCharge } from '../../data/familyCare';
 
@@ -8,11 +10,14 @@ import { chargedFor, firstName, money, returnedFor, visitCharge } from '../../da
 // there is one — the thing they can do about it. Her page and the list of every
 // visit both show visits this way, so a visit reads the same wherever it is.
 //
-// Its state is a short pill beside the date. The money column already says
-// what happened to the money and the line under says the rest, so the pill
-// only names the step. A visit with something to open is a clickable row: the
-// date is the link, the button says the same on a wide screen, and on a phone
-// a chevron stands in for it (docs/patterns.md §7).
+// Its state is a short badge beside the date. The money column already says
+// what happened to the money and the line under says the rest, so the badge
+// only names the step. A visit with something to open is a clickable row
+// (`Item`): the date is the link, the button says the same on a wide screen,
+// and on a phone the row opens on a tap (docs/patterns.md §7).
+//
+// Three parts, 12 apart: when and the money, the report, and the sentence on
+// what happens next with its button under it, left, like a card's footer.
 
 const STATUS = {
   planned: { label: 'Plan posete', pill: 'is-pending' },
@@ -76,7 +81,7 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
   const m = amountOf(v);
   const action =
     v.status === 'charging' || v.extra?.status === 'asked'
-      ? { label: 'Pogledaj radni nalog', variant: 'primary', drawer: { kind: 'work-order', visitId: v.id } }
+      ? { label: 'Pogledaj radni nalog', variant: 'default', drawer: { kind: 'work-order', visitId: v.id } }
       : v.status === 'planned'
         ? { label: 'Pogledaj plan posete', variant: 'secondary', drawer: { kind: 'plan', visitId: v.id } }
         : (v.status === 'paid' || v.status === 'disputed' || v.resolution) && v.report
@@ -86,50 +91,53 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
   const open = action && (() => onDrawer(action.drawer));
 
   return (
-    <li className={`fam-visit is-${v.status}${open ? ' is-clickable' : ''}`}>
-      <div className="fam-visit-head">
-        <div className="fam-visit-when">
-          <p className="fam-row-title">
+    <Item role="listitem" className="flex-col items-start gap-3">
+      <div className="flex w-full items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">
             {open ? (
-              <button type="button" className="card-link" onClick={open}>
+              <ItemLink onClick={open}>
                 {v.date} · {v.time}
-              </button>
+              </ItemLink>
             ) : (
               <span>
                 {v.date} · {v.time}
               </span>
             )}
-            <span className={`status-pill ${s.pill}`}>{s.label}</span>
+            <Badge variant={statusVariant(s.pill)} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
+              {s.label}
+            </Badge>
           </p>
-          <p className="fam-row-body">
+          <p className="text-xs leading-body text-muted-foreground">
             {showWho ? `${v.caregiver.name} · ` : ''}
             {v.hours} h po {money(v.rate)}/h
           </p>
         </div>
-        <div className="fam-visit-money">
-          <p className="fam-visit-amount">{m.amount}</p>
-          <p className="fam-visit-note">{m.note}</p>
+        <div className="text-right">
+          <p className="text-sm font-medium text-foreground">{m.amount}</p>
+          <p className="text-small text-disabled">{m.note}</p>
         </div>
-        {open && <ChevronRight size={16} strokeWidth={1.75} className="card-go" aria-hidden="true" />}
       </div>
 
       {v.report && (v.status === 'paid' || v.status === 'charging') && (
         <VisitReport report={v.report} first={firstName(v.caregiver.name)} />
       )}
       {v.status === 'disputed' && v.queryReason && (
-        <div className="tag-rows">
+        <Groups>
           <Group label="Vi ste napisali" text={v.queryReason} />
-        </div>
+        </Groups>
       )}
 
-      <div className="fam-visit-foot">
-        <p className="fam-visit-line">{lineFor(v)}</p>
+      <div className="flex w-full flex-col items-start gap-3 phone:flex-wrap">
+        <p className="text-xs leading-body text-muted-foreground">{lineFor(v)}</p>
         {action && (
-          <Button variant={action.variant} className="card-action" onClick={open}>
-            {action.label}
-          </Button>
+          <ItemAction>
+            <Button variant={action.variant} onClick={open}>
+              {action.label}
+            </Button>
+          </ItemAction>
         )}
       </div>
-    </li>
+    </Item>
   );
 }
