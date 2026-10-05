@@ -5108,9 +5108,13 @@ button.svc:hover {
   flex-shrink: 0;
 }
 
-/* on a phone it takes the width between the 16s, like the sheets above it */
+/* On a phone it takes the width between the 16s, and comes in at the top,
+   sliding down (Toast.jsx): at the bottom it sat where the thumb is and where
+   a sheet comes up. */
 @media (max-width: 640px) {
   .fam-toast {
+    top: calc(var(--spacing-4) + env(safe-area-inset-top, 0px));
+    bottom: auto;
     width: auto;
     max-width: none;
   }
@@ -6550,12 +6554,30 @@ button.svc:hover {
   }
 
   /* under the grip, so the head is clear of it */
+  /* under the grip; the title on the close's middle, which is 44 here and
+     stood 10 below a one-line title held to the top */
   .drawer > .sidebar-head {
+    align-items: center;
     padding-top: var(--spacing-6);
   }
 
   .modal > :is(.modal-title, .pw-head, .modal-head) {
     padding-top: var(--spacing-2);
+  }
+
+  /* The close on the middle of the head beside it: under the grip the head's
+     words start 24 down (16 + 8) and are 40 tall (eyebrow and title, or the
+     avatar's two lines), so the 44 close starts 22 down. 16 from the edge, as
+     the content is, nests it in the sheet's corner (24 = 8 + 16). */
+  .modal > .modal-close {
+    top: calc(var(--spacing-6) + 20px - 22px);
+    right: var(--spacing-4);
+  }
+
+  /* choosing a plan: a title (28) over a sentence that runs to two lines, so
+     the close sits on the title's middle */
+  .modal:has(> .pw-head) > .modal-close {
+    top: calc(var(--spacing-6) + 14px - 22px);
   }
 
   .modal > .panel-card-actions:last-child {
@@ -7538,16 +7560,17 @@ button.svc:hover {
     display: none;
   }
 
-  .card-go {
-    display: block;
+  /* No chevron on a phone (decided 5 Oct): a card or a row that opens
+     something opens on a tap, and its action is in what opens. */
+  .card-go,
+  .fam-row-chevron {
+    display: none;
   }
 
   /* Her card on Pronađi, and the head of her details, on a phone: the match
      first, then her name, then her rating and the rest, each a line of its
      own - side by side, a longer name and the match did not fit beside the
-     avatar. The avatar keeps its height and sits by the first line. The card
-     has no chevron here: its own button says what it does, and the card
-     opens on a tap as any card does. */
+     avatar. The avatar keeps its height and sits by the first line. */
   :is(.caregiver.is-wide, .fam-profile-head) .cg-top {
     flex-direction: column-reverse;
     align-items: flex-start;
@@ -7558,9 +7581,6 @@ button.svc:hover {
     margin-left: 0;
   }
 
-  .caregiver.is-wide .card-go {
-    display: none;
-  }
 }
 
 /* ---------- The keyboard on a phone ----------
