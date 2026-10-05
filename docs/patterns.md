@@ -29,7 +29,7 @@ Onboarding (`src/screens/Immersive*.jsx`, klase `imm-*`) ima svoj vizuelni jezik
 - kartica r24, padding 16 → ono što je unutra i dodiruje ugao ima r8 (24 = 8 + 16);
 - red u kartici je uvučen 8 → red ima r16 (24 = 16 + 8); dugme u redu, sa 8 paddinga reda → r8 (16 = 8 + 8).
 
-**Izuzeci:** avatari i ikonice do 36px i čipovi do 28px visine ne moraju da budu koncentrični.
+**Izuzeci:** avatari i ikonice do 36px i čipovi do 28px visine ne moraju da budu koncentrični. Avatar veći od 36 (na dodir je većina) mora.
 
 Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, raspored je pogrešan. Ukloni jedan nivo (vidi §6); ne izmišljaj radius.
 
@@ -145,7 +145,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 ```
 
 - Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice.
-- Stavka koja nešto otvara je `.panel-card.is-row.is-clickable`: avatar, naslov kartice kao `.card-link` (14), tekst, dugme desno (`.card-action`), na telefonu strelica.
+- Stavka koja nešto otvara je `.panel-card.is-row.is-clickable`: avatar, naslov kartice kao `.card-link` (14), tekst, dugme desno (`.card-action`); na telefonu bez dugmeta i bez strelice, otvara se tapom.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
 - Samo za: ono što čeka na porodicu („Čeka na vas", sledeći korak na njenoj stranici), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Nema druge narandžaste kartice; `.panel-card.is-attention` više ne postoji.
 
@@ -182,6 +182,20 @@ Mere (sve radi CSS u bloku „Rows inside a card" u `app.css`):
 - na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`.cg-tag`) u njemu postanu bele, da ne nestanu u sivom.
 
 Klase redova koje ovo već dobijaju: `.caregiver` (bez `.is-wide`), `.fam-row`, `.contact-row`, `.fam-visit`, `.visit`. Kontejneri: `.rec-providers`, `.fam-rows`, `.contact-rows`, `.fam-visits`, `.visit-list`.
+
+**Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + razmak + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa raste zajedno sa tekstom na dodir:
+
+| Gde | Naslov + red ispod | Miš / dodir |
+|---|---|---|
+| Red u kartici (`.fam-row`: Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti, chat) | 12 i rečenica | 38 / 44 |
+| Negovateljica u planu (`.caregiver`) | 12 i meta | 36 / 40 |
+| Kartica na „Pronađi", glava detalja | 14 i meta | 40 / 44 |
+| Kartica u „Čeka na vas", upit (Vaši upiti) | 14 i rečenica | 42 / 48 |
+| Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 42 / 48 |
+| Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 32 / 36; 36 / 40 |
+| Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 30 / 34 |
+
+Značka u naslovu reda (20) ne povećava red od 16, nego prelazi preko njega, pa naslov ostaje u visini avatara. Kad se naslov prelomi u dva reda, avatar ostaje poravnat sa vrhom. Novo mesto sa avatarom dobija svoj `--avatar` po ovom pravilu; avatar nema fiksnu veličinu.
 
 **Poravnanje u redu (`.fam-row`):** sve počinje od prve linije. Avatar je poravnat po vrhu sa naslovom, a ono desno (dugme, broj, strelica) počinje u istoj visini kao naslov. Ništa se ne centrira po visini reda, jer red sa oznakama ima tri i više linija.
 
@@ -223,10 +237,10 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
   - red ima akciju desno;
   - hover: kartica se uokviri, a red posivi.
 - **Telefon (≤640px):**
-  - `.card-action` se ne prikazuje, nego `.card-go` (strelica);
+  - `.card-action` se ne prikazuje, a **nema ni strelice** (`.card-go`, `.fam-row-chevron`; odlučeno 5. 10.): kartica ili red se otvara tapom;
   - tap otvara detalje, pa **detalji moraju imati istu akciju** (profil negovateljice ima „Pošalji poruku");
   - pre nego što sakriješ akciju, proveri da je ima u detaljima.
-  - **izuzetak je kartica negovateljice na „Pronađi":** „Pošalji poruku" je posebna akcija od otvaranja detalja, pa na telefonu ostaje, ispod sadržaja kartice, poravnata sa tekstom i široka koliko on, a strelica gore ostaje i kaže da tap otvara profil. Stanje („Već dolazi", „Čeka odgovor") stoji na istom mestu.
+  - **izuzetak je kartica negovateljice na „Pronađi":** „Pošalji poruku" je posebna akcija od otvaranja detalja, pa na telefonu ostaje, ispod sadržaja kartice, poravnata sa tekstom i široka koliko on. Tap na karticu otvara profil kao i svaka kartica. Stanje („Već dolazi", „Čeka odgovor") stoji na istom mestu.
 - **Grupa koja se sklapa** (npr. grupa kolačića): ceo njen gornji deo (naziv, stanje, opis) otvara i zatvara grupu. Naziv je dugme razvučeno preko tog dela (`.ck-summary` + `.ck-open`). Prekidač stoji iznad i samo menja stanje. Spisak koji se otvori nije deo mete, pa se čitanjem ne zatvara.
 ### Drawer ili modal (odlučeno 30. 9.)
 
@@ -240,11 +254,11 @@ Za novu vrstu reda dodaj njenu klasu u te `:is(…)` selektore. Ne piši joj pos
 
 - **Kartica koja ne predstavlja ništa što se otvara** (podešavanje, informacija, kontakt) nije klikabilna. Akcije su joj u footeru i vide se i na telefonu.
 - **Dugme desno** ide samo u redu čiji sadržaj staje u dve linije. U kartici sa više teksta dugme ide u footer.
-- **Red koji nešto otvara** (`.fam-row.is-clickable`, `.fam-visit.is-clickable`): naslov je `.card-link`, dugme desno je `.card-action` i kaže isto, a na telefonu ga menja `.card-go`. Tako su redovi u Mojoj nezi („Čeka na vas", „Predstoji", „Vaše negovateljice") i posete. Red ima jednu akciju; „Njena stranica" pored „Pogledaj plan posete" je bila druga, a njena stranica je jedan klik dalje preko reda „Vaše negovateljice".
+- **Red koji nešto otvara** (`.fam-row.is-clickable`, `.fam-visit.is-clickable`): naslov je `.card-link`, dugme desno je `.card-action` i kaže isto; na telefonu ga nema, a red se otvara tapom. Tako su redovi u Mojoj nezi („Čeka na vas", „Predstoji", „Vaše negovateljice") i posete. Red ima jednu akciju; „Njena stranica" pored „Pogledaj plan posete" je bila druga, a njena stranica je jedan klik dalje preko reda „Vaše negovateljice".
 - **Poseta** ima tri dela (datum i sati, izveštaj, rečenica šta je sa njom i dugme), 12 jedan od drugog, pa joj je dugme ispod rečenice, levo, kao footer kartice, a ne desno.
 - **Izveštaj posete** (`VisitReport` u `src/components/family/FamilyDrawer.jsx`) je uvek isti, gde god se prikazuje na stranici: delovi sa imenom, 12 jedan od drugog: „Urađeno" (oznake, samo u poslednjoj poseti), „Kako je bila" (oznake „Raspoloženje: dobro", „Ishrana: kao i obično", „Kretanje: kao i obično", bez ikonice) i „Sanna je zapisala" (običan tekst). U radnom nalogu (drawer) „Kako je bila" su iste oznake.
-- **„Sve posete" i „Svi upiti"** u glavi kartice su `Button` `secondary` (sa strelicom, kao i ranije), desno. **„Prikaži još"** je `Button` `secondary` u footeru, levo. Nema dugmeta-linka ni dugmeta koje je samo tekst.
-- **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima stalnu strelicu desno (`.fam-row-chevron`). Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
+- **„Sve posete" i „Svi upiti"** u glavi kartice su `Button` `secondary` (sa strelicom, kao i ranije), desno, a redovi ispod glave sa dugmetom počinju 8 niže (24 od dugmeta do teksta prvog reda). **„Prikaži još"** je `Button` `secondary` u footeru, levo. Nema dugmeta-linka ni dugmeta koje je samo tekst.
+- **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima strelicu desno (`.fam-row-chevron`), samo na širem ekranu. Broj pored nje (`.fam-row-side`) se na telefonu ne prikazuje.
 - **Posete na njenoj stranici:** najviše 10, a ako ih ima više, „Pogledaj sve (N)" (`secondary`, dole levo) otvara drawer „Sve posete" sa svim njenim posetama (`kind: 'visits'`). Redosled je isti (`herVisits`): prvo ono što je u toku, pa izmireno.
 - **„Šta se desilo"** (odlučeno 3. 10., izmenjeno 5. 10.): sve što se desilo sa negom, najnovije prvo (`care.log`, upisuju ga `familyCare` i `sim`). Otvara se **ikonicom u glavi stranice** (`History`, `secondary iconOnly`, `aria-label` i `title` „Šta se desilo"): samo na njenoj stranici, pored broja telefona, i samo za nju, kao u prototipu (ikonica sa Moje nege je uklonjena 5. 10.). Nema kartice na stranici. Drawer (`kind: 'activity'`) ima filtere (Sve, Upiti, Ugovor, Posete, Novac), ispod njih „N stavki · najnovije prvo", i stavke po danima, sa brojem stavki pored dana. Stavka je red bez akcije: naslov (`.fam-row-title`), pa linija „ko · kada" (`vi`, njeno ime ili `koordinatorka`) i rečenica šta tačno. Naslov nikad ne menja njeno ime po padežu („Poslali ste upit", ne „Poslali ste upit Sanni").
 - **Pregled negovateljice** (`kind: 'overview'`, izmenjeno 5. 10. po prototipu): ikonica u glavi njene stranice (`IdCard`, „Pregled"), između telefona i „Šta se desilo". Redom: dva broja (posete do sada, ispod koliko je zakazano; koliko traju zajedno, ispod od kada), „Kontakt" (telefon, e-mail, opština, jezici; telefon i e-mail se skrivaju kad se saradnja završi), „Dogovorena nega" (verzija koja važi, cena po satu, usluge po grupama, dodatni uslovi; **samo dok ugovor važi i ne čekaju novi uslovi**), „Kvalifikacije" (klasifikacije, obrazovanje), „O negovateljici", „Ocene", „Kako se plaća". Bez zbira plaćenog (vidi §8).
@@ -277,6 +291,10 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 | Podatak | Kartica („Pronađi") | Red (preporuka u planu, chat) | Profil (drawer) |
 |---|---|---|---|
 | Ocena i broj ocena, ili „Nova" | meta | meta | zaglavlje |
+
+**Ocena** se svuda piše isto (`Rating`, `src/components/Rating.jsx`): broj, pa zvezdica, pa broj ocena: „4,9 ★ (64)". Ko još nema ocena je „Nova", bez zvezdice.
+
+**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. Avatar je visok koliko ime i red ispod njega (§6), 40 sa mišem, 44 na dodir. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom, 4 jedno od drugog (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
 | Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |
@@ -365,7 +383,8 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 - **Prelomi:** ≤640px je telefon, ≤900px je uzak ekran (meni postaje fioka).
 - **Paneli sa strane** (asistent, plan) su na uskom ekranu preko celog ekrana, bez radiusa.
 - **Na telefonu je svaki prozor bottom sheet (odlučeno 2. 10.):** drawer (`Modal`), modal (`Dialog`) i izbor plana i poruka negovateljici (`PaywallModal`). Dolazi odozdo, visok je koliko mu treba sadržaj, a najviše do 48px od vrha ekrana (tu se vidi stranica). Gornji uglovi r24, dno na ivici ekrana, preko cele širine, padding 16, na vrhu ručica (36×4). Sadržaj se skroluje, a poslednji red dugmadi je zakačen na dno. **Prevlačenjem glave nadole se zatvara** (preko 96px ili brzim pokretom; kraće se vrati). Sve to radi `useSheet` (`src/lib/sheet.js`), pa novi prozor koristi isti hook. Na desktopu je drawer sa strane, a modal u sredini.
-- **Toast** je na telefonu širok koliko ekran (16 od ivica), na desktopu koliko tekst, do 520, uvek u sredini. Radius 16, ne pun krug.
+- **Glava sheet-a na telefonu:** naslov je na sredini dugmeta za zatvaranje (44). U drawer-u je glava centrirana po visini; u modalu je dugme 16 od ivice i na sredini glave (eyebrow i naslov, ili avatar sa dva reda, 40), a kod izbora plana na sredini naslova.
+- **Toast** je na telefonu **gore**, širok koliko ekran (16 od ivica), i dolazi odozgo nadole; na desktopu je dole, koliko tekst, do 520, u sredini. Radius 16, ne pun krug.
 - **Ništa ne sme da izlazi van ekrana** na 375px.
 - Pravila za telefon iz §4, §5, §7 i §9 rešava CSS. Markup je isti na svim širinama.
 
@@ -393,7 +412,8 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
 (() => {
   const root = document.querySelector('.chat-container') || document.body;
   const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
-  const exempt = (e) => e.closest('.cg-avatar') || e.matches('.status-pill, .cg-tag, .cg-avatar');
+  // §1: avatars up to 36 are exempt, larger ones nest like anything else
+  const exempt = (e) => e.parentElement?.closest('.cg-avatar') || e.matches('.status-pill, .cg-tag') || (e.matches('.cg-avatar') && e.getBoundingClientRect().width <= 36);
   const concentric = [];
   root.querySelectorAll('*').forEach((e) => {
     const s = getComputedStyle(e), r = parseFloat(s.borderTopLeftRadius), box = e.getBoundingClientRect();

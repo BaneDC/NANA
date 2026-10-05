@@ -1,11 +1,12 @@
 import { Fragment, useState } from 'react';
-import { AlertTriangle, Check, CreditCard, Star } from 'lucide-react';
+import { AlertTriangle, Check, CreditCard } from 'lucide-react';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
 import Tags, { Group } from '../Tags';
 import { groupServices } from '../../data/serviceCatalog';
-import Standing from '../Standing';
+import CaregiverHead from '../CaregiverHead';
+import Rating from '../Rating';
 import VisitRow from './VisitRow';
 import { careSignals } from './VisitReport';
 import { ActivityRows } from './Activity';
@@ -617,19 +618,8 @@ function Profile({ care, caregiverId, unlocked, onContact, onCaregiver, onClose 
   const ask = () => onContact(c);
 
   return (
-    <Modal eyebrow={`${c.area} · dolazi do ${c.radius} km`} title={c.name} wide onClose={onClose}>
-      <div className="fam-profile-head">
-        <span className="cg-avatar is-lg">{c.initials}</span>
-        <div className="fam-row-main">
-          <p className="fam-row-title">
-            <Star size={13} strokeWidth={2} className="cg-star" />
-            {c.reviews ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} · ${pl(c.reviews, 'ocena', 'ocene', 'ocena')}` : 'Nova, još bez ocena'}
-          </p>
-          <p className="fam-row-body">{c.rate}</p>
-          <Standing standing={standing} className="fam-asked" />
-        </div>
-        <span className="status-pill is-attention">Poklapanje · {c.match}%</span>
-      </div>
+    <Modal title="Informacije o negovateljici" wide onClose={onClose}>
+      <CaregiverHead caregiver={c} standing={standing} />
 
       <p className="ag-label">O sebi</p>
       <p className="doc-p">{c.bio}</p>
@@ -844,11 +834,8 @@ function Overview({ care, caregiverId, onClose }) {
       )}
 
       <p className="ag-label">Ocene</p>
-      <p className="doc-p">
-        {c?.reviews
-          ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} · ${pl(c.reviews, 'ocena', 'ocene', 'ocena')}`
-          : 'Još nema ocena.'}
-      </p>
+      {/* the platform's one way of saying it (docs/patterns.md §8) */}
+      <p className="doc-p">{c ? <Rating caregiver={c} /> : 'Nova'}</p>
 
       <p className="ag-label">Kako se plaća</p>
       <div className="bc-lines ag-terms">

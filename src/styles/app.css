@@ -881,18 +881,75 @@ textarea {
 }
 
 /* the old #fff1ec on a grey card was all but invisible — this holds up on white */
+/* A person's avatar is as tall as the two lines beside it: the heading's line,
+   the gap under it, and the first line under that (docs/patterns.md §6). Each
+   place says how tall those are in `--avatar`, from the text tokens, so the
+   avatar grows with the text under a finger and stays level with it. Top
+   aligned with the heading, 12 from it, r8 (24 around 16 of padding, or 16
+   around a row's 8). Where nothing says, it is 32. */
 .cg-avatar {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: var(--avatar, 32px);
+  height: var(--avatar, 32px);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-lg);
   background: var(--color-primary-200);
   color: var(--color-primary-700);
-  font-size: var(--text-small-size);
+  font-size: var(--text-xs-size);
   font-weight: var(--font-medium);
+}
+
+/* a row: its title (12 / 14) and the sentence under it */
+.fam-row {
+  --avatar: calc(var(--text-xs-leading) + var(--spacing-1) + var(--text-body-leading));
+}
+
+/* a caregiver in the plan's list: her name and the meta line (16) */
+.caregiver {
+  --avatar: calc(var(--text-xs-leading) + var(--spacing-1) + 16px);
+}
+
+/* her card on Pronađi and the head of her details: a card's title and meta */
+.caregiver.is-wide,
+.fam-profile-head {
+  --avatar: calc(var(--text-sm-leading) + var(--spacing-1) + 16px);
+}
+
+/* a card of its own with a card's title and a sentence: what waits in the
+   tray, a request */
+.panel-card.is-row,
+.fam-request-head {
+  --avatar: calc(var(--text-sm-leading) + var(--spacing-1) + var(--text-body-leading));
+}
+
+/* a page about one person: the page's title and the line under it */
+.fam-person,
+.client-head {
+  --avatar: calc(var(--text-base-leading) + var(--text-body-leading));
+}
+
+/* a name with one small line under it: Minna's letter, a client on the
+   caregiver's board, the caregiver writing to her */
+.coordinator-head {
+  --avatar: calc(var(--text-xs-leading) + 16px);
+}
+
+.bc-head,
+.modal-head {
+  --avatar: calc(var(--text-sm-leading) + 16px);
+}
+
+/* a board card is r16 around 12 of padding, so what is in its corner is r4 */
+.bc-head > .cg-avatar {
+  border-radius: var(--radius-sm);
+}
+
+/* who is signed in, in the menu and the caregiver's bar */
+.nav-user,
+.cg-topbar-user {
+  --avatar: calc(var(--text-xs-leading) + 14px);
 }
 
 .locked-badge {
@@ -987,9 +1044,10 @@ textarea {
   color: var(--text-disabled);
 }
 
+/* the number, then the star, then how many: "4,9 ★ (64)" */
 .cg-star {
   display: inline-block;
-  margin-right: 4px;
+  margin: 0 4px 0 2px;
   vertical-align: -1px;
   color: var(--primary);
 }
@@ -1330,8 +1388,8 @@ textarea {
 
 .nav-user {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
+  align-items: flex-start;
+  gap: var(--spacing-3);
   padding: var(--spacing-2);
   border-radius: var(--radius-2xl);
   background: var(--nav-card);
@@ -1632,6 +1690,12 @@ textarea {
   margin-left: auto;
 }
 
+/* a head with a button ("Svi upiti", "Sve posete") over rows: 8 more, so the
+   button does not sit on the first row */
+.panel-card-head:has(> .btn) + :is(.fam-rows, .fam-visits) {
+  margin-top: var(--spacing-2);
+}
+
 .panel-card .facts {
   border: none;
   padding: 0;
@@ -1821,8 +1885,8 @@ textarea {
 
 .modal-head {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
+  align-items: flex-start;
+  gap: var(--spacing-3);
 }
 
 .paywall-list {
@@ -3802,8 +3866,8 @@ textarea {
 
 .cg-topbar-user {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
+  align-items: flex-start;
+  gap: var(--spacing-3);
 }
 
 /* ---------- Caregiver: the board ---------- */
@@ -3956,7 +4020,7 @@ textarea {
 .bc-head {
   display: flex;
   align-items: flex-start;
-  gap: var(--spacing-2);
+  gap: var(--spacing-3);
 }
 
 .bc-id {
@@ -4069,15 +4133,8 @@ textarea {
 
 .client-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-3);
-}
-
-.client-head .cg-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-2xl);
-  font-size: var(--text-sm-size);
 }
 
 .client-head-text {
@@ -4535,6 +4592,11 @@ button.svc:hover {
   flex-direction: row;
   align-items: center;
   gap: var(--spacing-3);
+}
+
+/* Minna beside her name: the avatar level with the name, as every person is */
+.attention-head.coordinator-head {
+  align-items: flex-start;
 }
 
 /* on the tint, its ink */
@@ -5001,6 +5063,13 @@ button.svc:hover {
   margin-left: 0;
 }
 
+/* A pill (20) beside a 16 line grew the line to 20 and pushed the title 2
+   below the avatar's top; it overhangs the line instead (none under a finger,
+   where the line is 20). */
+:is(.fam-row-title, .caregiver:not(.is-wide) .cg-top) > .status-pill {
+  margin-block: calc((var(--text-xs-leading) - 20px) / 2);
+}
+
 /* the name as the row's link keeps the title's size and ink */
 .fam-row-title > .card-link {
   font: inherit;
@@ -5114,9 +5183,13 @@ button.svc:hover {
   flex-shrink: 0;
 }
 
-/* on a phone it takes the width between the 16s, like the sheets above it */
+/* On a phone it takes the width between the 16s, and comes in at the top,
+   sliding down (Toast.jsx): at the bottom it sat where the thumb is and where
+   a sheet comes up. */
 @media (max-width: 640px) {
   .fam-toast {
+    top: calc(var(--spacing-4) + env(safe-area-inset-top, 0px));
+    bottom: auto;
     width: auto;
     max-width: none;
   }
@@ -5132,13 +5205,6 @@ button.svc:hover {
 
 .view-head-actions a.btn {
   text-decoration: none;
-}
-
-.cg-avatar.is-lg {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-2xl);
-  font-size: var(--text-sm-size);
 }
 
 .cg-avatar.is-ended {
@@ -5311,14 +5377,18 @@ button.svc:hover {
   line-height: var(--text-body-leading);
 }
 
+/* Who she is at the top of her details, as her card on Pronađi has it: the
+   avatar by the first line, her name (a card's title, 14) with the match
+   beside it, and under them her rating, rate and area (CaregiverHead.jsx). */
 .fam-profile-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-3);
 }
 
-.fam-profile-head > .status-pill {
-  margin-left: auto;
+.fam-profile-head .cg-name {
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
 }
 
 /* where the family stands with her, under her rate at the top of her profile */
@@ -6398,11 +6468,21 @@ button.svc:hover {
      with it (the avatar's 32 and the 12 beside it). The action button has no
      such problem: on a phone it is the chevron. */
   .caregiver .cg-main {
-    flex-basis: calc(100% - 44px);
+    flex-basis: calc(100% - var(--avatar) - var(--spacing-3));
   }
 
   .caregiver > .status-pill {
-    margin-left: 44px;
+    margin-left: calc(var(--avatar) + var(--spacing-3));
+  }
+
+  /* her card's avatar is as tall as her name and meta (44 under a finger),
+     so what goes under them lines up 12 past it */
+  .caregiver.is-wide .cg-main {
+    flex-basis: calc(100% - calc(var(--avatar) + var(--spacing-3)));
+  }
+
+  .caregiver.is-wide > .status-pill {
+    margin-left: calc(var(--avatar) + var(--spacing-3));
   }
 
   /* Sending her a message is not opening her details, so on a phone the card
@@ -6411,8 +6491,8 @@ button.svc:hover {
      still trades its button for the chevron. */
   .caregiver.is-wide.is-clickable > .card-action {
     display: inline-flex;
-    width: calc(100% - 44px);
-    margin-left: 44px;
+    width: calc(100% - calc(var(--avatar) + var(--spacing-3)));
+    margin-left: calc(var(--avatar) + var(--spacing-3));
   }
 
   /* The title and the page's actions share the top line, and what is said
@@ -6527,12 +6607,30 @@ button.svc:hover {
   }
 
   /* under the grip, so the head is clear of it */
+  /* under the grip; the title on the close's middle, which is 44 here and
+     stood 10 below a one-line title held to the top */
   .drawer > .sidebar-head {
+    align-items: center;
     padding-top: var(--spacing-6);
   }
 
   .modal > :is(.modal-title, .pw-head, .modal-head) {
     padding-top: var(--spacing-2);
+  }
+
+  /* The close on the middle of the head beside it: under the grip the head's
+     words start 24 down (16 + 8) and are 40 tall (eyebrow and title, or the
+     avatar's two lines), so the 44 close starts 22 down. 16 from the edge, as
+     the content is, nests it in the sheet's corner (24 = 8 + 16). */
+  .modal > .modal-close {
+    top: calc(var(--spacing-6) + 20px - 22px);
+    right: var(--spacing-4);
+  }
+
+  /* choosing a plan: a title (28) over a sentence that runs to two lines, so
+     the close sits on the title's middle */
+  .modal:has(> .pw-head) > .modal-close {
+    top: calc(var(--spacing-6) + 14px - 22px);
   }
 
   .modal > .panel-card-actions:last-child {
@@ -7530,9 +7628,27 @@ button.svc:hover {
     display: none;
   }
 
-  .card-go {
-    display: block;
+  /* No chevron on a phone (decided 5 Oct): a card or a row that opens
+     something opens on a tap, and its action is in what opens. */
+  .card-go,
+  .fam-row-chevron {
+    display: none;
   }
+
+  /* Her card on Pronađi, and the head of her details, on a phone: the match
+     first, then her name, then her rating and the rest, each a line of its
+     own - side by side, a longer name and the match did not fit beside the
+     avatar. The avatar keeps its height and sits by the first line. */
+  :is(.caregiver.is-wide, .fam-profile-head) .cg-top {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: var(--spacing-1);
+  }
+
+  :is(.caregiver.is-wide, .fam-profile-head) .cg-top > .status-pill {
+    margin-left: 0;
+  }
+
 }
 
 /* ---------- The keyboard on a phone ----------

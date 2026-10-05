@@ -1,7 +1,7 @@
-import { ChevronRight, Send, Star } from 'lucide-react';
+import { ChevronRight, Send } from 'lucide-react';
+import Rating from './Rating';
 import Button from './Button';
 import Standing from './Standing';
-import { ratingText } from '../data/carePlan';
 
 // One caregiver in the care plan: who she is, and the one thing the family can
 // do about her.
@@ -30,8 +30,7 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
           {onOpen && <ChevronRight className="card-go" size={16} strokeWidth={1.75} aria-hidden="true" />}
         </div>
         <div className="cg-meta">
-          <Star size={11} strokeWidth={2} className="cg-star" />
-          {ratingText(caregiver)} · {caregiver.rate} · {caregiver.area}, do {caregiver.radius} km
+          <Rating caregiver={caregiver} /> · {caregiver.rate} · {caregiver.area}, do {caregiver.radius} km
         </div>
       </div>
       {standing ? (
