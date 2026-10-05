@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useKept } from '@/hooks/use-kept';
+import FamilyDrawer from '../components/family/FamilyDrawer';
 import { buildPlan, caregivers } from '../data/carePlan';
 import { demoAnswers, demoNotes, demoUser } from '../data/demoCase';
 import { reconcile } from '../data/dependencies';
@@ -242,7 +244,11 @@ export default function CardGallery() {
   const live = entries.find((e) => e.id === 'live') || entries[0];
   const user = { ...demoUser };
   const subscription = { planId: 'monthly', at: Date.now() };
-  const family = { onDrawer: noop, onCare: noop, onFlash: noop };
+  // Her page's drawers open here (the visits, the terms, the overview…), on
+  // the sample data, read only: what is decided in them changes nothing.
+  const [drawer, setDrawer] = useState(null);
+  const shownDrawer = useKept(drawer);
+  const family = { onDrawer: setDrawer, onCare: noop, onFlash: noop };
 
   return (
     <div className="flex h-full flex-col gap-8 overflow-y-auto px-6 py-8 *:mx-auto *:w-full *:max-w-[960px] phone:p-4">
@@ -250,8 +256,8 @@ export default function CardGallery() {
         <div>
           <PageTitle>Sve kartice</PageTitle>
           <PageDescription>
-            Prave komponente aplikacije sa primerom podataka u kom je svaka kartica u svakom stanju. Dugmad ovde ne rade
-            ništa. Za telefon otvorite stranicu na telefonu ili suzite prozor.
+            Prave komponente aplikacije sa primerom podataka u kom je svaka kartica u svakom stanju. Draweri na njenoj stranici se
+            otvaraju (npr. „Pogledaj sve" kod poseta), a ostala dugmad ne rade ništa. Za telefon otvorite stranicu na telefonu ili suzite prozor.
           </PageDescription>
         </div>
         <Button variant="secondary" onClick={() => (window.location.href = '/')}>
@@ -332,6 +338,22 @@ export default function CardGallery() {
       <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />
       </Frame>
+
+      {shownDrawer && (
+        <FamilyDrawer
+          key={`${shownDrawer.kind}-${shownDrawer.caregiverId || shownDrawer.visitId}`}
+          drawer={shownDrawer}
+          open={Boolean(drawer)}
+          care={care}
+          unlocked
+          onCare={noop}
+          onFlash={noop}
+          onClose={() => setDrawer(null)}
+          onOpen={setDrawer}
+          onContact={noop}
+          onCaregiver={noop}
+        />
+      )}
     </div>
   );
 }
