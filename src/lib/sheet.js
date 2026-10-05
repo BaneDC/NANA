@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDragControls } from 'framer-motion';
+import { useDragControls } from 'motion/react';
 
 // On a phone every pane is a bottom sheet (docs/patterns.md §12): a drawer's
 // details, a dialog's action, choosing a plan. It comes up from the bottom edge,

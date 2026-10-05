@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import NumberIndicator from './NumberIndicator';
 
 // Selectable option card (single or multi select).

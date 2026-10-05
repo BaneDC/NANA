@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { X } from 'lucide-react';
 
 // The right-hand panel. Two things use it — the care plan and the assistant —

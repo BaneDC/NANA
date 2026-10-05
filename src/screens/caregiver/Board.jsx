@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import BoardCard from '../../components/caregiver/BoardCard';
 import { STAGES, boardSummary, money } from '../../data/caregiverBoard';
 

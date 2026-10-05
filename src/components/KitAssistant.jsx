@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ArtifactPane, ChatExperience, useChatTurns } from 'inline-chat-kit';
 import 'inline-chat-kit/styles.css';
 import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';

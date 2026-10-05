@@ -1,4 +1,4 @@
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import { Send } from 'lucide-react';
 import PlanContents from '../components/PlanContents';
 import PlanChangeBanner from '../components/PlanChangeBanner';

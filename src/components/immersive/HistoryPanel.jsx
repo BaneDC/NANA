@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
 
 // What has been asked so far, and what was answered — a panel down the right

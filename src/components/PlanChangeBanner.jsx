@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { AlertTriangle, RotateCcw, Sparkles, PenLine } from 'lucide-react';
 import Button from './Button';
 import ChangeRows from './ChangeRows';

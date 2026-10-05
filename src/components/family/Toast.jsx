@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { Check } from 'lucide-react';
 
 // One line after a decision, saying what it did — "Paid. 152 € is on its way

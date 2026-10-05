@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { useBackdropClose } from '../lib/backdropClose';
 import { useSheet } from '../lib/sheet';

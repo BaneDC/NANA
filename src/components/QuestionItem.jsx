@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { Asterisk, Pencil } from 'lucide-react';
 import NumberIndicator from './NumberIndicator';
 import SelectInput from './SelectInput';

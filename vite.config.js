@@ -1,5 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig(({ command, mode }) => {
   // The AI variant's key, from ANTHROPIC_API_KEY in `.env.local` (gitignored).
@@ -9,7 +11,11 @@ export default defineConfig(({ command, mode }) => {
   const key = command === 'serve' ? loadEnv(mode, process.cwd(), '').ANTHROPIC_API_KEY || '' : '';
 
   return {
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
+    // `@/` is src, the alias shadcn's components import through
+    resolve: {
+      alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    },
     base: './',
     define: {
       __DEV_ANTHROPIC_KEY__: JSON.stringify(key),

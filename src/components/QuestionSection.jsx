@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 import QuestionItem from './QuestionItem';
 import Button from './Button';

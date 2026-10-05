@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Check, ShieldCheck } from 'lucide-react';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';

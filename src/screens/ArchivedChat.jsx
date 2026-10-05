@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Archive, FileText } from 'lucide-react';
 import { steps } from '../data/flow';
 import { buildPlan } from '../data/carePlan';

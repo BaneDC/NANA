@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 // How well Minna understands the family's situation, as a plain scale docked at
 // the top centre of the screen — out of the way of the question, and centred

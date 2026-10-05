@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Check, X } from 'lucide-react';
 import { perMonth, planPrice, planSaving, plansFor } from '../data/plans';
 import Button from './Button';

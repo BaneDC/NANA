@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import CaregiverTopBar from '../../components/caregiver/CaregiverTopBar';
 import Board from './Board';
 import ClientPage from './ClientPage';
