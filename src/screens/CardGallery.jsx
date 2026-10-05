@@ -57,7 +57,7 @@ const report = (over = {}) => ({
   ...over,
 });
 
-function sampleCare() {
+export function sampleCare() {
   const sanna = pick('sanna');
   const paivi = pick('paivi');
   const tuula = pick('tuula');

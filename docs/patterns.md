@@ -479,6 +479,8 @@ Ova aplikacija je samo porodična, pa sve što bi uradile negovateljice i koordi
 
 **Sve kartice na jednoj stranici:** `/?kartice` (ili „Za pregled: sve kartice na jednoj stranici" ispod prijave). Stranica (`src/screens/CardGallery.jsx`) renderuje prave ekrane sa primerom podataka u kom je svaka kartica u svakom stanju, pa se kartice porede jedna pored druge. Novi ekran sa karticama dodaj i tamo.
 
+**Svaka komponenta sama:** Storybook, `npm run storybook` → http://localhost:6006 (`docs/storybook.md`). Nova komponenta ili novo stanje dobija priču u `src/stories/`.
+
 Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na 375×812. Rezultat mora biti prazan niz za `concentric`, `caps` i `overflow`, a `cards` i `titles` moraju imati samo vrednosti iz ovog dokumenta.
 
 ```js

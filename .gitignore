@@ -8,3 +8,5 @@ dist/
 .env*
 .vercel
 .idea/
+storybook-static/
+debug-storybook.log
