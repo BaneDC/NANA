@@ -4,6 +4,14 @@ Storybook prikazuje svaku komponentu sama za sebe, na istim stilovima kao aplika
 
 ## Pokretanje
 
+Prvi put posle `git pull` (Storybook je u `devDependencies`):
+
+```
+npm install
+```
+
+Zatim, svaki put:
+
 ```
 npm run storybook
 ```
