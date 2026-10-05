@@ -29,7 +29,6 @@ import {
   findVisit,
   firstName,
   nameOf,
-  paidTo,
   services,
   todayOf,
   workedHours,
@@ -761,6 +760,8 @@ function ActivityDrawer({ care, caregiverId, onClose }) {
 // Everything about her in one place, in the prototype's order: two numbers
 // (visits, how long together), how to reach her, the care agreed with her,
 // what she is, what she says about herself, her reviews, and how paying works.
+// Never a total of what has been paid: a running sum is not the family's to
+// keep watching (docs/patterns.md §8).
 // "Dogovorena nega" shows only while an agreement is in force and no new terms
 // wait: while they do, her page says what changes, and this would be stale.
 
@@ -854,7 +855,6 @@ function Overview({ care, caregiverId, onClose }) {
         <Line label="Način plaćanja" value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'} />
         <Line label="Rezerviše se" value="kad stigne plan posete" />
         <Line label="Naplaćuje se" value="24 sata posle radnog naloga" />
-        <Line label="Plaćeno do sada" value={money(paidTo(a))} />
       </div>
       <p className="ag-hint">
         Naplaćuje se samo poseta koja se desila i za koju je {first} poslala radni nalog. Sati preko

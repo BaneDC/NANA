@@ -16,7 +16,6 @@ import {
   latestRequest,
   linkCard,
   money,
-  paidTo,
   pendingVersion,
   services,
   shownVersion,
@@ -258,7 +257,6 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
         <div className="bc-lines ag-terms">
           <Line label="Zajedno" value={ended ? `${a.since || '-'} – ${a.endedOn}` : a.since ? `od ${a.since}` : 'još niste počeli'} />
           <Line label="Posete do sada" value={paid.length ? `${paid.length} · ${hoursSoFar} h` : 'još nijedna'} />
-          <Line label="Plaćeno do sada" value={money(paidTo(a))} />
           {(a.periods || []).map((p) => (
             <Line key={p.since} label="Ranije" value={`${p.since || '-'} – ${p.endedOn}`} />
           ))}

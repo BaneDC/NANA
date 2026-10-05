@@ -6,7 +6,7 @@ import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
 import { Field, Password } from '../components/TextField';
-import { chargingVisit, heldNow, linkCard, money, monthIn, paidThisMonth, visitCharge } from '../data/familyCare';
+import { chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword } from '../lib/account';
 import { priceLine, renewsOn } from '../data/plans';
@@ -257,10 +257,6 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
                       ? `${money(visitCharge(charging))} · za ${charging.chargesInHours} h`
                       : 'Ništa'}
                   </span>
-                </p>
-                <p className="bc-line">
-                  <span className="bc-line-label">Naplaćeno u {monthIn(care)}</span>
-                  <span className="bc-line-value">{money(paidThisMonth(care))}</span>
                 </p>
               </div>
               <div className="panel-card-actions">

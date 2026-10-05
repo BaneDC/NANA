@@ -45,8 +45,6 @@ const EPOCH = new Date(2026, 7, 11);
 const MONTHS = ['januar', 'februar', 'mart', 'april', 'maj', 'jun', 'jul', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'];
 // "10. avgusta": the genitive, as a date is said
 const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
-// "u avgustu"
-const LOCATIVE = ['januaru', 'februaru', 'martu', 'aprilu', 'maju', 'junu', 'julu', 'avgustu', 'septembru', 'oktobru', 'novembru', 'decembru'];
 
 const nowOf = (c) => c?.now ?? START_HOUR;
 export const todayOf = (c) => Math.floor(nowOf(c) / 24);
@@ -68,8 +66,6 @@ export const hourText = (h) => {
 };
 // when something happened, as the activity list says it: "danas u 08:00"
 export const whenText = (at, now) => `${dayLabel(Math.floor(at / 24), Math.floor(now / 24)).toLowerCase()} u ${hourText(at % 24)}`;
-// "u avgustu", for this month's total
-export const monthIn = (c) => LOCATIVE[dateOfDay(todayOf(c)).getMonth()];
 
 // A date as written on a visit, read back into a day so visits can be ordered
 // and grouped. `today` is the care state's day (`todayOf`).
@@ -124,31 +120,12 @@ export const extraCharge = (v) => (v.extra?.status === 'approved' ? chargedFor(v
 export const visitCharge = (v) => chargedFor(workedHours(v), v.rate) + extraCharge(v);
 // what goes back to the card when she worked fewer hours than were reserved
 export const returnedFor = (v) => (v.report && v.report.hours < v.hours ? chargedFor(v.hours - v.report.hours, v.rate) : 0);
-// what the family has paid for a visit, cancelled ones included (a late one is paid in full)
-export const paidFor = (v) =>
-  v.status === 'paid' ? visitCharge(v) : v.status === 'cancelled' && v.lateCharge ? chargedFor(v.hours, v.rate) : 0;
-
 export const chargingVisit = (c) => allVisits(c).find((v) => v.status === 'charging');
 
 export const heldNow = (c) =>
   allVisits(c)
     .filter((v) => v.status === 'planned')
     .reduce((sum, v) => sum + chargedFor(v.hours, v.rate), 0);
-
-// Paid this calendar month, by the day each was charged.
-export const paidThisMonth = (c) => {
-  const now = dateOfDay(todayOf(c));
-  return allVisits(c)
-    .filter((v) => paidFor(v) > 0)
-    .filter((v) => {
-      const d = dayOf(v.chargedOn || v.date, todayOf(c));
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    })
-    .reduce((sum, v) => sum + paidFor(v), 0);
-};
-
-// Everything paid to one caregiver so far, as charged (not as reserved).
-export const paidTo = (a) => a.visits.reduce((sum, v) => sum + paidFor(v), 0);
 
 // Her visits as her page lists them: anything still moving first, then
 // everything settled, each with who she is on it.
