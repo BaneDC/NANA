@@ -76,6 +76,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 | Između grupa | 32 (`.view > .section + .section`: gap 12 + 20) |
 | Od ivice panela do sadržaja stranice | 24 sa svih strana (`.view`; na telefonu 16) |
 | Unutar kartice, između delova | 8 (gap kartice) |
+| Od glave sa avatarom do sadržaja ispod nje preko cele širine (upit, kartica na tabli, poruka negovateljici, profil) | 20 (gap 8 + 12) |
 | Unutar grupe sadržaja (npr. ime i ocena) | 4 |
 | Između grupa sadržaja u kartici | 12 |
 | Od sadržaja do footera kartice | 16 |

@@ -5351,6 +5351,19 @@ button.svc:hover {
   gap: var(--spacing-3);
 }
 
+/* A head with an avatar over what the card says across its whole width
+   (a request, a client on the board, writing to a caregiver): 20 between
+   them, the card's 8 and 12 more, as in her profile (12 and the label's 8),
+   so the person reads as the card's head and not as its first line. */
+.fam-request-head,
+.bc-head {
+  margin-bottom: var(--spacing-3);
+}
+
+.modal > .modal-head {
+  margin-bottom: var(--spacing-2);
+}
+
 @media (max-width: 640px) {
   .fam-row,
   .fam-visit-foot {
