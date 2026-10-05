@@ -94,7 +94,7 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
     <Item role="listitem" className="flex-col items-start gap-3">
       <div className="flex w-full items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">
+          <p className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">
             {open ? (
               <ItemLink onClick={open}>
                 {v.date} · {v.time}

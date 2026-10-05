@@ -140,12 +140,12 @@ export const SaDugmetomUGlavi = {
 export const KojaSeOtvara = {
   name: 'Kartica koja se otvara',
   render: () => (
-    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+16px)]">
+    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+16px)]">
       <Avatar>
         <AvatarFallback>SV</AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="mb-1 flex flex-wrap items-center gap-2">
           <CardLink onClick={noop} className="text-sm font-medium">
             Sanna Virtanen
           </CardLink>
@@ -180,7 +180,7 @@ export const SaIkonicom = {
 // a row in a card: the avatar as tall as the title and the sentence (§6)
 function Row({ initials, children }) {
   return (
-    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-1)+var(--text-body-leading))] phone:flex-wrap">
+    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-2)+var(--text-body-leading))] phone:flex-wrap">
       <Avatar>
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
@@ -189,7 +189,7 @@ function Row({ initials, children }) {
   );
 }
 
-const rowTitle = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
+const rowTitle = 'mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
 const rowBody = 'text-xs leading-body text-muted-foreground';
 
 export const Redovi = {

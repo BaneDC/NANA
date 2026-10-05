@@ -86,12 +86,12 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
                       together, her profile otherwise (§7). The one button is
                       "Pitaj ponovo", which sends something rather than opens
                       it, so it stays on a phone too. */}
-                  <div className="flex items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+var(--text-body-leading))] phone:flex-wrap">
+                  <div className="flex items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+var(--text-body-leading))] phone:flex-wrap">
                     <Avatar>
                       <AvatarFallback>{cg.initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex min-w-0 flex-1 flex-col gap-1 phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
-                      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-foreground">
+                      <p className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-foreground">
                         <CardLink onClick={() => (linked ? onCaregiver(r.caregiverId) : onProfile?.(cg))}>{cg.name}</CardLink>
                         <Badge variant={BADGE[r.status]} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
                           <Icon size={12} strokeWidth={2} />

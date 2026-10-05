@@ -53,8 +53,10 @@ export default function RecommendationCard({
             .map((c) => (
               <CaregiverRow key={c.id} caregiver={c} standing={standingOf?.(c.id)} onSelect={onSelectCaregiver} onOpen={onOpenCaregiver} />
             ))}
+          {/* inside the rows, so 8 back from their 16 apart: 16 from the
+              last one's text, as a footer under rows (docs/patterns.md §6) */}
           {onFindCaregivers && (
-            <CardFooter className="mt-0">
+            <CardFooter className="-mt-2">
               <Button variant="secondary" onClick={onFindCaregivers}>
                 Pogledajte još negovateljica
                 <ArrowRight size={14} strokeWidth={1.75} />

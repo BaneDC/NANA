@@ -72,10 +72,10 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
           return (
             // The whole card opens her profile — the name is the link, and it
             // covers the card (docs/patterns.md §7). The avatar is as tall as
-            // her name and the line under it (40, 44 under a finger).
+            // her name and the line under it, 8 apart (44, 48 under a finger).
             <Card
               key={c.id}
-              className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+16px)] phone:flex-wrap"
+              className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+16px)] phone:flex-wrap"
             >
               <Avatar>
                 <AvatarFallback>{c.initials}</AvatarFallback>

@@ -4,7 +4,7 @@ import { Slot } from "radix-ui"
 
 // shadcn's item as NANA's row inside a card (docs/patterns.md §6, §7): not a
 // box with a border, a row. It reaches 8 into the card's padding, has 8 of
-// its own on every side and 16 corners (seen only on hover), and rows are 8
+// its own on every side and 16 corners (seen only on hover), and rows are 16
 // apart with a 1px line in the middle of that gap, in 8 from the edges.
 //
 // A row that opens something has an `ItemLink` for its name: a real button
@@ -27,7 +27,7 @@ function ItemGroup({
       role="list"
       data-slot="item-group"
       className={cn(
-        "flex flex-col gap-2 [[data-slot=card]>&:last-child]:has-[>[data-slot=item]:last-child]:-mb-2",
+        "flex flex-col gap-4 [[data-slot=card]>&:last-child]:has-[>[data-slot=item]:last-child]:-mb-2",
         className
       )}
       {...props} />
@@ -48,7 +48,7 @@ function Item({
         // the line between two rows: every row has it out of the flow, and it
         // shows only under a row before it (a ::before in the flow, on the
         // first row, pushed its content 12 to the right on hover)
-        "before:absolute before:inset-x-2 before:-top-1 before:h-px before:-translate-y-1/2 before:transition-opacity before:duration-150 [[data-slot=item]+&]:before:bg-border",
+        "before:absolute before:inset-x-2 before:-top-2 before:h-px before:-translate-y-1/2 before:transition-opacity before:duration-150 [[data-slot=item]+&]:before:bg-border",
         // a row that opens something
         "has-[[data-slot=item-link]]:cursor-pointer has-[[data-slot=item-link]]:hover:bg-muted has-[[data-slot=item-link]]:hover:before:opacity-0 [[data-slot=item]:has([data-slot=item-link]):hover+&]:before:opacity-0",
         "has-[[data-slot=item-link]]:hover:[&_[data-variant=tag]]:bg-card",

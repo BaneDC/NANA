@@ -225,7 +225,7 @@ Stavka unutar kartice (negovateljica u preporuci, poseta, upit, kanal kontakta) 
 Red je `Item` u `ItemGroup` (`src/components/ui/item.jsx`). Mere (sve radi `Item` sam):
 - red zalazi 8px u padding kartice: `margin: 0 -8px`;
 - padding reda je 8 sa svih strana, pa je podloga na hover-u isto daleko od teksta gore, dole i sa strane (odlučeno 1. 10.; bilo je 16 gore i dole a 8 sa strane);
-- između redova je 8, a linija od 1px je na sredini tog razmaka, uvučena 8 da bude poravnata sa tekstom;
+- između redova je 16, a linija od 1px je na sredini tog razmaka, uvučena 8 da bude poravnata sa tekstom; tekst je tako 16 od linije (odlučeno 5. 10.; bilo je 8 između redova, 12 od linije);
 - radius reda je 16 (vidi se samo na hover-u);
 - na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`Badge variant="tag"`) u njemu postanu bele, da ne nestanu u sivom.
 
@@ -248,17 +248,19 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 
 **Kartica upita (odlučeno 5. 10.)** je cela klikabilna (ime je `CardLink`): kad saradnja postoji, otvara njenu stranicu, a inače njen profil. Nema dugme za otvaranje („Pogledaj saradnju" je uklonjeno). Jedino dugme je **„Pitaj ponovo"**, samo na odbijenom upitu kad sme ponovo da joj se piše (`canAsk`), jer šalje novi upit, a ne otvara nešto; zato ostaje i na telefonu. Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
 
-**Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + razmak + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa raste zajedno sa tekstom na dodir:
+**Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + 8 + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa raste zajedno sa tekstom na dodir:
 
 | Gde | Naslov + red ispod | Miš / dodir |
 |---|---|---|
-| Red u kartici (`Item`: Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti, chat) | 12 i rečenica | 38 / 44 |
-| Negovateljica u planu (`CaregiverRow`) | 12 i meta | 36 / 40 |
-| Kartica na „Pronađi", glava detalja | 14 i meta | 40 / 44 |
-| Kartica u „Čeka na vas", upit (Vaši upiti) | 14 i rečenica | 42 / 48 |
+| Red u kartici (`Item`: Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti, chat) | 12 i rečenica | 42 / 48 |
+| Negovateljica u planu (`CaregiverRow`) | 12 i meta | 40 / 44 |
+| Kartica na „Pronađi", glava detalja | 14 i meta | 44 / 48 |
+| Kartica u „Čeka na vas", upit (Vaši upiti) | 14 i rečenica | 46 / 52 |
 | Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 42 / 48 |
 | Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 32 / 36; 36 / 40 |
 | Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 30 / 34 |
+
+**Naslov → red ispod je 8** (odlučeno 5. 10.; bilo je 4, pa je značka pored imena ležala na oceni ispod). Kolona teksta ima razmak 4, a naslov dobija još 4 svoje margine (`mb-1`), pa ostali delovi kolone ostaju gde su. U redu posete, gde kolona nema razmak, naslov ima `mb-2`.
 
 Značka u naslovu reda (20) ne povećava red od 16, nego prelazi preko njega, pa naslov ostaje u visini avatara. Kad se naslov prelomi u dva reda, avatar ostaje poravnat sa vrhom. Novo mesto sa avatarom dobija svoj `--avatar` po ovom pravilu; avatar nema fiksnu veličinu.
 
@@ -360,7 +362,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 **Ocena** se svuda piše isto (`Rating`, `src/components/Rating.jsx`): broj, pa zvezdica, pa broj ocena: „4,9 ★ (64)". Ko još nema ocena je „Nova", bez zvezdice.
 
-**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. Avatar je visok koliko ime i red ispod njega (§6), 40 sa mišem, 44 na dodir. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom, 4 jedno od drugog (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
+**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. Avatar je visok koliko ime i red ispod njega (§6), 44 sa mišem, 48 na dodir. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom: „Poklapanje" 4 iznad imena, ocena 8 ispod njega (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
 | Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |

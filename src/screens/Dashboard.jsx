@@ -70,13 +70,13 @@ function SeeAll({ label, onClick }) {
 }
 
 // A row in a card (docs/patterns.md §6): the avatar as tall as the title and the
-// sentence under it (38, 44 under a finger), the text beside it, and on the
+// sentence under it, 8 apart (42, 48 under a finger), the text beside it, and on the
 // right whatever the row has. Everything starts on the first line.
 function Row({ initials, ended, className, children }) {
   return (
     <Item
       className={cn(
-        'items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-1)+var(--text-body-leading))] phone:flex-wrap',
+        'items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-2)+var(--text-body-leading))] phone:flex-wrap',
         className
       )}
     >
@@ -88,7 +88,9 @@ function Row({ initials, ended, className, children }) {
   );
 }
 
-const rowTitle = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
+// 8 over the line under it: 4 of the column's gap and 4 of its own, so a
+// badge in it does not sit on that line
+const rowTitle = 'mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
 const rowBody = 'text-xs leading-body text-muted-foreground';
 const rowInline = 'flex flex-wrap items-center gap-x-2 gap-y-1';
 // a badge in a row's title crosses its 16px line rather than heightening it
@@ -117,15 +119,15 @@ function OpenRow({ initials, title, body, action, variant = 'secondary', onOpen 
 
 // The same, as a card of its own in the tinted tray of what waits on the
 // family: white like every card, its title a card's title, its avatar as tall
-// as that title and the sentence under it (42, 48 under a finger).
+// as that title and the sentence under it, 8 apart (46, 52 under a finger).
 function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen }) {
   return (
-    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+var(--text-body-leading))]">
+    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+var(--text-body-leading))]">
       <Avatar>
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
       <ItemContent>
-        <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <p className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
           <CardLink onClick={onOpen}>{title}</CardLink>
         </p>
         {body}

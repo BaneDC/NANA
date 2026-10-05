@@ -41,12 +41,12 @@ function Pane({ plan, children }) {
 // under the text, the full width).
 function Row({ initials, title, children, end }) {
   return (
-    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-1)+var(--text-body-leading))] phone:flex-wrap">
+    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-2)+var(--text-body-leading))] phone:flex-wrap">
       <Avatar>
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
       <ItemContent>
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">{title}</p>
+        <p className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">{title}</p>
         {children}
       </ItemContent>
       {end}

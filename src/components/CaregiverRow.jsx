@@ -18,16 +18,16 @@ import Standing from './Standing';
 // the button's place (`standing`), as her card on Pronađi does; on a phone
 // under the text, in line with it.
 //
-// The avatar is as tall as the name and the meta under it (36, 40 under a
-// finger: docs/patterns.md §6).
+// The avatar is as tall as the name and the meta under it, 8 apart (40, 44
+// under a finger: docs/patterns.md §6).
 export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) {
   return (
-    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-1)+16px)] phone:flex-wrap">
+    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-2)+16px)] phone:flex-wrap">
       <Avatar>
         <AvatarFallback>{caregiver.initials}</AvatarFallback>
       </Avatar>
       <ItemContent className="phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
-        <ItemTitle>
+        <ItemTitle className="mb-1">
           {onOpen ? <ItemLink onClick={() => onOpen(caregiver)}>{caregiver.name}</ItemLink> : <span>{caregiver.name}</span>}
           <Badge className="my-[calc((var(--text-xs-leading)-20px)/2)] ml-2">Poklapanje · {caregiver.match}%</Badge>
         </ItemTitle>
