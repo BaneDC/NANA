@@ -287,6 +287,8 @@ export const visitNotHappened = (visitId, reason = NOT_HAPPENED_REASONS[0]) => (
   return logged(
     mapVisit(c, visitId, (x) => ({
       ...x,
+      // an earlier query settled on this plan is no longer what happened to it
+      resolution: undefined,
       status: 'cancelled',
       cancelledBy: 'caregiver',
       cancelReason: before ? `Negovateljica je otkazala: ${reason.toLowerCase()}` : `Poseta se nije desila: ${reason.toLowerCase()}`,

@@ -386,6 +386,8 @@ export const callOffVisit = (visitId, reason) => (c) => {
   return logged(
     mapVisit(c, visitId, (x) => ({
       ...x,
+      // an earlier query settled on this plan is no longer what happened to it
+      resolution: undefined,
       status: 'cancelled',
       cancelledBy: 'you',
       cancelReason: reason,
