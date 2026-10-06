@@ -204,11 +204,14 @@ const SECTIONS = [
   { id: 'odbijeni-uslovi', title: 'Njena stranica, odbijeni uslovi', where: 'Uslovi su odbijeni, verzija 1 odbijena' },
   { id: 'posete', title: 'Sve posete', where: 'Posete po mesecima' },
   { id: 'upiti', title: 'Vaši upiti', where: 'Upit: čeka, prihvaćen, odbijen' },
+  { id: 'upiti-prazno', title: 'Vaši upiti, prazno', where: 'Još nijedan upit: sledeći korak kao na Mojoj nezi' },
   { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
   { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)' },
   { id: 'planovi', title: 'Planovi nege', where: 'Lista planova' },
+  { id: 'planovi-prazno', title: 'Planovi nege, prazno', where: 'Nema aktivnog plana' },
   { id: 'podesavanja', title: 'Podešavanja', where: 'Plaćanje, Bezbednost, Opšte, Privatnost i nalog' },
   { id: 'profil', title: 'Profil', where: 'O kome brinemo, Glavni kontakt, Čemu se nadate' },
+  { id: 'profil-prazno', title: 'Profil, prazno', where: 'Ovde još nema ničega' },
   { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },
 ];
 
@@ -307,6 +310,9 @@ export default function CardGallery() {
       <Frame {...S('upiti')}>
         <RequestsPage care={care} onCaregiver={noop} onFind={noop} />
       </Frame>
+      <Frame {...S('upiti-prazno')}>
+        <RequestsPage care={startCare(user)} onCaregiver={noop} onFind={noop} />
+      </Frame>
       <Frame {...S('pronadji')}>
         <FindCaregiver care={care} onContact={noop} onDrawer={noop} onFlash={noop} onAskAssistant={noop} />
       </Frame>
@@ -329,11 +335,17 @@ export default function CardGallery() {
       <Frame {...S('planovi')}>
         <Plans entries={entries} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} onAskAssistant={noop} />
       </Frame>
+      <Frame {...S('planovi-prazno')}>
+        <Plans entries={[]} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} onAskAssistant={noop} />
+      </Frame>
       <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onAskAssistant={noop} onSubscribe={noop} />
       </Frame>
       <Frame {...S('profil')}>
         <Profile user={user} answers={answers} onGoToChat={noop} onAskAssistant={noop} onSaveUser={noop} onEditAnswers={noop} />
+      </Frame>
+      <Frame {...S('profil-prazno')}>
+        <Profile user={user} answers={{}} onGoToChat={noop} onAskAssistant={noop} onSaveUser={noop} onEditAnswers={noop} />
       </Frame>
       <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />

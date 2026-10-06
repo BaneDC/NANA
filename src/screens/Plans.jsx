@@ -1,10 +1,10 @@
 import { Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardLink } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
+import { Card, CardDescription, CardFooter, CardLink } from '@/components/ui/card';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import AskAssistant from '../components/AskAssistant';
+import Attention from '../components/Attention';
 
 export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPlan, onAskAssistant }) {
   const hasLive = entries.some((e) => !e.archived);
@@ -29,12 +29,16 @@ export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPl
         </PageActions>
       </PageHeader>
 
+      {/* empty, the next step as on Moja nega (docs/patterns.md §5) */}
       {!hasLive && (
-        <Empty>
-          <EmptyTitle>Nema aktivnog plana</EmptyTitle>
-          <EmptyDescription>Odgovorite na pitanja u razgovoru i novi plan će se pojaviti ovde.</EmptyDescription>
-          <Button onClick={onGoToChat}>Idi na razgovor</Button>
-        </Empty>
+        <Attention title="Nema aktivnog plana">
+          <Card>
+            <CardDescription>Odgovorite na pitanja u razgovoru i novi plan će se pojaviti ovde.</CardDescription>
+            <CardFooter>
+              <Button onClick={onGoToChat}>Idi na razgovor</Button>
+            </CardFooter>
+          </Card>
+        </Attention>
       )}
 
       <div className="flex flex-col gap-3">

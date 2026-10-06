@@ -44,7 +44,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Dugme koje kaže isto što i link (nema ga na telefonu) | `ItemAction` | `.card-action` |
 | Avatar sa inicijalima | `Avatar` + `AvatarFallback`, visina iz `--avatar` | `.cg-avatar` |
 | Narandžasti deo | `Attention` (`AttentionHead`, `AttentionTitle`, `AttentionDescription`) | `.attention` |
-| Prazna stranica | `Empty`, `EmptyTitle`, `EmptyDescription` | `.empty`, `.locked-title`, `.locked-note` |
+| Prazna stranica | `Attention` sa belom `Card` (`CardDescription`, `CardFooter`), kao na Mojoj nezi (§5) | `.empty`, `.locked-title`, `.locked-note`; `Empty` (siva ploča) se više ne koristi |
 | Strane (Pronađi) | `Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext` | `.pager`, `.pager-page` |
 | Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
 | Delovi drawer-a i modala | `PaneLabel`, `PaneHint`, `Callout`, `ReportRows` › `ReportRow`, `Concern`, `Total`, `Stats` › `Stat` (`src/components/pane.jsx`) | `.ag-label`, `.ag-hint`, `.fam-callout`, `.report-rows`, `.visit-concern`, `.bc-total`, `.fam-stats` |
@@ -196,6 +196,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice.
 - Stavka koja nešto otvara je `Card` u redu (avatar levo): naslov kartice kao `CardLink` (14), tekst, dugme desno u `ItemAction`; na telefonu bez dugmeta i bez strelice, otvara se tapom.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
+- **Prazna stranica je isto ovo** (odlučeno 6. 10.): svaka prazna stranica izgleda kao „Sledeći korak" na Mojoj nezi. Naslov kaže šta nedostaje („Još niste poslali nijedan upit", „Nema aktivnog plana", „Ovde još nema ničega"), a bela kartica ispod rečenicu šta da se uradi i jedno dugme levo u `CardFooter`. Prazno bez akcije je ista stvar bez dugmeta (kao „Ništa ne čeka"). Siva ploča `Empty` (`src/components/ui/empty.jsx`) se više ne koristi.
 - Samo za: ono što čeka na porodicu („Čeka na vas"), obaveštenje gde su stvari (sledeći korak na njenoj stranici **uvek, i kad nema dugmeta** — „Ništa ne čeka", „Prihvatila je", „Uslovi su odbijeni"…; „Ništa ne čeka" na Mojoj nezi; „Čeka se odgovor" i „Stigli su odgovori"), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Obaveštenje bez dugmeta je i dalje narandžasti deo sa belom karticom, a ne bela kartica sama. Nema druge narandžaste kartice.
 
 **Grupa kartica** se koristi samo kad stranica ima više od jedne grupe:
@@ -207,7 +208,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 </PageSection>
 ```
 
-**Prazna stranica:** `Empty` sa `EmptyTitle`, `EmptyDescription` i jednom akcijom.
+**Prazna stranica:** `Attention` sa naslovom šta nedostaje i belom karticom (rečenica i jedno dugme), kao „Sledeći korak" na Mojoj nezi (§5).
 
 **Izbor plana** (`PaywallModal`, `Dialog` širok 880, sa jednim planom 480):
 - Svaki plan je `Card` sa svim sadržajem: naziv, cena (24px), ušteda kao značka, rečenica za koga je, spisak šta uključuje i dugme „Izaberite" + naziv plana („Izaberite Premium"). Naslov dijaloga je „Izaberite pretplatu", a dugme koje ga otvara iz plana nege „Otključajte ceo plan nege": u naslovima i dugmadima „plan" znači samo plan nege, da se dva značenja ne sretnu na istom putu.

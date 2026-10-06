@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Search, XCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardLink } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
+import { Card, CardDescription, CardFooter, CardLink } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import Attention from '../components/Attention';
 import { Group, Groups } from '../components/Tags';
 import { caregivers } from '../data/carePlan';
 import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../data/familyCare';
@@ -43,15 +43,23 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
         </PageHeaderText>
       </PageHeader>
 
+      {/* empty, it says what to do as Moja nega does (docs/patterns.md §5):
+          the tint, and the next step in a white card */}
       {!mine.length && (
-        <Empty>
-          <EmptyTitle>Još niste poslali nijedan upit</EmptyTitle>
-          <EmptyDescription>
-            Upit šalje plan nege negovateljici i ništa ne košta. Možete da pitate više njih, a ništa nije dogovoreno dok
-            zajedno ne postavite uslove.
-          </EmptyDescription>
-          <Button onClick={onFind}>Pronađi negovateljicu</Button>
-        </Empty>
+        <Attention title="Još niste poslali nijedan upit">
+          <Card>
+            <CardDescription>
+              Upit šalje plan nege negovateljici i ništa ne košta. Možete da pitate više njih, a ništa nije dogovoreno
+              dok zajedno ne postavite uslove.
+            </CardDescription>
+            <CardFooter>
+              <Button onClick={onFind}>
+                <Search size={14} strokeWidth={1.75} />
+                Pronađi negovateljicu
+              </Button>
+            </CardFooter>
+          </Card>
+        </Attention>
       )}
 
       {mine.length > 0 && (

@@ -3,15 +3,15 @@ import { Check, Pencil } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { srField, srTitle } from '../data/flow.sr';
 import { Button } from '@/components/ui/button';
-import { Card, CardAction, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { DialogFooter } from '@/components/ui/dialog';
-import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import { Fact, Facts } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
 import { Field, Input } from '../components/TextField';
 import AskAssistant from '../components/AskAssistant';
+import Attention from '../components/Attention';
 
 // Reads straight from the questionnaire answers, so the profile is whatever the
 // user told the assistant — no second source of truth.
@@ -130,11 +130,15 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
           )}
         </>
       ) : (
-        <Empty>
-          <EmptyTitle>Ovde još nema ničega</EmptyTitle>
-          <EmptyDescription>Odgovorite na pitanja u razgovoru i profil će se sam popuniti.</EmptyDescription>
-          <Button onClick={onGoToChat}>Idi na razgovor</Button>
-        </Empty>
+        // empty, the next step as on Moja nega (docs/patterns.md §5)
+        <Attention title="Ovde još nema ničega">
+          <Card>
+            <CardDescription>Odgovorite na pitanja u razgovoru i profil će se sam popuniti.</CardDescription>
+            <CardFooter>
+              <Button onClick={onGoToChat}>Idi na razgovor</Button>
+            </CardFooter>
+          </Card>
+        </Attention>
       )}
 
       {shown === 'account' && (

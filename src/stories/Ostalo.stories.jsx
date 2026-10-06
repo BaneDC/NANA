@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Check, Search, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import {
   Pagination,
   PaginationContent,
@@ -142,14 +141,35 @@ export const GlavaStranice = {
   ),
 };
 
+// an empty page says what is missing and what to do, as Moja nega's next
+// step does (docs/patterns.md §5): the tint, a white card, one button
 export const PraznaStranica = {
   name: 'Prazna stranica',
   render: () => (
-    <Empty>
-      <EmptyTitle>Ovde još nema ničega</EmptyTitle>
-      <EmptyDescription>Odgovorite na pitanja u razgovoru i profil će se sam popuniti.</EmptyDescription>
-      <Button>Idi na razgovor</Button>
-    </Empty>
+    <>
+      <Attention title="Još niste poslali nijedan upit">
+        <Card>
+          <CardDescription>
+            Upit šalje plan nege negovateljici i ništa ne košta. Možete da pitate više njih, a ništa nije dogovoreno dok
+            zajedno ne postavite uslove.
+          </CardDescription>
+          <CardFooter>
+            <Button>
+              <Search size={14} strokeWidth={1.75} />
+              Pronađi negovateljicu
+            </Button>
+          </CardFooter>
+        </Card>
+      </Attention>
+      <Attention title="Ovde još nema ničega">
+        <Card>
+          <CardDescription>Odgovorite na pitanja u razgovoru i profil će se sam popuniti.</CardDescription>
+          <CardFooter>
+            <Button>Idi na razgovor</Button>
+          </CardFooter>
+        </Card>
+      </Attention>
+    </>
   ),
 };
 
