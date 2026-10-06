@@ -30,9 +30,11 @@ import { DataList, DataRow } from '@/components/data-list';
 import { Concern, PaneHint, PaneLabel } from '@/components/pane';
 import { Page, PageDescription, PageHeader, PageHeaderText, PagePerson, PageTitle } from '@/components/page';
 import { useKept } from '@/hooks/use-kept';
+import { useShowMore } from '@/hooks/use-show-more';
 import { cn } from '@/lib/utils';
 import Dialog from '../../components/Dialog';
 import BackButton from '../../components/BackButton';
+import ShowMore from '../../components/ShowMore';
 import Tags from '../../components/Tags';
 import AgreementForm from '../../components/caregiver/AgreementForm';
 import VisitPlanForm from '../../components/caregiver/VisitPlanForm';
@@ -117,6 +119,8 @@ function Visits({ client }) {
   // above, and listing it twice would say a visit is both done and outstanding.
   const visits = (client.visits || []).filter((v) => v.status !== 'due');
   const settled = visits.filter((v) => v.status === 'paid');
+  // a section of the page, so ten at a time (docs/patterns.md §8a)
+  const list = useShowMore(visits, 10);
   if (!visits.length) {
     return (
       <p className="rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-body text-disabled">
@@ -137,7 +141,7 @@ function Visits({ client }) {
       </PaneHint>
       {/* each visit a row (docs/patterns.md §6): what she wrote, and what it paid */}
       <ItemGroup>
-        {visits.map((v, i) => {
+        {list.visible.map((v, i) => {
           const Mood = MOOD[v.mood]?.icon;
           const totals = totalsFor(v.hours, client.rate);
           return (
@@ -182,6 +186,7 @@ function Visits({ client }) {
           );
         })}
       </ItemGroup>
+      <ShowMore list={list} />
     </>
   );
 }
@@ -190,27 +195,31 @@ function Activity({ client }) {
   // Newest first: the last thing that happened is the thing she is trying to
   // remember when she opens this.
   const entries = [...(client.activity || [])].reverse();
+  const list = useShowMore(entries, 10);
   return (
-    // a line down the left joins the dots, and stops at the last one
-    <ol className="flex list-none flex-col">
-      {entries.map((e, i) => {
-        const Icon = ACTIVITY_ICON[e.kind] || StickyNote;
-        return (
-          <li
-            key={i}
-            className="relative flex gap-3 pb-3 before:absolute before:top-7 before:bottom-0 before:left-3 before:w-px before:bg-border last:pb-0 last:before:hidden"
-          >
-            <span className="relative z-1 flex size-[25px] shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-              <Icon size={13} strokeWidth={1.75} />
-            </span>
-            <div className="min-w-0 flex-1 pt-1">
-              <p className="text-xs leading-body text-foreground">{e.text}</p>
-              <p className="text-[11px] leading-4 text-disabled">{e.when}</p>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+    <>
+      {/* a line down the left joins the dots, and stops at the last one */}
+      <ol className="flex list-none flex-col">
+        {list.visible.map((e, i) => {
+          const Icon = ACTIVITY_ICON[e.kind] || StickyNote;
+          return (
+            <li
+              key={i}
+              className="relative flex gap-3 pb-3 before:absolute before:top-7 before:bottom-0 before:left-3 before:w-px before:bg-border last:pb-0 last:before:hidden"
+            >
+              <span className="relative z-1 flex size-[25px] shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <Icon size={13} strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0 flex-1 pt-1">
+                <p className="text-xs leading-body text-foreground">{e.text}</p>
+                <p className="text-[11px] leading-4 text-disabled">{e.when}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      <ShowMore list={list} className="mt-2" />
+    </>
   );
 }
 

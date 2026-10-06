@@ -10,6 +10,8 @@ import { DataList, DataRow } from '@/components/data-list';
 import { Callout, Concern, PaneHint, PaneLabel, ReportRow, ReportRows, Stat, Stats, Total } from '@/components/pane';
 import { statusVariant } from '../Standing';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
+import ShowMore from '../ShowMore';
+import { useShowMore } from '@/hooks/use-show-more';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
 import Tags, { Group, Groups } from '../Tags';
@@ -670,33 +672,38 @@ function Profile({ open = true, care, caregiverId, unlocked, onContact, onCaregi
   );
 }
 
-// Every visit she has made, when her page shows only the latest ten. A visit's
+// Every visit she has made, when her page shows only the latest ten: a step
+// at a time, "Prikaži još" adding the next (docs/patterns.md §8a). A visit's
 // own button opens its plan or work order in this drawer's place.
 function Visits({ open = true, care, caregiverId, onOpen, onClose }) {
   const a = arrangementOf(care, caregiverId);
+  const visits = a ? herVisits(a) : [];
+  const list = useShowMore(visits);
   if (!a) return null;
-  const visits = herVisits(a);
   return (
     <Modal eyebrow={`${a.caregiver.name} · ${pl(visits.length, 'poseta', 'posete', 'poseta')}`} title="Sve posete" wide open={open} onClose={onClose}>
       <ItemGroup>
-        {visits.map((v) => (
+        {list.visible.map((v) => (
           <VisitRow key={v.id} visit={v} onDrawer={onOpen} />
         ))}
       </ItemGroup>
+      <ShowMore list={list} />
     </Modal>
   );
 }
 
 // Everything that has happened, newest first, by day, with a filter by kind:
-// one caregiver's from her page, everyone's from Moja nega.
+// one caregiver's from her page, everyone's from Moja nega. A step at a time,
+// "Prikaži još" adding the next (docs/patterns.md §8a).
 function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
   const [kind, setKind] = useState('all');
   const all = (care.log || []).filter((e) => !caregiverId || e.caregiverId === caregiverId);
   const kinds = LOG_KINDS.filter((k) => all.some((e) => e.kind === k.id));
   const picked = kind === 'all' ? all : all.filter((e) => e.kind === kind);
+  const list = useShowMore(picked, undefined, kind);
   const today = todayOf(care);
   const days = [];
-  for (const e of picked) {
+  for (const e of list.visible) {
     const day = dayLabel(Math.floor(e.at / 24), today);
     const last = days[days.length - 1];
     if (last && last.day === day) last.entries.push(e);
@@ -731,6 +738,7 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
           <ActivityRows care={care} entries={d.entries} showWho={!caregiverId} />
         </Fragment>
       ))}
+      <ShowMore list={list} />
       {!picked.length && <PaneHint>Ovde još nema ničega.</PaneHint>}
     </Modal>
   );

@@ -4,6 +4,7 @@ import {
   activeVersion,
   allVisits,
   chargedFor,
+  dayOf,
   firstName,
   lastVersion,
   lastVisit,
@@ -11,6 +12,7 @@ import {
   pendingVersion,
   pl,
   services,
+  todayOf,
   visitCharge,
   waitingOnYou,
 } from '../data/familyCare';
@@ -58,6 +60,9 @@ function Section({ title, sub, action, children }) {
     </Card>
   );
 }
+
+// how many coming visits the card shows before "Pogledaj sve"
+const COMING = 3;
 
 // "everything of this" from a card's head: our button, as every other in a card
 function SeeAll({ label, onClick }) {
@@ -144,7 +149,11 @@ function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen
 export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onView, onAskAssistant, onFindCaregiver }) {
   const elder = care.elder.name ? firstName(care.elder.name) : null;
   const waiting = waitingOnYou(care);
-  const coming = allVisits(care).filter((v) => v.status === 'planned');
+  // soonest first; the card shows the next few and the rest are on Posete
+  // (docs/patterns.md §8a)
+  const coming = allVisits(care)
+    .filter((v) => v.status === 'planned')
+    .sort((a, b) => dayOf(a.date, todayOf(care)) - dayOf(b.date, todayOf(care)));
   const last = lastVisit(care);
   const quiet = care.arrangements.length > 0 && !waiting.length && !coming.length;
   // nobody asked yet: the one thing to do is ask
@@ -299,7 +308,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
           sub="Zakazane posete. Novac se unapred rezerviše, a naplaćuje tek posle posete."
         >
           <ItemGroup>
-            {coming.map((v) => (
+            {coming.slice(0, COMING).map((v) => (
               <OpenRow
                 key={v.id}
                 initials={v.caregiver.initials}
@@ -315,6 +324,14 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
               />
             ))}
           </ItemGroup>
+          {/* right under the rows, 16 from the last one's text, as on her page */}
+          {coming.length > COMING && (
+            <CardFooter className="mt-0">
+              <Button variant="secondary" onClick={() => onView('visits')}>
+                Pogledaj sve ({coming.length})
+              </Button>
+            </CardFooter>
+          )}
         </Section>
       )}
 

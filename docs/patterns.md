@@ -395,12 +395,14 @@ Obrazac zavisi od vrste liste, a ne od toga gde je. Spisak svake liste i šta je
 
 | Vrsta liste | Obrazac | Liste |
 |---|---|---|
-| **Pregled na stranici** (deo veće liste, uz drugi sadržaj) | prvih nekoliko, pa „Pogledaj sve" (`secondary`) vodi na punu listu (stranica ili drawer) | poslednja poseta (1), Predstoji (3–5), posete na njenoj stranici (10), negovateljice u preporuci (5), istorija razgovora u meniju (5–10) |
-| **Puna lista koja raste sa vremenom** | grupisano po mesecu ili danu, najnovije prvo, pa „Prikaži još" (`secondary`, dole levo) dodaje sledećih 10–20 na istom mestu | Sve posete (stranica i drawer), Šta se desilo, posete i aktivnost klijenta na strani negovateljice |
+| **Pregled na stranici** (deo veće liste, uz drugi sadržaj) | prvih nekoliko, pa „Pogledaj sve" (`secondary`) vodi na punu listu (stranica ili drawer) | poslednja poseta (1), Predstoji (3), posete na njenoj stranici (10), negovateljice u preporuci (5), istorija razgovora u meniju (5, pa „Prikaži sve") |
+| **Puna lista koja raste sa vremenom** | najnovije prvo (grupisano po mesecu ili danu gde postoji), pa „Prikaži još" (`secondary`, dole levo) dodaje sledećih 20 na istom mestu; deo stranice uz drugi sadržaj po 10 | Sve posete (stranica i drawer), Šta se desilo, posete i aktivnost klijenta na strani negovateljice (po 10) |
 | **Pretraga, poređenje** | numerisana paginacija (`Pagination`), 10 po strani | samo „Pronađi negovateljicu" |
 | **Kratka lista po prirodi** | sve, bez ograničenja | Vaši upiti, Planovi nege, verzije ugovora, Vaše negovateljice |
 
 - Numerisana paginacija je samo za pretragu: tu se negovateljice porede, ide se napred-nazad i vraća na isto mesto. Kroz posete i događaje se ne ide „na stranu 4", nego se skroluje unazad kroz vreme.
+- Kod: `useShowMore` (`src/hooks/use-show-more.js`, korak `LIST_STEP` = 20) i dugme `ShowMore` (`src/components/ShowMore.jsx`). Nova lista ovog reda koristi njih, ne svoje stanje.
+- Na stranici „Sve posete" ono što je zakazano posle sutra je grupa „Zakazano" na vrhu, pa „Ove nedelje", pa meseci.
 - „Prikaži još" kaže koliko dodaje („Prikaži još 8"), a „Pogledaj sve" koliko ih ima ukupno („Pogledaj sve (15)").
 - Kratka lista koja izraste (npr. mnogo upita) prelazi u drugi red tabele, ne dobija paginaciju.
 

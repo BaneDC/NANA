@@ -1,4 +1,4 @@
-import { Children } from 'react';
+import { Children, useState } from 'react';
 import {
   ChevronDown,
   FileText,
@@ -65,6 +65,9 @@ function SubItem({ active, title, note, onClick }) {
     </SidebarMenuSubItem>
   );
 }
+
+// how many conversations the menu lists before "Prikaži sve"
+const CHATS = 5;
 
 // A nav row that folds a list of its own away — used by the conversations and
 // Care plans. A row with `onOpen` is a page too, with the fold on its chevron
@@ -148,6 +151,8 @@ export default function AppNav({
   planListOpen,
   onTogglePlanList,
 }) {
+  // the latest conversations in the menu, the rest on asking
+  const [allChats, setAllChats] = useState(false);
   // On a narrow screen the nav is a drawer over the page, so anything that
   // navigates also closes it — otherwise the page it opened is behind the nav.
   const { setOpenMobile } = useSidebar();
@@ -191,15 +196,30 @@ export default function AppNav({
             onToggle={onToggleChatList}
             empty="Još nema razgovora."
           >
-            {threads.map((t) => (
-              <SubItem
-                key={t.id}
-                active={view === 'chat' && activeThread === t.id}
-                title={t.title}
-                note={t.date}
-                onClick={go(() => onSelectThread(t.id))}
-              />
-            ))}
+            {/* the latest few, then the rest on asking (docs/patterns.md §8a);
+                the open one is always in the list */}
+            {threads
+              .filter((t, i) => allChats || i < CHATS || (view === 'chat' && activeThread === t.id))
+              .map((t) => (
+                <SubItem
+                  key={t.id}
+                  active={view === 'chat' && activeThread === t.id}
+                  title={t.title}
+                  note={t.date}
+                  onClick={go(() => onSelectThread(t.id))}
+                />
+              ))}
+            {threads.length > CHATS && (
+              <SidebarMenuSubItem>
+                <SidebarMenuSubButton asChild>
+                  <button type="button" onClick={() => setAllChats((v) => !v)}>
+                    <span className="text-small text-(--nav-text-muted)">
+                      {allChats ? 'Prikaži manje' : `Prikaži sve (${threads.length})`}
+                    </span>
+                  </button>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            )}
           </Section>
 
           <Place

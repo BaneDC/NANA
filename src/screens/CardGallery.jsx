@@ -6,7 +6,7 @@ import { demoAnswers, demoNotes, demoUser } from '../data/demoCase';
 import { reconcile } from '../data/dependencies';
 import { planEntries, seedThreads } from '../data/threads';
 import { startCare } from '../data/familyStart';
-import { standingWith } from '../data/familyCare';
+import { dateText, standingWith } from '../data/familyCare';
 import { Button } from '@/components/ui/button';
 import { toggleVariants } from '@/components/ui/toggle';
 import { PageDescription, PageTitle } from '@/components/page';
@@ -178,6 +178,31 @@ export function sampleCare() {
   };
 }
 
+// The same family a year on: enough visits and events that every long list
+// shows its step and "Prikaži još" or "Pogledaj sve" (docs/patterns.md §8a).
+function longCare() {
+  const c = sampleCare();
+  const a = c.arrangements[0];
+  const paid = a.visits.find((v) => v.id === 'g-old-0');
+  const planned = a.visits.find((v) => v.id === 'g-planned');
+  const coming = [2, 4, 7, 9, 11, 14].map((d, i) => ({ ...planned, id: `g-long-plan-${i}`, date: dateText(d), notes: undefined }));
+  const past = Array.from({ length: 36 }, (_, i) => ({ ...paid, id: `g-long-${i}`, date: dateText(-30 - i * 3), chargedOn: dateText(-29 - i * 3) }));
+  const log = Array.from({ length: 30 }, (_, i) => ({
+    id: `l-long-${i}`,
+    at: -700 - i * 72,
+    kind: 'money',
+    caregiverId: 'sanna',
+    by: i % 2 ? 'caregiver' : 'you',
+    title: i % 2 ? 'Stigao je radni nalog' : 'Plaćeno 54 €',
+    detail: 'Poseta od 3 sata.',
+  }));
+  return {
+    ...c,
+    arrangements: [{ ...a, visits: [...a.visits, ...coming, ...past] }, ...c.arrangements.slice(1)],
+    log: [...c.log, ...log],
+  };
+}
+
 // A family that has asked and has nobody coming yet: two requests waiting, or
 // both answered no.
 function askedCare(status) {
@@ -203,6 +228,7 @@ const SECTIONS = [
   { id: 'bez-ugovora', title: 'Njena stranica, prihvatila bez ugovora', where: 'Prihvatila je, ugovor stiže' },
   { id: 'odbijeni-uslovi', title: 'Njena stranica, odbijeni uslovi', where: 'Uslovi su odbijeni, verzija 1 odbijena' },
   { id: 'posete', title: 'Sve posete', where: 'Posete po mesecima' },
+  { id: 'duge-liste', title: 'Duge liste', where: 'Godinu dana kasnije: Predstoji 3 pa „Pogledaj sve", Sve posete po 20 pa „Prikaži još", njena stranica (drawer-i „Sve posete" i „Šta se desilo" po 20)' },
   { id: 'upiti', title: 'Vaši upiti', where: 'Upit: čeka, prihvaćen, odbijen' },
   { id: 'upiti-prazno', title: 'Vaši upiti, prazno', where: 'Još nijedan upit: sledeći korak kao na Mojoj nezi' },
   { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
@@ -251,7 +277,11 @@ export default function CardGallery() {
   // the sample data, read only: what is decided in them changes nothing.
   const [drawer, setDrawer] = useState(null);
   const shownDrawer = useKept(drawer);
-  const family = { onDrawer: setDrawer, onCare: noop, onFlash: noop };
+  // which sample the open drawer reads: the usual one, or the year-on one
+  const [drawerCare, setDrawerCare] = useState('sample');
+  const long = useMemo(longCare, []);
+  const family = { onDrawer: (d) => { setDrawerCare('sample'); setDrawer(d); }, onCare: noop, onFlash: noop };
+  const familyLong = { onDrawer: (d) => { setDrawerCare('long'); setDrawer(d); }, onCare: noop, onFlash: noop };
 
   return (
     <div className="flex h-full flex-col gap-8 overflow-y-auto px-6 py-8 *:mx-auto *:w-full *:max-w-[960px] phone:p-4">
@@ -307,6 +337,11 @@ export default function CardGallery() {
       <Frame {...S('posete')}>
         <VisitsPage care={care} onDrawer={noop} onBack={noop} />
       </Frame>
+      <Frame {...S('duge-liste')}>
+        <Dashboard care={long} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+        <VisitsPage care={long} onDrawer={noop} onBack={noop} />
+        <CaregiverPage care={long} caregiverId="sanna" onBack={noop} {...familyLong} />
+      </Frame>
       <Frame {...S('upiti')}>
         <RequestsPage care={care} onCaregiver={noop} onFind={noop} />
       </Frame>
@@ -356,7 +391,7 @@ export default function CardGallery() {
           key={`${shownDrawer.kind}-${shownDrawer.caregiverId || shownDrawer.visitId}`}
           drawer={shownDrawer}
           open={Boolean(drawer)}
-          care={care}
+          care={drawerCare === 'long' ? long : care}
           unlocked
           onCare={noop}
           onFlash={noop}

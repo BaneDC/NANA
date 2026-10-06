@@ -1,34 +1,37 @@
 import { useState } from 'react';
 import VisitRow from '../components/family/VisitRow';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardHeader, CardTitle } from '@/components/ui/card';
 import { ItemGroup } from '@/components/ui/item';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import BackButton from '../components/BackButton';
+import ShowMore from '../components/ShowMore';
+import { useShowMore } from '@/hooks/use-show-more';
 import { allVisits, dayOf, monthOf, pl, todayOf } from '../data/familyCare';
 
 // Every visit, newest first, across everyone who has come: who came, how long
 // they stayed, how the day went and what it cost. Grouped by month, because
-// that is how a family looks something up ("what happened in April").
-
-const PAGE = 8;
+// that is how a family looks something up ("what happened in April"). A step
+// at a time, "Prikaži još" adding the next (docs/patterns.md §8a).
 
 export default function VisitsPage({ care, onDrawer, onBack }) {
   const [who, setWho] = useState('all');
-  const [shown, setShown] = useState(PAGE);
   const today = todayOf(care);
 
   const all = allVisits(care)
     .filter((v) => v.status !== 'cancelled' || v.cancelledBy)
     .sort((a, b) => dayOf(b.date, today) - dayOf(a.date, today));
   const picked = who === 'all' ? all : all.filter((v) => v.caregiver.id === who);
-  const visible = picked.slice(0, shown);
+  const list = useShowMore(picked, undefined, who);
+  const visible = list.visible;
 
+  // what is booked past tomorrow stands on its own at the top: by month it
+  // split the month in two, either side of "Ove nedelje"
+  const tomorrow = dayOf('sutra', today);
   const groups = [];
   for (const v of visible) {
-    const month = monthOf(v.date, today);
+    const month = dayOf(v.date, today) > tomorrow ? 'Zakazano' : monthOf(v.date, today);
     const last = groups[groups.length - 1];
     if (last && last.month === month) last.visits.push(v);
     else groups.push({ month, visits: [v] });
@@ -56,7 +59,6 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
         onValueChange={(id) => {
           if (!id) return;
           setWho(id);
-          setShown(PAGE);
         }}
         aria-label="Čije posete"
       >
@@ -95,13 +97,7 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
         </Card>
       )}
 
-      {picked.length > shown && (
-        <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
-          <Button variant="secondary" onClick={() => setShown((n) => n + PAGE)}>
-            Prikaži još {Math.min(PAGE, picked.length - shown)}
-          </Button>
-        </div>
-      )}
+      <ShowMore list={list} className="mt-1" />
     </Page>
   );
 }

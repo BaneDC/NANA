@@ -19,12 +19,12 @@ Pravilo je u `docs/patterns.md` §8a (odlučeno 6. 10.): obrazac zavisi od vrste
 | Poslednja poseta | Moja nega | Pregled: 1, pa „Sve posete" | ✅ primenjeno |
 | Posete jedne negovateljice | Njena stranica, kartica „Posete" | Pregled: 10, pa „Pogledaj sve (N)" u drawer | ✅ primenjeno |
 | Negovateljice u preporuci | Plan nege | Pregled: 5, pa „Pogledajte još negovateljica" na „Pronađi" | ✅ primenjeno |
-| Sve posete (stranica) | Moja nega → „Sve posete" | „Prikaži još", po mesecima | ✅ primenjeno (8 po koraku) |
-| **Predstoji** | Moja nega | Pregled: 3–5, pa „Sve posete" | ❌ prikazuje sve zakazane |
-| **Sve posete (drawer)** | Njena stranica | „Prikaži još", po mesecima | ❌ prikazuje sve, skroluje se |
-| **Šta se desilo (drawer)** | Njena stranica | „Prikaži još", po danima (već grupisano) | ❌ prikazuje sve |
-| **Posete i aktivnost klijenta** | Strana negovateljice, stranica klijenta | „Prikaži još", po mesecu ili danu | ❌ prikazuje sve |
-| **Istorija razgovora** | Bočni meni | Pregled: 5–10, pa „Prikaži sve" | ❌ prikazuje sve |
+| Sve posete (stranica) | Moja nega → „Sve posete" | „Prikaži još" po 20, po mesecima (zakazano na vrhu) | ✅ primenjeno |
+| Predstoji | Moja nega | Pregled: 3, najbliže prvo, pa „Pogledaj sve (N)" na Posete | ✅ primenjeno |
+| Sve posete (drawer) | Njena stranica | „Prikaži još" po 20 (otvorene prve, kao i do sada) | ✅ primenjeno |
+| Šta se desilo (drawer) | Njena stranica | „Prikaži još" po 20, po danima | ✅ primenjeno |
+| Posete i aktivnost klijenta | Strana negovateljice, stranica klijenta | „Prikaži još" po 10 (deo stranice) | ✅ primenjeno |
+| Istorija razgovora | Bočni meni | Poslednjih 5, pa „Prikaži sve (N)" / „Prikaži manje"; otvoreni razgovor se uvek vidi | ✅ primenjeno |
 | Vaši upiti | Stranica „Vaši upiti" | Sve (sa filterima) | ✅ tako je |
 | Planovi nege | Stranica i bočni meni | Sve | ✅ tako je |
 | Vaše negovateljice | Moja nega | Sve | ✅ tako je |
@@ -33,9 +33,6 @@ Pravilo je u `docs/patterns.md` §8a (odlučeno 6. 10.): obrazac zavisi od vrste
 | Kolone table | Strana negovateljice, tabla | Sve, kolona se skroluje | ✅ tako je |
 | Paneli u chatu | Upiti, Posete, Negovateljice | Sve, skroluje se u panelu | ✅ tako je; ako posete porastu, pregled + „Pogledaj sve" |
 
-## Šta ostaje da se uradi
+## Kako se proverava
 
-1. **Predstoji** na Mojoj nezi: prvih 3–5, pa „Sve posete". Najverovatnije mesto gde lista naraste.
-2. **„Prikaži još"** u drawer-ima „Sve posete" i „Šta se desilo", i u posetama i aktivnosti klijenta na strani negovateljice.
-3. **Istorija razgovora** u meniju: poslednjih 5–10, pa „Prikaži sve".
-4. Korak „Prikaži još" na stranici „Sve posete" je 8; po pravilu je 10–20. Odlučiti da li se izjednačava.
+U galeriji (`/?kartice`) je sekcija **„Duge liste"**: ista porodica godinu dana kasnije (7 zakazanih poseta, 59 poseta, 35 događaja). Na njoj se vide Predstoji sa „Pogledaj sve (7)", „Sve posete" po 20 i drawer-i „Sve posete" i „Šta se desilo" sa „Prikaži još".
