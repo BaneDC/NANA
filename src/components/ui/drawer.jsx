@@ -11,6 +11,9 @@ import { Drawer as DrawerPrimitive } from "vaul"
 // down by its head only (`handleOnly`, with `DrawerHandle` laid over the
 // head), so the content scrolls under a finger.
 //
+// `overlayClassName` reaches the dim behind it (a z-index over the onboarding,
+// which sits at 60).
+//
 // `kind`: a "sheet" holds a header and a body that scrolls (the drawer's
 // parts); a "dialog" scrolls as a whole, 16 inside (the dialog's parts).
 // Either way the sheet itself never scrolls, and vaul's strip under it (to
@@ -60,13 +63,14 @@ function DrawerOverlay({
 function DrawerContent({
   className,
   bodyClassName,
+  overlayClassName,
   children,
   kind = "sheet",
   ...props
 }) {
   return (
     <DrawerPortal data-slot="drawer-portal">
-      <DrawerOverlay className={kind === "dialog" ? "bg-[rgba(42,42,42,0.35)]" : undefined} />
+      <DrawerOverlay className={cn(kind === "dialog" && "bg-[rgba(42,42,42,0.35)]", overlayClassName)} />
       <DrawerPrimitive.Content
         data-slot="drawer-content"
         data-kind={kind}

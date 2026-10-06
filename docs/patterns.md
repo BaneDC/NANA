@@ -10,6 +10,13 @@ Ovo je jedini izvor istine za to kako se slaže interfejs NANA Prime (porodica i
 
 Onboarding (`src/screens/Immersive*.jsx`, klase `imm-*`) ima svoj vizuelni jezik i ova pravila ga ne menjaju. Ne diraj ga ako zadatak nije izričito o onboardingu.
 
+Onboarding na telefonu (odlučeno 6. 10.):
+- dugme za istoriju razgovora je kvadrat (32, na dodir 44);
+- istorija razgovora se otvara kao bottom sheet, visok 98% ekrana, sa dugmetom za zatvaranje kao u ostalim sheet-ovima;
+- pitanje i podnaslov ispod njega su 8 jedno od drugog;
+- velika dugmad („Dalje", „Pošalji", „Pogledaj ceo plan") imaju radius kartica, 16;
+- na pregledu plana prvo se ispiše Minnina rečenica, pa se ostalo pojavljuje redom odozgo nadole.
+
 ---
 
 ## 0. Komponente: shadcn i Tailwind

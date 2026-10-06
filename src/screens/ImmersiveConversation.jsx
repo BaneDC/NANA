@@ -857,110 +857,116 @@ export default function ImmersiveConversation({
                 )}
               </motion.h1>
 
-              {/* who she is, first and largest: everything below is about her */}
-              <motion.p className="imm-plan-lead" variants={piece}>
-                {overview.lead}
-              </motion.p>
+              {/* Nothing below appears until her sentence has finished, as on
+                  every question: the line first, then the rest, top down. */}
+              {(!line || doneTyping) && (
+                <motion.div className="contents" variants={screen} initial="initial" animate="animate">
+                  {/* who she is, first and largest: everything below is about her */}
+                  <motion.p className="imm-plan-lead" variants={piece}>
+                    {overview.lead}
+                  </motion.p>
 
-              {/* Nine numbered boxes with one of them lit meant nothing on
-                  their own — no name for the scale, no reading of the level,
-                  no direction. The other variant has always said all three;
-                  this one showed the row bare. */}
-              {srFrailty && (
-                <motion.div className="imm-scale" variants={piece}>
-                  <motion.p className="imm-scale-name" variants={piece}>
-                    Klinička skala krhkosti, nivo {srFrailty.level} od 9:{' '}
-                    <strong>{srFrailty.label}</strong>
-                  </motion.p>
-                  <motion.div className="imm-cfs" variants={list}>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((l) => (
-                      <motion.span
-                        key={l}
-                        variants={piece}
-                        className={`imm-cfs-step${l === srFrailty.level ? ' is-current' : ''}${
-                          l < srFrailty.level ? ' is-passed' : ''
-                        }`}
-                      >
-                        {l}
-                      </motion.span>
-                    ))}
+                  {/* Nine numbered boxes with one of them lit meant nothing on
+                      their own — no name for the scale, no reading of the level,
+                      no direction. The other variant has always said all three;
+                      this one showed the row bare. */}
+                  {srFrailty && (
+                    <motion.div className="imm-scale" variants={piece}>
+                      <motion.p className="imm-scale-name" variants={piece}>
+                        Klinička skala krhkosti, nivo {srFrailty.level} od 9:{' '}
+                        <strong>{srFrailty.label}</strong>
+                      </motion.p>
+                      <motion.div className="imm-cfs" variants={list}>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((l) => (
+                          <motion.span
+                            key={l}
+                            variants={piece}
+                            className={`imm-cfs-step${l === srFrailty.level ? ' is-current' : ''}${
+                              l < srFrailty.level ? ' is-passed' : ''
+                            }`}
+                          >
+                            {l}
+                          </motion.span>
+                        ))}
+                      </motion.div>
+                      <motion.p className="imm-scale-ends" variants={piece}>
+                        <span>1 - potpuno samostalna</span>
+                        <span>9 - na kraju života</span>
+                      </motion.p>
+                      <motion.p className="imm-scale-blurb" variants={piece}>
+                        {srFrailty.blurb}
+                      </motion.p>
+                      <motion.p className="imm-scale-note" variants={piece}>
+                        Procena je iz vaših odgovora i služi da uskladimo podršku. Nije
+                        dijagnoza i ne zamenjuje lekara.
+                      </motion.p>
+                    </motion.div>
+                  )}
+
+                  {overview.story.length > 0 && (
+                    <motion.section className="imm-plan-section" variants={piece}>
+                      <h2 className="imm-plan-label">Šta se dešava</h2>
+                      {overview.story.map((p) => (
+                        <p className="imm-plan-text" key={p}>
+                          {p}
+                        </p>
+                      ))}
+                    </motion.section>
+                  )}
+
+                  {overview.risks.length > 0 && (
+                    <motion.section className="imm-plan-section" variants={piece}>
+                      <h2 className="imm-plan-label">Na šta najviše treba paziti</h2>
+                      <ul className="imm-plan-risks">
+                        {overview.risks.map((r) => (
+                          <li key={r}>{r}</li>
+                        ))}
+                      </ul>
+                    </motion.section>
+                  )}
+
+                  {/* their own words, set as quotes so they read as theirs */}
+                  {overview.goal && (
+                    <motion.section className="imm-plan-section imm-plan-quotes" variants={piece}>
+                      <figure className="imm-plan-quote">
+                        <figcaption className="imm-plan-label">Najvažnije vam je</figcaption>
+                        <blockquote>„{overview.goal}“</blockquote>
+                      </figure>
+                      {overview.worry && (
+                        <figure className="imm-plan-quote is-worry">
+                          <figcaption className="imm-plan-label">Najviše vas brine</figcaption>
+                          <blockquote>„{overview.worry}“</blockquote>
+                        </figure>
+                      )}
+                    </motion.section>
+                  )}
+
+                  {overview.notes.length > 0 && (
+                    <motion.section className="imm-plan-section" variants={piece}>
+                      <h2 className="imm-plan-label">Usput ste rekli</h2>
+                      <ul className="imm-plan-notes">
+                        {overview.notes.map((n) => (
+                          <li key={n}>{n}</li>
+                        ))}
+                      </ul>
+                    </motion.section>
+                  )}
+
+                  {/* what all of the above adds up to, set apart as the one thing
+                      to act on — which is why the button lives inside it */}
+                  <motion.div className="imm-plan-reco" variants={piece}>
+                    <p className="imm-plan-label">Naša preporuka</p>
+                    <p className="imm-plan-reco-title">{overview.role}</p>
+                    <p className="imm-plan-text">{overview.recommendation}</p>
+                    <div className="imm-plan-reco-foot">
+                      <span className="imm-plan-count">{caregivers.length} negovateljica odgovara ovoj slici</span>
+                      <Button variant="primary" size="lg" onClick={onFinish}>
+                        Pogledaj ceo plan <ArrowUpRight size={14} strokeWidth={2} />
+                      </Button>
+                    </div>
                   </motion.div>
-                  <motion.p className="imm-scale-ends" variants={piece}>
-                    <span>1 - potpuno samostalna</span>
-                    <span>9 - na kraju života</span>
-                  </motion.p>
-                  <motion.p className="imm-scale-blurb" variants={piece}>
-                    {srFrailty.blurb}
-                  </motion.p>
-                  <motion.p className="imm-scale-note" variants={piece}>
-                    Procena je iz vaših odgovora i služi da uskladimo podršku. Nije
-                    dijagnoza i ne zamenjuje lekara.
-                  </motion.p>
                 </motion.div>
               )}
-
-              {overview.story.length > 0 && (
-                <motion.section className="imm-plan-section" variants={piece}>
-                  <h2 className="imm-plan-label">Šta se dešava</h2>
-                  {overview.story.map((p) => (
-                    <p className="imm-plan-text" key={p}>
-                      {p}
-                    </p>
-                  ))}
-                </motion.section>
-              )}
-
-              {overview.risks.length > 0 && (
-                <motion.section className="imm-plan-section" variants={piece}>
-                  <h2 className="imm-plan-label">Na šta najviše treba paziti</h2>
-                  <ul className="imm-plan-risks">
-                    {overview.risks.map((r) => (
-                      <li key={r}>{r}</li>
-                    ))}
-                  </ul>
-                </motion.section>
-              )}
-
-              {/* their own words, set as quotes so they read as theirs */}
-              {overview.goal && (
-                <motion.section className="imm-plan-section imm-plan-quotes" variants={piece}>
-                  <figure className="imm-plan-quote">
-                    <figcaption className="imm-plan-label">Najvažnije vam je</figcaption>
-                    <blockquote>„{overview.goal}“</blockquote>
-                  </figure>
-                  {overview.worry && (
-                    <figure className="imm-plan-quote is-worry">
-                      <figcaption className="imm-plan-label">Najviše vas brine</figcaption>
-                      <blockquote>„{overview.worry}“</blockquote>
-                    </figure>
-                  )}
-                </motion.section>
-              )}
-
-              {overview.notes.length > 0 && (
-                <motion.section className="imm-plan-section" variants={piece}>
-                  <h2 className="imm-plan-label">Usput ste rekli</h2>
-                  <ul className="imm-plan-notes">
-                    {overview.notes.map((n) => (
-                      <li key={n}>{n}</li>
-                    ))}
-                  </ul>
-                </motion.section>
-              )}
-
-              {/* what all of the above adds up to, set apart as the one thing
-                  to act on — which is why the button lives inside it */}
-              <motion.div className="imm-plan-reco" variants={piece}>
-                <p className="imm-plan-label">Naša preporuka</p>
-                <p className="imm-plan-reco-title">{overview.role}</p>
-                <p className="imm-plan-text">{overview.recommendation}</p>
-                <div className="imm-plan-reco-foot">
-                  <span className="imm-plan-count">{caregivers.length} negovateljica odgovara ovoj slici</span>
-                  <Button variant="primary" size="lg" onClick={onFinish}>
-                    Pogledaj ceo plan <ArrowUpRight size={14} strokeWidth={2} />
-                  </Button>
-                </div>
-              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -1181,9 +1181,10 @@
    opening screen, centred under the question and tight to it — so it reads as
    the rest of what Minna is saying, not as a note pinned beside it. */
 .imm-why {
-  /* the question's own width, so the two read as one block */
+  /* the question's own width, so the two read as one block; 8 under it, as
+     the opening screen's subtitle is under its title */
   width: 100%;
-  margin-top: var(--spacing-3);
+  margin-top: var(--spacing-2);
   font-size: 16px;
   line-height: 24px;
   color: #7d6f63;
@@ -1281,7 +1282,9 @@
    below the line is on screen while it changes height: the answers leave when
    she starts thinking and only come back once the question is written. */
 .imm-line {
-  min-height: 36px;
+  /* one line of the question, no more: taller, it left a gap under the
+     question that pushed the reason away from it */
+  min-height: 34px;
 }
 
 /* The shimmer passes a narrow, slightly lighter band over text that keeps its
@@ -1570,10 +1573,12 @@
   }
 
 /* There is no room beside the scale for a named control on a phone, so the
-     name comes off and the glyph keeps its box. The label stays for anyone
-     reading the page rather than looking at it. */
+     name comes off and the glyph keeps its box, as wide as it is tall (32, 44
+     under a finger). The label stays for anyone reading the page rather than
+     looking at it. */
 .imm-ctl.has-label {
-    width: 32px;
+    width: auto;
+    aspect-ratio: 1;
     padding: 0;
   }
 
@@ -1609,6 +1614,12 @@
 .imm-answer .imm-actions {
   width: 100%;
   justify-content: flex-end;
+}
+
+/* The onboarding's large buttons ("Dalje", "Pošalji", "Pogledaj ceo plan")
+   take the corners of the cards they sit under (16), not the app's 8. */
+.immersive .btn.lg {
+  border-radius: var(--radius-2xl);
 }
 
 /* ── the family's side ─────────────────────────────────────────────────────
@@ -1750,6 +1761,10 @@
 .imm-title {
     font-size: 20px;
     line-height: 28px;
+  }
+
+.imm-line {
+    min-height: 28px;
   }
 
 .imm-intro-text {
