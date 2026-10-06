@@ -27,6 +27,13 @@ export { money, serviceTitle, totalsFor, SERVICE_FEE };
 // them a "you receive" line would be showing them someone else's payslip.
 export const chargedFor = (hours, rate) => totalsFor(hours, rate).charged;
 
+// Finnish VAT, already inside that price (the agreement says "PDV uključen"):
+// nothing is added on top. The work order says how much of its total it is, as
+// a receipt does.
+export const VAT = 0.255;
+export const vatIn = (gross) => Math.round((gross - gross / (1 + VAT)) * 100) / 100;
+export const vatText = `${(VAT * 100).toLocaleString('sr-RS')}%`;
+
 // Inside this, calling a visit off costs the whole visit: she has kept the time
 // and can no longer fill it.
 export const LATE_HOURS = 1;

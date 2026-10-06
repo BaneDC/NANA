@@ -350,6 +350,7 @@ Vrsta vrednosti određuje raspored:
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
 - **Jedini izuzetak je cenovnik partnera** (u `RecommendationCard`): naziv levo, redovna i Minnina cena u koloni desno.
 - **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. Za sada samo u pregledu negovateljice.
+- **PDV u radnom nalogu** (odlučeno 6. 10.): cena koju porodica vidi već sadrži PDV (25,5%, finski), pa se ništa ne dodaje. Ispod ukupnog iznosa radnog naloga stoji red „Od toga PDV (25,5%)" sa iznosom, kao na računu (`vatIn`, `vatText` u `src/data/familyCare.js`). Kod otkazane posete i iznosa 0 tog reda nema.
 - **Nikad zbir plaćenog** (odlučeno 5. 10.): porodici se ne prikazuje koliko je ukupno platila, ni do sada, ni po mesecu, ni po negovateljici. Iznos stoji samo uz pojedinačnu posetu (rezervisano, biće naplaćeno, naplaćeno) i uz ono što se sada dešava („Rezervisano za zakazane posete", „Naplaćuje se sada" u Podešavanjima). Broj poseta je u redu, zbir novca nije.
 
 ### Negovateljica: šta se o njoj prikazuje

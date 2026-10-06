@@ -51,6 +51,8 @@ import {
   serviceTitle,
   standingWith,
   unsettled,
+  vatIn,
+  vatText,
   visitCharge,
 } from '../../data/familyCare';
 
@@ -354,6 +356,8 @@ function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
         >
           {v.status === 'cancelled' ? money(0) : money(charge)}
         </DataRow>
+        {/* the VAT inside that total, as on a receipt: it adds nothing */}
+        {v.status !== 'cancelled' && charge > 0 && <Line label={`Od toga PDV (${vatText})`} value={money(vatIn(charge))} />}
       </Total>
 
       {v.status === 'charging' && (
