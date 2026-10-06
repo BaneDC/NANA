@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
-import { paneCloseClass } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
 import { useIsPhone } from '@/hooks/use-phone';
 
@@ -14,8 +13,9 @@ import { useIsPhone } from '@/hooks/use-phone';
 // Newest last, like a conversation: the eye lands on the bottom, which is the
 // exchange just before the one on screen.
 //
-// On a phone it is a bottom sheet like every other pane (docs/patterns.md §12),
-// 98% of the screen tall, dragged down by its head to close.
+// On a phone it is the same glass panel, behaving as a bottom sheet (docs/
+// patterns.md §12): up from the bottom edge, 98% of the screen tall, dragged
+// down by its head to close, and nothing dimmed behind it, as on a desktop.
 export default function HistoryPanel({ open, entries, onClose }) {
   const phone = useIsPhone();
 
@@ -36,8 +36,14 @@ export default function HistoryPanel({ open, entries, onClose }) {
       </ol>
     );
 
+  // the same small cross as on a desktop; under a finger its target is 44
   const close = (
-    <button type="button" className="imm-history-close relative z-1" onClick={onClose} aria-label="Zatvori">
+    <button
+      type="button"
+      className="imm-history-close relative z-1 pointer-coarse:after:absolute pointer-coarse:after:-inset-[15px]"
+      onClick={onClose}
+      aria-label="Zatvori"
+    >
       <X size={14} strokeWidth={1.75} />
     </button>
   );
@@ -45,17 +51,18 @@ export default function HistoryPanel({ open, entries, onClose }) {
   if (phone) {
     return (
       <Drawer open={open} onOpenChange={(next) => !next && onClose()}>
-        {/* over the onboarding, which stands at 60 */}
-        <DrawerContent className="z-61 h-[98dvh] max-h-none text-left" overlayClassName="z-61">
-          <div className="imm-history-head relative px-4 pt-4 pb-3">
+        {/* over the onboarding, which stands at 60; the desktop panel's glass,
+            16 inside, 12 between the head and the list */}
+        <DrawerContent
+          className="z-61 h-[98dvh] max-h-none gap-3 border border-b-0 border-[rgba(255,255,255,0.75)] bg-[rgba(255,255,255,0.55)] p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] text-left shadow-[0_8px_32px_rgba(122,92,70,0.1)] backdrop-blur-[18px] backdrop-saturate-[1.4]"
+          overlayClassName="z-61 bg-transparent backdrop-blur-none"
+        >
+          <div className="imm-history-head relative">
             <DrawerHandle />
             <DrawerTitle className="imm-history-title pointer-events-none relative">Dosad smo prošli</DrawerTitle>
-            {/* the sheets' own close, 44 under a finger */}
-            <button type="button" className={`${paneCloseClass} relative z-1`} onClick={onClose} aria-label="Zatvori">
-              <X className="size-4" strokeWidth={1.75} />
-            </button>
+            {close}
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{list}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto">{list}</div>
         </DrawerContent>
       </Drawer>
     );

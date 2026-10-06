@@ -12,10 +12,11 @@ Onboarding (`src/screens/Immersive*.jsx`, klase `imm-*`) ima svoj vizuelni jezik
 
 Onboarding na telefonu (odlučeno 6. 10.):
 - dugme za istoriju razgovora je kvadrat (32, na dodir 44);
-- istorija razgovora se otvara kao bottom sheet, visok 98% ekrana, sa dugmetom za zatvaranje kao u ostalim sheet-ovima;
+- istorija razgovora je isti stakleni panel kao na desktopu (podloga, ivica, senka, radius 24, padding 16, mali X), a ponaša se kao bottom sheet: dolazi odozdo, visok je 98% ekrana i prevlačenjem nadole se zatvara; iza njega se ništa ne zatamnjuje;
 - pitanje i podnaslov ispod njega su 8 jedno od drugog;
 - velika dugmad („Dalje", „Pošalji", „Pogledaj ceo plan") imaju radius kartica, 16;
 - „Pošalji" na prvom ekranu je široko koliko polje iznad njega;
+- carousel sa fotografijama na registraciji i prijavi se na užem ekranu srazmerno smanji (sve četiri slike i visina), da se vidi ceo kao na desktopu;
 - na pregledu plana prvo se ispiše Minnina rečenica, pa se ostalo pojavljuje redom odozgo nadole.
 
 ---
