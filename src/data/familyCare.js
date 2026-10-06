@@ -33,6 +33,8 @@ export const chargedFor = (hours, rate) => totalsFor(hours, rate).charged;
 export const VAT = 0.255;
 export const vatIn = (gross) => Math.round((gross - gross / (1 + VAT)) * 100) / 100;
 export const vatText = `${(VAT * 100).toLocaleString('sr-RS')}%`;
+// the agreed rate, wherever the terms are shown: the VAT is in it
+export const rateText = (rate) => `${money(rate)} / h, PDV uključen`;
 
 // Inside this, calling a visit off costs the whole visit: she has kept the time
 // and can no longer fill it.

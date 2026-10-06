@@ -1035,6 +1035,11 @@
   justify-content: flex-end;
 }
 
+/* "Pošalji" is as wide as the field it sends (odlučeno 6. 10.) */
+.imm-write-actions > .btn {
+  width: 100%;
+}
+
 /* soft chips Minna can offer alongside her own follow-up question */
 .imm-suggestions {
   display: flex;

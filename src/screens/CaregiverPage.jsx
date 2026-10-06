@@ -19,6 +19,8 @@ import { statusVariant } from '../components/Standing';
 import Attention from '../components/Attention';
 import BackButton from '../components/BackButton';
 import VisitRow from '../components/family/VisitRow';
+import ShowMore from '../components/ShowMore';
+import { useShowMore } from '@/hooks/use-show-more';
 import { Line, ServiceChips } from '../components/family/FamilyDrawer';
 import { Group, Groups } from '../components/Tags';
 import {
@@ -33,6 +35,7 @@ import {
   linkCard,
   money,
   pendingVersion,
+  rateText,
   services,
   shownVersion,
   workedHours,
@@ -42,8 +45,6 @@ import {
 // works under, how it has gone so far, and every visit she has made. Everything
 // the family can do about her is on this page or one drawer away from it.
 
-// Her page shows the latest ten; all of them open in a drawer.
-const SHOWN = 10;
 
 // the one thing to know about her right now, and the button for it if there is one
 function nextStep(care, a) {
@@ -161,6 +162,8 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
   const paid = a.visits.filter((v) => v.status === 'paid');
   const hoursSoFar = paid.reduce((n, v) => n + workedHours(v) + (v.extra?.status === 'approved' ? v.extra.hours : 0), 0);
   const visits = herVisits(a);
+  // ten, then ten more in place, never a drawer (docs/patterns.md §8a)
+  const shownVisits = useShowMore(visits, { reset: caregiverId });
 
   // the badge says what became of the version shown
   const TERMS_STATE = {
@@ -247,7 +250,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
             <ServiceChips ids={terms.services} grouped />
             <DataList className="mt-2">
               <Line label={terms.status === 'sent' ? 'Poslato' : terms.agreedOn ? 'Prihvaćeno' : 'Poslato'} value={terms.status === 'sent' || !terms.agreedOn ? terms.sentOn : terms.agreedOn} />
-              <Line label="Cena po satu" value={`${money(terms.rate)} / h`} />
+              <Line label="Cena po satu" value={rateText(terms.rate)} />
               <Line label="Dogovoreni sati" value={`${terms.hours} h nedeljno`} />
               <Line label="Raspored" value={terms.schedule} />
             </DataList>
@@ -315,19 +318,13 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
         </CardDescription>
         {visits.length > 0 && (
           <ItemGroup>
-            {visits.slice(0, SHOWN).map((v) => (
+            {shownVisits.visible.map((v) => (
               <VisitRow key={v.id} visit={v} onDrawer={onDrawer} />
             ))}
           </ItemGroup>
         )}
-        {visits.length > SHOWN && (
-          // right under the rows, 16 from the last one's text (docs/patterns.md §6)
-          <CardFooter className="mt-0">
-            <Button variant="secondary" onClick={() => onDrawer({ kind: 'visits', caregiverId: cg.id })}>
-              Pogledaj sve ({visits.length})
-            </Button>
-          </CardFooter>
-        )}
+        {/* right under the rows, 16 from the last one's text (docs/patterns.md §6) */}
+        <ShowMore list={shownVisits} />
       </Card>
 
       {/* Ending is quiet: a sentence and a red ghost button under the cards,

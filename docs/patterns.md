@@ -15,6 +15,7 @@ Onboarding na telefonu (odlučeno 6. 10.):
 - istorija razgovora se otvara kao bottom sheet, visok 98% ekrana, sa dugmetom za zatvaranje kao u ostalim sheet-ovima;
 - pitanje i podnaslov ispod njega su 8 jedno od drugog;
 - velika dugmad („Dalje", „Pošalji", „Pogledaj ceo plan") imaju radius kartica, 16;
+- „Pošalji" na prvom ekranu je široko koliko polje iznad njega;
 - na pregledu plana prvo se ispiše Minnina rečenica, pa se ostalo pojavljuje redom odozgo nadole.
 
 ---
@@ -335,7 +336,7 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 - **Izveštaj posete** (`VisitReport` u `src/components/family/FamilyDrawer.jsx`) je uvek isti, gde god se prikazuje na stranici: delovi sa imenom, 12 jedan od drugog: „Urađeno" (oznake, samo u poslednjoj poseti), „Kako je bila" (oznake „Raspoloženje: dobro", „Ishrana: kao i obično", „Kretanje: kao i obično", bez ikonice) i „Sanna je zapisala" (običan tekst). U radnom nalogu (drawer) „Kako je bila" su iste oznake.
 - **„Sve posete" i „Svi upiti"** u glavi kartice su `Button` `secondary` (sa strelicom, kao i ranije), desno, a redovi ispod glave sa dugmetom počinju 8 niže (24 od dugmeta do teksta prvog reda). **„Prikaži još"** je `Button` `secondary` u footeru, levo. Nema dugmeta-linka ni dugmeta koje je samo tekst.
 - **Red koji otvara njenu stranicu i nema dugme** (Vaše negovateljice) ima strelicu desno, samo na širem ekranu (`phone:hidden`). Broj pored nje se na telefonu ne prikazuje.
-- **Posete na njenoj stranici:** najviše 10, a ako ih ima više, „Pogledaj sve (N)" (`secondary`, dole levo) otvara drawer „Sve posete" sa svim njenim posetama (`kind: 'visits'`). Redosled je isti (`herVisits`): prvo ono što je u toku, pa izmireno.
+- **Posete na njenoj stranici:** prvih 10, pa „Prikaži još" dodaje po 10 na istom mestu (§8a; drawer „Sve posete" je uklonjen 6. 10.). Redosled je `herVisits`: prvo ono što je u toku, pa izmireno.
 - **„Šta se desilo"** (odlučeno 3. 10., izmenjeno 5. 10.): sve što se desilo sa negom, najnovije prvo (`care.log`, upisuju ga `familyCare` i `sim`). Otvara se **ikonicom u glavi stranice** (`History`, `secondary iconOnly`, `aria-label` i `title` „Šta se desilo"): samo na njenoj stranici, pored broja telefona, i samo za nju, kao u prototipu (ikonica sa Moje nege je uklonjena 5. 10.). Nema kartice na stranici. Drawer (`kind: 'activity'`) ima filtere (Sve, Upiti, Ugovor, Posete, Novac), ispod njih „N stavki · najnovije prvo", i stavke po danima, sa brojem stavki pored dana. Stavka je red bez akcije (`Item`): naslov, pa linija „ko · kada" (`vi`, njeno ime ili `koordinatorka`) i rečenica šta tačno. Naslov nikad ne menja njeno ime po padežu („Poslali ste upit", ne „Poslali ste upit Sanni").
 - **Pregled negovateljice** (`kind: 'overview'`, izmenjeno 5. 10. po prototipu): ikonica u glavi njene stranice (`IdCard`, „Pregled"), između telefona i „Šta se desilo". Redom: dva broja (posete do sada, ispod koliko je zakazano; koliko traju zajedno, ispod od kada), „Kontakt" (telefon, e-mail, opština, jezici; telefon i e-mail se skrivaju kad se saradnja završi), „Dogovorena nega" (verzija koja važi, cena po satu, usluge po grupama, dodatni uslovi; **samo dok ugovor važi i ne čekaju novi uslovi**), „Kvalifikacije" (klasifikacije, obrazovanje), „O negovateljici", „Ocene", „Kako se plaća". Bez zbira plaćenog (vidi §8).
 - **Sve verzije ugovora** (`kind: 'versions'`, „Sve verzije (N)" u footeru kartice „Ugovor o nezi", samo kad ih ima više od jedne): svaka verzija sa značkom stanja (važi, čeka vaš odgovor, zamenjena, odbijena, povučena, završena) i šta je promenila u odnosu na prethodnu.
@@ -358,7 +359,7 @@ Vrsta vrednosti određuje raspored:
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
 - **Jedini izuzetak je cenovnik partnera** (u `RecommendationCard`): naziv levo, redovna i Minnina cena u koloni desno.
 - **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. Za sada samo u pregledu negovateljice.
-- **PDV u radnom nalogu** (odlučeno 6. 10.): cena koju porodica vidi već sadrži PDV (25,5%, finski), pa se ništa ne dodaje. Ispod ukupnog iznosa radnog naloga stoji red „Od toga PDV (25,5%)" sa iznosom, kao na računu (`vatIn`, `vatText` u `src/data/familyCare.js`). Kod otkazane posete i iznosa 0 tog reda nema.
+- **PDV u radnom nalogu** (odlučeno 6. 10.): cena koju porodica vidi već sadrži PDV (25,5%, finski), pa se ništa ne dodaje. Ispod ukupnog iznosa radnog naloga i ispod rezervisanog iznosa u planu posete stoji red „Od toga PDV (25,5%)" sa iznosom, kao na računu (`vatIn`, `vatText`). Cena po satu svuda gde se prikazuje ugovor (kartica „Ugovor o nezi", novi uslovi, pregled, sve verzije) kaže „18 € / h, PDV uključen" (`rateText`). Sve je u `src/data/familyCare.js`. Kod otkazane posete i iznosa 0 reda sa PDV-om nema.
 - **Nikad zbir plaćenog** (odlučeno 5. 10.): porodici se ne prikazuje koliko je ukupno platila, ni do sada, ni po mesecu, ni po negovateljici. Iznos stoji samo uz pojedinačnu posetu (rezervisano, biće naplaćeno, naplaćeno) i uz ono što se sada dešava („Rezervisano za zakazane posete", „Naplaćuje se sada" u Podešavanjima). Broj poseta je u redu, zbir novca nije.
 
 ### Negovateljica: šta se o njoj prikazuje
@@ -389,22 +390,23 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 ---
 
-## 8a. Duge liste: koji obrazac kada (odlučeno 6. 10.)
+## 8a. Duge liste (odlučeno 6. 10.)
 
-Obrazac zavisi od vrste liste, a ne od toga gde je. Spisak svake liste i šta je primenjeno je u `docs/paginacija.md`.
+Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu stranicu za ostatak**: ispod nje je „Prikaži još N" (`secondary`, dole levo), koje dodaje **sledećih 10 na istom mestu**, pa opet 10, dok ne stanu sve. Nema „Pogledaj sve" za ostatak liste. Spisak svake liste i šta je primenjeno je u `docs/paginacija.md`.
 
-| Vrsta liste | Obrazac | Liste |
+| Vrsta liste | Prvo pokazuje | Liste |
 |---|---|---|
-| **Pregled na stranici** (deo veće liste, uz drugi sadržaj) | prvih nekoliko, pa „Pogledaj sve" (`secondary`) vodi na punu listu (stranica ili drawer) | poslednja poseta (1), Predstoji (3), posete na njenoj stranici (10), negovateljice u preporuci (5), istorija razgovora u meniju (5, pa „Prikaži sve") |
-| **Puna lista koja raste sa vremenom** | najnovije prvo (grupisano po mesecu ili danu gde postoji), pa „Prikaži još" (`secondary`, dole levo) dodaje sledećih 20 na istom mestu; deo stranice uz drugi sadržaj po 10 | Sve posete (stranica i drawer), Šta se desilo, posete i aktivnost klijenta na strani negovateljice (po 10) |
+| **Lista na stranici, uz drugi sadržaj** | koliko staje u taj deo, pa „Prikaži još" po 10 | Predstoji (3), posete na njenoj stranici (10), istorija razgovora u meniju (5) |
+| **Puna lista koja raste sa vremenom** | 10, najnovije prvo (po mesecu ili danu gde postoji), pa „Prikaži još" po 10 | Sve posete (stranica), Šta se desilo, posete i aktivnost klijenta na strani negovateljice |
 | **Pretraga, poređenje** | numerisana paginacija (`Pagination`), 10 po strani | samo „Pronađi negovateljicu" |
 | **Kratka lista po prirodi** | sve, bez ograničenja | Vaši upiti, Planovi nege, verzije ugovora, Vaše negovateljice |
 
-- Numerisana paginacija je samo za pretragu: tu se negovateljice porede, ide se napred-nazad i vraća na isto mesto. Kroz posete i događaje se ne ide „na stranu 4", nego se skroluje unazad kroz vreme.
-- Kod: `useShowMore` (`src/hooks/use-show-more.js`, korak `LIST_STEP` = 20) i dugme `ShowMore` (`src/components/ShowMore.jsx`). Nova lista ovog reda koristi njih, ne svoje stanje.
+- Numerisana paginacija je samo za pretragu: tu se negovateljice porede, ide se napred-nazad i vraća na isto mesto. Kroz posete i događaje se ne ide „na stranu 4".
+- „Prikaži još" kaže koliko dodaje („Prikaži još 10", na kraju „Prikaži još 3").
+- Kod: `useShowMore(items, { first, reset })` (`src/hooks/use-show-more.js`, korak `LIST_STEP` = 10) i dugme `ShowMore` (`src/components/ShowMore.jsx`). Nova lista koristi njih, ne svoje stanje.
+- **Veza na drugu stranicu nije produžetak liste:** „Sve posete" u glavi kartice poslednje posete vodi na stranicu Posete, a „Pogledajte još negovateljica" u planu na „Pronađi". To ostaje.
 - Na stranici „Sve posete" ono što je zakazano posle sutra je grupa „Zakazano" na vrhu, pa „Ove nedelje", pa meseci.
-- „Prikaži još" kaže koliko dodaje („Prikaži još 8"), a „Pogledaj sve" koliko ih ima ukupno („Pogledaj sve (15)").
-- Kratka lista koja izraste (npr. mnogo upita) prelazi u drugi red tabele, ne dobija paginaciju.
+- Kratka lista koja izraste (npr. mnogo upita) dobija „Prikaži još", ne paginaciju.
 
 ## 9. Dugmad
 

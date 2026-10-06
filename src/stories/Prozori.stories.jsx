@@ -49,7 +49,7 @@ export const DrawerOsnovni = {
     eyebrow: { control: 'text', description: 'Mali red iznad naslova; prazno = bez njega.' },
     title: { control: 'text' },
     text: { control: 'text' },
-    wide: { control: 'boolean', description: 'Širi drawer, za liste (sve posete, verzije).' },
+    wide: { control: 'boolean', description: 'Širi drawer, za liste (šta se desilo, verzije).' },
   },
   render: ({ eyebrow, title, text, wide }) => (
     <Opened label="Otvori drawer">
@@ -102,7 +102,6 @@ const KINDS = {
   'work-order': 'Radni nalog',
   plan: 'Plan posete',
   profile: 'Informacije o negovateljici',
-  visits: 'Sve posete',
   activity: 'Šta se desilo',
   overview: 'Pregled',
   versions: 'Sve verzije ugovora',
@@ -129,7 +128,6 @@ const FITS = {
   plan: (id) => visits.find((v) => v.id === id)?.status === 'planned',
   profile: () => true,
   activity: () => true,
-  visits: (id) => !!arrangementOf(care, id)?.visits.length,
   overview: (id) => !!arrangementOf(care, id),
   versions: (id) => !!arrangementOf(care, id)?.versions.length,
   end: (id) => !!arrangementOf(care, id) && !arrangementOf(care, id).endedOn,

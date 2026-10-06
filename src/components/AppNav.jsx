@@ -1,4 +1,5 @@
-import { Children, useState } from 'react';
+import { Children } from 'react';
+import { useShowMore } from '@/hooks/use-show-more';
 import {
   ChevronDown,
   FileText,
@@ -65,9 +66,6 @@ function SubItem({ active, title, note, onClick }) {
     </SidebarMenuSubItem>
   );
 }
-
-// how many conversations the menu lists before "Prikaži sve"
-const CHATS = 5;
 
 // A nav row that folds a list of its own away — used by the conversations and
 // Care plans. A row with `onOpen` is a page too, with the fold on its chevron
@@ -151,8 +149,8 @@ export default function AppNav({
   planListOpen,
   onTogglePlanList,
 }) {
-  // the latest conversations in the menu, the rest on asking
-  const [allChats, setAllChats] = useState(false);
+  // the latest five conversations, then ten more in place (docs/patterns.md §8a)
+  const chats = useShowMore(threads, { first: 5 });
   // On a narrow screen the nav is a drawer over the page, so anything that
   // navigates also closes it — otherwise the page it opened is behind the nav.
   const { setOpenMobile } = useSidebar();
@@ -196,10 +194,9 @@ export default function AppNav({
             onToggle={onToggleChatList}
             empty="Još nema razgovora."
           >
-            {/* the latest few, then the rest on asking (docs/patterns.md §8a);
-                the open one is always in the list */}
+            {/* the open one is always in the list */}
             {threads
-              .filter((t, i) => allChats || i < CHATS || (view === 'chat' && activeThread === t.id))
+              .filter((t) => chats.visible.includes(t) || (view === 'chat' && activeThread === t.id))
               .map((t) => (
                 <SubItem
                   key={t.id}
@@ -209,13 +206,11 @@ export default function AppNav({
                   onClick={go(() => onSelectThread(t.id))}
                 />
               ))}
-            {threads.length > CHATS && (
+            {chats.rest > 0 && (
               <SidebarMenuSubItem>
                 <SidebarMenuSubButton asChild>
-                  <button type="button" onClick={() => setAllChats((v) => !v)}>
-                    <span className="text-small text-(--nav-text-muted)">
-                      {allChats ? 'Prikaži manje' : `Prikaži sve (${threads.length})`}
-                    </span>
+                  <button type="button" onClick={chats.more}>
+                    <span className="text-small text-(--nav-text-muted)">Prikaži još {Math.min(chats.step, chats.rest)}</span>
                   </button>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>

@@ -119,8 +119,8 @@ function Visits({ client }) {
   // above, and listing it twice would say a visit is both done and outstanding.
   const visits = (client.visits || []).filter((v) => v.status !== 'due');
   const settled = visits.filter((v) => v.status === 'paid');
-  // a section of the page, so ten at a time (docs/patterns.md §8a)
-  const list = useShowMore(visits, 10);
+  // ten, then ten more in place (docs/patterns.md §8a)
+  const list = useShowMore(visits);
   if (!visits.length) {
     return (
       <p className="rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-body text-disabled">
@@ -195,7 +195,7 @@ function Activity({ client }) {
   // Newest first: the last thing that happened is the thing she is trying to
   // remember when she opens this.
   const entries = [...(client.activity || [])].reverse();
-  const list = useShowMore(entries, 10);
+  const list = useShowMore(entries);
   return (
     <>
       {/* a line down the left joins the dots, and stops at the last one */}

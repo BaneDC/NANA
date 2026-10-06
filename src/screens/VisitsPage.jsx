@@ -23,7 +23,7 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
     .filter((v) => v.status !== 'cancelled' || v.cancelledBy)
     .sort((a, b) => dayOf(b.date, today) - dayOf(a.date, today));
   const picked = who === 'all' ? all : all.filter((v) => v.caregiver.id === who);
-  const list = useShowMore(picked, undefined, who);
+  const list = useShowMore(picked, { reset: who });
   const visible = list.visible;
 
   // what is booked past tomorrow stands on its own at the top: by month it

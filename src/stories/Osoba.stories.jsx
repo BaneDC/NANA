@@ -115,7 +115,7 @@ export const StanjeSaNjom = {
   ),
 };
 
-// every status a visit has, as her page and "Sve posete" show it
+// every status a visit has, as her page and the visits page show it
 export const Posete = {
   render: () => {
     const a = care.arrangements.find((x) => x.caregiver.id === 'sanna');

@@ -3,7 +3,6 @@ import { AlertTriangle, Check, CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
 import { SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataList, DataRow } from '@/components/data-list';
@@ -18,7 +17,6 @@ import Tags, { Group, Groups } from '../Tags';
 import { groupServices } from '../../data/serviceCatalog';
 import CaregiverHead from '../CaregiverHead';
 import Rating from '../Rating';
-import VisitRow from './VisitRow';
 import { careSignals } from './VisitReport';
 import { ActivityRows } from './Activity';
 import { Field, TextArea } from '../TextField';
@@ -43,7 +41,6 @@ import {
   services,
   todayOf,
   workedHours,
-  herVisits,
   linkCard,
   money,
   pendingVersion,
@@ -53,6 +50,7 @@ import {
   serviceTitle,
   standingWith,
   unsettled,
+  rateText,
   vatIn,
   vatText,
   visitCharge,
@@ -169,7 +167,7 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
       <PaneLabel>{act ? `Verzija ${pen.version} obuhvata` : 'Usluge'}</PaneLabel>
       <ServiceChips ids={pen.services} grouped />
       <DataList className="mt-2">
-        <Line label="Cena po satu" value={`${money(pen.rate)} / h`} />
+        <Line label="Cena po satu" value={rateText(pen.rate)} />
         <Line label="Dogovoreni sati" value={`${pen.hours} h nedeljno`} />
         <Line label="Raspored" value={pen.schedule} />
       </DataList>
@@ -459,6 +457,8 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
       <DataList className="mt-2">
         <Line label="Poslato" value={v.sentOn} />
         <Line label="Rezervisano" value={`${money(held)} · ${v.hours} h po ${money(v.rate)}/h`} />
+        {/* the VAT inside it, as on the work order: it adds nothing */}
+        {held > 0 && <Line label={`Od toga PDV (${vatText})`} value={money(vatIn(held))} />}
       </DataList>
 
       <SheetFooter>
@@ -672,26 +672,6 @@ function Profile({ open = true, care, caregiverId, unlocked, onContact, onCaregi
   );
 }
 
-// Every visit she has made, when her page shows only the latest ten: a step
-// at a time, "Prikaži još" adding the next (docs/patterns.md §8a). A visit's
-// own button opens its plan or work order in this drawer's place.
-function Visits({ open = true, care, caregiverId, onOpen, onClose }) {
-  const a = arrangementOf(care, caregiverId);
-  const visits = a ? herVisits(a) : [];
-  const list = useShowMore(visits);
-  if (!a) return null;
-  return (
-    <Modal eyebrow={`${a.caregiver.name} · ${pl(visits.length, 'poseta', 'posete', 'poseta')}`} title="Sve posete" wide open={open} onClose={onClose}>
-      <ItemGroup>
-        {list.visible.map((v) => (
-          <VisitRow key={v.id} visit={v} onDrawer={onOpen} />
-        ))}
-      </ItemGroup>
-      <ShowMore list={list} />
-    </Modal>
-  );
-}
-
 // Everything that has happened, newest first, by day, with a filter by kind:
 // one caregiver's from her page, everyone's from Moja nega. A step at a time,
 // "Prikaži još" adding the next (docs/patterns.md §8a).
@@ -700,7 +680,7 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
   const all = (care.log || []).filter((e) => !caregiverId || e.caregiverId === caregiverId);
   const kinds = LOG_KINDS.filter((k) => all.some((e) => e.kind === k.id));
   const picked = kind === 'all' ? all : all.filter((e) => e.kind === kind);
-  const list = useShowMore(picked, undefined, kind);
+  const list = useShowMore(picked, { reset: kind });
   const today = todayOf(care);
   const days = [];
   for (const e of list.visible) {
@@ -801,7 +781,7 @@ function Overview({ open = true, care, caregiverId, onClose }) {
           <PaneLabel>Dogovorena nega</PaneLabel>
           <DataList className="mt-2">
             <Line label="Ugovor koji važi" value={`verzija ${act.version}`} />
-            <Line label="Cena po satu" value={`${money(act.rate)} / h, PDV uključen`} />
+            <Line label="Cena po satu" value={rateText(act.rate)} />
           </DataList>
           <ServiceChips ids={act.services} grouped />
           {act.terms && (
@@ -872,7 +852,7 @@ function Versions({ open = true, care, caregiverId, onClose }) {
             </PaneLabel>
             <DataList className="mt-2">
               <Line label="Poslato" value={v.sentOn} />
-              <Line label="Cena po satu" value={`${money(v.rate)} / h`} />
+              <Line label="Cena po satu" value={rateText(v.rate)} />
               <Line label="Usluge" value={services(v.services.length)} />
               {changes.map((r) => (
                 <Line key={r.label} label={r.label} value={r.value} />
@@ -898,7 +878,6 @@ export default function FamilyDrawer({ drawer, ...rest }) {
   if (drawer.kind === 'plan') return <Plan key={`plan-${drawer.visitId}`} visitId={drawer.visitId} {...rest} />;
   if (drawer.kind === 'end') return <End key="end" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'profile') return <Profile key="profile" caregiverId={drawer.caregiverId} {...rest} />;
-  if (drawer.kind === 'visits') return <Visits key="visits" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'activity') return <ActivityDrawer key="activity" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'overview') return <Overview key="overview" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'versions') return <Versions key="versions" caregiverId={drawer.caregiverId} {...rest} />;

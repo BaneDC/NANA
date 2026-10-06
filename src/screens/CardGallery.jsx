@@ -122,7 +122,7 @@ export function sampleCare() {
             resolution: { outcome: 'reduce', text: 'Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.', on: '31. jula' },
           }),
           visit('g-cg-cancelled', '28. jula', 'cancelled', { cancelledBy: 'caregiver', cancelReason: 'Negovateljica je otkazala: bila sam bolesna' }),
-          // enough of them that her page shows ten and "Pogledaj sve"
+          // enough of them that her page shows ten and "Prikaži još"
           ...['26. jula', '24. jula', '22. jula', '21. jula'].map((d, i) =>
             visit(`g-old-${i}`, d, 'paid', { report: report(), confirmed: i % 2 ? 'auto' : 'you', chargedOn: d })
           ),
@@ -179,7 +179,7 @@ export function sampleCare() {
 }
 
 // The same family a year on: enough visits and events that every long list
-// shows its step and "Prikaži još" or "Pogledaj sve" (docs/patterns.md §8a).
+// shows its first few and "Prikaži još" (docs/patterns.md §8a).
 function longCare() {
   const c = sampleCare();
   const a = c.arrangements[0];
@@ -222,13 +222,13 @@ const SECTIONS = [
   { id: 'prvi-korak', title: 'Moja nega, pre prvog upita', where: 'Sledeći korak' },
   { id: 'upit-poslat', title: 'Moja nega, upit poslat', where: 'Čeka se odgovor, pa „Pogledaj upite"' },
   { id: 'svi-odbili', title: 'Moja nega, svi su odbili', where: 'Stigli su odgovori, pa „Pogledaj upite"' },
-  { id: 'njena-stranica', title: 'Njena stranica', where: 'Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Pogledaj sve")' },
+  { id: 'njena-stranica', title: 'Njena stranica', where: 'Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Prikaži još")' },
   { id: 'nove-uslove', title: 'Njena stranica, novi uslovi čekaju', where: 'Čeka na vas, Novi uslovi' },
   { id: 'zavrsena', title: 'Njena stranica, završena saradnja', where: 'Ponovni upit poslat, ugovor koji više ne važi' },
   { id: 'bez-ugovora', title: 'Njena stranica, prihvatila bez ugovora', where: 'Prihvatila je, ugovor stiže' },
   { id: 'odbijeni-uslovi', title: 'Njena stranica, odbijeni uslovi', where: 'Uslovi su odbijeni, verzija 1 odbijena' },
   { id: 'posete', title: 'Sve posete', where: 'Posete po mesecima' },
-  { id: 'duge-liste', title: 'Duge liste', where: 'Godinu dana kasnije: Predstoji 3 pa „Pogledaj sve", Sve posete po 20 pa „Prikaži još", njena stranica (drawer-i „Sve posete" i „Šta se desilo" po 20)' },
+  { id: 'duge-liste', title: 'Duge liste', where: 'Godinu dana kasnije: Predstoji 3, Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"' },
   { id: 'upiti', title: 'Vaši upiti', where: 'Upit: čeka, prihvaćen, odbijen' },
   { id: 'upiti-prazno', title: 'Vaši upiti, prazno', where: 'Još nijedan upit: sledeći korak kao na Mojoj nezi' },
   { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
@@ -290,7 +290,7 @@ export default function CardGallery() {
           <PageTitle>Sve kartice</PageTitle>
           <PageDescription>
             Prave komponente aplikacije sa primerom podataka u kom je svaka kartica u svakom stanju. Draweri na njenoj stranici se
-            otvaraju (npr. „Pogledaj sve" kod poseta), a ostala dugmad ne rade ništa. Za telefon otvorite stranicu na telefonu ili suzite prozor.
+            otvaraju (npr. „Šta se desilo"), a ostala dugmad ne rade ništa. Za telefon otvorite stranicu na telefonu ili suzite prozor.
           </PageDescription>
         </div>
         <Button variant="secondary" onClick={() => (window.location.href = '/')}>
