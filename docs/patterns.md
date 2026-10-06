@@ -389,6 +389,21 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 ---
 
+## 8a. Duge liste: koji obrazac kada (odlučeno 6. 10.)
+
+Obrazac zavisi od vrste liste, a ne od toga gde je. Spisak svake liste i šta je primenjeno je u `docs/paginacija.md`.
+
+| Vrsta liste | Obrazac | Liste |
+|---|---|---|
+| **Pregled na stranici** (deo veće liste, uz drugi sadržaj) | prvih nekoliko, pa „Pogledaj sve" (`secondary`) vodi na punu listu (stranica ili drawer) | poslednja poseta (1), Predstoji (3–5), posete na njenoj stranici (10), negovateljice u preporuci (5), istorija razgovora u meniju (5–10) |
+| **Puna lista koja raste sa vremenom** | grupisano po mesecu ili danu, najnovije prvo, pa „Prikaži još" (`secondary`, dole levo) dodaje sledećih 10–20 na istom mestu | Sve posete (stranica i drawer), Šta se desilo, posete i aktivnost klijenta na strani negovateljice |
+| **Pretraga, poređenje** | numerisana paginacija (`Pagination`), 10 po strani | samo „Pronađi negovateljicu" |
+| **Kratka lista po prirodi** | sve, bez ograničenja | Vaši upiti, Planovi nege, verzije ugovora, Vaše negovateljice |
+
+- Numerisana paginacija je samo za pretragu: tu se negovateljice porede, ide se napred-nazad i vraća na isto mesto. Kroz posete i događaje se ne ide „na stranu 4", nego se skroluje unazad kroz vreme.
+- „Prikaži još" kaže koliko dodaje („Prikaži još 8"), a „Pogledaj sve" koliko ih ima ukupno („Pogledaj sve (15)").
+- Kratka lista koja izraste (npr. mnogo upita) prelazi u drugi red tabele, ne dobija paginaciju.
+
 ## 9. Dugmad
 
 | Akcija | Varijanta |
