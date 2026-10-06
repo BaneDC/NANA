@@ -300,7 +300,7 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 - **Desktop:**
   - kartica ima akciju u footeru; **izuzetak je kartica negovateljice na „Pronađi"**: dugme („Pošalji poruku") ili stanje („Već dolazi", „Čeka odgovor") je gore desno, u visini imena;
   - red ima akciju desno;
-  - hover: kartica se uokviri, a red posivi.
+  - hover: kartica se uokviri, a red posivi. Ništa se ne pojavljuje samo na hover-u: nema strelice ni ikonice koja izađe kad se pređe mišem (odlučeno 6. 10.; kartica plana je imala strelicu ↗).
 - **Telefon (≤640px):**
   - `ItemAction` se ne prikazuje, a **nema ni strelice** (odlučeno 5. 10.): kartica ili red se otvara tapom;
   - tap otvara detalje, pa **detalji moraju imati istu akciju** (profil negovateljice ima „Pošalji poruku");
