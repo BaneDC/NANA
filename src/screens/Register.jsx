@@ -132,105 +132,108 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
   return (
     <>
       <Welcome title="Dobro došli u NANA Prime" sub="Polja označena zvezdicom su obavezna" />
+      {/* a real form, so the browser's password manager knows this is a sign-up */}
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
 
-      {SHOW_ROLES && (
-      <FormCard>
-        <div className="flex flex-col gap-2">
-          <Label className="px-3">Ovde sam kao</Label>
-          {ROLES.map((r) => (
-            <SelectCard
-              key={r.id}
-              letter={r.letter}
-              title={r.title}
-              description={r.description}
-              selected={role === r.id}
-              onClick={() => setRole(r.id)}
-            />
-          ))}
-        </div>
-      </FormCard>
-      )}
+        {SHOW_ROLES && (
+        <FormCard>
+          <div className="flex flex-col gap-2">
+            <Label className="px-3">Ovde sam kao</Label>
+            {ROLES.map((r) => (
+              <SelectCard
+                key={r.id}
+                letter={r.letter}
+                title={r.title}
+                description={r.description}
+                selected={role === r.id}
+                onClick={() => setRole(r.id)}
+              />
+            ))}
+          </div>
+        </FormCard>
+        )}
 
-      <FormCard>
-        <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
-          <Field label="Ime" required>
-            <Input value={firstName} onChange={setFirstName} placeholder="Anna" autoComplete="given-name" />
+        <FormCard>
+          <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+            <Field label="Ime" required>
+              <Input value={firstName} onChange={setFirstName} placeholder="Anna" autoComplete="given-name" />
+            </Field>
+            <Field label="Prezime" required>
+              <Input value={lastName} onChange={setLastName} placeholder="Korhonen" autoComplete="family-name" />
+            </Field>
+          </div>
+          <Field label="Email" required>
+            <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
-          <Field label="Prezime" required>
-            <Input value={lastName} onChange={setLastName} placeholder="Korhonen" autoComplete="family-name" />
+          <Field label="Broj telefona" required as="div" labelId="reg-phone">
+            {/* the country's code in front, behind a line, then the number */}
+            <InputGroup>
+              <Select
+                bare
+                value={country}
+                onChange={setCountry}
+                ariaLabel="Pozivni broj države"
+                options={COUNTRY_OPTIONS}
+              />
+              <InputGroupInput
+                type="tel"
+                value={phone}
+                placeholder="40 123 4567"
+                autoComplete="tel-national"
+                aria-labelledby="reg-phone"
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </InputGroup>
           </Field>
-        </div>
-        <Field label="Email" required>
-          <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
-        </Field>
-        <Field label="Broj telefona" required as="div" labelId="reg-phone">
-          {/* the country's code in front, behind a line, then the number */}
-          <InputGroup>
-            <Select
-              bare
-              value={country}
-              onChange={setCountry}
-              ariaLabel="Pozivni broj države"
-              options={COUNTRY_OPTIONS}
-            />
-            <InputGroupInput
-              type="tel"
-              value={phone}
-              placeholder="40 123 4567"
-              autoComplete="tel-national"
-              aria-labelledby="reg-phone"
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </InputGroup>
-        </Field>
-        <Field label="Lozinka" required hint={password && password.length < MIN_PASSWORD ? `Još ${MIN_PASSWORD - password.length} karaktera` : null}>
-          <Password value={password} onChange={setPassword} onEnter={submit} placeholder="Najmanje 8 karaktera" autoComplete="new-password" />
-        </Field>
-        <Field label="Kako ste čuli za nas?" required as="div" labelId="reg-source">
-          <Select value={source} onChange={setSource} labelledBy="reg-source" options={SOURCE_OPTIONS} />
-        </Field>
+          <Field label="Lozinka" required hint={password && password.length < MIN_PASSWORD ? `Još ${MIN_PASSWORD - password.length} karaktera` : null}>
+            <Password value={password} onChange={setPassword} placeholder="Najmanje 8 karaktera" autoComplete="new-password" />
+          </Field>
+          <Field label="Kako ste čuli za nas?" required as="div" labelId="reg-source">
+            <Select value={source} onChange={setSource} labelledBy="reg-source" options={SOURCE_OPTIONS} />
+          </Field>
 
-        <div className="flex flex-col gap-2 px-1">
-          <Consent checked={processing} onChange={setProcessing} required>
-            Saglasan/na sam sa obradom podataka
-          </Consent>
-          <Consent checked={accuracy} onChange={setAccuracy} required>
-            Potvrđujem da su podaci tačni
-          </Consent>
-          <Consent checked={newsletter} onChange={setNewsletter}>
-            Želim da primam novosti i posebne ponude na email
-          </Consent>
-        </div>
-      </FormCard>
+          <div className="flex flex-col gap-2 px-1">
+            <Consent checked={processing} onChange={setProcessing} required>
+              Saglasan/na sam sa obradom podataka
+            </Consent>
+            <Consent checked={accuracy} onChange={setAccuracy} required>
+              Potvrđujem da su podaci tačni
+            </Consent>
+            <Consent checked={newsletter} onChange={setNewsletter}>
+              Želim da primam novosti i posebne ponude na email
+            </Consent>
+          </div>
+        </FormCard>
 
-      <Actions>
-        <Button size="lg" className="w-full" disabled={!valid || busy} onClick={submit}>
-          Napravi nalog
-        </Button>
-        <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
-          Registracijom prihvatate naše{' '}
-          <a href="#uslovi" onClick={(e) => e.preventDefault()}>
-            uslove korišćenja
-          </a>{' '}
-          i{' '}
-          <a href="#privatnost" onClick={(e) => e.preventDefault()}>
-            politiku privatnosti
-          </a>
-          .{' '}
-          <a href="#kolacici" onClick={(e) => e.preventDefault()}>
-            Podešavanja kolačića
-          </a>
-        </p>
-        <p className="mt-2 flex w-full items-start gap-2 border-t-[0.8px] pt-4 text-small text-muted-foreground">
-          <ShieldCheck size={16} strokeWidth={1.75} className="shrink-0 text-primary-600" />
-          NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o
-          zaštiti podataka.
-        </p>
-        <Button variant="ghost" size="lg" onClick={onSignIn}>
-          Već imate nalog? Prijavite se
-        </Button>
-        <DemoLink onDemo={onDemo} />
-      </Actions>
+        <Actions>
+          <Button type="submit" size="lg" className="w-full" disabled={!valid || busy}>
+            Napravi nalog
+          </Button>
+          <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
+            Registracijom prihvatate naše{' '}
+            <a href="#uslovi" onClick={(e) => e.preventDefault()}>
+              uslove korišćenja
+            </a>{' '}
+            i{' '}
+            <a href="#privatnost" onClick={(e) => e.preventDefault()}>
+              politiku privatnosti
+            </a>
+            .{' '}
+            <a href="#kolacici" onClick={(e) => e.preventDefault()}>
+              Podešavanja kolačića
+            </a>
+          </p>
+          <p className="mt-2 flex w-full items-start gap-2 border-t-[0.8px] pt-4 text-small text-muted-foreground">
+            <ShieldCheck size={16} strokeWidth={1.75} className="shrink-0 text-primary-600" />
+            NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o
+            zaštiti podataka.
+          </p>
+          <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
+            Već imate nalog? Prijavite se
+          </Button>
+          <DemoLink onDemo={onDemo} />
+        </Actions>
+      </form>
     </>
   );
 }
@@ -288,23 +291,25 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
   return (
     <>
       <Welcome title="Prijavite se" sub="Email adresom i lozinkom kojima ste napravili nalog" />
-      <FormCard>
-        <Field label="Email" required>
-          <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
-        </Field>
-        <Field label="Lozinka" required hint={failed ? 'Email ili lozinka nisu tačni.' : null}>
-          <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} onEnter={submit} placeholder="Vaša lozinka" />
-        </Field>
-      </FormCard>
-      <Actions>
-        <Button size="lg" className="w-full" disabled={!valid} onClick={submit}>
-          Prijavi se
-        </Button>
-        <Button variant="ghost" size="lg" onClick={onSignUp}>
-          Nemate nalog? Napravite ga
-        </Button>
-        <DemoLink onDemo={onDemo} />
-      </Actions>
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
+        <FormCard>
+          <Field label="Email" required>
+            <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
+          </Field>
+          <Field label="Lozinka" required hint={failed ? 'Email ili lozinka nisu tačni.' : null}>
+            <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder="Vaša lozinka" />
+          </Field>
+        </FormCard>
+        <Actions>
+          <Button type="submit" size="lg" className="w-full" disabled={!valid}>
+            Prijavi se
+          </Button>
+          <Button type="button" variant="ghost" size="lg" onClick={onSignUp}>
+            Nemate nalog? Napravite ga
+          </Button>
+          <DemoLink onDemo={onDemo} />
+        </Actions>
+      </form>
     </>
   );
 }

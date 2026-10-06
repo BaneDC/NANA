@@ -235,7 +235,7 @@ const SECTIONS = [
   { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)' },
   { id: 'planovi', title: 'Planovi nege', where: 'Lista planova' },
   { id: 'planovi-prazno', title: 'Planovi nege, prazno', where: 'Nema aktivnog plana' },
-  { id: 'podesavanja', title: 'Podešavanja', where: 'Plaćanje, Bezbednost, Opšte, Privatnost i nalog' },
+  { id: 'podesavanja', title: 'Podešavanja', where: 'Plaćanje, Bezbednost, Opšte, Privatnost' },
   { id: 'profil', title: 'Profil', where: 'O kome brinemo, Glavni kontakt, Čemu se nadate' },
   { id: 'profil-prazno', title: 'Profil, prazno', where: 'Ovde još nema ničega' },
   { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },

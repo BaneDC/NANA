@@ -86,34 +86,37 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
   return (
     <Dialog eyebrow="Nalog" title="Promenite lozinku" open={open} onClose={onClose}>
       <DialogDescription>Nova lozinka mora imati najmanje 8 karaktera.</DialogDescription>
-      <div className="flex flex-col gap-3">
-        <Field label="Trenutna lozinka">
-          <Password
-            value={current}
-            onChange={(v) => {
-              setCurrent(v);
-              setError(null);
-            }}
-          />
-        </Field>
-        <Field label="Nova lozinka" hint={short ? 'Kratka je - treba najmanje 8 karaktera.' : null}>
-          <Password value={next} onChange={setNext} autoComplete="new-password" />
-        </Field>
-        <Field label="Nova lozinka još jednom" hint={mismatch ? 'Dva unosa se ne poklapaju.' : null}>
-          <Password value={again} onChange={setAgain} autoComplete="new-password" />
-        </Field>
-      </div>
+      {/* a real form, so the browser's password manager can offer and update it */}
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), ready && submit())}>
+        <div className="flex flex-col gap-3">
+          <Field label="Trenutna lozinka">
+            <Password
+              value={current}
+              onChange={(v) => {
+                setCurrent(v);
+                setError(null);
+              }}
+            />
+          </Field>
+          <Field label="Nova lozinka" hint={short ? 'Kratka je - treba najmanje 8 karaktera.' : null}>
+            <Password value={next} onChange={setNext} autoComplete="new-password" />
+          </Field>
+          <Field label="Nova lozinka još jednom" hint={mismatch ? 'Dva unosa se ne poklapaju.' : null}>
+            <Password value={again} onChange={setAgain} autoComplete="new-password" />
+          </Field>
+        </div>
 
-      {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
+        {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
 
-      <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          Otkaži
-        </Button>
-        <Button disabled={!ready} onClick={submit}>
-          Sačuvaj lozinku
-        </Button>
-      </DialogFooter>
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Otkaži
+          </Button>
+          <Button type="submit" disabled={!ready}>
+            Sačuvaj lozinku
+          </Button>
+        </DialogFooter>
+      </form>
     </Dialog>
   );
 }
@@ -347,7 +350,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         </Card>
       </PageSection>
 
-      <PageSection title="Privatnost i nalog">
+      <PageSection title="Privatnost">
         <Card>
           <CardHeader>
             <CardTitle>Kolačići</CardTitle>
@@ -369,16 +372,6 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           </DataList>
           <CardFooter>
             <Button onClick={() => setCookiesOpen(true)}>Podešavanja kolačića</Button>
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardTitle>Nalog</CardTitle>
-          <CardDescription>Preuzmite sve što čuvamo o vama, ili zatvorite nalog i obrišite ga.</CardDescription>
-          {/* Deleting is the one thing here that cannot be undone, so it is the
-              one button that is red. */}
-          <CardFooter>
-            <Button variant="secondary">Preuzmi moje podatke</Button>
-            <Button variant="destructive">Obriši nalog</Button>
           </CardFooter>
         </Card>
       </PageSection>

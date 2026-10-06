@@ -28,7 +28,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 - Vrednosti dolaze iz `src/styles/tokens.css`, kao Tailwind klase (`src/styles/index.css`): `text-xs` (12, na dodir 14), `text-sm` (14 / 16), `text-base` (16 / 20), `text-small` (sitan tekst, 12, ne raste), `text-badge` (11), `leading-body` (red paragrafa), `bg-muted`, `text-muted-foreground`, `bg-primary-50` … `text-primary-700`, `bg-success-muted text-success` (i `warning`, `destructive`), `shadow-card`. Ništa se ne kuca ručno.
 - Prelomi: `phone:` (≤640) i `narrow:` (≤900), kao u §12. `pointer-coarse:` je dodir.
 - Nova stranica ili komponenta: samo shadcn komponente i Tailwind klase, bez novih klasa u CSS fajlovima. `app.css` više ne postoji: globalna pravila su u `src/styles/base.css`, onboarding u `src/styles/onboarding.css`, a ono čime oblačimo chat kit u `src/styles/chat-kit.css`.
-- Pre pravljenja nečeg svog, proveri shadcn katalog (Field, InputGroup, InputOTP, Collapsible, Item, Empty…).
+- Pre pravljenja nečeg svog, proveri shadcn katalog (Field, InputGroup, InputOTP, Collapsible, Item…; `Empty` ne, prazna stranica je §5).
 
 | Šta | Komponenta | Bilo je |
 |---|---|---|
@@ -52,7 +52,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Dugme koje kaže isto što i link (nema ga na telefonu) | `ItemAction` | `.card-action` |
 | Avatar sa inicijalima | `Avatar` + `AvatarFallback`, visina iz `--avatar` | `.cg-avatar` |
 | Narandžasti deo | `Attention` (`AttentionHead`, `AttentionTitle`, `AttentionDescription`) | `.attention` |
-| Prazna stranica | `Attention` sa belom `Card` (`CardDescription`, `CardFooter`), kao na Mojoj nezi (§5) | `.empty`, `.locked-title`, `.locked-note`; `Empty` (siva ploča) se više ne koristi |
+| Prazna stranica | `Attention` sa belom `Card` (`CardDescription`, `CardFooter`), kao na Mojoj nezi (§5) | `.empty`, `.locked-title`, `.locked-note`; shadcn `Empty` (siva ploča) je uklonjen |
 | Strane (Pronađi) | `Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext` | `.pager`, `.pager-page` |
 | Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
 | Delovi drawer-a i modala | `PaneLabel`, `PaneHint`, `Callout`, `ReportRows` › `ReportRow`, `Concern`, `Total`, `Stats` › `Stat` (`src/components/pane.jsx`) | `.ag-label`, `.ag-hint`, `.fam-callout`, `.report-rows`, `.visit-concern`, `.bc-total`, `.fam-stats` |
@@ -204,7 +204,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice.
 - Stavka koja nešto otvara je `Card` u redu (avatar levo): naslov kartice kao `CardLink` (14), tekst, dugme desno u `ItemAction`; na telefonu bez dugmeta i bez strelice, otvara se tapom.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
-- **Prazna stranica je isto ovo** (odlučeno 6. 10.): svaka prazna stranica izgleda kao „Sledeći korak" na Mojoj nezi. Naslov kaže šta nedostaje („Još niste poslali nijedan upit", „Nema aktivnog plana", „Ovde još nema ničega"), a bela kartica ispod rečenicu šta da se uradi i jedno dugme levo u `CardFooter`. Prazno bez akcije je ista stvar bez dugmeta (kao „Ništa ne čeka"). Siva ploča `Empty` (`src/components/ui/empty.jsx`) se više ne koristi.
+- **Prazna stranica je isto ovo** (odlučeno 6. 10.): svaka prazna stranica izgleda kao „Sledeći korak" na Mojoj nezi. Naslov kaže šta nedostaje („Još niste poslali nijedan upit", „Nema aktivnog plana", „Ovde još nema ničega"), a bela kartica ispod rečenicu šta da se uradi i jedno dugme levo u `CardFooter`. Prazno bez akcije je ista stvar bez dugmeta (kao „Ništa ne čeka"). Siva ploča `Empty` je uklonjena iz projekta (6. 10.) i ne vraća se.
 - Samo za: ono što čeka na porodicu („Čeka na vas"), obaveštenje gde su stvari (sledeći korak na njenoj stranici **uvek, i kad nema dugmeta** — „Ništa ne čeka", „Prihvatila je", „Uslovi su odbijeni"…; „Ništa ne čeka" na Mojoj nezi; „Čeka se odgovor" i „Stigli su odgovori"), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Obaveštenje bez dugmeta je i dalje narandžasti deo sa belom karticom, a ne bela kartica sama. Nema druge narandžaste kartice.
 
 **Grupa kartica** se koristi samo kad stranica ima više od jedne grupe:
@@ -427,7 +427,6 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
   | Način plaćanja | „Dodaj karticu" — default | „Promeni karticu" — secondary | kartica je podešena, a menjanje je održavanje, ne preporuka |
   | Lozinka | „Promenite lozinku" — secondary | isto | lozinka uvek postoji, pa je ovo uvek menjanje |
   | Kolačići | „Podešavanja kolačića" — default | isto | nema stanja |
-  | Nalog | „Preuzmi moje podatke" — secondary; „Obriši nalog" — destructive | isto | preuzimanje nije preporuka, samo mogućnost |
 - **U dijalogu i drawer-u** akcije su dole desno (`DialogFooter`, `SheetFooter`): prvo secondary, pa glavna.
 - `Button` je iz `@/components/ui/button`. Varijante: `default` (narandžasto, glavna radnja), `secondary`, `ghost` (tiha radnja pored `secondary`, npr. „Odbij sve"), `destructive`. Veličine: `default` (32), `lg` (40, samo ekrani preko celog prozora), `icon` (28; u `PageActions` 32). Na pritisak se smanji na 97%.
 - **Na ekranu na dodir** (`pointer: coarse`) sva dugmad, polja, redovi i čipovi imaju najmanje 44px. Tokeni `--button-size` i `--input-size` to rade sami, pa ne zadaji fiksnu visinu manju od 44 bez `pointer-coarse:` varijante.
