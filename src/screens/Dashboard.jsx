@@ -125,23 +125,25 @@ function OpenRow({ initials, title, body, action, variant = 'secondary', onOpen 
 // The same, as a card of its own in the tinted tray of what waits on the
 // family: white like every card, its title a card's title, its avatar as tall
 // as that title and the sentence under it, 8 apart (46, 52 under a finger).
+// What waits needs doing, so its button stays on a phone too: under what the
+// card says, in its column and as wide as it, 16 below (docs/patterns.md §7).
 function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen }) {
   return (
-    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+var(--text-body-leading))]">
+    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+var(--text-body-leading))] phone:flex-wrap">
       <Avatar>
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
-      <ItemContent>
+      <ItemContent className="phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
         <p className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
           <CardLink onClick={onOpen}>{title}</CardLink>
         </p>
         {body}
       </ItemContent>
-      <ItemAction>
+      <div className="flex shrink-0 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
         <Button variant={variant} onClick={onOpen}>
           {action}
         </Button>
-      </ItemAction>
+      </div>
     </Card>
   );
 }

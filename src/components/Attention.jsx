@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 //
 // 32 corners, 8 inside, a 1px line drawn inside (it takes nothing from the 8),
 // cards 8 apart and r24 in it (32 = 24 + 8). The title is 16 from the top and
-// 24 from the left, where the cards' text is, and 12 over the first card.
+// 24 from the left, where the cards' text is, and 12 over the first card; the
+// sentence under it is 8 below, as under every heading (docs/patterns.md §6).
 //
 // `head` replaces the title and sentence when the head is more than that
 // (Minna's letter folds from its head); `AttentionHead` gives it the same
@@ -35,7 +36,7 @@ export default function Attention({ title, sub, head, className, children, ...pr
 }
 
 export function AttentionHead({ className, ...props }) {
-  return <div data-slot="attention-head" className={cn('flex flex-col gap-1 px-4 pt-2 pb-1', className)} {...props} />;
+  return <div data-slot="attention-head" className={cn('flex flex-col gap-2 px-4 pt-2 pb-1', className)} {...props} />;
 }
 
 export function AttentionTitle({ className, ...props }) {

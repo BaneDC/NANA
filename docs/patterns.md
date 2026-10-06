@@ -202,8 +202,8 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 </Attention>
 ```
 
-- Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice.
-- Stavka koja nešto otvara je `Card` u redu (avatar levo): naslov kartice kao `CardLink` (14), tekst, dugme desno u `ItemAction`; na telefonu bez dugmeta i bez strelice, otvara se tapom.
+- Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice. Rečenica ispod naslova je 8 ispod njega, kao ispod svakog naslova (odlučeno 6. 10.; bilo je 4).
+- Stavka koja nešto otvara je `Card` u redu (avatar levo): naslov kartice kao `CardLink` (14), tekst, dugme desno. **U „Čeka na vas" dugme ostaje i na telefonu** (odlučeno 6. 10.): narandžasti deo je inače informativan, pa dugme kaže šta treba uraditi („Pogledaj uslove", „Pogledaj radni nalog"). Na telefonu je ispod sadržaja, u koloni teksta i široko koliko ona, 16 ispod, kao kod kartice upita.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
 - **Prazna stranica je isto ovo** (odlučeno 6. 10.): svaka prazna stranica izgleda kao „Sledeći korak" na Mojoj nezi. Naslov kaže šta nedostaje („Još niste poslali nijedan upit", „Nema aktivnog plana", „Ovde još nema ničega"), a bela kartica ispod rečenicu šta da se uradi i jedno dugme levo u `CardFooter`. Prazno bez akcije je ista stvar bez dugmeta (kao „Ništa ne čeka"). Siva ploča `Empty` je uklonjena iz projekta (6. 10.) i ne vraća se.
 - Samo za: ono što čeka na porodicu („Čeka na vas"), obaveštenje gde su stvari (sledeći korak na njenoj stranici **uvek, i kad nema dugmeta** — „Ništa ne čeka", „Prihvatila je", „Uslovi su odbijeni"…; „Ništa ne čeka" na Mojoj nezi; „Čeka se odgovor" i „Stigli su odgovori"), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Obaveštenje bez dugmeta je i dalje narandžasti deo sa belom karticom, a ne bela kartica sama. Nema druge narandžaste kartice.
@@ -312,7 +312,7 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
   - red ima akciju desno;
   - hover: kartica se uokviri, a red posivi. Ništa se ne pojavljuje samo na hover-u: nema strelice ni ikonice koja izađe kad se pređe mišem (odlučeno 6. 10.; kartica plana je imala strelicu ↗).
 - **Telefon (≤640px):**
-  - `ItemAction` se ne prikazuje, a **nema ni strelice** (odlučeno 5. 10.): kartica ili red se otvara tapom;
+  - `ItemAction` se ne prikazuje, a **nema ni strelice** (odlučeno 5. 10.): kartica ili red se otvara tapom. Izuzetak su kartice u „Čeka na vas" (§5), čije dugme ostaje;
   - tap otvara detalje, pa **detalji moraju imati istu akciju** (profil negovateljice ima „Pošalji poruku");
   - pre nego što sakriješ akciju, proveri da je ima u detaljima.
   - **izuzetak je kartica negovateljice na „Pronađi":** „Pošalji poruku" je posebna akcija od otvaranja detalja, pa na telefonu ostaje, ispod sadržaja kartice, poravnata sa tekstom i široka koliko on. Tap na karticu otvara profil kao i svaka kartica. Stanje („Već dolazi", „Čeka odgovor") stoji na istom mestu.
