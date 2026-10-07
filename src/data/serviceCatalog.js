@@ -92,8 +92,6 @@ export const CATALOG = Object.fromEntries(
   SERVICE_GROUPS.flatMap((g) => g.items.map(([id, title]) => [id, { id, title, group: g.id }]))
 );
 
-export const isCatalogService = (id) => Boolean(CATALOG[id]);
-
 // The services, in the catalog's order, each group under its own name: how an
 // agreement or a visit lists them (docs/patterns.md §10, a group of tags says
 // what it is). Ids the catalog does not know are left out.

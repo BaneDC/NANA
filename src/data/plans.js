@@ -70,8 +70,6 @@ export const perMonth = (plan) => planPrice({ ...plan, price: plan.price / plan.
 export const planEvery = (plan) =>
   plan.months === 1 ? 'mesečno' : `svaka ${plan.months} meseca`;
 
-export const planTitle = (plan) => (plan.months === 1 ? 'Mesečno' : `${plan.months} meseca`);
-
 // How much the longer plan saves against paying monthly, when it saves enough
 // to be worth saying.
 export function planSaving(plan, plans) {

@@ -446,19 +446,3 @@ export const questions = steps.flatMap((s) => s.questions);
 
 export const questionById = Object.fromEntries(questions.map((q) => [q.id, q]));
 
-// Titles of the picked option(s) for a question, used to summarise answers.
-export function optionTitles(questionId, answer) {
-  const q = questionById[questionId];
-  if (!q || !answer) return [];
-  if (q.type === 'single') {
-    return q.options.filter((o) => o.id === answer.optionId).map((o) => o.title);
-  }
-  if (q.type === 'multi') {
-    const titles = q.options.filter((o) => answer.optionIds?.includes(o.id)).map((o) => o.title);
-    // whatever the user typed into the "something else" row is an answer like any
-    // other — it must not stop at the card it was entered in
-    if (answer.other?.trim()) titles.push(answer.other.trim());
-    return titles;
-  }
-  return [];
-}

@@ -80,54 +80,11 @@
 
 /* In a page head an icon stands beside buttons with words (her number), so it
    is as tall as they are; a touch screen makes all of them 44 anyway. */
-.view-head-actions .btn.icon-only {
-  width: var(--button-size);
-  height: var(--button-size);
-}
 
 .btn:disabled {
   opacity: 0.45;
   cursor: default;
   pointer-events: none;
-}
-
-@keyframes typing-dot {
-  0%,
-  60%,
-  100% {
-    opacity: 0.25;
-    transform: translateY(0);
-  }
-  30% {
-    opacity: 1;
-    transform: translateY(-3px);
-  }
-}
-
-/* the menu's one button, over the list it adds to */
-.btn.nav-new-chat {
-  flex-shrink: 0;
-}
-
-.archived-bar .btn {
-  margin-left: auto;
-}
-
-.panel-card-head > .btn {
-  margin-left: auto;
-}
-
-@media (max-width: 640px) {
-
-.panel-card-head > :is(.status-pill, .btn) {
-    margin-left: 0;
-  }
-}
-
-/* a head with a button ("Svi upiti", "Sve posete") over rows: 8 more, so the
-   button does not sit on the first row */
-.panel-card-head:has(> .btn) + :is(.fam-rows, .fam-visits) {
-  margin-top: var(--spacing-2);
 }
 
 /* ---------- Immersive questionnaire ---------- */
@@ -169,21 +126,6 @@
   align-items: center;
   justify-content: center;
   padding: var(--spacing-4) var(--spacing-4) 0;
-}
-
-.imm-progress {
-  width: 180px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
-  overflow: hidden;
-}
-
-.imm-progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: rgba(252, 112, 60, 0.55);
-  transition: width 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 /* Understanding panel — the AI variant's replacement for the bar above.
@@ -379,14 +321,6 @@
   color: #7d6f63;
 }
 
-.imm-intro-text {
-  max-width: 24ch;
-  font-size: 28px;
-  line-height: 40px;
-  font-weight: var(--font-normal);
-  color: #463d35;
-}
-
 /* glass cards over the clouds */
 .imm-options {
   width: 100%;
@@ -476,12 +410,6 @@
   color: #463d35;
 }
 
-.imm-option-desc {
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: #7d6f63;
-}
-
 .imm-actions {
   margin-top: var(--spacing-6);
   display: flex;
@@ -489,65 +417,9 @@
   justify-content: center;
 }
 
-/* with a Back button the row spans the card and the two sit at opposite ends */
-.imm-actions.has-back {
-  width: 100%;
-  justify-content: space-between;
-}
-
-/* ---------- Questionnaire variant switch (nav) ---------- */
-
-/* one field on its own screen */
-.imm-single-field {
-  display: block;
-  width: 100%;
-  padding: var(--spacing-4);
-  border-radius: var(--radius-2xl);
-  background: rgba(255, 255, 255, 0.52);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
-  transition: border-color 0.25s ease, background 0.25s ease;
-  cursor: text;
-}
-
-.imm-single-field:focus-within {
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(253, 155, 119, 0.7);
-}
-
-.imm-single-field input {
-  width: 100%;
-  font-size: 19px;
-  line-height: 28px;
-  text-align: center;
-  color: #463d35;
-  caret-color: var(--primary);
-}
-
-.imm-single-field input::placeholder {
-  color: #b3a496;
-}
-
 /* the care plan, shown without leaving the experience */
 .imm-screen.is-wide {
   width: min(600px, 100%);
-}
-
-.imm-plan-summary {
-  margin-top: var(--spacing-3);
-  font-size: var(--text-sm-size);
-  line-height: 24px;
-  color: #6d6157;
-}
-
-.imm-plan-note {
-  margin-top: var(--spacing-6);
-  margin-bottom: var(--spacing-3);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  color: #8a7a6d;
 }
 
 .imm-option.is-static {
@@ -558,7 +430,6 @@
   background: rgba(255, 255, 255, 0.52);
 }
 
-/* the same scale, inside the immersive variant */
 /* The scale, with everything needed to read it: what it is called, where this
    person sits on it, which way it runs, and what that level means. */
 .imm-scale {
@@ -800,198 +671,8 @@
   color: #8a7a6d;
 }
 
-/* ---------- Immersive: review + coordinator's note ---------- */
-.imm-review {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-  width: 100%;
-  max-height: 46vh;
-  overflow-y: auto;
-  /* The mask is anchored to the visible box, not to the scrolled content, so the
-     fade always sits in the same place — which left the last row washed out even
-     when you had scrolled all the way to it. The padding gives the fade its own
-     scroll space: at the bottom of the list the band covers empty padding, and
-     the last answer is fully opaque. Both are the same length, so they track. */
-  --review-fade: 52px;
-  padding-right: var(--spacing-3);
-  /* a few px past the fade so sub-pixel rounding can never tip the last row into it */
-  padding-bottom: calc(var(--review-fade) + var(--spacing-1));
-  -webkit-mask-image: linear-gradient(
-    180deg,
-    #000 0%,
-    #000 calc(100% - var(--review-fade)),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    180deg,
-    #000 0%,
-    #000 calc(100% - var(--review-fade)),
-    transparent 100%
-  );
-}
-
-@supports (-moz-appearance: none) {
-
-.imm-review.is-scrolling {
-    scrollbar-color: rgba(151, 67, 36, 0.28) transparent;
-  }
-}
-
-/* The default bar is a hard grey slab over the clouds — far too loud for this
-   screen. A hairline in the primary's own brown, on no track at all. */
-.imm-review::-webkit-scrollbar {
-  width: 4px;
-}
-
-.imm-review::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.imm-review::-webkit-scrollbar-thumb {
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-}
-
-.imm-review.is-scrolling::-webkit-scrollbar-thumb {
-  background: rgba(151, 67, 36, 0.28);
-}
-
-.imm-review-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  width: 100%;
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.34);
-  backdrop-filter: blur(8px);
-  text-align: left;
-  transition: background 0.2s ease;
-}
-
-.imm-review-row:hover {
-  background: rgba(255, 255, 255, 0.62);
-}
-
-.imm-review-label {
-  flex-shrink: 0;
-  width: 152px;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  color: var(--color-primary-800);
-  opacity: 0.65;
-}
-
-.imm-review-value {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  font-weight: var(--font-medium);
-  color: var(--color-primary-900);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.imm-review-pencil {
-  flex-shrink: 0;
-  color: var(--color-primary-800);
-  opacity: 0.5;
-}
-
-.imm-warning {
-  display: flex;
-  gap: var(--spacing-3);
-  width: 100%;
-  margin-top: var(--spacing-3);
-  padding: var(--spacing-3) var(--spacing-4);
-  border-radius: var(--radius-2xl);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.66);
-  backdrop-filter: blur(10px);
-  text-align: left;
-}
-
-.imm-warning > svg {
-  flex-shrink: 0;
-  color: var(--status-wait-fg);
-  height: 1lh;
-}
-
-.imm-warning-title {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--color-primary-900);
-}
-
-.imm-warning-note {
-  margin-top: 4px;
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  color: var(--color-primary-800);
-  opacity: 0.8;
-}
-
-.imm-warning-actions {
-  display: flex;
-  gap: var(--spacing-2);
-  margin-top: var(--spacing-3);
-}
-
-.imm-note {
-  width: 100%;
-  margin-top: var(--spacing-2);
-  padding: var(--spacing-4);
-  border-radius: var(--radius-2xl);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(10px);
-  text-align: left;
-}
-
-.imm-note-greeting {
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--color-primary-900);
-}
-
-.imm-note-body {
-  margin-top: var(--spacing-1);
-  font-size: var(--text-sm-size);
-  line-height: 22px;
-  color: var(--color-primary-800);
-}
-
-.imm-note-sign {
-  margin-top: var(--spacing-2);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-body-leading);
-  color: var(--color-primary-800);
-  opacity: 0.7;
-}
-
 .imm-option.is-other {
   cursor: text;
-}
-
-.imm-option-input {
-  width: 100%;
-  padding: 0;
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
-  font-weight: var(--font-medium);
-  color: var(--color-primary-900);
-}
-
-.imm-option-input::placeholder {
-  font-weight: var(--font-normal);
-  color: rgba(76, 34, 18, 0.42);
 }
 
 /* the blank page and the always-present escape hatch */
@@ -1434,10 +1115,6 @@
   will-change: filter;
 }
 
-.bc-actions .btn {
-  flex: 1;
-}
-
 .caregiver.is-wide > .btn {
   flex-shrink: 0;
   align-self: flex-start;
@@ -1636,26 +1313,6 @@
   cursor: not-allowed;
 }
 
-.view-head-actions a.btn {
-  text-decoration: none;
-}
-
-.btn.ghost.fam-end-btn {
-  color: var(--status-no-fg);
-}
-
-@media (max-width: 640px) {
-
-/* a row's action drops under it and takes the width, as a caregiver's does */
-.fam-row > .btn {
-    width: 100%;
-  }
-
-.fam-end .btn.ghost {
-    margin-left: calc(var(--spacing-3) * -1);
-  }
-}
-
 @keyframes plan-changed {
   0% {
     box-shadow: 0 0 0 4px var(--color-primary-200), var(--shadow-card);
@@ -1678,13 +1335,6 @@
 
 .caregiver > .btn {
     width: 100%;
-  }
-}
-
-@media (max-width: 640px) {
-
-.panel-card-actions:not(.is-end) > .btn {
-    flex: 1 1 auto;
   }
 }
 
@@ -1770,11 +1420,6 @@
 
 .imm-line {
     min-height: 28px;
-  }
-
-.imm-intro-text {
-    font-size: 22px;
-    line-height: 32px;
   }
 
 .imm-title + .imm-options,

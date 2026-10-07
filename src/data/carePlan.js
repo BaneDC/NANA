@@ -270,7 +270,6 @@ export const SLOTS = {
   evening: { label: 'Veče', hours: '22–06' },
 };
 
-export const DAY_LETTERS = ['P', 'U', 'S', 'Č', 'P', 'S', 'N'];
 const DAY_NAMES = ['pon', 'uto', 'sre', 'čet', 'pet', 'sub', 'ned'];
 
 // "pon–pet", "svaki dan", "sre–ned" — or the days one by one when they are not
@@ -284,10 +283,6 @@ export function daysText(days) {
 }
 
 export const slotsText = (slots) => slots.map((s) => SLOTS[s].label.toLowerCase()).join(', ');
-
-// "4,9 (64)", or "Nova" for someone nobody has rated yet
-export const ratingText = (c) =>
-  c.reviews ? `${c.rating.toLocaleString('sr-RS', { minimumFractionDigits: 1 })} (${c.reviews})` : 'Nova';
 
 // Why she comes up, the way the platform says it under the match. Worked out
 // for the demo family, who live in Helsinki and want mornings; the platform

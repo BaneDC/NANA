@@ -24,7 +24,6 @@ export const STAGES = [
 // is what every later number is calculated from — a visit is billed against
 // these, so they cannot be free text.
 export const SERVICES = SERVICE_GROUPS.flatMap((g) => g.items.map(([id, title]) => ({ id, title, group: g.id })));
-export const serviceById = CATALOG;
 export const serviceTitle = (id) => CATALOG[id]?.title || id;
 // a board card has the same name as everywhere else: the catalog's names are short
 export const serviceShort = serviceTitle;

@@ -149,7 +149,6 @@ function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen
 }
 
 export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onView, onAskAssistant, onFindCaregiver }) {
-  const elder = care.elder.name ? firstName(care.elder.name) : null;
   const waiting = waitingOnYou(care);
   // soonest first
   const coming = allVisits(care)

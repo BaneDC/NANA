@@ -94,6 +94,3 @@ export const COOKIE_GROUPS = [
 // asking.
 export const COOKIE_DEFAULT = { analytics: false, recording: false, marketing: false };
 
-// The categories that are on, by name, for the line on the settings card.
-export const cookiesOn = (chosen) =>
-  COOKIE_GROUPS.filter((g) => g.fixed || chosen?.[g.id]).map((g) => g.label);

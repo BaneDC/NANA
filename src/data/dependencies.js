@@ -30,26 +30,12 @@ const CONDITIONAL = steps.flatMap((step) =>
   step.questions.filter((q) => q.when).map((q) => ({ question: q, stepId: step.id }))
 );
 
-export const stepTitles = Object.fromEntries(
-  steps.map((s) => [s.id, s.id.replace(/-/g, ' ')])
-);
-
 function bandLevel(answers) {
   const level = estimateFrailty(answers);
   return { level, band: level ? bandOf(level) : null };
 }
 
 const applies = (entry, band, level) => !!band && entry.question.when({ band, level });
-
-// What is currently riding on this answer: the conditional questions that have been
-// answered under the band it produced. Used for the warning shown before an edit.
-export function dependentsOf(questionId, answers) {
-  if (!isLoadBearing(questionId)) return [];
-  const { band, level } = bandLevel(answers);
-  return CONDITIONAL.filter((e) => applies(e, band, level) && answers[e.question.id]).map(
-    (e) => e.question
-  );
-}
 
 // Applied after every answer: drops answers to questions the new band no longer
 // asks, and reports what was dropped and what is now being asked instead.
@@ -83,20 +69,3 @@ export function reconcile(prevAnswers, nextAnswers) {
   };
 }
 
-// The answer, reduced to the words a review row shows.
-export function answerSummary(question, answer) {
-  if (!answer) return [];
-  if (question.type === 'inputs') {
-    return question.fields.map((f) => answer.values?.[f.id]).filter(Boolean);
-  }
-  if (question.type === 'single') {
-    const opt = question.options.find((o) => o.id === answer.optionId);
-    return opt ? [opt.title] : [];
-  }
-  const picked = question.options.filter((o) => answer.optionIds?.includes(o.id));
-  const labels = picked.map((o) => o.short || o.title);
-  // what they typed into "something else" is the answer they cared enough to write
-  if (answer.other?.trim()) labels.push(answer.other.trim());
-  if (!labels.length) return ['Ništa od ovoga'];
-  return labels;
-}

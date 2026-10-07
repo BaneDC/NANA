@@ -72,50 +72,6 @@ function serialize(q, stepId) {
   return out;
 }
 
-// What Minna already knows, as short phrases fit to show back to the person.
-//
-// Derived from `answers` rather than reported by the model: the two would drift,
-// and the ids are already the source of truth for the plan. The model only has
-// to say what it is still *missing* — that is the part no list can compute.
-// The caller's own name, relation and phone are collected, but they are not
-// facts about the person being cared for — and the panel these feed says they
-// are. Left in, "Marija Marić, unuka" sat in a list headed by her mother's name.
-const ABOUT_CALLER = new Set(['about-you']);
-
-export function knownFacts(answers, notes = []) {
-  const facts = [];
-
-  for (const [id, answer] of Object.entries(answers)) {
-    const q = questionById[id];
-    if (!q || ABOUT_CALLER.has(id)) continue;
-    const sr = Q[id] || {};
-    const label = (oid) => sr.options?.[oid] || q.options?.find((o) => o.id === oid)?.short;
-
-    // The option's wording alone is not a fact: "više puta dnevno" says nothing
-    // without the question it answers, and "nijednom" says less than nothing.
-    // `short` is what the review screens already use to name a question in a
-    // few words, so it is what names it here too.
-    const topic = sr.short || q.shortTitle;
-
-    if (q.type === 'inputs') {
-      const filled = Object.values(answer.values || {})
-        .map((v) => v?.trim())
-        .filter(Boolean);
-      if (filled.length) facts.push({ id, topic, text: filled.join(', ') });
-    } else if (q.type === 'single') {
-      const text = label(answer.optionId);
-      if (text) facts.push({ id, topic, text });
-    } else {
-      const texts = (answer.optionIds || []).map(label).filter(Boolean);
-      if (answer.other?.trim()) texts.push(answer.other.trim());
-      if (texts.length) facts.push({ id, topic, text: texts.join(', ') });
-    }
-  }
-
-  notes.forEach((text, i) => facts.push({ id: `note-${i}`, text, note: true }));
-  return facts;
-}
-
 // The answer the model reports, in the shape the rest of the app already stores.
 export function toAnswer(entry) {
   const q = questionById[entry.questionId];

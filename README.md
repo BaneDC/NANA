@@ -48,8 +48,7 @@ form — it is an assessment that branches:
 2. **Daily life** — eight questions that establish how they move, manage and have changed.
 3. **Frailty assessment** — the flow's pivot. `src/data/frailty.js` estimates a level on
    the Clinical Frailty Scale (1–9) from those answers, and the assistant states it before
-   asking anything else. Shown as a card in the chat and a full screen in the immersive
-   variant. It is labelled an estimate, not a diagnosis.
+   asking anything else. It is labelled an estimate, not a diagnosis.
 4. **Support** — *branches on the level*. 1–3 asks about lifestyle and prevention, 4–5 about
    the housework, 6 about hands-on personal care, 7–8 about bed mobility, eating, pressure
    sores and breathing support, 9 about palliative needs. `when({ band, level })` on a
@@ -79,9 +78,6 @@ never asked.
 warning shown *before* an edit and the pruning done *after* one cannot disagree:
 
 - `isLoadBearing(id)` — marks the rows the review flags with a link icon.
-- `dependentsOf(id, answers)` — what is currently riding on this answer. If it is not
-  empty, the review asks for confirmation and names exactly which follow-ups are at risk
-  before opening the editor.
 - `reconcile(prev, next)` — applied to **every** answer in `App`, so state can never hold
   an answer to a question this user is not being asked. It returns what it dropped and
   what is newly being asked, which is what the notice in the thread reports.
@@ -93,42 +89,15 @@ directly above the section holding the reopened questions rather than at the end
 thread, so the user isn't sent scrolling back up. Confirming the review is undone
 automatically if an edit reopens anything, because there is now something unseen.
 
-The immersive variant has the same three states as full screens — review, warning,
-"that changed things" — and returns to the review once the reopened questions are cleared.
-
-## Questionnaire variants
-
-The nav carries a **Classic / Immersive / AI** switch. All three ask the same questions
-and write into the same `answers` in `App`, so you can switch mid-flow: answers given in
-one show up in the others, and each resumes at the first unanswered question rather than
-restarting. The AI variant has its own section at the end of this file.
-
-**Immersive** is a fullscreen take: one question at a time, glass cards over drifting
-clouds, with generative ambient audio.
-
-- Transitions are **staggered in both directions**: the outgoing screen unwinds from
-  the bottom up (`staggerDirection: -1`), the incoming one builds from the top down,
-  option lists staggering their own rows inside that. About 1.1s end to end.
-- The counter tracks **position in the flow**, not committed answers — a four-field
-  question commits once, so counting answers left the number frozen for four screens
-  and then jumping by four.
-
-- Multi-field questions are split into **one field per screen**, each with its own
-  conversational prompt and hint (`src/data/prompts.js`) — the copy lives with the
-  immersive variant, the classic form keeps its shorter labels. The answer is only
-  committed once the last field is filled, so a half-finished question never counts
-  as answered in either variant. Selects stay as they are.
-- It does **not** close to reveal the result: the finished care plan is shown inside
-  the experience, and only then does **See the full plan** exit and land on that
-  plan's page — the dashboard stays empty until a caregiver is actually requested,
-  so it would be an anticlimax to land there.
+## Background and audio of the conversation
 
 - **Clouds** — `src/components/immersive/CloudBackground.jsx`. A raw WebGL fragment
   shader, no libraries: domain-warped fbm noise over a pale golden-hour sky, drifting
   at 0.015× time. Rendered at 0.75× resolution and capped at 1.25 DPR — the clouds are
   soft, so the upscale costs nothing visually. Falls back to a CSS sky gradient if
   WebGL or shader compilation is unavailable. The WebGL plumbing lives in
-  `useFragmentShader.js`, shared with the AI variant's gradient.
+  `useFragmentShader.js`, shared with the conversation's gradient. Shown behind the
+  conversation only with **`?bg=clouds`**.
 - **Audio** — `src/lib/zenAudio.js`, **currently off** (`AMBIENT_AUDIO = false`) until the client confirms it; flipping the flag restores the music and its mute button. Web Audio only, no files and nothing to license:
   a detuned sine drone, band-passed noise for air, and pentatonic tones blooming on a
   loose random timer, so it never loops audibly. Starts from a click, so autoplay
@@ -226,11 +195,12 @@ Icons are [lucide-react](https://lucide.dev) at `size={14} strokeWidth={1.75}`, 
 
 Note: `?forceRaf` URL param is a test hook that keeps animations running in headless/background tabs — irrelevant for normal use.
 
-## Third variant: the AI conversation, inside the immersive shell
+## The onboarding: the conversation with Minna
 
-`Classic / Immersive / AI`. The AI variant is **not a chat window** — it is the
-immersive shell (one screen at a time, ambient audio) with the question on each
-screen written by Minna instead of read off a list.
+The only onboarding (`src/screens/ImmersiveConversation.jsx`). It is **not a chat
+window**: one screen at a time, ambient audio, with the question on each screen
+written by Minna instead of read off a list. The earlier Classic and Immersive
+questionnaires are gone.
 
 **Background** — `src/components/immersive/GradientBackground.jsx`, not the clouds.
 Five soft pools of the clouds' own colours drift on slow elliptical orbits over the
@@ -328,12 +298,11 @@ genuinely unknowable, so the honest move is not to claim one.
 **The support section is withheld until daily life is fully answered.** The frailty
 estimate exists from the first answer, but a band derived from two answers is not
 one to branch on: the model would ask a branch question, the band would move as the
-rest landed, and `reconcile` would drop the answer it had just collected. The other
-two variants get this for free by walking the steps in order; here the model
-chooses, so `remainingQuestions()` enforces it.
+rest landed, and `reconcile` would drop the answer it had just collected. The model
+chooses the order, so `remainingQuestions()` enforces it.
 
-Serbian copy is an overlay (`src/data/flow.sr.js`), not a rewrite of `flow.js` —
-the other two variants stay English to match Figma, and the ids must not move.
+Serbian copy is an overlay (`src/data/flow.sr.js`), not a rewrite of `flow.js`:
+the ids must not move.
 
 The plan screen at the end is Serbian too: `src/data/carePlan.sr.js` writes the
 opening paragraphs `buildPlan` produces again, from the same answers and notes and

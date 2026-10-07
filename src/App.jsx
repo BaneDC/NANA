@@ -18,7 +18,6 @@ import PaywallModal from './components/PaywallModal';
 import AskAssistant from './components/AskAssistant';
 import SharePlanModal from './components/SharePlanModal';
 import PlanDetail from './screens/PlanDetail';
-import Immersive from './screens/Immersive';
 import ImmersiveConversation from './screens/ImmersiveConversation';
 import FamilyDrawer from './components/family/FamilyDrawer';
 import CaregiverPage from './screens/CaregiverPage';
@@ -84,7 +83,7 @@ export default function App() {
   const [chatListOpen, setChatListOpen] = useState(false);
   const [planListOpen, setPlanListOpen] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState('live');
-  const [variant, setVariant] = useState('classic'); // classic | immersive | ai
+  const [variant, setVariant] = useState('classic'); // classic | ai
   // the AI variant runs against the developer's own key, kept in this browser
   const [apiKey, setApiKey] = useState(loadKey);
   const [askingKey, setAskingKey] = useState(false);
@@ -351,15 +350,11 @@ export default function App() {
     setPlanListOpen(true);
   };
 
-  // The immersive variant stays open past the last question: it shows the finished
-  // care plan itself, so the calm isn't broken just to reveal the result.
-  const showImmersive = phase === 'app' && variant === 'immersive';
-
-  // Both of those variants take the whole window, so while one is up the shell
-  // under it is not painted at all. Covering it was not enough: they fade in over
-  // most of a second, and registering straight into the AI variant showed the nav
-  // and the empty chat through that fade before the conversation landed.
-  const fullscreen = phase === 'app' && (variant === 'ai' || variant === 'immersive');
+  // The AI variant takes the whole window, so while it is up the shell under it
+  // is not painted at all. Covering it was not enough: it fades in over most of
+  // a second, and registering straight into it showed the nav and the empty
+  // chat through that fade before the conversation landed.
+  const fullscreen = phase === 'app' && variant === 'ai';
 
   const startVariant = (next) => {
     setVariant(next);
@@ -685,26 +680,6 @@ export default function App() {
               setApiKey('');
               setKeyRejected(true);
               setAskingKey(true);
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showImmersive && (
-          <Immersive
-            key="immersive"
-            user={user}
-            answers={answers}
-            onAnswer={onAnswer}
-            onPlan={onPlan}
-            onExit={() => setVariant('classic')}
-            onFinish={() => {
-              // the plan they just read is the natural place to land: the dashboard
-              // is still empty until they actually request a caregiver
-              setVariant('classic');
-              setSelectedPlan('live');
-              setView('plan-detail');
             }}
           />
         )}

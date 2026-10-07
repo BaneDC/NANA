@@ -40,7 +40,6 @@ import {
   nameOf,
   services,
   todayOf,
-  workedHours,
   linkCard,
   money,
   pendingVersion,
@@ -121,7 +120,6 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
   const pen = pendingVersion(a);
   const act = activeVersion(a);
   const first = firstName(a.caregiver.name);
-  const elder = firstName(care.elder.name);
   const hasCard = care.payment.connected;
   if (!pen) return null;
 
@@ -422,7 +420,6 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const v = findVisit(care, visitId);
   if (!v) return null;
   const first = firstName(v.caregiver.name);
-  const elder = firstName(care.elder.name);
   const held = chargedFor(v.hours, v.rate);
   const late = (v.dueInHours ?? Infinity) < LATE_HOURS;
   const okReason = reason !== OTHER || other.trim();

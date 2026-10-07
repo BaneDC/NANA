@@ -254,8 +254,6 @@ export const mapVisit = (c, visitId, fn) => ({
   })),
 });
 
-const caregiverOfVisit = (c, visitId) => findVisit(c, visitId)?.caregiver.id;
-
 // Asking costs nothing and commits nobody; she answers from her own board. A
 // family can ask again after a no, or after a cooperation ended.
 export const askCaregiver = (caregiverId, message) => (c) => {
