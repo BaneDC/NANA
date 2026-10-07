@@ -213,7 +213,7 @@ export function paneFor(openId, ctx) {
     case 'my-care':
       return { title: 'Moja nega', children: <Pane><CarePane care={care} onDrawer={onDrawer} /></Pane> };
     case 'requests':
-      return { title: 'Vaši upiti', meta: `${care.requests.length}`, children: <Pane><RequestsPane care={care} /></Pane> };
+      return { title: 'Moji upiti', meta: `${care.requests.length}`, children: <Pane><RequestsPane care={care} /></Pane> };
     case 'visits':
       return { title: 'Posete', children: <Pane><VisitsPane care={care} onDrawer={onDrawer} /></Pane> };
     case 'find-caregiver':
@@ -277,7 +277,7 @@ export function previewFor(kind, { plan, care }) {
     }
     case 'requests':
       return {
-        title: 'Vaši upiti',
+        title: 'Moji upiti',
         meta: `${care.requests.length}`,
         content: care.requests.length
           ? care.requests.map((r) => `${caregivers.find((c) => c.id === r.caregiverId)?.name} · ${STATUS[r.status]}`).join('\n')

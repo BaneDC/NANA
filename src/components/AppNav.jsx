@@ -232,7 +232,7 @@ export default function AppNav({
           />
           <Place
             icon={Send}
-            label="Vaši upiti"
+            label="Moji upiti"
             active={view === 'requests'}
             count={requestsBadge}
             onClick={go(() => onView('requests'))}

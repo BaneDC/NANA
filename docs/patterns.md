@@ -157,14 +157,14 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (32, na dodir 44), a ne koliko čip (28).
 - **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `PageHeader`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice 12 i 4 dugmeta). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari „nazad" link je uklonjen).
-- **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") i jedino on započinje razgovor. Ispod njega je **„Istorija razgovora"** (odlučeno 2. 10.; ranije „Razgovor"): ceo red samo otvara i zatvara spisak ranijih razgovora i ne vodi nigde, a strelica je na kraju reda. Po defaultu je zatvoren. Prazan spisak kaže „Još nema razgovora.". „Vaši upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
+- **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") i jedino on započinje razgovor. Ispod njega je **„Istorija razgovora"** (odlučeno 2. 10.; ranije „Razgovor"): ceo red samo otvara i zatvara spisak ranijih razgovora i ne vodi nigde, a strelica je na kraju reda. Po defaultu je zatvoren. Prazan spisak kaže „Još nema razgovora.". „Moji upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
-- **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Vašim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
-- **Moja nega pre prve saradnje (odlučeno 5. 10.):** Moja nega nema karticu „Vaši upiti"; upiti su samo na stranici „Vaši upiti". Dok nije poslat nijedan upit, narandžasti deo „Sledeći korak" ima samo „Pronađi negovateljicu". Čim je poslat prvi upit, a još niko ne dolazi, isti deo kaže gde su stvari („Čeka se odgovor": ko još nije odgovorio; „Stigli su odgovori": svi su odbili) i ima samo „Pogledaj upite", koji vodi na „Vaši upiti"; „Pronađi negovateljicu" se tu više ne nudi (ostaje u meniju). Kad neko dolazi, stranica je o njoj i o upitima ne govori.
+- **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Mojim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
+- **Moja nega pre prve saradnje (odlučeno 5. 10.):** Moja nega nema karticu „Moji upiti"; upiti su samo na stranici „Moji upiti". Dok nije poslat nijedan upit, narandžasti deo „Sledeći korak" ima samo „Pronađi negovateljicu". Čim je poslat prvi upit, a još niko ne dolazi, isti deo kaže gde su stvari („Čeka se odgovor": ko još nije odgovorio; „Stigli su odgovori": svi su odbili) i ima samo „Pogledaj upite", koji vodi na „Moji upiti"; „Pronađi negovateljicu" se tu više ne nudi (ostaje u meniju). Kad neko dolazi, stranica je o njoj i o upitima ne govori.
 - **Stranica osobe** (avatar pored imena, `PagePerson`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava `PageHeader`; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici. „Pronađi negovateljicu" za sada nema pretragu (odlučeno 2. 10.): lista je poređana po poklapanju sa planom, sa stranama po 10.
-- **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog, dodatni sati; `waitingOnYou`), a „Vaši upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Vaših upita" odgovori su viđeni.
+- **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog, dodatni sati; `waitingOnYou`), a „Moji upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Mojih upita" odgovori su viđeni.
 
 ---
 
@@ -254,7 +254,7 @@ Red je `Item` u `ItemGroup` (`src/components/ui/item.jsx`). Mere (sve radi `Item
 
 Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</a></Item>`.
 
-**Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, a stanje je značka pored imena. Jedno dugme je **na desktopu gore desno**, u visini imena (16 od ivice, koncentrično sa uglom), a **na telefonu ispod sadržaja**, u koloni teksta i široko koliko ona, 16 ispod. Tako je kartica upita („Vaši upiti"), po istoj logici kao kartica na „Pronađi".
+**Kartica sa avatarom (odlučeno 5. 10.):** sve što kartica kaže stoji u koloni teksta, ispod imena i reda ispod njega, a avatar je sam levo, kao u redovima na Mojoj nezi. Delovi su 12 jedan od drugog, a stanje je značka pored imena. Jedno dugme je **na desktopu gore desno**, u visini imena (16 od ivice, koncentrično sa uglom), a **na telefonu ispod sadržaja**, u koloni teksta i široko koliko ona, 16 ispod. Tako je kartica upita („Moji upiti"), po istoj logici kao kartica na „Pronađi".
 
 **Kartica upita (odlučeno 5. 10.)** je cela klikabilna (ime je `CardLink`): kad saradnja postoji, otvara njenu stranicu, a inače njen profil. Nema dugme za otvaranje („Pogledaj saradnju" je uklonjeno). Jedino dugme je **„Pitaj ponovo"**, samo na odbijenom upitu kad sme ponovo da joj se piše (`canAsk`), jer šalje novi upit, a ne otvara nešto; zato ostaje i na telefonu. Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
 
@@ -262,10 +262,10 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 
 | Gde | Naslov + red ispod | Miš / dodir |
 |---|---|---|
-| Red u kartici (`Item`: Predstoji, poslednja poseta, Vaše negovateljice, Vaši upiti, chat) | 12 i rečenica | 42 / 48 |
+| Red u kartici (`Item`: Predstoji, poslednja poseta, Vaše negovateljice, Moji upiti, chat) | 12 i rečenica | 42 / 48 |
 | Negovateljica u planu (`CaregiverRow`) | 12 i meta | 40 / 44 |
 | Kartica na „Pronađi", glava detalja | 14 i meta | 44 / 48 |
-| Kartica u „Čeka na vas", upit (Vaši upiti) | 14 i rečenica | 46 / 52 |
+| Kartica u „Čeka na vas", upit (Moji upiti) | 14 i rečenica | 46 / 52 |
 | Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 42 / 48 |
 | Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 32 / 36; 36 / 40 |
 | Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 30 / 34 |
@@ -400,7 +400,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 | **Lista na stranici, uz drugi sadržaj** | koliko staje u taj deo, pa „Prikaži još" po 10 | Predstoji (3), posete na njenoj stranici (10), istorija razgovora u meniju (5) |
 | **Puna lista koja raste sa vremenom** | 10, najnovije prvo (po mesecu ili danu gde postoji), pa „Prikaži još" po 10 | Sve posete (stranica), Šta se desilo, posete i aktivnost klijenta na strani negovateljice |
 | **Pretraga, poređenje** | numerisana paginacija (`Pagination`), 10 po strani | samo „Pronađi negovateljicu" |
-| **Kratka lista po prirodi** | sve, bez ograničenja | Vaši upiti, Planovi nege, verzije ugovora, Vaše negovateljice |
+| **Kratka lista po prirodi** | sve, bez ograničenja | Moji upiti, Planovi nege, verzije ugovora, Vaše negovateljice |
 
 - Numerisana paginacija je samo za pretragu: tu se negovateljice porede, ide se napred-nazad i vraća na isto mesto. Kroz posete i događaje se ne ide „na stranu 4".
 - „Prikaži još" kaže koliko dodaje („Prikaži još 10", na kraju „Prikaži još 3").

@@ -40,7 +40,7 @@ export const NarandzastiDeo = {
         <Card>
           <CardDescription>
             Sanna Virtanen još nije odgovorila na vaš upit. Javićemo vam čim odgovori, a upit i odgovor su na
-            stranici „Vaši upiti".
+            stranici „Moji upiti".
           </CardDescription>
           <CardFooter>
             <Button>

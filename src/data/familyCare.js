@@ -168,7 +168,7 @@ export function waitingOnYou(c) {
 }
 
 // Answers to the family's requests they have not looked at yet. A request
-// they sent is not news; a yes or a no to it is, until they open "Vaši upiti".
+// they sent is not news; a yes or a no to it is, until they open "Moji upiti".
 export const unseenAnswers = (c) => c.requests.filter((r) => r.status !== 'pending' && !r.seen).length;
 
 export const seeAnswers = (c) =>

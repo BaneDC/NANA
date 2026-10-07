@@ -38,7 +38,7 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
     <Page>
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Vaši upiti</PageTitle>
+          <PageTitle>Moji upiti</PageTitle>
           <PageDescription>Sve negovateljice kojima ste poslali upit, i gde je svaki od njih.</PageDescription>
         </PageHeaderText>
       </PageHeader>

@@ -161,7 +161,7 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
   const quiet = care.arrangements.length > 0 && !waiting.length && !coming.length;
   // nobody asked yet: the one thing to do is ask
   const fresh = !care.arrangements.length && !care.requests.length;
-  // Asked, and nobody has come yet: the requests live on "Vaši upiti", so
+  // Asked, and nobody has come yet: the requests live on "Moji upiti", so
   // this page only says where things stand and takes them there. Once someone
   // comes, the page is about her and the requests are not repeated here.
   const asked = !care.arrangements.length && care.requests.length > 0;
@@ -222,12 +222,12 @@ export default function Dashboard({ care, user, plan, onDrawer, onCaregiver, onV
           <Card>
             <CardDescription>
               {pendingNames.length === 1
-                ? `${pendingNames[0]} još nije odgovorila na vaš upit. Javićemo vam čim odgovori, a upit i odgovor su na stranici „Vaši upiti".`
+                ? `${pendingNames[0]} još nije odgovorila na vaš upit. Javićemo vam čim odgovori, a upit i odgovor su na stranici „Moji upiti".`
                 : pendingNames.length > 1
-                  ? `Čeka se odgovor od ${pl(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica')}. Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Vaši upiti".`
+                  ? `Čeka se odgovor od ${pl(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica')}. Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Moji upiti".`
                   : latest.length === 1
-                    ? `${caregivers.find((c) => c.id === latest[0].caregiverId)?.name || 'Negovateljica'} ne može da preuzme. Na stranici „Vaši upiti" piše zašto.`
-                    : 'Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Vaši upiti" piše zašto.'}
+                    ? `${caregivers.find((c) => c.id === latest[0].caregiverId)?.name || 'Negovateljica'} ne može da preuzme. Na stranici „Moji upiti" piše zašto.`
+                    : 'Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Moji upiti" piše zašto.'}
             </CardDescription>
             <CardFooter>
               {/* once a request is out, finding someone is in the menu; the one
