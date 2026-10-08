@@ -364,12 +364,16 @@ function TwoFactorStep({ user, onContinue, onBack }) {
   const [checking, setChecking] = useState(false);
   const ready = backup ? typed.trim().length >= 8 : code.length === 6;
 
-  const submit = async () => {
-    if (!ready || checking) return;
+  // `entered` is the six digits as they complete: the code goes on its own,
+  // with no need to press "Potvrdi"
+  const submit = async (entered = code) => {
+    if (checking || (backup ? typed.trim().length < 8 : entered.length !== 6)) return;
     setChecking(true);
-    const next = backup ? await spendBackupCode(user, typed) : (await verifyCode(user.twoFactorSecret, code)) && user;
+    const next = backup ? await spendBackupCode(user, typed) : (await verifyCode(user.twoFactorSecret, entered)) && user;
     setChecking(false);
     if (next) return onContinue(next);
+    // a wrong code is cleared, so the right one goes straight in
+    if (!backup) setCode('');
     setError(
       backup
         ? 'Ovaj rezervni kod ne važi ili je već iskorišćen.'
@@ -402,17 +406,22 @@ function TwoFactorStep({ user, onContinue, onBack }) {
               />
             </Field>
           ) : (
-            <CodeInput value={code} onChange={(v) => (setCode(v), setError(null))} />
+            <CodeInput value={code} onChange={(v) => (setCode(v), v && setError(null))} onComplete={submit} />
           )}
           {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
         </FormCard>
         <Actions>
-          <Button type="submit" size="lg" className="w-full" disabled={!ready || checking}>
-            Potvrdi
-          </Button>
-          <Button type="button" variant="ghost" size="lg" onClick={() => switchTo(!backup)}>
-            {backup ? 'Koristite kod iz aplikacije' : 'Koristite rezervni kod'}
-          </Button>
+          {/* the other way in and "Potvrdi" side by side, halves of the row;
+              on a phone, where half is too narrow for the longer one, each
+              takes what it needs and "Potvrdi" the rest */}
+          <div className="grid w-full grid-cols-2 gap-2 phone:flex phone:*:flex-auto">
+            <Button type="button" variant="secondary" size="lg" onClick={() => switchTo(!backup)}>
+              {backup ? 'Koristite kod iz aplikacije' : 'Koristite rezervni kod'}
+            </Button>
+            <Button type="submit" size="lg" disabled={!ready || checking}>
+              Potvrdi
+            </Button>
+          </div>
           <Button type="button" variant="ghost" size="lg" onClick={onBack}>
             Nazad na prijavu
           </Button>

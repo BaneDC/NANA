@@ -59,12 +59,12 @@ function Stepper({ at }) {
 // the one thing to do on its screen, so it has the focus as soon as it shows:
 // on the step it appears on, and when the dialog opens on it (data-autofocus,
 // which the pane's focus looks for).
-export function CodeInput({ value, onChange }) {
+export function CodeInput({ value, onChange, onComplete }) {
   const id = useId();
   return (
     <div className="flex flex-col items-center gap-2">
       <Label htmlFor={id}>Kod iz aplikacije</Label>
-      <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange}>
+      <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange} onComplete={onComplete}>
         <InputOTPGroup>
           <InputOTPSlot index={0} />
           <InputOTPSlot index={1} />
