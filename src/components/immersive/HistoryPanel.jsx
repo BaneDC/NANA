@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
+import { paneCloseClass } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
 import { useIsPhone } from '@/hooks/use-phone';
 
@@ -36,33 +37,30 @@ export default function HistoryPanel({ open, entries, onClose }) {
       </ol>
     );
 
-  // the same small cross as on a desktop; under a finger its target is 44
+  // the panes' own close, as in every drawer and sheet (28, 44 under a finger)
   const close = (
-    <button
-      type="button"
-      className="imm-history-close relative z-1 pointer-coarse:after:absolute pointer-coarse:after:-inset-[15px]"
-      onClick={onClose}
-      aria-label="Zatvori"
-    >
-      <X size={14} strokeWidth={1.75} />
+    <button type="button" className={`${paneCloseClass} relative z-1 ml-auto`} onClick={onClose} aria-label="Zatvori">
+      <X className="size-4" strokeWidth={1.75} />
     </button>
   );
 
   if (phone) {
     return (
       <Drawer open={open} onOpenChange={(next) => !next && onClose()}>
-        {/* over the onboarding, which stands at 60; the desktop panel's glass,
-            16 inside, 12 between the head and the list */}
+        {/* over the onboarding, which stands at 60; the desktop panel's glass.
+            The head as every sheet's on a phone: 24 from the top (the grip is
+            at 8, so the close is 12 under it and the title further), 16 from
+            the sides, the title on the close's middle, 12 under it */}
         <DrawerContent
-          className="z-61 h-[98dvh] max-h-none gap-3 border border-b-0 border-[rgba(255,255,255,0.75)] bg-[rgba(255,255,255,0.55)] p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] text-left shadow-[0_8px_32px_rgba(122,92,70,0.1)] backdrop-blur-[18px] backdrop-saturate-[1.4]"
+          className="z-61 h-[98dvh] max-h-none border border-b-0 border-[rgba(255,255,255,0.75)] bg-[rgba(255,255,255,0.55)] text-left shadow-[0_8px_32px_rgba(122,92,70,0.1)] backdrop-blur-[18px] backdrop-saturate-[1.4]"
           overlayClassName="z-61 bg-transparent backdrop-blur-none"
         >
-          <div className="imm-history-head relative">
+          <div className="relative flex shrink-0 items-center gap-2 px-4 pt-6 pb-3">
             <DrawerHandle />
             <DrawerTitle className="imm-history-title pointer-events-none relative">Dosad smo prošli</DrawerTitle>
             {close}
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">{list}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]">{list}</div>
         </DrawerContent>
       </Drawer>
     );

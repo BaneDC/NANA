@@ -10,7 +10,6 @@ import { Fact, Facts } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
 import { Field, Input } from '../components/TextField';
-import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
 
 // Reads straight from the questionnaire answers, so the profile is whatever the
@@ -80,7 +79,7 @@ function FieldEditor({ open = true, title, fields, onSave, onClose }) {
   );
 }
 
-export default function Profile({ user, answers, onGoToChat, onAskAssistant, onSaveUser, onEditAnswers }) {
+export default function Profile({ user, answers, onGoToChat, onSaveUser, onEditAnswers }) {
   const elderly = fieldsOf('about-person', answers);
   const contact = fieldsOf('about-you', answers);
   const goal = fieldsOf('family-goal', answers);
@@ -106,7 +105,6 @@ export default function Profile({ user, answers, onGoToChat, onAskAssistant, onS
           <PageTitle>Profil</PageTitle>
           <PageDescription>Sve što ste podelili, na jednom mestu.</PageDescription>
         </PageHeaderText>
-        <AskAssistant onClick={onAskAssistant} />
       </PageHeader>
 
       <Section

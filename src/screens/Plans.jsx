@@ -3,10 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardLink } from '@/components/ui/card';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
-import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
 
-export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPlan, onAskAssistant }) {
+export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPlan }) {
   const hasLive = entries.some((e) => !e.archived);
 
   return (
@@ -17,7 +16,6 @@ export default function Plans({ entries, change, onOpenPlan, onGoToChat, onNewPl
           <PageDescription>Svaki plan koji smo napravili, od najnovijeg.</PageDescription>
         </PageHeaderText>
         <PageActions>
-          <AskAssistant iconOnly onClick={onAskAssistant} />
           {/* One plan is one person. A second parent, a partner's mother: that is
               a new plan, not an edit of this one. */}
           {onNewPlan && (

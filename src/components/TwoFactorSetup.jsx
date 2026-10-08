@@ -55,13 +55,16 @@ function Stepper({ at }) {
 }
 
 // Six boxes, three and three, over one field: shadcn's InputOTP. Pasting a
-// code from the phone fills all six, and typing at speed loses nothing.
+// code from the phone fills all six, and typing at speed loses nothing. It is
+// the one thing to do on its screen, so it has the focus as soon as it shows:
+// on the step it appears on, and when the dialog opens on it (data-autofocus,
+// which the pane's focus looks for).
 function CodeInput({ value, onChange }) {
   const id = useId();
   return (
     <div className="flex flex-col items-center gap-2">
       <Label htmlFor={id}>Kod iz aplikacije</Label>
-      <InputOTP id={id} maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange}>
+      <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange}>
         <InputOTPGroup>
           <InputOTPSlot index={0} />
           <InputOTPSlot index={1} />
@@ -195,19 +198,17 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
           ))}
         </ul>
 
-        <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
-          <Button variant="secondary" onClick={() => copy(codes.join('\n'), 'codes')}>
-            {copied === 'codes' ? 'Kopirano' : 'Kopiraj'}
-          </Button>
-          <Button variant="secondary" onClick={download}>
-            Preuzmi
-          </Button>
-        </div>
-
+        {/* one row: keeping them (copy, download) on the left, done on the right */}
         <DialogFooter>
-          <Button onClick={() => onDone(codes, secret)}>
-            Sačuvao sam rezervne kodove
-          </Button>
+          <div className="mr-auto flex gap-2">
+            <Button variant="secondary" onClick={() => copy(codes.join('\n'), 'codes')}>
+              {copied === 'codes' ? 'Kopirano' : 'Kopiraj'}
+            </Button>
+            <Button variant="secondary" onClick={download}>
+              Preuzmi
+            </Button>
+          </div>
+          <Button onClick={() => onDone(codes, secret)}>Sačuvano</Button>
         </DialogFooter>
       </Dialog>
     );

@@ -416,8 +416,9 @@ export default function App() {
         <div className="hidden shrink-0 items-center gap-2 px-3 py-2 narrow:flex">
           <SidebarTrigger />
           <Logo width={96} />
-          {/* the chat is the assistant, so there it has nothing to open */}
-          {view !== 'chat' && <AskAssistant className="ml-auto" onClick={askAssistant} />}
+          {/* only where the pages carry one: Moja nega and a care plan
+              (docs/patterns.md §4); the chat is the assistant itself */}
+          {(view === 'dashboard' || view === 'plan-detail') && <AskAssistant className="ml-auto" onClick={askAssistant} />}
         </div>
       )}
 
@@ -551,7 +552,6 @@ export default function App() {
                   onCare={setCare}
                   onDrawer={setDrawer}
                   onFlash={(text) => setFlash({ text, at: Date.now() })}
-                  onAskAssistant={askAssistant}
                 />
               )}
               {view === 'plans' && (
@@ -561,7 +561,6 @@ export default function App() {
                   onOpenPlan={openPlanPage}
                   onGoToChat={goToChat}
                   onNewPlan={newPlan}
-                  onAskAssistant={askAssistant}
                 />
               )}
               {view === 'plan-detail' && openEntry && (
@@ -588,7 +587,6 @@ export default function App() {
                   onSaveUser={saveUser}
                   onEditAnswers={editAnswers}
                   onGoToChat={goToChat}
-                  onAskAssistant={askAssistant}
                 />
               )}
               {view === 'settings' && (
@@ -609,7 +607,6 @@ export default function App() {
                         : // it runs to the end of the period already paid
                           setSubscription((x) => ({ ...x, cancelled: true }))
                   }
-                  onAskAssistant={askAssistant}
                 />
               )}
             </AppPane>

@@ -10,7 +10,6 @@ import { Page, PageHeader, PageHeaderText, PageTitle, PageDescription, PageSecti
 import { CheckList, DataList, DataRow } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
-import AskAssistant from '../components/AskAssistant';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
 import { Field, Password } from '../components/TextField';
@@ -121,7 +120,7 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
   );
 }
 
-export default function Settings({ unlocked, subscription, care, user, onCare, onSaveUser, onAskAssistant, onSubscribe }) {
+export default function Settings({ unlocked, subscription, care, user, onCare, onSaveUser, onSubscribe }) {
   const [prefs, setPrefs] = useState({
     digest: false,
     marketing: false,
@@ -167,7 +166,6 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           <PageTitle>Podešavanja</PageTitle>
           <PageDescription>Plaćanje, bezbednost, jezik i obaveštenja, privatnost.</PageDescription>
         </PageHeaderText>
-        <AskAssistant onClick={onAskAssistant} />
       </PageHeader>
 
       <PageSection title="Plaćanje">

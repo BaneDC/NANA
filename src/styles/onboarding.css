@@ -181,8 +181,6 @@
   margin-bottom: 16px;
   font-size: 11px;
   line-height: 16px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: #8a7a6d;
 }
 
@@ -301,8 +299,6 @@
   margin-bottom: var(--spacing-3);
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: #8a7a6d;
 }
 
@@ -546,8 +542,6 @@
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   font-weight: var(--font-medium);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: #8a7a6d;
 }
 
@@ -771,8 +765,6 @@
   font-size: 11px;
   line-height: 16px;
   font-weight: var(--font-medium);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--color-primary-800);
   opacity: 0.45;
 }
@@ -1156,21 +1148,11 @@
 }
 
 .imm-history-title {
-  font-size: 11px;
-  line-height: 16px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #8a7a6d;
-}
-
-.imm-history-close {
-  display: flex;
-  color: #a2917f;
-  transition: color 0.2s ease;
-}
-
-.imm-history-close:hover {
-  color: #6d6157;
+  /* a title, in the onboarding's ink, as a pane's title is 14 medium */
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: var(--font-medium);
+  color: #463d35;
 }
 
 .imm-history-empty {
@@ -1286,8 +1268,6 @@
   margin-bottom: var(--spacing-3);
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: #a2917f;
 }
 

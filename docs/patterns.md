@@ -12,7 +12,7 @@ Onboarding (`src/screens/Immersive*.jsx`, klase `imm-*`) ima svoj vizuelni jezik
 
 Onboarding na telefonu (odlučeno 6. 10.):
 - dugme za istoriju razgovora je kvadrat (32, na dodir 44);
-- istorija razgovora je isti stakleni panel kao na desktopu (podloga, ivica, senka, radius 24, padding 16, mali X), a ponaša se kao bottom sheet: dolazi odozdo, visok je 98% ekrana i prevlačenjem nadole se zatvara; iza njega se ništa ne zatamnjuje;
+- istorija razgovora je isti stakleni panel kao na desktopu (podloga, ivica, senka, radius 24), a ponaša se kao bottom sheet: dolazi odozdo, visok je 98% ekrana i prevlačenjem nadole se zatvara; iza njega se ništa ne zatamnjuje. Glava je kao u svakom sheet-u na telefonu: 24 od vrha (ručica je na 8), 16 sa strane, naslov (14 medium, normalnim slovima) na sredini dugmeta za zatvaranje, a dugme je isto kao u ostalim prozorima (`paneCloseClass`, 28, na dodir 44), i na desktopu;
 - pitanje i podnaslov ispod njega su 8 jedno od drugog;
 - velika dugmad („Dalje", „Pošalji", „Pogledaj ceo plan") imaju radius kartica, 16;
 - „Pošalji" na prvom ekranu je široko koliko polje iznad njega;
@@ -73,7 +73,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Boje | samo tokeni iz `src/styles/tokens.css`, bez hex vrednosti u komponentama |
 | Jedna podloga, jedna boja teksta | na istoj podlozi tekst iste uloge ima istu boju; na narandžastoj podlozi tekst je u boji te podloge (`--color-primary-700`) |
 | Čipovi i značke | nikad pun krug (999px): čip (`ToggleGroupItem`, 32–44px) r8, značka i oznaka (`Badge`, 20px) r4 |
-| Velika slova | nikad (`text-transform: uppercase` je zabranjen van onboardinga) |
+| Velika slova | nikad, ni u onboardingu (`text-transform: uppercase` je zabranjen svuda; odlučeno 8. 10.) |
 | Najmanji tekst | 12px za sve što se čita; 11px samo u znački (`Badge`) i u meta liniji (`text-[11px]`, ocena i mesto negovateljice) |
 
 **Koncentrični uglovi, primeri koji važe u kodu:**
@@ -153,6 +153,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 široka, a delovi su 12 jedan od drugog.
 
 - Akcije stranice su samo u `PageHeader`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
+- **„Pitaj asistenta" je samo na Mojoj nezi i na jednom planu nege** (odlučeno 8. 10.). Podešavanja, Profil, Planovi nege, Pronađi negovateljicu i ostale stranice ga nemaju.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (`AskAssistant` to radi sam, kad je u `PageHeader`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (32, na dodir 44), a ne koliko čip (28).
@@ -450,7 +451,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`. Iznutra su shadcn `Field`, `FieldLabel`, `FieldDescription`, `Input`, `InputGroup`, `Textarea` i `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.
 - Labela je iznad polja, napomena ispod; obe su uvučene 12, da počnu gde i tekst u polju.
 - **Modal sa jednim tekstualnim poljem** (odlučeno 5. 10.): polje nema labelu. Šta ide u njega kažu naslov modala i placeholder; labela ide u `aria-label`, za čitač ekrana. Tako su „Šta nije u redu?" kod radnog naloga i plana posete, poruka negovateljici i drugi razlog otkazivanja. Kad modal ima dva ili više polja (slanje plana), svako ima labelu. Polje je 36 (44 na dodir). Na fokusu polje dobija narandžastu ivicu, bez prstena. Lozinka uvek ima oko za prikaz.
-- **Kod od šest cifara** je `InputOTP`: tri i tri kućice (44×52, na telefonu 40×48), kratka crta između, a kućica u koju ide sledeća cifra ima narandžastu ivicu dok je polje u fokusu. Labela „Kod iz aplikacije" je sitan tekst iznad.
+- **Kod od šest cifara** je `InputOTP` i dobija fokus čim se pojavi (uključivanje i isključivanje 2FA): tri i tri kućice (44×52, na telefonu 40×48), kratka crta između, a kućica u koju ide sledeća cifra ima narandžastu ivicu dok je polje u fokusu. Labela „Kod iz aplikacije" je sitan tekst iznad.
 - **Prekidač** (`Switch`) je za podešavanje koje je uključeno ili isključeno. Ceo red je labela (naziv, opis ispod, prekidač desno), pa klik bilo gde u redu menja stanje. Podešavanje koje se ne može menjati (neophodni kolačići) i dalje ima prekidač, da lista izgleda kao celina, ali je on `disabled`: bleđi je i ne pomera se, pa se vidi da ne može da se isključi (odlučeno 5. 10.).
 - **Nešto što se rasklapa** (grupa kolačića, ručni unos 2FA ključa) je `Collapsible` ili dugme sa `aria-expanded`, sa strelicom koja se okreće kad je otvoreno.
 - **`TextArea` se razvlači samo na dole**, od visine sa kojom se otvara (`rows`, to je i minimum). Polje nema svoju gornju granicu, jer koliko teksta treba zavisi od polja. Granicu daje prozor: sadržaj se skroluje, a red dugmadi je zakačen za dno (§7), pa ga polje ne može izgurati. Zato svaki prozor sa poljem mora biti `Dialog`. U širinu se ne razvlači. Na telefonu ručice nema.
@@ -479,7 +480,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 **Ikonica ostaje uvek:**
 - dugme bez teksta (`iconOnly`), uz `aria-label`;
 - strelica koja pokazuje da li je nešto otvoreno ili zatvoreno (disclosure);
-- „Pitaj asistenta", ista komponenta na svim stranicama;
+- „Pitaj asistenta", ista komponenta gde postoji (Moja nega, plan nege);
 - kvačice u listama i u znački stanja, jer to nisu dugmad.
 
 ## 12. Telefon
@@ -537,7 +538,7 @@ Otvori stranicu u pregledaču i u konzoli pokreni skript ispod, na desktopu i na
   const uniq = (a) => [...new Set(a)];
   return {
     concentric,
-    caps: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && !e.closest('[class*="imm-"]') && getComputedStyle(e).textTransform === 'uppercase').map(name)),
+    caps: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && getComputedStyle(e).textTransform === 'uppercase').map(name)),
     overflow: uniq([...root.querySelectorAll('*')].filter((e) => vis(e) && e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('[data-slot=sidebar]')).map(name)).slice(0, 10),
     cards: uniq([...root.querySelectorAll('[data-slot=card]')].filter(vis).map((e) => { const s = getComputedStyle(e); return `${s.borderTopLeftRadius}/${s.paddingTop}`; })),
     titles: uniq([...root.querySelectorAll('[data-slot=card-title], [data-slot=page-section] > h2')].filter(vis).map((e) => `${e.dataset.slot || 'section-title'} ${getComputedStyle(e).fontSize}`)),
@@ -558,7 +559,7 @@ Očekivano: `cards` → `24px/16px`; `titles` → `card-title 14px` i `section-t
 - druga klasa za karticu, kutija sa ivicom ili senkom u kartici, radius van skale;
 - narandžasta kartica sa sadržajem direktno na narandžastom (sadržaj ide u belu karticu u `Attention`);
 - uvučen citat u kurzivu; tekst kao dugme-link umesto `Button`;
-- velika slova van onboardinga;
+- velika slova (nigde, ni u onboardingu);
 - duga crta (—) u tekstu interfejsa: piše se kratka (-), a prazna vrednost je takođe „-". Raspon ostaje sa – (`16–20 €/h`, `09:00–12:00`);
 - `onClick` na div kartice umesto `CardLink` / `ItemLink`;
 - sakrivena akcija na telefonu koje nema u detaljima;

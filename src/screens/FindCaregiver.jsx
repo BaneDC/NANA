@@ -17,7 +17,6 @@ import { standingWith } from '../data/familyCare';
 import Rating from '../components/Rating';
 import Tags, { Groups } from '../components/Tags';
 import Standing from '../components/Standing';
-import AskAssistant from '../components/AskAssistant';
 import { CaregiverName } from '../components/CaregiverHead';
 
 // Browsing for someone, as its own page rather than a button on one screen.
@@ -33,7 +32,7 @@ const PER_PAGE = 10;
 // what stands under her text on a phone starts where her name does
 const underText = 'phone:ml-[calc(var(--avatar)+var(--spacing-3))]';
 
-export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAskAssistant }) {
+export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
   const [page, setPage] = useState(1);
 
   // best match first, as the recommendation it is
@@ -56,7 +55,6 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash, onAs
             zajedno ne postavite uslove.
           </PageDescription>
         </PageHeaderText>
-        <AskAssistant onClick={onAskAssistant} />
       </PageHeader>
 
       <div className="flex items-baseline gap-3 text-small leading-body text-muted-foreground">

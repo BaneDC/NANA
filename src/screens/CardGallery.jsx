@@ -349,7 +349,7 @@ export default function CardGallery() {
         <RequestsPage care={startCare(user)} onCaregiver={noop} onFind={noop} />
       </Frame>
       <Frame {...S('pronadji')}>
-        <FindCaregiver care={care} onContact={noop} onDrawer={noop} onFlash={noop} onAskAssistant={noop} />
+        <FindCaregiver care={care} onContact={noop} onDrawer={noop} onFlash={noop} />
       </Frame>
       <Frame {...S('plan')}>
         <PlanDetail
@@ -368,19 +368,19 @@ export default function CardGallery() {
         />
       </Frame>
       <Frame {...S('planovi')}>
-        <Plans entries={entries} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} onAskAssistant={noop} />
+        <Plans entries={entries} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} />
       </Frame>
       <Frame {...S('planovi-prazno')}>
-        <Plans entries={[]} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} onAskAssistant={noop} />
+        <Plans entries={[]} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} />
       </Frame>
       <Frame {...S('podesavanja')}>
-        <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onAskAssistant={noop} onSubscribe={noop} />
+        <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
       <Frame {...S('profil')}>
-        <Profile user={user} answers={answers} onGoToChat={noop} onAskAssistant={noop} onSaveUser={noop} onEditAnswers={noop} />
+        <Profile user={user} answers={answers} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} />
       </Frame>
       <Frame {...S('profil-prazno')}>
-        <Profile user={user} answers={{}} onGoToChat={noop} onAskAssistant={noop} onSaveUser={noop} onEditAnswers={noop} />
+        <Profile user={user} answers={{}} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} />
       </Frame>
       <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />

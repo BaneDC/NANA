@@ -686,7 +686,7 @@ export default function ImmersiveConversation({
               </motion.div>
 
               <motion.p className="imm-starters-label" variants={piece}>
-                ili krenite od nekog od ovih
+                Ili krenite od nekog od ovih
               </motion.p>
               <motion.div className="imm-starters" variants={list}>
                 {STARTERS.map((s) => (
