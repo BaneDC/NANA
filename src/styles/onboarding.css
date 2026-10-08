@@ -834,6 +834,9 @@
 /* a chat is the wrong channel for an emergency, and saying so costs nothing */
 .imm-urgent {
   margin-top: var(--spacing-6);
+  /* padding, not margin: on a phone the screen is capped at the stage and this
+     line runs past it, where the stage's own padding no longer reaches */
+  padding-bottom: var(--spacing-4);
   font-size: var(--text-xs-size);
   line-height: var(--text-body-leading);
   color: var(--color-primary-800);

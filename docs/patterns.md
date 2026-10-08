@@ -14,6 +14,7 @@ Onboarding na telefonu (odlučeno 6. 10.):
 - dugme za istoriju razgovora je kvadrat (32, na dodir 44);
 - istorija razgovora je isti stakleni panel kao na desktopu (podloga, ivica, senka, radius 24), a ponaša se kao bottom sheet: dolazi odozdo, visok je 98% ekrana i prevlačenjem nadole se zatvara; iza njega se ništa ne zatamnjuje. Glava je kao u svakom sheet-u na telefonu: 24 od vrha (ručica je na 8), 16 sa strane, naslov (14 medium, normalnim slovima) na sredini dugmeta za zatvaranje, a dugme je isto kao u ostalim prozorima (`paneCloseClass`, 28, na dodir 44), i na desktopu;
 - pitanje i podnaslov ispod njega su 8 jedno od drugog;
+- poslednji red prvog ekrana („Ako je hitno…") je najmanje 16 od dna (`padding-bottom` na `.imm-urgent`; odlučeno 8. 10.);
 - velika dugmad („Dalje", „Pošalji", „Pogledaj ceo plan") imaju radius kartica, 16;
 - „Pošalji" na prvom ekranu je široko koliko polje iznad njega;
 - carousel sa fotografijama na registraciji i prijavi se na užem ekranu srazmerno smanji (sve četiri slike i visina), da se vidi ceo kao na desktopu;
