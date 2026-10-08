@@ -9,7 +9,9 @@ import PhotoCarousel from '../components/PhotoCarousel';
 import SelectCard from '../components/SelectCard';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Field, Input, Password, Select } from '../components/TextField';
-import { saveAccount, signIn } from '../lib/account';
+import { saveAccount, signIn, spendBackupCode } from '../lib/account';
+import { verifyCode } from '../lib/totp';
+import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
 // here; the caregiver's is reached from the same shell once it is back. Everything asked here is kept with the
@@ -281,12 +283,18 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
   const [failed, setFailed] = useState(false);
   const valid = /\S+@\S+\.\S+/.test(email) && password;
 
+  // with two-factor on, the right password leads to the code, not in
+  const [pending, setPending] = useState(null);
+
   const submit = async () => {
     if (!valid) return;
     const user = await signIn(email, password);
-    if (user) onContinue(user);
-    else setFailed(true);
+    if (!user) setFailed(true);
+    else if (user.twoFactor && user.twoFactorSecret) setPending(user);
+    else onContinue(user);
   };
+
+  if (pending) return <TwoFactorStep user={pending} onContinue={onContinue} onBack={() => setPending(null)} />;
 
   return (
     <>
@@ -308,6 +316,76 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
             Nemate nalog? Napravite ga
           </Button>
           <DemoLink onDemo={onDemo} />
+        </Actions>
+      </form>
+    </>
+  );
+}
+
+// The second step of signing in when two-factor is on: the six digits from
+// the app, or one of the backup codes saved when it was turned on (each signs
+// in once). Laid out as signing in is: the welcome, the grey form, the actions
+// under it. "Nazad na prijavu" goes back to the email and password.
+function TwoFactorStep({ user, onContinue, onBack }) {
+  const [backup, setBackup] = useState(false);
+  const [code, setCode] = useState('');
+  const [typed, setTyped] = useState('');
+  const [error, setError] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const ready = backup ? typed.trim().length >= 8 : code.length === 6;
+
+  const submit = async () => {
+    if (!ready || checking) return;
+    setChecking(true);
+    const next = backup ? await spendBackupCode(user, typed) : (await verifyCode(user.twoFactorSecret, code)) && user;
+    setChecking(false);
+    if (next) return onContinue(next);
+    setError(
+      backup
+        ? 'Ovaj rezervni kod ne važi ili je već iskorišćen.'
+        : 'Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.'
+    );
+  };
+
+  const switchTo = (toBackup) => {
+    setBackup(toBackup);
+    setError(null);
+  };
+
+  return (
+    <>
+      <Welcome
+        title="Dvofaktorska prijava"
+        sub={backup ? 'Unesite jedan od rezervnih kodova koje ste sačuvali' : 'Unesite šestocifreni kod iz aplikacije za kodove'}
+      />
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
+        <FormCard>
+          {backup ? (
+            <Field label="Rezervni kod" required>
+              <Input
+                value={typed}
+                onChange={(v) => (setTyped(v), setError(null))}
+                autoFocus
+                autoComplete="one-time-code"
+                spellCheck={false}
+                placeholder="npr. a9883806"
+              />
+            </Field>
+          ) : (
+            <CodeInput value={code} onChange={(v) => (setCode(v), setError(null))} />
+          )}
+          {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
+        </FormCard>
+        <Actions>
+          <Button type="submit" size="lg" className="w-full" disabled={!ready || checking}>
+            Potvrdi
+          </Button>
+          <Button type="button" variant="ghost" size="lg" onClick={() => switchTo(!backup)}>
+            {backup ? 'Koristite kod iz aplikacije' : 'Koristite rezervni kod'}
+          </Button>
+          <Button type="button" variant="ghost" size="lg" onClick={onBack}>
+            Nazad na prijavu
+          </Button>
         </Actions>
       </form>
     </>

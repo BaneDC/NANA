@@ -15,7 +15,7 @@ import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
 import { Field, Password } from '../components/TextField';
 import { chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
-import { changePassword } from '../lib/account';
+import { changePassword, hashBackupCodes } from '../lib/account';
 import { priceLine, renewsOn } from '../data/plans';
 
 // What the account remembers besides the person: kept on the user record, so
@@ -421,11 +421,14 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           open={twoFactorOpen}
           email={user?.email}
           onDone={(codes, secret) => {
-            // Of the codes, how many are left is the only thing worth keeping:
-            // they belong on the server, hashed, not in the account here. The
-            // secret is kept so turning it off can ask for a code — prototype
-            // only; a real build never lets it back to the client.
-            onSaveUser({ twoFactor: true, twoFactorSecret: secret, backupCodesLeft: codes.length });
+            // The codes are kept only hashed, as the password is, so signing in
+            // can take one instead of the app's code (lib/account). The secret
+            // is kept so signing in and turning it off can ask for a code —
+            // prototype only; a real build never lets it back to the client.
+            // one save, once they are hashed (a few milliseconds)
+            hashBackupCodes(codes).then((backupCodeHashes) =>
+              onSaveUser({ twoFactor: true, twoFactorSecret: secret, backupCodesLeft: codes.length, backupCodeHashes })
+            );
             setTwoFactorOpen(false);
           }}
           onClose={() => setTwoFactorOpen(false)}
@@ -437,7 +440,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           open={twoFactorOff}
           secret={user?.twoFactorSecret}
           onDone={() => {
-            onSaveUser({ twoFactor: false, twoFactorSecret: null, backupCodesLeft: 0 });
+            onSaveUser({ twoFactor: false, twoFactorSecret: null, backupCodesLeft: 0, backupCodeHashes: [] });
             setTwoFactorOff(false);
           }}
           onClose={() => setTwoFactorOff(false)}

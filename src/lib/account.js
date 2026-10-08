@@ -53,6 +53,23 @@ export async function changePassword(email, current, next) {
   return null;
 }
 
+// The backup codes, kept as hashes like the password: a code is checked by its
+// hash and is gone once used, so each signs in once.
+const codeHash = (code) => hash(`code:${String(code).trim().toLowerCase()}`);
+export const hashBackupCodes = (codes) => Promise.all(codes.map(codeHash));
+
+// Signing in with one of them instead of the app's code: the user back without
+// it, and how many are left, or null when it is not one of theirs.
+export async function spendBackupCode(user, code) {
+  const all = user.backupCodeHashes || [];
+  const h = await codeHash(code);
+  if (!all.includes(h)) return null;
+  const left = all.filter((x) => x !== h);
+  const next = { ...user, backupCodeHashes: left, backupCodesLeft: left.length };
+  updateAccount(next);
+  return next;
+}
+
 export async function signIn(email, password) {
   let record = null;
   try {
