@@ -102,3 +102,10 @@ export function loadProgress(email) {
     return null;
   }
 }
+
+// The test account with two-factor on (data/demoCase), saved as a registration
+// would save it, its backup codes hashed.
+export async function saveTestTwoFactorAccount({ user, password, backupCodes }) {
+  const backupCodeHashes = await hashBackupCodes(backupCodes);
+  return saveAccount({ ...user, backupCodeHashes, backupCodesLeft: backupCodes.length }, password);
+}

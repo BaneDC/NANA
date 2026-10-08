@@ -66,3 +66,14 @@ export const demoCountry = () => {
     return demoUser.country;
   }
 };
+
+// A test account with two-factor on, for trying the second step of signing in
+// without setting it up through Settings: "Za testiranje: nalog sa
+// dvofaktorskom prijavom" on the sign-in screen saves it in this browser (in
+// place of any account already saved there) and fills its email and password;
+// the code step then shows the code of the moment and the backup codes.
+export const demoTwoFactor = {
+  user: { ...demoUser, email: 'test2fa@nana.test', twoFactor: true, twoFactorSecret: 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP' },
+  password: 'NanaTest2026',
+  backupCodes: ['a9883806', 'd0643cd7', '7391af27'],
+};

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,9 @@ import PhotoCarousel from '../components/PhotoCarousel';
 import SelectCard from '../components/SelectCard';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Field, Input, Password, Select } from '../components/TextField';
-import { saveAccount, signIn, spendBackupCode } from '../lib/account';
-import { verifyCode } from '../lib/totp';
+import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
+import { currentCode, verifyCode } from '../lib/totp';
+import { demoTwoFactor } from '../data/demoCase';
 import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -316,9 +317,38 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
             Nemate nalog? Napravite ga
           </Button>
           <DemoLink onDemo={onDemo} />
+          <button
+            type="button"
+            className={demoLink}
+            onClick={async () => {
+              await saveTestTwoFactorAccount(demoTwoFactor);
+              setEmail(demoTwoFactor.user.email);
+              setPassword(demoTwoFactor.password);
+              setFailed(false);
+            }}
+          >
+            Za testiranje: nalog sa dvofaktorskom prijavom
+          </button>
         </Actions>
       </form>
     </>
+  );
+}
+
+// For the test account only: the code its app would show now, and its backup
+// codes, under the actions as the other testing links are.
+function TestCodes() {
+  const [code, setCode] = useState('');
+  useEffect(() => {
+    const tick = () => currentCode(demoTwoFactor.user.twoFactorSecret).then(setCode);
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <p className="text-center text-xs leading-body text-muted-foreground">
+      Za testiranje: kod iz aplikacije je {code}. Rezervni kodovi: {demoTwoFactor.backupCodes.join(', ')}.
+    </p>
   );
 }
 
@@ -386,6 +416,7 @@ function TwoFactorStep({ user, onContinue, onBack }) {
           <Button type="button" variant="ghost" size="lg" onClick={onBack}>
             Nazad na prijavu
           </Button>
+          {user.email === demoTwoFactor.user.email && <TestCodes />}
         </Actions>
       </form>
     </>

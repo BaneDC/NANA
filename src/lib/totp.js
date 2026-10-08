@@ -74,6 +74,10 @@ async function codeAt(secret, counter) {
   return String(binary % 1000000).padStart(6, '0');
 }
 
+// The code the app shows right now, for the test account's hint on the sign-in
+// screen (data/demoCase): nobody types a real secret into an authenticator to try it.
+export const currentCode = (secret, at = Date.now()) => codeAt(secret, Math.floor(at / 30000));
+
 // One step either side of now, as every server allows: phone clocks drift, and
 // a code typed as the window turns over would otherwise be rejected.
 export async function verifyCode(secret, entered, at = Date.now()) {
