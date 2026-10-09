@@ -39,6 +39,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Značka i oznaka | `Badge` (`success`, `warning`, `destructive`, `secondary`, `default`; `tag`) | `.status-pill`, `.cg-tag` |
 | Dugme | `Button` iz `@/components/ui/button` (`default`, `secondary`, `ghost`, `destructive`; `size`: `default`, `lg`, `icon`) | `Button` iz `src/components/Button.jsx`, `.btn` |
 | Čipovi za izbor | `ToggleGroup` + `ToggleGroupItem` (ili `Toggle`) | `.svc` |
+| Tabovi (dva prikaza iste stvari) | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` (`@/components/ui/tabs`) | — |
 | Prekidač | `Switch` | `.switch`, `.toggle-row` |
 | Modal | `Dialog` (`src/components/Dialog.jsx`) sa `DialogDescription` i `DialogFooter` | `.modal.is-dialog`, `.doc-p`, `.panel-card-actions.is-end` |
 | Drawer | `Modal` (`src/components/Modal.jsx`) sa `SheetFooter` | `.drawer`, `.drawer-body` |
@@ -440,6 +441,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 
 ## 10. Stanje i polja
 
+- **Tabovi su za to gde si, čipovi za ono što biraš** (odlučeno 9. 10.). Dva ili više prikaza iste stvari, od kojih se vidi jedan, su shadcn `Tabs`: siva traka visine dugmeta, bela kartica za izabrani prikaz (plan nege: „Plan nege" / „Pregled i odgovori"). Filteri i izbor ostaju čipovi.
 - **Čip je samo za ono što se bira.** `ToggleGroupItem` (ivica, a popunjen kad je izabran) je dugme: izbor usluga u ugovoru, filteri, odgovor u tri reči, jezik. **Ono što se samo čita** (usluge iz ugovora, šta je urađeno na poseti, šta će raditi, zašto se negovateljica poklapa, njene klasifikacije, šta je porodica tražila) je oznaka: komponenta `Tags` (`src/components/Tags.jsx`, oznaka je `Badge variant="tag"`), siva podloga, bez ivice i **bez ikonice** (ni kvačice), 12px. Ono što je izostavljeno je bleđa oznaka (`off`) i to kaže rečima („— ovog puta ne"). `ServiceChips` crta oznake.
 - **Usluge su iz jednog kataloga** (`src/data/serviceCatalog.js`, odlučeno 3. 10.): 57 usluga u 4 grupe, kao u aplikaciji za negovateljice (Pomoć u svakodnevici, Lična nega i kuća, Praktična nega, Medicinska nega). Ugovor, plan posete, radni nalog i pregled ih prikazuju po grupama (`ServiceChips grouped`: ime grupe, pa oznake). Red negovateljice na Mojoj nezi pokazuje samo imena grupa, a ceo spisak je na njenoj stranici. Ceo katalog (svih 57) se vidi samo u formi gde negovateljica bira šta nudi.
 - **Dodatni sati** (odlučeno 3. 10.): radni nalog sa više sati nego što je rezervisano naplaćuje samo rezervisano. Višak je deo „Dodatni sati" u radnom nalogu sa „Odbij dodatne sate" (secondary) i „Odobri X €" (primary), a do odgovora je i stavka u „Čeka na vas". Manje sati: naplaćuje se koliko je radila, a razlika se vraća („Vraća se" u obračunu).

@@ -6,7 +6,7 @@ import { Card, CardDescription } from '@/components/ui/card';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import PlanContents from '../components/PlanContents';
 import PlanOverview from '../components/PlanOverview';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
 import BackButton from '../components/BackButton';
@@ -64,16 +64,14 @@ export default function PlanDetail({
         </PageActions>
       </PageHeader>
 
-      {/* one is always chosen: pressing the chosen one again does nothing */}
-      <ToggleGroup type="single" size="sm" value={side} onValueChange={(v) => v && setSide(v)} aria-label="Šta prikazati">
-        <ToggleGroupItem value="plan">Plan nege</ToggleGroupItem>
-        <ToggleGroupItem value="overview">Pregled i odgovori</ToggleGroupItem>
-      </ToggleGroup>
+      {/* the plan, and the overview it was built from: two views of one thing */}
+      <Tabs value={side} onValueChange={setSide}>
+        <TabsList aria-label="Šta prikazati">
+          <TabsTrigger value="plan">Plan nege</TabsTrigger>
+          <TabsTrigger value="overview">Pregled i odgovori</TabsTrigger>
+        </TabsList>
 
-      {side === 'overview' ? (
-        <PlanOverview answers={entry.answers} notes={entry.notes} />
-      ) : (
-        <>
+        <TabsContent value="plan" className="flex flex-col gap-3">
           {shownChange && (
             <PlanChangeBanner key={shownChange.at} change={shownChange} onUndo={onUndoChange} onDismiss={onDismissChange} />
           )}
@@ -103,8 +101,12 @@ export default function PlanDetail({
               </Button>
             </div>
           )}
-        </>
-      )}
+        </TabsContent>
+
+        <TabsContent value="overview">
+          <PlanOverview answers={entry.answers} notes={entry.notes} />
+        </TabsContent>
+      </Tabs>
     </Page>
   );
 }

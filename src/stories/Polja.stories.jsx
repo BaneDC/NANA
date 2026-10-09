@@ -5,6 +5,8 @@ import { Field, Input, Password, Select, TextArea } from '@/components/TextField
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardDescription } from '@/components/ui/card';
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
 
 // Every field is from TextField.jsx (docs/patterns.md §10): 16px under a finger
@@ -176,6 +178,37 @@ export const Cipovi = {
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
+    );
+  },
+};
+
+// two or more views of the same thing, one at a time (the plan and its
+// overview); chips stay for what is chosen or filtered
+export const Tabovi = {
+  args: { tabs: 'Plan nege, Pregled i odgovori', disabledLast: false },
+  argTypes: {
+    tabs: { control: 'text', description: 'Nazivi tabova, odvojeni zarezom (2 do 4).' },
+    disabledLast: { control: 'boolean', description: 'Poslednji tab isključen.' },
+  },
+  render: function Story({ tabs, disabledLast }) {
+    const names = tabs.split(',').map((t) => t.trim()).filter(Boolean).slice(0, 4);
+    return (
+      <Tabs defaultValue={names[0]} key={names.join('|')}>
+        <TabsList aria-label="Prikaz">
+          {names.map((n, i) => (
+            <TabsTrigger key={n} value={n} disabled={disabledLast && i === names.length - 1}>
+              {n}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {names.map((n) => (
+          <TabsContent key={n} value={n}>
+            <Card>
+              <CardDescription>Sadržaj taba „{n}".</CardDescription>
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
     );
   },
 };
