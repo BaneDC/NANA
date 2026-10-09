@@ -30,7 +30,8 @@ import { focusPane, useCloseThreshold } from '../lib/sheet';
 // The head is one group: the eyebrow over the title, with the close beside the
 // two and on their middle (with a mouse; a sheet's close is placed by the
 // sheet), and `description`, the dialog's sentence of what this is about, 4
-// under them, the head's whole width. What follows is the body.
+// under them, kept out of the close's column (its 28 and the 12 beside it; 48
+// on a phone) so it never runs on under the button. What follows is the body.
 //
 // `header` replaces the eyebrow and title when the head is more than that (the
 // plans' larger title, a caregiver's avatar); it is handed the Title to use,
@@ -73,7 +74,7 @@ export default function Dialog({
           </DialogHeader>
           {close}
         </div>
-        {description && <DialogDescription>{description}</DialogDescription>}
+        {description && <DialogDescription className="pr-10 phone:pr-12">{description}</DialogDescription>}
       </div>
     );
 
