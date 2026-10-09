@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Send } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription } from '@/components/ui/card';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import PlanContents from '../components/PlanContents';
+import PlanOverview from '../components/PlanOverview';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
 import BackButton from '../components/BackButton';
@@ -12,7 +15,9 @@ import BackButton from '../components/BackButton';
 //
 // It opens on Minna's letter. The summary of the person that used to sit above
 // it told the family what they had just told us; the letter is the first thing
-// the plan has to say back.
+// the plan has to say back. A switch at the top turns it to "Pregled": the
+// overview the onboarding ended on, the frailty scale and every answer given,
+// so the family can always come back and read what they said.
 export default function PlanDetail({
   entry,
   unlocked,
@@ -30,6 +35,7 @@ export default function PlanDetail({
 }) {
   const { plan, title, date, status, archived } = entry;
   const shownChange = archived ? null : change;
+  const [side, setSide] = useState('plan');
 
   return (
     <Page>
@@ -58,34 +64,46 @@ export default function PlanDetail({
         </PageActions>
       </PageHeader>
 
-      {shownChange && (
-        <PlanChangeBanner key={shownChange.at} change={shownChange} onUndo={onUndoChange} onDismiss={onDismissChange} />
-      )}
+      {/* one is always chosen: pressing the chosen one again does nothing */}
+      <ToggleGroup type="single" size="sm" value={side} onValueChange={(v) => v && setSide(v)} aria-label="Šta prikazati">
+        <ToggleGroupItem value="plan">Plan nege</ToggleGroupItem>
+        <ToggleGroupItem value="overview">Pregled i odgovori</ToggleGroupItem>
+      </ToggleGroup>
 
-      {archived && (
-        <Card>
-          <CardDescription>{entry.summary}</CardDescription>
-        </Card>
-      )}
+      {side === 'overview' ? (
+        <PlanOverview answers={entry.answers} notes={entry.notes} />
+      ) : (
+        <>
+          {shownChange && (
+            <PlanChangeBanner key={shownChange.at} change={shownChange} onUndo={onUndoChange} onDismiss={onDismissChange} />
+          )}
 
-      <PlanContents
-        plan={{ ...plan, caregiverCount: entry.caregiverCount }}
-        unlocked={unlocked}
-        archived={archived}
-        change={shownChange}
-        onSelectCaregiver={onSelectCaregiver}
-        onOpenCaregiver={onOpenCaregiver}
-        onUnlock={onUnlock}
-        onFindCaregivers={onFindCaregivers}
-        standingOf={standingOf}
-      />
+          {archived && (
+            <Card>
+              <CardDescription>{entry.summary}</CardDescription>
+            </Card>
+          )}
 
-      {archived && (
-        <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
-          <Button variant="secondary" onClick={onBack}>
-            Nazad na sve planove
-          </Button>
-        </div>
+          <PlanContents
+            plan={{ ...plan, caregiverCount: entry.caregiverCount }}
+            unlocked={unlocked}
+            archived={archived}
+            change={shownChange}
+            onSelectCaregiver={onSelectCaregiver}
+            onOpenCaregiver={onOpenCaregiver}
+            onUnlock={onUnlock}
+            onFindCaregivers={onFindCaregivers}
+            standingOf={standingOf}
+          />
+
+          {archived && (
+            <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
+              <Button variant="secondary" onClick={onBack}>
+                Nazad na sve planove
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </Page>
   );

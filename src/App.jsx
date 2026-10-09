@@ -371,6 +371,8 @@ export default function App() {
     threads,
     caregiverCount: caregivers.length,
     today: formatToday(),
+    answers,
+    notes,
   });
   const openEntry = entries.find((e) => e.id === selectedPlan) || entries[0];
 

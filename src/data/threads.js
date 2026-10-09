@@ -11,7 +11,9 @@ export const seedThreads = [];
 // One list for every care plan the user has: the live one plus each past thread.
 // The Care plans page, its detail page and the nav all read from this, so they
 // can never disagree about what exists.
-export function planEntries({ plan, threads, caregiverCount, today }) {
+// Each entry carries the answers and notes it was built from, so the plan page
+// can show the overview and every answer behind its "Pregled" switch.
+export function planEntries({ plan, threads, caregiverCount, today, answers = {}, notes = [] }) {
   const live = plan
     ? {
         id: 'live',
@@ -22,6 +24,8 @@ export function planEntries({ plan, threads, caregiverCount, today }) {
         summary: plan.summary,
         caregiverCount,
         archived: false,
+        answers,
+        notes,
       }
     : null;
 
@@ -34,6 +38,8 @@ export function planEntries({ plan, threads, caregiverCount, today }) {
     summary: t.summary,
     caregiverCount: t.caregivers,
     archived: true,
+    answers: t.answers,
+    notes: t.notes || [],
   }));
 
   return [live, ...past].filter(Boolean);

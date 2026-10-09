@@ -267,7 +267,7 @@ export default function CardGallery() {
   const answers = useMemo(() => reconcile({}, demoAnswers).answers, []);
   const plan = useMemo(() => buildPlan(answers, demoNotes), [answers]);
   const entries = useMemo(
-    () => planEntries({ plan, threads: seedThreads, caregiverCount: caregivers.length, today: '1. oktobra 2026.' }),
+    () => planEntries({ plan, threads: seedThreads, caregiverCount: caregivers.length, today: '1. oktobra 2026.', answers, notes: demoNotes }),
     [plan]
   );
   const live = entries.find((e) => e.id === 'live') || entries[0];
