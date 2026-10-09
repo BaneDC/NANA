@@ -8,6 +8,7 @@ import { PaneHint, PaneLabel } from '@/components/pane';
 import Dialog from './Dialog';
 import { Field, Input } from './TextField';
 import { chargedFor, firstName, money } from '../data/familyCare';
+import { cityOf } from '../data/places';
 
 // Where she lives changed in the profile. That is not a field like the others:
 // which caregivers can come depends on it. So before anything is saved this
@@ -28,9 +29,6 @@ import { chargedFor, firstName, money } from '../data/familyCare';
 // neighbouring one within 15 km), and confirming saves the address and says
 // what happens; ending the cooperations is the coordinator's step for now.
 
-// where caregivers work, and which places border on which
-const SERVED = ['helsinki', 'espoo', 'vantaa', 'kauniainen'];
-const cityOf = (place) => SERVED.find((c) => String(place || '').toLowerCase().includes(c)) || null;
 
 // does her radius take in the new place
 function reaches(caregiver, place) {

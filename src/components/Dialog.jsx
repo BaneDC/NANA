@@ -27,9 +27,16 @@ import { focusPane, useCloseThreshold } from '../lib/sheet';
 //
 // `header` replaces the eyebrow and title when the head is more than that (the
 // plans' larger title, a caregiver's avatar); it is handed the Title to use.
+// With a mouse, a field in it reaches 12 into the padding on each side
+// (FIELD_OUT), so its label and the text in it, which sit 12 inside the field,
+// start where the title does (docs/patterns.md §10). Not on a phone: the
+// sheet's 16 would leave the field 4 from the screen's edge.
+//
 // `className` reaches the dialog's own box (a width, a gap), and on a phone the
 // part that scrolls; `closeClassName` moves the close on a phone, to sit level
 // with a head of another height.
+const FIELD_OUT = '[&_[data-slot=field]]:-mx-3 [&_[data-slot=field]]:w-[calc(100%+24px)]';
+
 export default function Dialog({
   title,
   eyebrow,
@@ -80,7 +87,7 @@ export default function Dialog({
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <DialogContent
         wide={wide}
-        className={className}
+        className={cn(FIELD_OUT, className)}
         tabIndex={-1}
         showCloseButton={dismissible}
         onOpenAutoFocus={focusPane}

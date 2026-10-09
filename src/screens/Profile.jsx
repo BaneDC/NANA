@@ -9,7 +9,8 @@ import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/
 import { Fact, Facts } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
-import { Field, Input } from '../components/TextField';
+import { Field, Input, Select } from '../components/TextField';
+import { OTHER_PLACE, PLACES, joinPlace, splitPlace } from '../data/places';
 import Attention from '../components/Attention';
 import MoveDialog from '../components/MoveDialog';
 
@@ -46,6 +47,41 @@ function Section({ title, rows, onEdit }) {
   );
 }
 
+// Where she lives, picked rather than typed: the city from the four we work in
+// (a part of town beside it, if they like), or "Drugo mesto" and its name.
+// Which caregivers can come is read from the city, so it cannot be a spelling.
+function PlaceField({ label, value, onChange }) {
+  const [place, setPlace] = useState(() => splitPlace(value));
+  const set = (patch) => {
+    const next = { ...place, ...patch };
+    setPlace(next);
+    onChange(joinPlace(next));
+  };
+  return (
+    <>
+      <Field label={label}>
+        <Select
+          value={place.city || null}
+          onChange={(city) => set({ city, part: city === place.city ? place.part : '' })}
+          options={[...PLACES.map((c) => ({ value: c, label: c })), { value: OTHER_PLACE, label: 'Drugo mesto' }]}
+          placeholder="Izaberite grad"
+        />
+      </Field>
+      {place.city === OTHER_PLACE ? (
+        <Field label="Koje mesto" hint="Tamo još nemamo negovateljice; koordinatorka će vas pozvati.">
+          <Input value={place.other} onChange={(other) => set({ other })} placeholder="npr. Tampere" />
+        </Field>
+      ) : (
+        place.city && (
+          <Field label="Deo grada" hint="Nije obavezno.">
+            <Input value={place.part} onChange={(part) => set({ part })} placeholder="npr. Töölö" />
+          </Field>
+        )
+      )}
+    </>
+  );
+}
+
 // Editing it by hand, rather than telling the assistant to. The account's own
 // fields are the account's; everything else is an answer the plan is built
 // from, so saving one goes through the same change the plan shows.
@@ -56,16 +92,25 @@ function FieldEditor({ open = true, title, fields, onSave, onClose }) {
   return (
     <Dialog eyebrow="Profil" title={title} open={open} onClose={onClose}>
       <div className="flex flex-col gap-3">
-        {fields.map((f) => (
-          <Field key={f.id} label={f.label}>
-            <Input
-              type={f.type || 'text'}
+        {fields.map((f) =>
+          f.id === 'city' ? (
+            <PlaceField
+              key={f.id}
+              label={f.label}
               value={values[f.id] || ''}
-              placeholder={f.placeholder}
               onChange={(value) => setValues((v) => ({ ...v, [f.id]: value }))}
             />
-          </Field>
-        ))}
+          ) : (
+            <Field key={f.id} label={f.label}>
+              <Input
+                type={f.type || 'text'}
+                value={values[f.id] || ''}
+                placeholder={f.placeholder}
+                onChange={(value) => setValues((v) => ({ ...v, [f.id]: value }))}
+              />
+            </Field>
+          )
+        )}
       </div>
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
