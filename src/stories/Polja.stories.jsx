@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Search } from 'lucide-react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
-import { Field, Input, Password, Select, TextArea } from '@/components/TextField';
+import { DateInput, Field, Input, Password, Select, TextArea } from '@/components/TextField';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -209,6 +209,26 @@ export const Tabovi = {
           </TabsContent>
         ))}
       </Tabs>
+    );
+  },
+};
+
+// a day from a calendar, never typed: the days before `from` cannot be chosen
+export const Datum = {
+  args: { label: 'Od kada', onlyFromToday: true, daysAhead: 0 },
+  argTypes: {
+    label: { control: 'text' },
+    onlyFromToday: { control: 'boolean', description: 'Dani pre današnjeg ne mogu da se izaberu (`from`).' },
+    daysAhead: { control: { type: 'range', min: 0, max: 90, step: 5 }, description: 'Najkasniji dan (`to`), toliko dana od danas; 0 = bez granice.' },
+  },
+  render: function Story({ label, onlyFromToday, daysAhead }) {
+    const [day, setDay] = useState(null);
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+    const to = daysAhead ? new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysAhead) : undefined;
+    return (
+      <Field label={label}>
+        <DateInput value={day} onChange={setDay} from={onlyFromToday ? today : undefined} to={to} today={today} />
+      </Field>
     );
   },
 };

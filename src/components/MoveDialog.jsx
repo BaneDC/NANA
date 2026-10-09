@@ -6,8 +6,8 @@ import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint, PaneLabel } from '@/components/pane';
 import Dialog from './Dialog';
-import { Field, Input } from './TextField';
-import { chargedFor, firstName, money } from '../data/familyCare';
+import { DateInput, Field } from './TextField';
+import { chargedFor, dateOfToday, firstName, longDate, money } from '../data/familyCare';
 import { cityOf } from '../data/places';
 
 // Where she lives changed in the profile. That is not a field like the others:
@@ -40,7 +40,9 @@ function reaches(caregiver, place) {
 
 export default function MoveDialog({ open = true, care, from, to, onCorrect, onMove, onPause, onClose }) {
   const [kind, setKind] = useState(null); // correction | move | stay
-  const [when, setWhen] = useState('');
+  const [when, setWhen] = useState(null); // a Date, picked
+  const today = dateOfToday(care);
+  const whenText = when ? longDate(when) : '';
   const served = Boolean(cityOf(to));
   const working = (care?.arrangements || []).filter((a) => !a.endedOn);
   const pendingTo = (care?.requests || []).filter((r) => r.status === 'pending');
@@ -69,7 +71,7 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
             upišete. Rezervisani novac za te posete se vraća.
           </PaneHint>
           <Field label="Do kada">
-            <Input value={when} onChange={setWhen} placeholder="npr. 15. novembra" autoFocus />
+            <DateInput value={when} onChange={setWhen} from={today} />
           </Field>
         </>
       )}
@@ -77,7 +79,7 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
       {kind === 'move' && (
         <>
           <Field label="Od kada">
-            <Input value={when} onChange={setWhen} placeholder="npr. 1. novembra" autoFocus />
+            <DateInput value={when} onChange={setWhen} from={today} />
           </Field>
 
           {!served ? (
@@ -105,7 +107,7 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
                         <p className="text-xs leading-body text-muted-foreground">
                           {ok
                             ? `${firstName(a.caregiver.name)} radi u krugu od ${a.caregiver.radius} km od mesta ${a.caregiver.area}, pa nova adresa ulazi u njega. Dobiće obaveštenje i novu adresu.`
-                            : `Saradnja se završava ${when.trim() || 'na dan selidbe'}.${
+                            : `Saradnja se završava ${whenText || 'na dan selidbe'}.${
                                 booked.length
                                   ? ` ${booked.length === 1 ? 'Zakazana poseta posle toga se otkazuje' : `Zakazane posete posle toga (${booked.length}) se otkazuju`}, a ${money(held)} rezervisanog se vraća.`
                                   : ''
@@ -134,13 +136,13 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
         </Button>
         {kind === 'correction' && <Button onClick={onCorrect}>Sačuvaj ispravku</Button>}
         {kind === 'stay' && (
-          <Button disabled={!when.trim()} onClick={() => onPause(when.trim())}>
+          <Button disabled={!when} onClick={() => onPause(whenText)}>
             Pauziraj posete
           </Button>
         )}
         {kind === 'move' &&
           (served ? (
-            <Button disabled={!when.trim()} onClick={() => onMove(when.trim())}>
+            <Button disabled={!when} onClick={() => onMove(whenText)}>
               Potvrdi selidbu
             </Button>
           ) : (

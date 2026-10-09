@@ -146,8 +146,11 @@
    keep the feel: stiffness 320 with damping 30 for a dialog in the middle (a
    touch of overshoot), 34 for the side pane (none to speak of). Each curve is
    the spring sampled over the time it takes to settle, which is also the
-   duration that goes with it: 490ms and 430ms. */
+   duration that goes with it: 490ms and 430ms. `ease-out-strong` is for what
+   answers a click and moves on screen without a spring (the tabs' white tab
+   sliding to the one chosen): it starts at once and settles softly. */
 @theme {
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-spring-dialog: linear(0, 0.0318, 0.1092, 0.2109, 0.322, 0.4325, 0.536, 0.6291, 0.7099, 0.7783, 0.8347, 0.8802, 0.9162, 0.9439, 0.9647, 0.98, 0.9909, 0.9983, 1.0031, 1.006, 1.0075, 1.0079, 1.0078, 1.0072, 1.0064, 1.0055, 1.0047, 1.0038, 1.0031, 1.0024, 1.0019, 1.0014, 1);
   --ease-spring-pane: linear(0, 0.0244, 0.0842, 0.1638, 0.2524, 0.3427, 0.43, 0.5113, 0.5853, 0.6511, 0.7088, 0.7587, 0.8014, 0.8376, 0.868, 0.8933, 0.9142, 0.9314, 0.9455, 0.9569, 0.9661, 0.9735, 0.9794, 0.9841, 0.9878, 0.9907, 0.993, 0.9948, 0.9961, 0.9972, 0.998, 0.9985, 1);
 }

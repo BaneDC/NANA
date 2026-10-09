@@ -35,12 +35,15 @@ export function AppPane({ className, ...props }) {
   );
 }
 
+// The scrollbar's room is kept on both sides whether or not the page scrolls,
+// so a page that grows past the screen (another tab, "Prikaži još") does not
+// slide sideways when the scrollbar comes, and the column stays in the middle.
 export function Page({ className, ...props }) {
   return (
     <div
       data-slot="page"
       className={cn(
-        'flex min-h-0 flex-1 flex-col items-stretch gap-3 overflow-y-auto p-6 phone:px-4 phone:pt-4 phone:pb-6',
+        'flex min-h-0 flex-1 flex-col items-stretch gap-3 overflow-y-auto p-6 [scrollbar-gutter:stable_both-edges] phone:px-4 phone:pt-4 phone:pb-6',
         '*:mx-auto *:w-full *:max-w-[720px] has-[>[data-slot=back-button]:first-child]:pt-4',
         '[&>[data-slot=page-section]+[data-slot=page-section]]:mt-5',
         className

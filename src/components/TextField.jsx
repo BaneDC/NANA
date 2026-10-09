@@ -1,9 +1,11 @@
 import { createContext, useContext, useId, useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { CalendarDays, Eye, EyeOff } from 'lucide-react';
 import { FieldDescription, FieldLabel, Field as FieldRoot } from '@/components/ui/field';
 import { Input as InputBox } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select as SelectRoot,
   SelectContent,
@@ -12,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { longDate } from '../data/familyCare';
 
 // The one text field (docs/patterns.md §10), built from shadcn's Field, Input,
 // InputGroup, Textarea and Select. Every form in the app uses it — settings,
@@ -136,5 +139,53 @@ export function Select({ value, onChange, options, placeholder = 'Izaberite', la
         ))}
       </SelectContent>
     </SelectRoot>
+  );
+}
+
+// A day, picked from a calendar rather than typed: the field shows it as it is
+// said ("1. novembra 2026") with the calendar at its end, and opens a month
+// under it, on the day chosen or the first that can be. `from` and `to` are the
+// first and last days that can be chosen (Dates); `today` is the day marked as
+// today (the prototype's own, which is not the clock's), `from` if not given.
+// Picking a day closes it.
+export function DateInput({ value, onChange, from, to, today = from, placeholder = 'Izaberite datum', autoFocus, className }) {
+  const id = useContext(FieldId);
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          id={id}
+          autoFocus={autoFocus}
+          data-autofocus={autoFocus || undefined}
+          data-placeholder={value ? undefined : ''}
+          className={cn(
+            'flex h-(--input-size) w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-left text-xs text-foreground transition-[border-color] duration-180 outline-none focus-visible:border-primary data-[placeholder]:text-muted-foreground data-[state=open]:border-primary pointer-coarse:text-[16px] pointer-coarse:leading-6',
+            className
+          )}
+        >
+          <span className="min-w-0 flex-1 truncate">{value ? longDate(value) : placeholder}</span>
+          <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <Calendar
+          mode="single"
+          selected={value ?? undefined}
+          defaultMonth={value ?? from}
+          today={today}
+          disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
+          startMonth={from}
+          endMonth={to}
+          onSelect={(d) => {
+            if (!d) return;
+            onChange(d);
+            setOpen(false);
+          }}
+          autoFocus
+        />
+      </PopoverContent>
+    </Popover>
   );
 }

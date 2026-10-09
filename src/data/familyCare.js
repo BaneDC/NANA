@@ -58,6 +58,11 @@ const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jul
 const nowOf = (c) => c?.now ?? START_HOUR;
 export const todayOf = (c) => Math.floor(nowOf(c) / 24);
 const dateOfDay = (day) => new Date(EPOCH.getFullYear(), EPOCH.getMonth(), EPOCH.getDate() + day);
+// the calendar date of a prototype day, and today's (for a date picker)
+export const dateOfToday = (c) => dateOfDay(todayOf(c));
+// a picked date, as it is said with its year: "1. novembra 2026" (no closing
+// dot, so it can end a sentence)
+export const longDate = (d) => `${d.getDate()}. ${GENITIVE[d.getMonth()]} ${d.getFullYear()}`;
 export const dateText = (day) => {
   const d = dateOfDay(day);
   return `${d.getDate()}. ${GENITIVE[d.getMonth()]}`;
@@ -88,7 +93,7 @@ export function dayOf(text, today = 0) {
 }
 export const monthOf = (text, today = 0) => {
   const d = dayOf(text, today);
-  return Math.abs(d - dateOfDay(today)) <= 86400000 ? 'Ove nedelje' : `${MONTHS[d.getMonth()]} ${d.getFullYear()}.`;
+  return Math.abs(d - dateOfDay(today)) <= 86400000 ? 'Ove nedelje' : `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 };
 
 // ── reading it ──────────────────────────────────────────────────────────────

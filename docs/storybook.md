@@ -25,7 +25,7 @@ Statički build (npr. za Vercel): `npm run build-storybook` → `storybook-stati
 | Grupa | Priče |
 |---|---|
 | Osnovno | Dugme (sve varijante, sa ikonicom, veličine, isključeno), Značka (stanja i oznaka), Avatar (po `--avatar`), i igralište za svako |
-| Polja | Tekst (sa ikonicom, lozinka, napomena, isključeno), Polje · igralište, Polje za tekst, Izbor, Prekidač i kvačica, Čipovi (filteri), Tabovi (sa kontrolama), Kod (2FA) |
+| Polja | Tekst (sa ikonicom, lozinka, napomena, isključeno), Polje · igralište, Polje za tekst, Izbor, Prekidač i kvačica, Čipovi (filteri), Tabovi (sa kontrolama), Datum (sa kontrolama), Kod (2FA) |
 | Kartica | Osnovna (sa podacima), Kartica · igralište, Sa dugmetom u glavi, Kartica koja se otvara („Pronađi"), Sa ikonicom („Pozovite me"), Redovi u kartici |
 | Osoba i poseta | Glava negovateljice (svako stanje) i njeno igralište, Ocena i njeno igralište, Stanje sa njom, Posete (svaki status), Poseta · igralište, Izveštaj posete, Oznake |
 | Prozori | Drawer (`Modal`) i Modal (`Dialog`) sa kontrolama, i Drawer porodice: svaki drawer porodice na primeru, bira se u kontrolama |
