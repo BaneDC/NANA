@@ -366,6 +366,7 @@ Vrsta vrednosti određuje raspored:
 
 - Oznaka je u oba slučaja 12px secondary, a vrednost primary.
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
+- **Ispod naslova kartice `Facts` počinje 20 niže** (odlučeno 9. 10.): 8 kartice i 12 više, pa je naslov jasno naslov kartice, a prvi red jedan od redova (između redova je 12, linija, 12). `Facts` to radi sam kad stoji odmah posle `CardHeader`: kartice u Profilu i „Vaši odgovori" u pregledu plana.
 - **Jedini izuzetak je cenovnik partnera** (u `RecommendationCard`): naziv levo, redovna i Minnina cena u koloni desno.
 - **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. Za sada samo u pregledu negovateljice.
 - **PDV u radnom nalogu** (odlučeno 6. 10.): cena koju porodica vidi već sadrži PDV (25,5%, finski), pa se ništa ne dodaje. Ispod ukupnog iznosa radnog naloga i ispod rezervisanog iznosa u planu posete stoji red „Od toga PDV (25,5%)" sa iznosom, kao na računu (`vatIn`, `vatText`). Cena po satu svuda gde se prikazuje ugovor (kartica „Ugovor o nezi", novi uslovi, pregled, sve verzije) kaže „18 € / h, PDV uključen" (`rateText`). Sve je u `src/data/familyCare.js`. Kod otkazane posete i iznosa 0 reda sa PDV-om nema.

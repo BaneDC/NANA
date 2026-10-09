@@ -40,8 +40,11 @@ export function DataRow({ label, off, total, className, children, ...props }) {
 //   <Facts>
 //     <Fact label="Ime i prezime">Anna Korhonen</Fact>
 //   </Facts>
+//
+// Under a card's title the rows start 20 down (the card's 8 and 12 more), so
+// the title reads as the card's and the first row as one of the rows.
 export function Facts({ className, ...props }) {
-  return <div data-slot="facts" className={cn('flex flex-col', className)} {...props} />;
+  return <div data-slot="facts" className={cn('flex flex-col [[data-slot=card-header]+&]:mt-3', className)} {...props} />;
 }
 
 export function Fact({ label, className, children, ...props }) {
