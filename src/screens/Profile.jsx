@@ -11,6 +11,7 @@ import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
 import { Field, Input } from '../components/TextField';
 import Attention from '../components/Attention';
+import MoveDialog from '../components/MoveDialog';
 
 // Reads straight from the questionnaire answers, so the profile is whatever the
 // user told the assistant — no second source of truth.
@@ -79,7 +80,7 @@ function FieldEditor({ open = true, title, fields, onSave, onClose }) {
   );
 }
 
-export default function Profile({ user, answers, onGoToChat, onSaveUser, onEditAnswers }) {
+export default function Profile({ user, answers, care, onGoToChat, onSaveUser, onEditAnswers, onFlash }) {
   const elderly = fieldsOf('about-person', answers);
   const contact = fieldsOf('about-you', answers);
   const goal = fieldsOf('family-goal', answers);
@@ -94,9 +95,21 @@ export default function Profile({ user, answers, onGoToChat, onSaveUser, onEditA
     return q.fields.map((f) => ({ id: f.id, label: srField(q, f.id), value: values[f.id] || '', placeholder: f.placeholder, optional: f.optional }));
   };
   const saveQuestion = (id) => (values) => {
+    // where she lives is not saved as it stands: a move changes which
+    // caregivers can come, so the move dialog asks what it is first
+    const before = answers[id]?.values?.city || '';
+    if (id === 'about-person' && values.city?.trim() && values.city.trim() !== before.trim()) {
+      setEditing(null);
+      setMove({ values, from: before, to: values.city.trim() });
+      return;
+    }
     onEditAnswers([{ questionId: id, answer: { values } }]);
     setEditing(null);
   };
+  // the change of address waiting on the move dialog, and kept while it closes
+  const [move, setMove] = useState(null);
+  const shownMove = useKept(move);
+  const keep = () => onEditAnswers([{ questionId: 'about-person', answer: { values: move.values } }]);
 
   return (
     <Page>
@@ -164,6 +177,33 @@ export default function Profile({ user, answers, onGoToChat, onSaveUser, onEditA
           fields={questionFields(shown)}
           onSave={saveQuestion(shown)}
           onClose={() => setEditing(null)}
+        />
+      )}
+
+      {shownMove && (
+        <MoveDialog
+          open={Boolean(move)}
+          care={care}
+          from={shownMove.from}
+          to={shownMove.to}
+          onCorrect={() => {
+            keep();
+            setMove(null);
+          }}
+          onMove={(when) => {
+            if (when) {
+              keep();
+              onFlash?.(`Selidba je zabeležena od ${when}. Koordinatorka će vas pozvati oko negovateljica.`);
+            } else {
+              onFlash?.('Koordinatorka će vas pozvati oko selidbe.');
+            }
+            setMove(null);
+          }}
+          onPause={(until) => {
+            onFlash?.(`Posete su pauzirane do ${until}. Adresa je ostala ista.`);
+            setMove(null);
+          }}
+          onClose={() => setMove(null)}
         />
       )}
     </Page>

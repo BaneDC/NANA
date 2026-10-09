@@ -586,6 +586,8 @@ export default function App() {
                 <Profile
                   user={user}
                   answers={answers}
+                  care={care}
+                  onFlash={say}
                   onSaveUser={saveUser}
                   onEditAnswers={editAnswers}
                   onGoToChat={goToChat}

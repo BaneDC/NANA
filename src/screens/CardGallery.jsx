@@ -377,7 +377,7 @@ export default function CardGallery() {
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
       <Frame {...S('profil')}>
-        <Profile user={user} answers={answers} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} />
+        <Profile user={user} answers={answers} care={care} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} onFlash={noop} />
       </Frame>
       <Frame {...S('profil-prazno')}>
         <Profile user={user} answers={{}} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} />
