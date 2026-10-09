@@ -71,22 +71,23 @@ export default function PlanContents({
               />
             ))
           ) : (
-            // the rest, blurred and fading out under what opens it
+            // the rest, just showing through, under what opens it: blurred,
+            // faint and fading out, the sentence and its button in the middle
             <div className="relative min-h-[300px] overflow-hidden">
               <div
-                className="pointer-events-none -mx-4 flex max-h-[300px] flex-col gap-3 overflow-hidden px-4 blur-[3.5px] select-none [mask-image:linear-gradient(180deg,#000_0%,#000_40%,transparent_95%)]"
+                className="pointer-events-none -mx-4 flex max-h-[300px] flex-col gap-3 overflow-hidden px-4 opacity-50 blur-[6px] select-none [mask-image:linear-gradient(180deg,#000_0%,#000_45%,transparent_100%)]"
                 aria-hidden="true"
               >
                 {locked.map((rec) => (
                   <RecommendationCard key={rec.id} rec={rec} unlocked={false} />
                 ))}
               </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-end gap-2 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.6)_45%,var(--surface-elevated)_72%)] p-4 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[color-mix(in_srgb,var(--surface-elevated)_55%,transparent)] p-4 text-center">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
                   <Lock size={14} strokeWidth={2} />
                 </span>
                 <p className="text-sm font-medium text-foreground">Još {locked.length} preporuke u punom planu</p>
-                <p className="mb-2 text-xs leading-body text-muted-foreground">
+                <p className="mb-2 max-w-[440px] text-xs leading-body text-muted-foreground">
                   Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Minna, promene
                   koje stan čine bezbednijim{archived ? '.' : ', i direktan broj svake negovateljice.'}
                 </p>
