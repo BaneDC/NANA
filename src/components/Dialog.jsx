@@ -1,6 +1,8 @@
 import {
   Dialog as DialogRoot,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogEyebrow,
   DialogHeader,
   DialogTitle,
@@ -25,8 +27,14 @@ import { focusPane, useCloseThreshold } from '../lib/sheet';
 // one Escape closes, and the drawer stays. `dismissible={false}` takes away the
 // close, Escape and a click past it: backup codes are shown once.
 //
+// The head is one group: the eyebrow over the title, with the close beside the
+// two and on their middle (with a mouse; a sheet's close is placed by the
+// sheet), and `description`, the dialog's sentence of what this is about, 4
+// under them, the head's whole width. What follows is the body.
+//
 // `header` replaces the eyebrow and title when the head is more than that (the
-// plans' larger title, a caregiver's avatar); it is handed the Title to use.
+// plans' larger title, a caregiver's avatar); it is handed the Title to use,
+// and the close stays in the corner.
 // With a mouse, a field in it reaches 12 into the padding on each side
 // (FIELD_OUT), so its label and the text in it, which sit 12 inside the field,
 // start where the title does (docs/patterns.md §10). Not on a phone: the
@@ -40,6 +48,7 @@ const FIELD_OUT = '[&_[data-slot=field]]:-mx-3 [&_[data-slot=field]]:w-[calc(100
 export default function Dialog({
   title,
   eyebrow,
+  description,
   header,
   wide,
   className,
@@ -52,14 +61,20 @@ export default function Dialog({
   const phone = useIsPhone();
   const sheet = useCloseThreshold();
   const onOpenChange = (next) => !next && onClose?.();
-  const head = (Title) =>
+  const head = (Title, close) =>
     header ? (
       header(Title)
     ) : (
-      <DialogHeader>
-        {eyebrow && <DialogEyebrow>{eyebrow}</DialogEyebrow>}
-        <Title>{title}</Title>
-      </DialogHeader>
+      <div data-slot="dialog-head" className="flex flex-col gap-1">
+        <div className="flex items-center gap-3">
+          <DialogHeader className={cn('min-w-0 flex-1', close && 'pr-0')}>
+            {eyebrow && <DialogEyebrow>{eyebrow}</DialogEyebrow>}
+            <Title>{title}</Title>
+          </DialogHeader>
+          {close}
+        </div>
+        {description && <DialogDescription>{description}</DialogDescription>}
+      </div>
     );
 
   if (phone) {
@@ -89,12 +104,20 @@ export default function Dialog({
         wide={wide}
         className={cn(FIELD_OUT, className)}
         tabIndex={-1}
-        showCloseButton={dismissible}
+        showCloseButton={dismissible && Boolean(header)}
         onOpenAutoFocus={focusPane}
         onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
         onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
       >
-        {head(DialogTitle)}
+        {head(
+          DialogTitle,
+          dismissible && (
+            <DialogClose className={cn(paneCloseClass, 'shrink-0')}>
+              <X className="size-4" strokeWidth={1.75} />
+              <span className="sr-only">Zatvori</span>
+            </DialogClose>
+          )
+        )}
         {children}
       </DialogContent>
     </DialogRoot>

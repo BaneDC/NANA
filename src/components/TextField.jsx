@@ -148,7 +148,7 @@ export function Select({ value, onChange, options, placeholder = 'Izaberite', la
 // first and last days that can be chosen (Dates); `today` is the day marked as
 // today (the prototype's own, which is not the clock's), `from` if not given.
 // Picking a day closes it.
-export function DateInput({ value, onChange, from, to, today = from, placeholder = 'Izaberite datum', autoFocus, className }) {
+export function DateInput({ value, onChange, from, to, today = from, placeholder = 'Izaberite datum', ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const [open, setOpen] = useState(false);
   return (
@@ -157,6 +157,7 @@ export function DateInput({ value, onChange, from, to, today = from, placeholder
         <button
           type="button"
           id={id}
+          aria-label={ariaLabel}
           autoFocus={autoFocus}
           data-autofocus={autoFocus || undefined}
           data-placeholder={value ? undefined : ''}

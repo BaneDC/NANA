@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
+import { DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { PaneHint, PaneLabel } from '@/components/pane';
+import { PaneHint } from '@/components/pane';
+import AutoHeight from './AutoHeight';
 import Dialog from './Dialog';
 import { DateInput, Field } from './TextField';
 import { chargedFor, dateOfToday, firstName, longDate, money } from '../data/familyCare';
@@ -25,6 +25,13 @@ import { cityOf } from '../data/places';
 // - a stay elsewhere for a while (hospital, rehabilitation, with family): the
 //   address stays and the visits pause until the date.
 //
+// Laid out as a head, a body and a footer, grouped by space alone, no lines:
+// the head says what is changing; the body is parts 24 apart, each its name
+// and, 8 under it, what it holds (what this is, from when, the caregivers, the
+// plan). A move is chosen to begin with, being what a new address most often
+// is; another choice changes the parts under the choice in place, the dialog
+// growing or shrinking to them (AutoHeight) rather than opening anew.
+//
 // Prototype: the radius is read from the place names (the same city, or a
 // neighbouring one within 15 km), and confirming saves the address and says
 // what happens; ending the cooperations is the coordinator's step for now.
@@ -39,7 +46,7 @@ function reaches(caregiver, place) {
 }
 
 export default function MoveDialog({ open = true, care, from, to, onCorrect, onMove, onPause, onClose }) {
-  const [kind, setKind] = useState(null); // correction | move | stay
+  const [kind, setKind] = useState('move'); // correction | move | stay
   const [when, setWhen] = useState(null); // a Date, picked
   const today = dateOfToday(care);
   const whenText = when ? longDate(when) : '';
@@ -48,89 +55,95 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
   const pendingTo = (care?.requests || []).filter((r) => r.status === 'pending');
 
   return (
-    <Dialog eyebrow="Profil · O kome brinemo" title="Gde sada živi?" wide open={open} onClose={onClose}>
-      <DialogDescription>
-        Menjate „{from || '-'}" u „{to}". Od mesta zavisi koje negovateljice mogu da dolaze, pa nam recite šta je u
-        pitanju.
-      </DialogDescription>
-
-      <ToggleGroup type="single" size="sm" value={kind ?? ''} onValueChange={(v) => v && setKind(v)} aria-label="Šta se menja">
-        <ToggleGroupItem value="correction">Ispravka</ToggleGroupItem>
-        <ToggleGroupItem value="move">Seli se</ToggleGroupItem>
-        <ToggleGroupItem value="stay">Privremeno je negde drugde</ToggleGroupItem>
-      </ToggleGroup>
-
-      {kind === 'correction' && (
-        <PaneHint>Samo ispravljamo zapis, na primer grešku u kucanju. Negovateljice i posete ostaju kako jesu.</PaneHint>
-      )}
-
-      {kind === 'stay' && (
-        <>
-          <PaneHint>
-            Bolnica, rehabilitacija ili neko vreme kod porodice. Adresa ostaje ista, a posete se pauziraju do datuma koji
-            upišete. Rezervisani novac za te posete se vraća.
+    <Dialog
+      eyebrow="Profil · O kome brinemo"
+      title="Gde sada živi?"
+      description={`Menjate „${from || '-'}" u „${to}". Od mesta zavisi koje negovateljice mogu da dolaze.`}
+      wide
+      open={open}
+      onClose={onClose}
+    >
+      <AutoHeight className="flex flex-col gap-6 pt-3">
+        <Part label="Šta je u pitanju">
+          <ToggleGroup type="single" size="sm" value={kind} onValueChange={(v) => v && (setKind(v), setWhen(null))} aria-label="Šta je u pitanju">
+            <ToggleGroupItem value="move">Seli se</ToggleGroupItem>
+            <ToggleGroupItem value="stay">Privremeno je negde drugde</ToggleGroupItem>
+            <ToggleGroupItem value="correction">Ispravka</ToggleGroupItem>
+          </ToggleGroup>
+          <PaneHint key={kind} className="animate-in fade-in-0 duration-200">
+            {kind === 'move' && 'Nova adresa važi od dana selidbe, a sa njom se menja i ko može da dolazi.'}
+            {kind === 'stay' &&
+              'Bolnica, rehabilitacija ili neko vreme kod porodice. Adresa ostaje ista, a posete se pauziraju do datuma koji izaberete. Rezervisani novac za te posete se vraća.'}
+            {kind === 'correction' && 'Samo ispravljamo zapis, na primer grešku u kucanju. Negovateljice i posete ostaju kako jesu.'}
           </PaneHint>
-          <Field label="Do kada">
-            <DateInput value={when} onChange={setWhen} from={today} />
-          </Field>
-        </>
-      )}
+        </Part>
 
-      {kind === 'move' && (
-        <>
-          <Field label="Od kada">
-            <DateInput value={when} onChange={setWhen} from={today} />
-          </Field>
+        {/* what the choice brings, swapped in place */}
+        {kind !== 'correction' && (
+          <div key={kind} className="flex animate-in flex-col gap-6 fade-in-0 duration-200">
+            <Part label={kind === 'move' ? 'Od kada' : 'Do kada'}>
+              <Field>
+                <DateInput value={when} onChange={setWhen} from={today} ariaLabel={kind === 'move' ? 'Od kada' : 'Do kada'} />
+              </Field>
+            </Part>
 
-          {!served ? (
-            <PaneHint>
-              U mestu „{to}" još ne radimo, pa selidbu ne možemo da potvrdimo ovde. Koordinatorka će vas pozvati i
-              dogovoriti šta dalje.
-            </PaneHint>
-          ) : (
-            <>
-              <PaneLabel>Šta se menja</PaneLabel>
-              <ItemGroup>
-                {working.map((a) => {
-                  const ok = reaches(a.caregiver, to);
-                  const booked = a.visits.filter((v) => v.status === 'planned');
-                  const held = booked.reduce((n, v) => n + chargedFor(v.hours, v.rate), 0);
-                  return (
-                    <Item key={a.caregiver.id} className="items-start">
-                      <ItemContent>
-                        <p className="mb-1 flex flex-wrap items-center gap-2 text-xs font-medium text-foreground">
-                          {a.caregiver.name}
-                          <Badge variant={ok ? 'success' : 'destructive'} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
-                            {ok ? 'Dolazi i dalje' : `Ne dolazi u ${to}`}
-                          </Badge>
-                        </p>
-                        <p className="text-xs leading-body text-muted-foreground">
-                          {ok
-                            ? `${firstName(a.caregiver.name)} radi u krugu od ${a.caregiver.radius} km od mesta ${a.caregiver.area}, pa nova adresa ulazi u njega. Dobiće obaveštenje i novu adresu.`
-                            : `Saradnja se završava ${whenText || 'na dan selidbe'}.${
-                                booked.length
-                                  ? ` ${booked.length === 1 ? 'Zakazana poseta posle toga se otkazuje' : `Zakazane posete posle toga (${booked.length}) se otkazuju`}, a ${money(held)} rezervisanog se vraća.`
-                                  : ''
-                              } Koordinatorka će vam pomoći da nađete negovateljicu u novom mestu.`}
-                        </p>
-                      </ItemContent>
-                    </Item>
-                  );
-                })}
-              </ItemGroup>
-              {pendingTo.length > 0 && (
-                <PaneHint>Upiti koji još čekaju odgovor, a negovateljica ne dolazi u novo mesto, se povlače.</PaneHint>
-              )}
-              <PaneHint>
-                Plan nege ostaje isti, jer ono što joj treba ne zavisi od adrese. Osvežavaju se negovateljice na „Pronađi"
-                i preporuke koje zavise od mesta, a plan dobija oznaku „Izmenjeno".
-              </PaneHint>
-            </>
-          )}
-        </>
-      )}
+            {kind === 'move' && !served && (
+              <Part label="Šta dalje">
+                <Text>
+                  U mestu „{to}" još ne radimo, pa selidbu ne možemo da potvrdimo ovde. Koordinatorka će vas pozvati i
+                  dogovoriti šta dalje.
+                </Text>
+              </Part>
+            )}
 
-      <DialogFooter>
+            {kind === 'move' && served && (
+              <>
+                <Part label="Negovateljice">
+                  {working.length === 0 && <Text>Sada niko ne dolazi, pa se nijedna poseta ne otkazuje.</Text>}
+                  <div className="flex flex-col gap-4">
+                    {working.map((a) => {
+                      const ok = reaches(a.caregiver, to);
+                      const booked = a.visits.filter((v) => v.status === 'planned');
+                      const held = booked.reduce((n, v) => n + chargedFor(v.hours, v.rate), 0);
+                      return (
+                        <div key={a.caregiver.id}>
+                          <p className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium text-foreground">
+                            {a.caregiver.name}
+                            <Badge variant={ok ? 'success' : 'destructive'} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
+                              {ok ? 'Dolazi i dalje' : `Ne dolazi u ${to}`}
+                            </Badge>
+                          </p>
+                          <Text>
+                            {ok
+                              ? `${firstName(a.caregiver.name)} radi u krugu od ${a.caregiver.radius} km od mesta ${a.caregiver.area}, pa nova adresa ulazi u njega. Dobiće obaveštenje i novu adresu.`
+                              : `Saradnja se završava ${whenText || 'na dan selidbe'}.${
+                                  booked.length
+                                    ? ` ${booked.length === 1 ? 'Zakazana poseta posle toga se otkazuje' : `Zakazane posete posle toga (${booked.length}) se otkazuju`}, a ${money(held)} rezervisanog se vraća.`
+                                    : ''
+                                } Koordinatorka će vam pomoći da nađete negovateljicu u novom mestu.`}
+                          </Text>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {pendingTo.length > 0 && (
+                    <PaneHint>Upiti koji još čekaju odgovor, a negovateljica ne dolazi u novo mesto, se povlače.</PaneHint>
+                  )}
+                </Part>
+
+                <Part label="Plan nege">
+                  <Text>
+                    Ostaje isti, jer ono što joj treba ne zavisi od adrese. Osvežavaju se negovateljice na „Pronađi" i
+                    preporuke koje zavise od mesta, a plan dobija oznaku „Izmenjeno".
+                  </Text>
+                </Part>
+              </>
+            )}
+          </div>
+        )}
+      </AutoHeight>
+
+      <DialogFooter className="mt-0">
         <Button variant="secondary" onClick={onClose}>
           Otkaži
         </Button>
@@ -152,3 +165,17 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
     </Dialog>
   );
 }
+
+// a part of the body: its name, as a group's name on a page (12, grey,
+// medium, so a caregiver's name under it reads as one of its rows), and what
+// it holds 8 under it
+function Part({ label, children }) {
+  return (
+    <section className="flex flex-col gap-2">
+      <h3 className="text-small font-medium text-muted-foreground">{label}</h3>
+      {children}
+    </section>
+  );
+}
+
+const Text = ({ children }) => <p className="text-xs leading-body text-muted-foreground">{children}</p>;
