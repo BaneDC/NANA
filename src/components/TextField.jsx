@@ -144,8 +144,8 @@ export function Select({ value, onChange, options, placeholder = 'Izaberite', la
 
 // A day, picked from a calendar rather than typed: the field shows it as it is
 // said ("1. novembra 2026") with the calendar at its end, and opens a month
-// under it, on the day chosen or the first that can be. `from` and `to` are the
-// first and last days that can be chosen (Dates); `today` is the day marked as
+// under its right end, where the calendar icon is, half its width, on the day
+// chosen or the first that can be. `from` and `to` are the first and last days that can be chosen (Dates); `today` is the day marked as
 // today (the prototype's own, which is not the clock's), `from` if not given.
 // Picking a day closes it.
 export function DateInput({ value, onChange, from, to, today = from, placeholder = 'Izaberite datum', ariaLabel, autoFocus, className }) {
@@ -170,7 +170,7 @@ export function DateInput({ value, onChange, from, to, today = from, placeholder
           <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
         </button>
       </PopoverTrigger>
-      <PopoverContent>
+      <PopoverContent align="end">
         <Calendar
           mode="single"
           selected={value ?? undefined}
