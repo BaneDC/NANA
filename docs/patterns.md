@@ -157,7 +157,8 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **Stranica ne klizi u stranu kad naraste** (odlučeno 9. 10.): mesto za skrolbar je uvek čuvano, sa obe strane (`scrollbar-gutter: stable both-edges` na `Page`), pa kad sadržaj pređe visinu ekrana (drugi tab, „Prikaži još") ništa se ne pomera, a stubac ostaje u sredini.
 
 - Akcije stranice su samo u `PageHeader`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
-- **„Pitaj asistenta" je samo na Mojoj nezi i na jednom planu nege** (odlučeno 8. 10.). Podešavanja, Profil, Planovi nege, Pronađi negovateljicu i ostale stranice ga nemaju.
+- **„Pitaj asistenta" je samo na Mojoj nezi i na planu nege** (odlučeno 8. 10.). Podešavanja, Profil, Pronađi negovateljicu i ostale stranice ga nemaju.
+- **Plan nege je jedan** (odlučeno 10. 10., `docs/plan-nege.md`): u bočnom meniju je jedna stavka „Plan nege", koja otvara plan, a dok ga nema prazno stanje. Nema liste planova, „Novi plan" ni značke „Aktivan".
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (`AskAssistant` to radi sam, kad je u `PageHeader`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (32, na dodir 44), a ne koliko čip (28).
@@ -409,7 +410,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 | **Lista na stranici, uz drugi sadržaj** | koliko staje u taj deo, pa „Prikaži još" po 10 | Predstoji (3), posete na njenoj stranici (10), istorija razgovora u meniju (5) |
 | **Puna lista koja raste sa vremenom** | 10, najnovije prvo (po mesecu ili danu gde postoji), pa „Prikaži još" po 10 | Sve posete (stranica), Šta se desilo, posete i aktivnost klijenta na strani negovateljice |
 | **Pretraga, poređenje** | numerisana paginacija (`Pagination`), 10 po strani | samo „Pronađi negovateljicu" |
-| **Kratka lista po prirodi** | sve, bez ograničenja | Moji upiti, Planovi nege, verzije ugovora, Vaše negovateljice |
+| **Kratka lista po prirodi** | sve, bez ograničenja | Moji upiti, verzije ugovora, Vaše negovateljice |
 
 - Numerisana paginacija je samo za pretragu: tu se negovateljice porede, ide se napred-nazad i vraća na isto mesto. Kroz posete i događaje se ne ide „na stranu 4".
 - „Prikaži još" kaže koliko dodaje („Prikaži još 10", na kraju „Prikaži još 3").

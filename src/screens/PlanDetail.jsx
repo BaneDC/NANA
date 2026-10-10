@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { Send } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription } from '@/components/ui/card';
+import { Card, CardDescription, CardFooter } from '@/components/ui/card';
+import Attention from '../components/Attention';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import PlanContents from '../components/PlanContents';
 import PlanOverview from '../components/PlanOverview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
-import BackButton from '../components/BackButton';
 
-// A care plan as its own page, reached from the Care plans list or the nav.
+// The care plan as its own page, reached from the nav. A person has one plan,
+// changed as she changes (docs/plan-nege.md), so there is no list of plans to
+// come back to.
 //
 // It opens on Minna's letter. The summary of the person that used to sit above
 // it told the family what they had just told us; the letter is the first thing
@@ -22,7 +23,6 @@ export default function PlanDetail({
   entry,
   unlocked,
   change,
-  onBack,
   onSelectCaregiver,
   onOpenCaregiver,
   onUnlock,
@@ -33,22 +33,16 @@ export default function PlanDetail({
   onFindCaregivers,
   standingOf,
 }) {
-  const { plan, title, date, status, archived } = entry;
-  const shownChange = archived ? null : change;
+  const { plan, title, date } = entry;
+  const shownChange = change;
   const [side, setSide] = useState('plan');
 
   return (
     <Page>
-      <BackButton label="Planovi nege" onClick={onBack} />
       <PageHeader>
         <PageHeaderText>
           <PageTitle>{title}</PageTitle>
-          <PageDescription>
-            {date} ·{' '}
-            <Badge variant={archived ? 'secondary' : 'success'} className="align-middle">
-              {status}
-            </Badge>
-          </PageDescription>
+          <PageDescription>{date}</PageDescription>
         </PageHeaderText>
         {/* Two ways to change the plan, side by side: by hand, or by telling the
             assistant what is different. Only the live plan can change. Icons
@@ -76,16 +70,9 @@ export default function PlanDetail({
             <PlanChangeBanner key={shownChange.at} change={shownChange} onUndo={onUndoChange} onDismiss={onDismissChange} />
           )}
 
-          {archived && (
-            <Card>
-              <CardDescription>{entry.summary}</CardDescription>
-            </Card>
-          )}
-
           <PlanContents
             plan={{ ...plan, caregiverCount: entry.caregiverCount }}
             unlocked={unlocked}
-            archived={archived}
             change={shownChange}
             onSelectCaregiver={onSelectCaregiver}
             onOpenCaregiver={onOpenCaregiver}
@@ -94,19 +81,34 @@ export default function PlanDetail({
             standingOf={standingOf}
           />
 
-          {archived && (
-            <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
-              <Button variant="secondary" onClick={onBack}>
-                Nazad na sve planove
-              </Button>
-            </div>
-          )}
         </TabsContent>
 
         <TabsContent value="overview">
           <PlanOverview answers={entry.answers} notes={entry.notes} />
         </TabsContent>
       </Tabs>
+    </Page>
+  );
+}
+
+// "Plan nege" before the onboarding has made it: the next step, as every empty
+// page (docs/patterns.md §5).
+export function NoPlan({ onGoToChat }) {
+  return (
+    <Page>
+      <PageHeader>
+        <PageHeaderText>
+          <PageTitle>Plan nege</PageTitle>
+        </PageHeaderText>
+      </PageHeader>
+      <Attention title="Nema aktivnog plana">
+        <Card>
+          <CardDescription>Odgovorite na pitanja u razgovoru i plan će se pojaviti ovde.</CardDescription>
+          <CardFooter>
+            <Button onClick={onGoToChat}>Idi na razgovor</Button>
+          </CardFooter>
+        </Card>
+      </Attention>
     </Page>
   );
 }

@@ -23,7 +23,6 @@ export default function PlanContents({
   onUnlock,
   onFindCaregivers,
   standingOf,
-  archived,
   change,
 }) {
   const open = (plan.recommendations || []).filter((r) => !r.locked);
@@ -42,13 +41,13 @@ export default function PlanContents({
               key={rec.id}
               rec={rec}
               unlocked={unlocked}
-              bookable={!archived}
+              bookable
               changed={Boolean(change?.recs.includes(rec.id))}
               changeKey={change?.at}
               onSelectCaregiver={onSelectCaregiver}
               standingOf={standingOf}
-              onOpenCaregiver={archived ? null : onOpenCaregiver}
-              onFindCaregivers={archived ? null : onFindCaregivers}
+              onOpenCaregiver={onOpenCaregiver}
+              onFindCaregivers={onFindCaregivers}
             />
           ))}
 
@@ -61,13 +60,13 @@ export default function PlanContents({
                 key={rec.id}
                 rec={rec}
                 unlocked
-                bookable={!archived}
+                bookable
                 changed={Boolean(change?.recs.includes(rec.id))}
                 changeKey={change?.at}
                 onSelectCaregiver={onSelectCaregiver}
                 standingOf={standingOf}
-                onOpenCaregiver={archived ? null : onOpenCaregiver}
-                onFindCaregivers={archived ? null : onFindCaregivers}
+                onOpenCaregiver={onOpenCaregiver}
+                onFindCaregivers={onFindCaregivers}
               />
             ))
           ) : (
@@ -89,7 +88,7 @@ export default function PlanContents({
                 <p className="text-sm font-medium text-foreground">Još {locked.length} preporuke u punom planu</p>
                 <p className="mb-2 max-w-[440px] text-xs leading-body text-muted-foreground">
                   Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Minna, promene
-                  koje stan čine bezbednijim{archived ? '.' : ', i direktan broj svake negovateljice.'}
+                  koje stan čine bezbednijim, i direktan broj svake negovateljice.
                 </p>
                 <Button size="lg" onClick={onUnlock}>
                   <Lock size={12} strokeWidth={2} /> Otključajte ceo plan nege
@@ -99,7 +98,7 @@ export default function PlanContents({
           )}
       </PageSection>
 
-      {!archived && <CoordinatorContact coordinator={plan.coordinator || coordinator} />}
+      <CoordinatorContact coordinator={plan.coordinator || coordinator} />
     </div>
   );
 }

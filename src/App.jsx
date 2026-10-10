@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import Register from './screens/Register';
 import Dashboard from './screens/Dashboard';
-import Plans from './screens/Plans';
 import FindCaregiver from './screens/FindCaregiver';
 import Profile from './screens/Profile';
 import Settings from './screens/Settings';
@@ -17,7 +16,7 @@ import { FileText, Plus, X } from 'lucide-react';
 import PaywallModal from './components/PaywallModal';
 import AskAssistant from './components/AskAssistant';
 import SharePlanModal from './components/SharePlanModal';
-import PlanDetail from './screens/PlanDetail';
+import PlanDetail, { NoPlan } from './screens/PlanDetail';
 import ImmersiveConversation from './screens/ImmersiveConversation';
 import FamilyDrawer from './components/family/FamilyDrawer';
 import CaregiverPage from './screens/CaregiverPage';
@@ -39,10 +38,12 @@ import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
-import { planEntries, seedThreads } from './data/threads';
+import { planEntries } from './data/threads';
+import { changeEntry } from './data/planLog';
+import { demoPerson, newPerson, planOf, withPlan } from './data/person';
 
-const formatToday = () =>
-  new Date().toLocaleDateString('sr-Latn-RS', { day: 'numeric', month: 'long', year: 'numeric' });
+const formatDate = (at) => new Date(at).toLocaleDateString('sr-Latn-RS', { day: 'numeric', month: 'long', year: 'numeric' });
+const formatToday = () => formatDate(Date.now());
 
 // /?demo opens past the onboarding, on a finished plan — for trying the chat and
 // everything after it without talking the conversation through each time.
@@ -66,9 +67,22 @@ export default function App() {
   const [user, setUser] = useState(
     DEMO ? { ...demoUser, country: demoCountry() } : { name: '', email: '', role: 'family' }
   );
-  // answers live here so the profile can read them without a second source of truth
-  const [answers, setAnswers] = useState(() => demoStart || {});
-  const [plan, setPlan] = useState(() => (DEMO ? buildPlan(demoStart, demoNotes) : null));
+  // The one person this account cares for (src/data/person.js): her answers and
+  // notes, the plan built from them, what changed in it, and the care around
+  // her. Everything below reads her from here, so nothing has a second source.
+  const [person, setPerson] = useState(() => (DEMO ? demoPerson(demoStart, demoNotes, demoUser) : newPerson()));
+  // a part of her set on its own, as a value or from the one before
+  const setPart = useCallback(
+    (key) => (next) => setPerson((p) => ({ ...p, [key]: typeof next === 'function' ? next(p[key]) : next })),
+    []
+  );
+  const setAnswers = useMemo(() => setPart('answers'), [setPart]);
+  const setNotes = useMemo(() => setPart('notes'), [setPart]);
+  const setCare = useMemo(() => setPart('care'), [setPart]);
+  const { answers, notes, care, log: planLog } = person;
+  // rebuilt when what it is built from changes, not on every change to her care
+  const { planMade } = person;
+  const plan = useMemo(() => planOf({ planMade, answers, notes }), [planMade, answers, notes]);
   const [unlocked, setUnlocked] = useState(false);
   // which plan they paid for and when, so settings can say what they are on
   const [subscription, setSubscription] = useState(null); // { planId, at }
@@ -78,22 +92,14 @@ export default function App() {
   // to request their number, no caregiver means they unlocked the recommendations.
   const [paywall, setPaywall] = useState(null);
   const shownPaywall = useKept(paywall);
-  const [threads, setThreads] = useState(seedThreads);
   // the history of conversations opens when asked for
   const [chatListOpen, setChatListOpen] = useState(false);
-  const [planListOpen, setPlanListOpen] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState('live');
   const [variant, setVariant] = useState('classic'); // classic | ai
   // the AI variant runs against the developer's own key, kept in this browser
   const [apiKey, setApiKey] = useState(loadKey);
   const [askingKey, setAskingKey] = useState(false);
   // set when Anthropic turned the key down, so the key screen can say why it is back
   const [keyRejected, setKeyRejected] = useState(false);
-  // things the family said that no question covers — they reach the plan
-  const [notes, setNotes] = useState(DEMO ? demoNotes : []);
-  // The arrangement with the caregiver, shared: the dashboard reads it and the
-  // card that pays for it is set up in Settings.
-  const [care, setCare] = useState(() => startCare(DEMO ? demoUser : null));
   // The family's decisions open as a drawer from whichever page shows the thing
   // they concern, and a short line afterwards says what happened.
   const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
@@ -111,7 +117,9 @@ export default function App() {
     setView('caregiver');
   };
 
-  const onPlan = useCallback((p) => setPlan(p), []);
+  // The onboarding has made the plan: from now on it is built from her answers,
+  // and its history starts. The plan it hands over is the same buildPlan.
+  const onPlan = useCallback(() => setPerson((p) => withPlan(p)), []);
   const onNote = useCallback((t) => setNotes((n) => (n.includes(t) ? n : [...n, t])), []);
   // Answers are reconciled, not just merged: a changed frailty level retires the
   // branch questions it no longer asks, so the state can never hold an answer to a
@@ -164,7 +172,10 @@ export default function App() {
   // first of them, and "Poništi" takes them all back.
   const changePlan = ({ nextAnswers, nextNotes, source }) => {
     const nextPlan = plan ? buildPlan(nextAnswers, nextNotes) : null;
-    const prev = planChange?.prev || { answers, notes, plan };
+    const prev = planChange?.prev || { answers, notes, plan, log: planLog };
+    // the history gets a line only when the plan reads differently afterwards
+    const entry = nextPlan && changeEntry({ before: { answers, notes, plan }, after: { answers: nextAnswers, notes: nextNotes, plan: nextPlan }, source });
+    const nextLog = entry ? [entry, ...planLog] : planLog;
     const desc = describeChanges(
       prev.answers,
       Object.keys({ ...prev.answers, ...nextAnswers })
@@ -183,9 +194,7 @@ export default function App() {
       at: Date.now(),
       prev,
     });
-    setAnswers(nextAnswers);
-    setNotes(nextNotes);
-    if (nextPlan) setPlan(nextPlan);
+    setPerson((p) => ({ ...p, answers: nextAnswers, notes: nextNotes, log: nextLog }));
   };
 
   const editAnswers = (changes, { source = 'manual' } = {}) => {
@@ -202,9 +211,8 @@ export default function App() {
 
   const undoPlanChange = () => {
     if (!planChange) return;
-    setAnswers(planChange.prev.answers);
-    setNotes(planChange.prev.notes);
-    setPlan(planChange.prev.plan);
+    const { answers: a, notes: n, log } = planChange.prev;
+    setPerson((p) => ({ ...p, answers: a, notes: n, log }));
     setPlanChange(null);
     say('Izmena je poništena.');
   };
@@ -255,7 +263,7 @@ export default function App() {
     return true;
   };
   const openPage = (page) => {
-    if (page === 'plan') return openPlanPage('live');
+    if (page === 'plan') return setView('plan-detail');
     setView({ 'my-care': 'dashboard' }[page] || page);
   };
 
@@ -295,10 +303,7 @@ export default function App() {
   const openDemo = () => {
     const answersNow = reconcile({}, demoAnswers).answers;
     setUser({ ...demoUser, country: demoCountry() });
-    setAnswers(answersNow);
-    setNotes(demoNotes);
-    setPlan(buildPlan(answersNow, demoNotes));
-    setCare(startCare(demoUser));
+    setPerson(demoPerson(answersNow, demoNotes, demoUser));
     setView('dashboard');
     setPhase('app');
   };
@@ -306,48 +311,14 @@ export default function App() {
   // What the account has got to, kept so signing in again resumes it.
   useEffect(() => {
     if (phase !== 'app' || !user.email || user.role === 'caregiver' || user === demoUser) return;
-    saveProgress(user.email, { answers, notes, planDone: Boolean(plan) });
-  }, [phase, user, answers, notes, plan]);
-
-  // A second person to care for. The plan that exists is filed under the plans
-  // already made — it is still readable, just not the live one — and the
-  // conversation starts again for the new person. What registration told us
-  // about the caller is carried over; nothing else is.
-  const newPlan = () => {
-    if (plan) {
-      setThreads((t) => [
-        {
-          id: `p${Date.now()}`,
-          answers,
-          summary: plan.summary,
-          date: formatToday(),
-          caregivers: caregivers.length,
-        },
-        ...t,
-      ]);
-    }
-    setPlan(null);
-    setPlanChange(null);
-    setNotes([]);
-    setAnswers({ 'about-you': aboutYou(user) });
-    setSelectedPlan('live');
-    setOpenPane(null);
-    startVariant('ai');
-  };
+    saveProgress(user.email, { answers, notes, planDone: Boolean(plan), planLog });
+  }, [phase, user, answers, notes, plan, planLog]);
 
   // A new conversation with the assistant; the plan and everything done stays.
   const newChat = () => {
     startConversation();
     setOpenPane(null);
     setView('chat');
-  };
-
-  // From the Care plans side a plan opens as its own page; from the chat it stays
-  // a side panel, because there it is an artifact of the conversation.
-  const openPlanPage = (id) => {
-    setSelectedPlan(id);
-    setView('plan-detail');
-    setPlanListOpen(true);
   };
 
   // The AI variant takes the whole window, so while it is up the shell under it
@@ -366,15 +337,16 @@ export default function App() {
   };
 
 
+  const madeAt = planLog.find((e) => e.kind === 'created')?.at;
   const entries = planEntries({
     plan,
-    threads,
     caregiverCount: caregivers.length,
-    today: formatToday(),
+    // the day it was made, from its history (a plan saved before there was one reads today)
+    today: madeAt ? formatDate(madeAt) : formatToday(),
     answers,
     notes,
   });
-  const openEntry = entries.find((e) => e.id === selectedPlan) || entries[0];
+  const openEntry = entries[0];
 
   // The conversation in the nav: Minna until the plan exists, the assistant after.
   // the conversations, as the nav lists them: what was asked first in each
@@ -437,11 +409,6 @@ export default function App() {
           onNewChat={newChat}
           chatListOpen={chatListOpen}
           onToggleChatList={() => setChatListOpen((v) => !v)}
-          planEntries={entries}
-          selectedPlan={selectedPlan}
-          onSelectPlan={openPlanPage}
-          planListOpen={planListOpen}
-          onTogglePlanList={() => setPlanListOpen((v) => !v)}
         />
       )}
 
@@ -460,9 +427,7 @@ export default function App() {
                 // finished onboarding opens on Moja nega and is not run again.
                 const saved = loadProgress(u.email);
                 if (saved?.planDone) {
-                  setAnswers(saved.answers);
-                  setNotes(saved.notes || []);
-                  setPlan(buildPlan(saved.answers, saved.notes || []));
+                  setPerson((p) => ({ ...p, answers: saved.answers, notes: saved.notes || [], planMade: true, log: saved.planLog || [] }));
                   setView('dashboard');
                   return;
                 }
@@ -556,20 +521,11 @@ export default function App() {
                   onFlash={(text) => setFlash({ text, at: Date.now() })}
                 />
               )}
-              {view === 'plans' && (
-                <Plans
-                  entries={entries}
-                  change={planChange}
-                  onOpenPlan={openPlanPage}
-                  onGoToChat={goToChat}
-                  onNewPlan={newPlan}
-                />
-              )}
+              {view === 'plan-detail' && !openEntry && <NoPlan onGoToChat={goToChat} />}
               {view === 'plan-detail' && openEntry && (
                 <PlanDetail
                   entry={openEntry}
                   unlocked={unlocked}
-                  onBack={() => setView('plans')}
                   onSelectCaregiver={selectCaregiver}
             onOpenCaregiver={showProfile}
                   onUnlock={() => setPaywall({ caregiver: null })}
@@ -672,7 +628,6 @@ export default function App() {
             onPlan={onPlan}
             onFinish={() => {
               setVariant('classic');
-              setSelectedPlan('live');
               setView('plan-detail');
             }}
             // the saved key goes, so a reload cannot bring the same one back
