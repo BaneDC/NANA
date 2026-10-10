@@ -5,6 +5,7 @@ import Dashboard from './screens/Dashboard';
 import Plans from './screens/Plans';
 import FindCaregiver from './screens/FindCaregiver';
 import Profile from './screens/Profile';
+import MedicalRecord from './screens/MedicalRecord';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -39,6 +40,7 @@ import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
+import { startRecord, written } from './data/record';
 import { planEntries, seedThreads } from './data/threads';
 
 const formatToday = () =>
@@ -94,6 +96,9 @@ export default function App() {
   // The arrangement with the caregiver, shared: the dashboard reads it and the
   // card that pays for it is set up in Settings.
   const [care, setCare] = useState(() => startCare(DEMO ? demoUser : null));
+  // Her medical record: what the answers do not hold (diagnoses, medicines,
+  // allergies, aids) and the history of everything written into it.
+  const [record, setRecord] = useState(() => startRecord(DEMO));
   // The family's decisions open as a drawer from whichever page shows the thing
   // they concern, and a short line afterwards says what happened.
   const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
@@ -162,7 +167,7 @@ export default function App() {
   // Changes add up until the family says "U redu": the card at the top of the
   // plan lists everything since, measured against the plan as it was before the
   // first of them, and "Poništi" takes them all back.
-  const changePlan = ({ nextAnswers, nextNotes, source }) => {
+  const changePlan = ({ nextAnswers, nextNotes, source, fromRecord = false }) => {
     const nextPlan = plan ? buildPlan(nextAnswers, nextNotes) : null;
     const prev = planChange?.prev || { answers, notes, plan };
     const desc = describeChanges(
@@ -180,6 +185,8 @@ export default function App() {
       recs: diff.recs,
       letter: diff.letter,
       touched: diff.touched,
+      // whether any of it was written from the medical record
+      fromRecord: fromRecord || Boolean(planChange?.fromRecord),
       at: Date.now(),
       prev,
     });
@@ -200,11 +207,31 @@ export default function App() {
     changePlan({ nextAnswers: answers, nextNotes: [...notes, ...fresh], source: 'assistant' });
   };
 
+  // A change made in the medical record: the answers it moves go through the
+  // same change the plan shows, and the record keeps the line of it. Nothing is
+  // erased from a record, so taking the change back is written down too.
+  const changeRecord = ({ changes, entry, planChanged }) => {
+    const { answers: next } = applyChanges(answers, changes);
+    changePlan({ nextAnswers: next, nextNotes: notes, source: 'manual', fromRecord: true });
+    setRecord((r) => written(r, care.now, entry));
+    say(plan && planChanged ? 'Upisano u karton. Plan nege je izmenjen.' : 'Upisano u karton.');
+  };
+
   const undoPlanChange = () => {
     if (!planChange) return;
     setAnswers(planChange.prev.answers);
     setNotes(planChange.prev.notes);
     setPlan(planChange.prev.plan);
+    if (planChange.fromRecord) {
+      setRecord((r) =>
+        written(r, care.now, {
+          kind: 'undo',
+          by: 'you',
+          title: 'Izmene su poništene',
+          lines: [`Vraćeno kako je bilo: ${planChange.rows.map((row) => row.title).join(', ')}.`],
+        })
+      );
+    }
     setPlanChange(null);
     say('Izmena je poništena.');
   };
@@ -299,6 +326,7 @@ export default function App() {
     setNotes(demoNotes);
     setPlan(buildPlan(answersNow, demoNotes));
     setCare(startCare(demoUser));
+    setRecord(startRecord(true));
     setView('dashboard');
     setPhase('app');
   };
@@ -329,6 +357,7 @@ export default function App() {
     setPlan(null);
     setPlanChange(null);
     setNotes([]);
+    setRecord(startRecord(false));
     setAnswers({ 'about-you': aboutYou(user) });
     setSelectedPlan('live');
     setOpenPane(null);
@@ -418,9 +447,12 @@ export default function App() {
         <div className="hidden shrink-0 items-center gap-2 px-3 py-2 narrow:flex">
           <SidebarTrigger />
           <Logo width={96} />
-          {/* only where the pages carry one: Moja nega and a care plan
-              (docs/patterns.md §4); the chat is the assistant itself */}
-          {(view === 'dashboard' || view === 'plan-detail') && <AskAssistant className="ml-auto" onClick={askAssistant} />}
+          {/* only where the pages carry one: Moja nega, a care plan and the
+              medical record once there is one (docs/patterns.md §4); the chat
+              is the assistant itself */}
+          {(view === 'dashboard' || view === 'plan-detail' || (view === 'record' && answers['about-person']?.values?.name)) && (
+            <AskAssistant className="ml-auto" onClick={askAssistant} />
+          )}
         </div>
       )}
 
@@ -429,6 +461,7 @@ export default function App() {
           view={view}
           onView={setView}
           user={user}
+          recordOf={answers['about-person']?.values?.name}
           careBadge={waitingOnYou(care).length}
           requestsBadge={unseenAnswers(care)}
           threads={conversationEntries}
@@ -591,6 +624,22 @@ export default function App() {
                   onSaveUser={saveUser}
                   onEditAnswers={editAnswers}
                   onGoToChat={goToChat}
+                />
+              )}
+              {view === 'record' && (
+                <MedicalRecord
+                  answers={answers}
+                  notes={notes}
+                  plan={plan}
+                  care={care}
+                  record={record}
+                  planChange={planChange}
+                  onChange={changeRecord}
+                  onRecord={setRecord}
+                  onFlash={say}
+                  onGoToChat={goToChat}
+                  onOpenPlan={() => openPlanPage('live')}
+                  onAskAssistant={askAssistant}
                 />
               )}
               {view === 'settings' && (

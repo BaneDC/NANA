@@ -135,6 +135,7 @@ export default function AppNav({
   view,
   onView,
   user,
+  recordOf,
   careBadge,
   requestsBadge,
   threads,
@@ -267,8 +268,17 @@ export default function AppNav({
           ))}
         </SidebarMenu>
         {/* who is signed in: a white card, the avatar as tall as the name and
-            the e-mail */}
-        <div className="flex items-start gap-3 rounded-2xl bg-(--nav-card) p-2 [--avatar:calc(var(--text-xs-leading)+14px)]">
+            the e-mail. It opens the medical record of the person they care for
+            (docs/patterns.md §10a), ringed on hover and while that page is
+            open, as a card that opens something is. */}
+        <button
+          type="button"
+          onClick={go(() => onView('record'))}
+          aria-current={view === 'record' ? 'page' : undefined}
+          aria-label={`Medicinski karton${recordOf ? `: ${recordOf}` : ''}`}
+          title="Medicinski karton"
+          className="flex cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left transition-shadow duration-150 outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] [--avatar:calc(var(--text-xs-leading)+14px)]"
+        >
           <Avatar>
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
@@ -276,7 +286,7 @@ export default function AppNav({
             <span className="truncate text-xs font-medium text-foreground">{user.name || 'Gost'}</span>
             <span className="truncate text-[11px] leading-[14px] text-muted-foreground">{user.email}</span>
           </span>
-        </div>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );

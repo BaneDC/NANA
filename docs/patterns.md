@@ -60,6 +60,8 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
 | Delovi drawer-a i modala | `PaneLabel`, `PaneHint`, `Callout`, `ReportRows` › `ReportRow`, `Concern`, `Total`, `Stats` › `Stat` (`src/components/pane.jsx`) | `.ag-label`, `.ag-hint`, `.fam-callout`, `.report-rows`, `.visit-concern`, `.bc-total`, `.fam-stats` |
 | Stranica osobe (avatar uz ime) | `PagePerson` u `PageHeader` (`src/components/page.jsx`) | `.fam-person` |
+| Deo modala (ime dela, pa sadržaj 8 ispod) | `Part`, `PartText` (`src/components/pane.jsx`) | lokalni `Part` u `MoveDialog` |
+| Skala krhkosti (kartica) | `FrailtyScale` (`src/components/FrailtyScale.jsx`), ista u pregledu plana i u kartonu | — |
 | Bočni meni | shadcn `Sidebar` (`@/components/ui/sidebar`), sklopljen u `src/components/AppNav.jsx`: `SidebarMenuButton` za red, `SidebarMenuAction` za strelicu „Planova nege", `SidebarMenuBadge` za broj, `SidebarMenuSub` za spisak koji se sklapa (`Collapsible`). Na uskom ekranu (≤900) je fioka sleva, a otvara je `SidebarTrigger`. | `.app-nav`, `.nav-item`, `.nav-sub`, `.nav-badge` |
 | Saglasnost (registracija) | `Checkbox` | `.reg-check`, `.reg-box` |
 
@@ -157,7 +159,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **Stranica ne klizi u stranu kad naraste** (odlučeno 9. 10.): mesto za skrolbar je uvek čuvano, sa obe strane (`scrollbar-gutter: stable both-edges` na `Page`), pa kad sadržaj pređe visinu ekrana (drugi tab, „Prikaži još") ništa se ne pomera, a stubac ostaje u sredini.
 
 - Akcije stranice su samo u `PageHeader`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
-- **„Pitaj asistenta" je samo na Mojoj nezi i na jednom planu nege** (odlučeno 8. 10.). Podešavanja, Profil, Planovi nege, Pronađi negovateljicu i ostale stranice ga nemaju.
+- **„Pitaj asistenta" je samo na Mojoj nezi, na jednom planu nege i na medicinskom kartonu** (odlučeno 8. 10.; karton dodat 10. 10.). Podešavanja, Profil, Planovi nege, Pronađi negovateljicu i ostale stranice ga nemaju.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (`AskAssistant` to radi sam, kad je u `PageHeader`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (32, na dodir 44), a ne koliko čip (28).
@@ -484,6 +486,34 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 
 ---
 
+## 10a. Medicinski karton (prototip, odlučeno 10. 10.)
+
+Stranica o osobi o kojoj se brine (`src/screens/MedicalRecord.jsx`, podaci i logika u `src/data/record.js`). Plan nege je napisan za jedan trenutak i jednu potrebu; karton je ko je ona, bez obzira na plan. Otvara se **karticom naloga u dnu bočnog menija** (ime i avatar onoga ko je prijavljen); kartica se na hover i dok je karton otvoren uokviri, kao svaka kartica koja nešto otvara. Stranica je iz menija, pa nema „nazad".
+
+- **Glava** je stranica osobe (`PagePerson`): avatar, ime, a ispod „Medicinski karton · 84 godine · Töölö, Helsinki". Desno je „Pitaj asistenta" (§4), kao na Mojoj nezi; prazan karton ga nema.
+- **Dva prikaza iste stvari, tabovi (§10):** „Stanje sada" i „Istorija".
+- **Stanje sada**, grupe redom: „Ukratko" („Na šta paziti": rizici iz plana i alergije, kao oznake; skala krhkosti), „Svakodnevica" (kretanje i samostalnost; podrška koja joj treba), „Zdravlje" (dijagnoze i stanja, lekovi, alergije, pomagala), „Osnovno" (lični podaci; kontakt osoba), „Povod" (kako je počelo).
+- **Naslov grupe je u kartonu uvučen 16**, pa počinje tamo gde i tekst u karticama ispod njega (odlučeno 10. 10.; za sada samo ovde, na ostalim stranicama je na ivici kartice).
+- **Karton ne čuva ništa dva puta.** Delovi iz razgovora sa Minnom (lični podaci, svakodnevica, podrška, povod) čitaju se iz istih odgovora iz kojih se pravi plan (`RECORD_PARTS`), pa izmena u kartonu jeste izmena odgovora i plan se pravi ponovo. Samo ono što razgovor ne pita (dijagnoze, lekovi, alergije, pomagala; `HEALTH`) karton čuva sam.
+- **Deo iz odgovora** je kartica sa `Facts` i olovkom u glavi (`secondary`, `size="icon"`, kao u Profilu). Šta još nije upisano je „-", a koliko toga ima kaže značka u glavi („Nije upisano: 2").
+- **Spisak u „Zdravlju"** je kartica sa redovima (`Item`, §6): ime zapisa je `ItemLink` i otvara zapis, ispod je napomena i od kada. Novi zapis se dodaje dugmetom „+" u glavi (`secondary`, `size="icon"`, sa `aria-label`). Prazan spisak to kaže jednom rečenicom.
+- **Ništa se ne čuva dok se kuca, i ništa se ne briše.** Svaka izmena ide kroz svoj prozor i ostavlja red u istoriji.
+
+**Izmena dela iz odgovora** (`src/components/RecordChangeDialog.jsx`, modal `wide`) ima dva koraka u istom modalu, a drugi se menja na mestu (`AutoHeight`, §7):
+
+1. **„Šta se promenilo?"**: redovi tog dela kao polja, **jedno ispod drugog** (ne u dve kolone), istim redom kao na kartici. Jedan izbor je `Select`, više njih su čipovi; prvi čip u redu počinje na ivici polja, kao input, pa mu tekst stoji ispod labele. „Dalje" radi tek kad se nešto razlikuje. „Gde živi" se ovde ne menja (selidba ima svoj tok u Profilu, §10).
+2. **„Šta ova izmena menja"**, pre nego što se išta upiše, u delovima (`Part`, 24 jedan od drugog): „Šta upisujete" (`ChangeRows`: bilo → sada); „Šta je u pitanju" (čipovi „Stanje se promenilo", izabran od početka, i „Ispravka"); „Od kada" (`DateInput`, do danas, samo za promenu stanja); „Šta ovo menja": nivo krhkosti (značka `warning` „4 → 5"), plan nege (značka „Menja se" i koji se delovi pišu ponovo, ili „Ostaje isti"), koliko nege plan sada traži, šta je novo u „Na šta paziti", koja se pitanja otvaraju ili više ne važe, i da negovateljice koje dolaze dobijaju obaveštenje. Sve to se računa iz istih funkcija koje prave plan (`recordImpact`), ne piše se napamet.
+
+Footer: „Otkaži" i „Dalje", pa „Nazad" i **„Upiši u karton"**. Potvrda upisuje red u istoriju i pravi plan ponovo; plan zatim pokazuje „Plan je izmenjen" sa „Poništi izmene" kao i za svaku izmenu, a karton na vrhu ima narandžasti deo „Plan nege je izmenjen" sa „Pogledaj plan nege". Poništavanje vraća vrednosti i **upisuje se u istoriju** („Izmene su poništene"), ne briše red.
+
+**Zapis u „Zdravlju"** (`src/components/RecordEntryDialog.jsx`) ima jedan korak, jer se plan ne piše iz tih spiskova, i modal to kaže („Plan nege ostaje isti…"). Nov zapis: naziv, napomena i od kada (poslednja dva nisu obavezna). Postojeći zapis prvo pita šta je u pitanju, kao „Gde sada živi?": **„Izmena"** (izabrana od početka), **„Više ne važi"** („Više ne uzima", „Više ne koristi"; od kada; zapis se sklanja sa spiska i ostaje u istoriji) ili **„Ispravka"**. Dugme kaže šta radi: „Upiši u karton", „Upiši izmenu", „Zaključi zapis", „Sačuvaj ispravku".
+
+**Istorija** je jedna kartica: „N stavki · najnovije prvo", pa redovi bez akcije (`Item`): naslov sa značkom vrste („Otvoren", „Upisano", „Promena stanja", „Ispravka", „Zaključeno", „Poništeno", „Sa posete"; `secondary`, a promena stanja `default`), ispod „ko · kada" (`vi`, `Minna` ili ime negovateljice), pa šta tačno. U nju ulaze i **zapažanja sa poseta** iz radnih naloga (raspoloženje, ishrana, kretanje, beleška), čitana iz poseta, ne prepisana. Prvih 10, pa „Prikaži još" (§8a).
+
+Prototip: karton se ne čuva između prijava (osim onoga što je u odgovorima), a obaveštenje negovateljici je samo rečenica.
+
+---
+
 ## 11. Ikonice
 
 **Podešavanja (odlučeno 28. 9.):** dugme sa tekstom nema ikonicu. To važi za stranicu i za sve njene dijaloge i drawer-e (kartica, lozinka, 2FA, kolačići). Izbor jezika pokazuje podloga čipa, bez kvačice.
@@ -493,7 +523,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 **Ikonica ostaje uvek:**
 - dugme bez teksta (`iconOnly`), uz `aria-label`;
 - strelica koja pokazuje da li je nešto otvoreno ili zatvoreno (disclosure);
-- „Pitaj asistenta", ista komponenta gde postoji (Moja nega, plan nege);
+- „Pitaj asistenta", ista komponenta gde postoji (Moja nega, plan nege, medicinski karton);
 - kvačice u listama i u znački stanja, jer to nisu dugmad.
 
 ## 12. Telefon

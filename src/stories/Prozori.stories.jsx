@@ -4,8 +4,13 @@ import { Field, TextArea } from '@/components/TextField';
 import Modal from '@/components/Modal';
 import Dialog from '@/components/Dialog';
 import FamilyDrawer from '@/components/family/FamilyDrawer';
+import RecordChangeDialog from '@/components/RecordChangeDialog';
+import RecordEntryDialog from '@/components/RecordEntryDialog';
 import { Card, CardDescription } from '@/components/ui/card';
-import { caregivers } from '@/data/carePlan';
+import { buildPlan, caregivers } from '@/data/carePlan';
+import { demoAnswers, demoNotes } from '@/data/demoCase';
+import { reconcile } from '@/data/dependencies';
+import { HEALTH, RECORD_PARTS, healthList, startRecord } from '@/data/record';
 import { allVisits, arrangementOf, pendingVersion } from '@/data/familyCare';
 import { sampleCare } from '@/screens/CardGallery';
 
@@ -184,4 +189,58 @@ export const DrawerPorodice = {
       </Opened>
     );
   },
+};
+
+// The medical record's two dialogs (docs/patterns.md §10a), on the demo's
+// answers: confirming changes nothing here.
+const answers = reconcile({}, demoAnswers).answers;
+const plan = buildPlan(answers, demoNotes);
+const record = startRecord(true);
+
+export const IzmenaUKartonu = {
+  name: 'Izmena u kartonu',
+  args: { deo: 'daily' },
+  argTypes: {
+    deo: {
+      control: { type: 'select', labels: Object.fromEntries(Object.values(RECORD_PARTS).map((p) => [p.id, p.title])) },
+      options: Object.keys(RECORD_PARTS),
+      description: 'Koji deo kartona se menja. Izmenite nešto, pa „Dalje" pokazuje šta to menja u planu.',
+    },
+  },
+  render: ({ deo }) => (
+    <Opened label="Otvori izmenu" watch={deo}>
+      {(open, close) => (
+        <RecordChangeDialog key={deo} open={open} part={RECORD_PARTS[deo]} answers={answers} notes={demoNotes} plan={plan} care={care} onConfirm={close} onClose={close} />
+      )}
+    </Opened>
+  ),
+};
+
+export const ZapisUKartonu = {
+  name: 'Zapis u kartonu',
+  args: { spisak: 'medications', postojeci: true },
+  argTypes: {
+    spisak: {
+      control: { type: 'select', labels: Object.fromEntries(HEALTH.map((h) => [h.id, h.title])) },
+      options: HEALTH.map((h) => h.id),
+      description: 'Dijagnoze i stanja, lekovi, alergije ili pomagala.',
+    },
+    postojeci: { control: 'boolean', description: 'Zapis koji već postoji (izmena, više ne važi, ispravka) ili nov.' },
+  },
+  render: ({ spisak, postojeci }) => (
+    <Opened label="Otvori zapis" watch={`${spisak}-${postojeci}`}>
+      {(open, close) => (
+        <RecordEntryDialog
+          key={`${spisak}-${postojeci}`}
+          open={open}
+          list={healthList(spisak)}
+          entry={postojeci ? record.health[spisak][0] : null}
+          care={care}
+          onSave={close}
+          onEnd={close}
+          onClose={close}
+        />
+      )}
+    </Opened>
+  ),
 };

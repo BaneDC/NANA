@@ -6,6 +6,7 @@ import { demoAnswers, demoNotes, demoUser } from '../data/demoCase';
 import { reconcile } from '../data/dependencies';
 import { planEntries, seedThreads } from '../data/threads';
 import { startCare } from '../data/familyStart';
+import { startRecord } from '../data/record';
 import { dateText, standingWith } from '../data/familyCare';
 import { Button } from '@/components/ui/button';
 import { toggleVariants } from '@/components/ui/toggle';
@@ -20,6 +21,7 @@ import PlanDetail from './PlanDetail';
 import Plans from './Plans';
 import Settings from './Settings';
 import Profile from './Profile';
+import MedicalRecord from './MedicalRecord';
 import CaregiverApp from './caregiver/CaregiverApp';
 
 // Every card the platform has, on one page, for comparing them side by side:
@@ -238,6 +240,8 @@ const SECTIONS = [
   { id: 'podesavanja', title: 'Podešavanja', where: 'Plaćanje, Bezbednost, Opšte, Privatnost' },
   { id: 'profil', title: 'Profil', where: 'O kome brinemo, Glavni kontakt, Čemu se nadate' },
   { id: 'profil-prazno', title: 'Profil, prazno', where: 'Ovde još nema ničega' },
+  { id: 'karton', title: 'Medicinski karton', where: 'Na šta paziti, skala krhkosti, delovi iz odgovora, zdravlje (redovi), istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju' },
+  { id: 'karton-prazno', title: 'Medicinski karton, prazno', where: 'Kartona još nema' },
   { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },
 ];
 
@@ -272,6 +276,7 @@ export default function CardGallery() {
   );
   const live = entries.find((e) => e.id === 'live') || entries[0];
   const user = { ...demoUser };
+  const record = useMemo(() => startRecord(true), []);
   const subscription = { planId: 'monthly', at: Date.now() };
   // Her page's drawers open here (the visits, the terms, the overview…), on
   // the sample data, read only: what is decided in them changes nothing.
@@ -381,6 +386,12 @@ export default function CardGallery() {
       </Frame>
       <Frame {...S('profil-prazno')}>
         <Profile user={user} answers={{}} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} />
+      </Frame>
+      <Frame {...S('karton')}>
+        <MedicalRecord answers={answers} notes={demoNotes} plan={plan} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onAskAssistant={noop} />
+      </Frame>
+      <Frame {...S('karton-prazno')}>
+        <MedicalRecord answers={{}} notes={[]} plan={null} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onAskAssistant={noop} />
       </Frame>
       <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />

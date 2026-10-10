@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { PaneHint } from '@/components/pane';
+import { PaneHint, Part, PartText as Text } from '@/components/pane';
 import AutoHeight from './AutoHeight';
 import Dialog from './Dialog';
 import { DateInput, Field } from './TextField';
@@ -165,17 +165,3 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
     </Dialog>
   );
 }
-
-// a part of the body: its name, as a group's name on a page (12, grey,
-// medium, so a caregiver's name under it reads as one of its rows), and what
-// it holds 8 under it
-function Part({ label, children }) {
-  return (
-    <section className="flex flex-col gap-2">
-      <h3 className="text-small font-medium text-muted-foreground">{label}</h3>
-      {children}
-    </section>
-  );
-}
-
-const Text = ({ children }) => <p className="text-xs leading-body text-muted-foreground">{children}</p>;
