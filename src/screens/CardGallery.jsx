@@ -20,7 +20,6 @@ import FindCaregiver from './FindCaregiver';
 import PlanDetail from './PlanDetail';
 import Plans from './Plans';
 import Settings from './Settings';
-import Profile from './Profile';
 import MedicalRecord from './MedicalRecord';
 import CaregiverApp from './caregiver/CaregiverApp';
 
@@ -237,10 +236,8 @@ const SECTIONS = [
   { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)' },
   { id: 'planovi', title: 'Planovi nege', where: 'Lista planova' },
   { id: 'planovi-prazno', title: 'Planovi nege, prazno', where: 'Nema aktivnog plana' },
-  { id: 'podesavanja', title: 'Podešavanja', where: 'Plaćanje, Bezbednost, Opšte, Privatnost' },
-  { id: 'profil', title: 'Profil', where: 'O kome brinemo, Glavni kontakt, Čemu se nadate' },
-  { id: 'profil-prazno', title: 'Profil, prazno', where: 'Ovde još nema ničega' },
-  { id: 'karton', title: 'Medicinski karton', where: 'Na šta paziti, skala krhkosti, delovi iz odgovora, zdravlje (redovi), istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju' },
+  { id: 'podesavanja', title: 'Podešavanja', where: 'Nalog, Plaćanje, Bezbednost, Opšte, Privatnost' },
+  { id: 'karton', title: 'Medicinski karton', where: 'Na šta paziti, skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju' },
   { id: 'karton-prazno', title: 'Medicinski karton, prazno', where: 'Kartona još nema' },
   { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },
 ];
@@ -381,17 +378,11 @@ export default function CardGallery() {
       <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
-      <Frame {...S('profil')}>
-        <Profile user={user} answers={answers} care={care} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} onFlash={noop} />
-      </Frame>
-      <Frame {...S('profil-prazno')}>
-        <Profile user={user} answers={{}} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} />
-      </Frame>
       <Frame {...S('karton')}>
-        <MedicalRecord answers={answers} notes={demoNotes} plan={plan} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onAskAssistant={noop} />
+        <MedicalRecord answers={answers} notes={demoNotes} plan={plan} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onAskAssistant={noop} onReportChange={noop} />
       </Frame>
       <Frame {...S('karton-prazno')}>
-        <MedicalRecord answers={{}} notes={[]} plan={null} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onAskAssistant={noop} />
+        <MedicalRecord answers={{}} notes={[]} plan={null} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onAskAssistant={noop} onReportChange={noop} />
       </Frame>
       <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />

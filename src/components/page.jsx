@@ -54,14 +54,15 @@ export function Page({ className, ...props }) {
 }
 
 // The text left, the actions right and 32 from it, so a long subtitle never
-// reaches a button. On a phone the title and the actions share the first line
+// reaches a button. The text starts 16 in, where the text in the cards under
+// it does (docs/patterns.md §4); the actions stay on the cards' right edge. On a phone the title and the actions share the first line
 // and the subtitle runs under both, the full width.
 export function PageHeader({ className, ...props }) {
   return (
     <div
       data-slot="page-header"
       className={cn(
-        'mb-2 flex items-start gap-8',
+        'mb-2 flex items-start gap-8 pl-4',
         'phone:grid phone:grid-cols-[minmax(0,1fr)_auto] phone:gap-x-3 phone:gap-y-0',
         'phone:[&>:not([data-slot=page-header-text])]:col-start-2 phone:[&>:not([data-slot=page-header-text])]:row-start-2',
         // a person's page: her name keeps the first line, the actions go under it
@@ -140,10 +141,11 @@ export function PageActions({ className, ...props }) {
 }
 
 // A group of cards under a quiet title, only when the page has more than one.
+// The title starts 16 in, where the text in its cards does.
 export function PageSection({ title, className, children, ...props }) {
   return (
     <section data-slot="page-section" className={cn('flex flex-col gap-3', className)} {...props}>
-      {title && <h2 className="text-small font-medium text-muted-foreground">{title}</h2>}
+      {title && <h2 className="pl-4 text-small font-medium text-muted-foreground">{title}</h2>}
       {children}
     </section>
   );

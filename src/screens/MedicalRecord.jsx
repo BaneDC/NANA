@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { DialogFooter } from '@/components/ui/dialog';
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemLink, ItemTitle } from '@/components/ui/item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
@@ -12,14 +13,15 @@ import { useKept } from '@/hooks/use-kept';
 import { useShowMore } from '@/hooks/use-show-more';
 import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
+import Dialog from '../components/Dialog';
+import MoveDialog from '../components/MoveDialog';
+import PlaceField from '../components/PlaceField';
 import FrailtyScale from '../components/FrailtyScale';
 import RecordChangeDialog from '../components/RecordChangeDialog';
 import RecordEntryDialog from '../components/RecordEntryDialog';
 import ShowMore from '../components/ShowMore';
-import Tags from '../components/Tags';
+import Tags, { Group } from '../components/Tags';
 import { dayLabel, hourText, pl, todayOf } from '../data/familyCare';
-import { questionById } from '../data/flow';
-import { srField } from '../data/flow.sr';
 import {
   HEALTH,
   HISTORY_KIND,
@@ -38,13 +40,16 @@ import {
 //
 // Now: what to watch for and where she is on the frailty scale; how she moves
 // and manages and what support she needs; her diagnoses, medicines, allergies
-// and aids; who she is and who to call; how it began. Every part that can
-// change has its own way in, and nothing is saved as it is typed: a change
-// says what it does to the care plan first (RecordChangeDialog), and is then
-// written into the history.
-
-// a group's name starts where the text in its cards does, 16 in
-const group = '[&>h2]:pl-4';
+// and aids; who she is and who to call. Why the family called and how it began
+// is the plan's, not hers, and is not here.
+//
+// The family does not change her state by hand. When something has happened,
+// "Nešto se promenilo" opens the assistant, which asks what it needs, proposes
+// what follows and, once agreed, writes the event here; the plan is built
+// again as a new version. The pencil on a part is only for putting right what
+// was written wrong (RecordChangeDialog), and that too says what it does to
+// the plan before it is saved. The lists under "Zdravlje" can also be kept by
+// hand: the plan is not built from them.
 
 // the badge in a row's name stands over the line, not in it
 const overLine = 'my-[calc((var(--text-xs-leading)-20px)/2)]';
@@ -68,7 +73,7 @@ function PartCard({ part, answers, onEdit }) {
         <CardTitle>{part.title}</CardTitle>
         <CardAction>
           {missing > 0 && <Badge>Nije upisano: {missing}</Badge>}
-          <Button variant="secondary" size="icon" aria-label={`Izmeni: ${part.title}`} title="Izmeni" onClick={onEdit}>
+          <Button variant="secondary" size="icon" aria-label={`Ispravi: ${part.title}`} title="Ispravi zapis" onClick={onEdit}>
             <Pencil size={14} strokeWidth={1.75} />
           </Button>
         </CardAction>
@@ -81,6 +86,29 @@ function PartCard({ part, answers, onEdit }) {
         ))}
       </Facts>
     </Card>
+  );
+}
+
+// Where she lives, picked: the first of two dialogs. What the change is (a
+// move, a stay elsewhere, a correction) and what it does to the caregivers is
+// asked by the one after it (MoveDialog).
+function PlaceDialog({ open, value, onNext, onClose }) {
+  const [place, setPlace] = useState(value);
+  const moved = place.trim() && place.trim() !== value.trim();
+  return (
+    <Dialog eyebrow="Medicinski karton" title="Gde živi" open={open} onClose={onClose}>
+      <div className="flex flex-col gap-3">
+        <PlaceField label="Grad" value={value} onChange={setPlace} />
+      </div>
+      <DialogFooter>
+        <Button variant="secondary" onClick={onClose}>
+          Otkaži
+        </Button>
+        <Button disabled={!moved} onClick={() => onNext(place.trim())}>
+          Dalje
+        </Button>
+      </DialogFooter>
+    </Dialog>
   );
 }
 
@@ -117,7 +145,8 @@ function HealthCard({ list, items, onAdd, onOpen }) {
 }
 
 // who wrote it and when, as the line under an entry says
-const byText = (e) => (e.by === 'you' ? 'vi' : e.by === 'minna' ? 'Minna' : e.who || 'negovateljica');
+const byText = (e) =>
+  e.by === 'you' ? (e.via === 'assistant' ? 'vi, preko asistenta' : 'vi') : e.by === 'minna' ? 'Minna' : e.who || 'negovateljica';
 const whenText = (e, today) => (e.day ? e.day.toLowerCase() : `${dayLabel(Math.floor(e.at / 24), today).toLowerCase()} u ${hourText(e.at)}`);
 
 function History({ entries, today }) {
@@ -147,6 +176,9 @@ function History({ entries, today }) {
               {e.lines.map((line) => (
                 <ItemDescription key={line}>{line}</ItemDescription>
               ))}
+              {e.next?.map((line) => (
+                <ItemDescription key={line}>Šta dalje: {line}</ItemDescription>
+              ))}
             </ItemContent>
           </Item>
         ))}
@@ -173,6 +205,7 @@ export default function MedicalRecord({
   onGoToChat,
   onOpenPlan,
   onAskAssistant,
+  onReportChange,
 }) {
   const [side, setSide] = useState('now');
   // what is being changed: { part } or { list, entry? }; kept while it closes
@@ -182,7 +215,9 @@ export default function MedicalRecord({
   const open = (what) => setEditing({ ...what, n: Date.now() });
 
   const person = answers['about-person']?.values || {};
-  const you = answers['about-you']?.values || {};
+  // a change of where she lives, waiting on what it is; kept while it closes
+  const [move, setMove] = useState(null);
+  const shownMove = useKept(move);
 
   if (!person.name) {
     return (
@@ -212,11 +247,22 @@ export default function MedicalRecord({
   const alerts = alertsOf(answers, record);
   const today = todayOf(care);
   const history = recordHistory(record, care);
-  const contact = questionById['about-you'].fields.map((f) => ({
-    key: f.id,
-    label: srField(questionById['about-you'], f.id),
-    value: you[f.id] || '-',
-  }));
+
+  // the new place written in, with its line of history and what is said after
+  const place = (kind, lines, flash) => {
+    onChange({
+      changes: [{ questionId: 'about-person', answer: { values: { ...person, city: move.to } } }],
+      flash,
+      entry: { kind, by: 'you', title: `Gde živi: ${move.from || '-'} → ${move.to}`, lines },
+    });
+    setMove(null);
+  };
+  // something about where she is that does not change the address
+  const note = (entry, flash) => {
+    onRecord((r) => written(r, care.now, { by: 'you', ...entry }));
+    onFlash(flash);
+    setMove(null);
+  };
 
   // an entry of a list, written into the record with its line of history
   const saveEntry = (list, entry) => (values, mode) => {
@@ -272,10 +318,12 @@ export default function MedicalRecord({
             </PageDescription>
           </PageHeaderText>
         </PagePerson>
-        {/* on a narrow screen the assistant is in the top bar, and nothing is
-            left here to go under her name */}
-        <PageActions className="narrow:hidden">
-          <AskAssistant onClick={onAskAssistant} />
+        {/* The one way to say her state has changed: the assistant, already
+            asking what. Beside it the assistant for anything else, as an icon
+            (in the top bar on a narrow screen). */}
+        <PageActions>
+          <Button onClick={onReportChange}>Nešto se promenilo</Button>
+          <AskAssistant iconOnly onClick={onAskAssistant} />
         </PageActions>
       </PageHeader>
 
@@ -287,6 +335,16 @@ export default function MedicalRecord({
               {planChange.touched.length > 0 ? `Promenilo se: ${planChange.touched.join(', ')}. ` : ''}
               Na planu vidite šta je drugačije i možete da poništite izmenu.
             </CardDescription>
+            {/* what to do next, from the last thing written here */}
+            {planChange.fromRecord && record.log[0]?.next?.length > 0 && (
+              <Group label="Šta dalje">
+                <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-body text-foreground">
+                  {record.log[0].next.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </Group>
+            )}
             <CardFooter>
               <Button onClick={onOpenPlan}>Pogledaj plan nege</Button>
             </CardFooter>
@@ -302,7 +360,7 @@ export default function MedicalRecord({
         </TabsList>
 
         <TabsContent value="now" className="flex flex-col gap-8">
-          <PageSection className={group} title="Ukratko">
+          <PageSection title="Ukratko">
             {alerts.length > 0 && (
               <Card>
                 <CardHeader>
@@ -314,12 +372,12 @@ export default function MedicalRecord({
             <FrailtyScale answers={answers} />
           </PageSection>
 
-          <PageSection className={group} title="Svakodnevica">
+          <PageSection title="Svakodnevica">
             <PartCard part={RECORD_PARTS.daily} answers={answers} onEdit={() => open({ part: RECORD_PARTS.daily })} />
             <PartCard part={RECORD_PARTS.support} answers={answers} onEdit={() => open({ part: RECORD_PARTS.support })} />
           </PageSection>
 
-          <PageSection className={group} title="Zdravlje">
+          <PageSection title="Zdravlje">
             {HEALTH.map((list) => (
               <HealthCard
                 key={list.id}
@@ -331,24 +389,23 @@ export default function MedicalRecord({
             ))}
           </PageSection>
 
-          <PageSection className={group} title="Osnovno">
+          <PageSection title="Osnovno">
             <PartCard part={RECORD_PARTS.person} answers={answers} onEdit={() => open({ part: RECORD_PARTS.person })} />
+            {/* her address is a card of its own: changing it is a move, with a flow of its own */}
             <Card>
               <CardHeader>
-                <CardTitle>Kontakt osoba</CardTitle>
+                <CardTitle>Gde živi</CardTitle>
+                <CardAction>
+                  <Button variant="secondary" size="icon" aria-label="Izmeni: Gde živi" title="Izmeni" onClick={() => open({ place: true })}>
+                    <Pencil size={14} strokeWidth={1.75} />
+                  </Button>
+                </CardAction>
               </CardHeader>
               <Facts>
-                {contact.map((r) => (
-                  <Fact key={r.key} label={r.label}>
-                    {r.value}
-                  </Fact>
-                ))}
+                <Fact label="Mesto">{person.city?.trim() || '-'}</Fact>
               </Facts>
             </Card>
-          </PageSection>
-
-          <PageSection className={group} title="Povod">
-            <PartCard part={RECORD_PARTS.onset} answers={answers} onEdit={() => open({ part: RECORD_PARTS.onset })} />
+            <PartCard part={RECORD_PARTS.contact} answers={answers} onEdit={() => open({ part: RECORD_PARTS.contact })} />
           </PageSection>
         </TabsContent>
 
@@ -371,6 +428,48 @@ export default function MedicalRecord({
             setEditing(null);
           }}
           onClose={() => setEditing(null)}
+        />
+      )}
+
+      {shown?.place && (
+        <PlaceDialog
+          key={shown.n}
+          open={Boolean(editing?.place)}
+          value={person.city || ''}
+          onNext={(to) => {
+            setEditing(null);
+            setMove({ from: person.city || '', to });
+          }}
+          onClose={() => setEditing(null)}
+        />
+      )}
+
+      {shownMove && (
+        <MoveDialog
+          open={Boolean(move)}
+          care={care}
+          from={shownMove.from}
+          to={shownMove.to}
+          onCorrect={() => place('correction', ['Ispravka zapisa.'], 'Upisano u karton.')}
+          onMove={(when) =>
+            when
+              ? place(
+                  'state',
+                  [`Selidba od ${when}.`, 'Koordinatorka zove oko negovateljica.'],
+                  `Selidba je zabeležena od ${when}. Koordinatorka će vas pozvati oko negovateljica.`
+                )
+              : note(
+                  { kind: 'added', title: `Selidba prijavljena: ${move.to}`, lines: ['Tamo još ne radimo. Koordinatorka zove da dogovori šta dalje.'] },
+                  'Koordinatorka će vas pozvati oko selidbe.'
+                )
+          }
+          onPause={(until) =>
+            note(
+              { kind: 'state', title: 'Privremeno je negde drugde', lines: [`Do ${until}. Adresa je ostala ista, a posete su pauzirane.`] },
+              `Posete su pauzirane do ${until}. Adresa je ostala ista.`
+            )
+          }
+          onClose={() => setMove(null)}
         />
       )}
 

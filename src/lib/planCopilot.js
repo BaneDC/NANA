@@ -6,6 +6,7 @@ import { answerText, planQuestions } from '../data/planEdits';
 import { srField, srOption, srTitle } from '../data/flow.sr';
 import { caregivers, daysText, slotsText } from '../data/carePlan';
 import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/familyCare';
+import { HEALTH, healthOps, recordState } from '../data/record';
 
 // The assistant beside a finished care plan, able to change it. The plan is
 // built from the family's answers, so the assistant changes it the only way
@@ -45,6 +46,35 @@ const PROPOSE = {
             },
           },
           required: ['questionId'],
+        },
+      },
+      // What happened, when the change is something that happened to her: it
+      // is written into her medical record with the change.
+      event: {
+        type: 'object',
+        description:
+          'Only when the family told you something happened or changed about her (a fall, a hospital stay, a diagnosis, she manages less than before). Leave it out for a plain correction.',
+        properties: {
+          what: { type: 'string', description: 'What happened, as a short title in the language they wrote in, e.g. "Pala je i slomila nogu".' },
+          since: { type: 'string', description: 'The day it happened or began, YYYY-MM-DD, worked out from today\'s date in the system message.' },
+          until: { type: 'string', description: 'Only when it is temporary (a cast, a recovery): the day it is expected to end, YYYY-MM-DD.' },
+        },
+        required: ['what'],
+      },
+      // Her record's lists, which no question covers.
+      health: {
+        type: 'array',
+        description:
+          'Entries to add to or close in her medical record\'s lists, when what they told you means one (a new medicine, a diagnosis, an aid she now uses or no longer uses). To close one, use its name exactly as the record has it.',
+        items: {
+          type: 'object',
+          properties: {
+            list: { type: 'string', enum: HEALTH.map((h) => h.id) },
+            action: { type: 'string', enum: ['add', 'end'] },
+            name: { type: 'string' },
+            note: { type: 'string', description: 'For "add": dose, how often, or anything short worth knowing. No dates here: when it began and ends is in `event`.' },
+          },
+          required: ['list', 'action', 'name'],
         },
       },
     },
@@ -111,6 +141,7 @@ const system = (name) =>
     'One thing said often touches more than one question - what they still manage alone and where they need hands-on help, how they get around and whether they can go out alone. Look at every question it bears on and propose all of them in one call.',
     'Some answers carry the rest of the plan: the ones marked `carriesPlan` in the catalog set how much help she needs overall, and that decides which questions the plan asks at all and which caregivers fit. When what they tell you changes one of those, do not propose it on what they said alone. Ask first - one or two short questions about what else has changed around it, the ones whose answers you would need to fill in the rest - and propose the whole set once they answer. This is the only reason to ask rather than propose; for everything else, propose.',
     'Asking means asking: end the turn with the question and call nothing. Do not ask and propose in the same message.',
+    'When they tell you something happened to her (she fell, she was in hospital, a new diagnosis, a new medicine, she no longer manages something), that is an event for her medical record, and the family changes nothing there by hand: you are how it is written down. Ask what you need to know to say what it changes - when it happened, whether it is temporary and until about when, how she moves and manages now, who is with her - two or three short questions at most, one message. Then call `propose_changes` once, with the answers that follow, `event` (what happened, since when, until when if temporary) and `health` for anything that belongs in her record\'s lists (a medicine, a diagnosis, an aid). `changes` may be empty when only the lists change. In your sentence say what you propose and, in a few words, what you would do next (new terms with the caregiver, a call with the coordinator, nothing).',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
     'Keep replies to one to three short sentences. Reply in the language they write in.',
   ].join('\n\n');
@@ -196,10 +227,13 @@ function toChange(entry, answers) {
  * proposal it made (already checked against the questions), and the history
  * to send next time.
  */
-export async function askPlanCopilot({ client, name, answers, care, history, text }) {
+export async function askPlanCopilot({ client, name, answers, care, record, today, history, text }) {
   const messages = [...history, { role: 'user', content: text }];
-  // what she is working from: the questions and where the family stands
-  const state = [catalog(answers), care ? situation(care) : null].filter(Boolean).join('\n\n');
+  // what she is working from: the questions, where the family stands, and
+  // what her medical record already holds
+  const state = [catalog(answers), care ? situation(care) : null, record && today ? recordState(record, today) : null]
+    .filter(Boolean)
+    .join('\n\n');
 
   const response = await client.beta.messages.create({
     model: MODEL,
@@ -234,6 +268,9 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
   const next = [...messages, { role: 'assistant', content: response.content }];
   let changes = [];
   let note = null;
+  // what happened and what it does to her record's lists, with the proposal
+  let event = null;
+  let health = [];
   const notes = [];
   const requests = [];
   const pages = [];
@@ -264,13 +301,17 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
       const valid = entries.map((e) => toChange(e, answers)).filter(Boolean);
       changes = changes.concat(valid);
       const rejected = entries.length - valid.length;
+      const lists = call.name === 'propose_changes' && record ? healthOps(record, call.input.health) : [];
+      health = health.concat(lists);
+      const shown = valid.length + lists.length;
+      if (shown && call.input.event?.what) event = call.input.event;
       return {
         type: 'tool_result',
         tool_use_id: call.id,
-        content: valid.length
-          ? `Shown to the family as a proposal (${valid.length} ${valid.length === 1 ? 'change' : 'changes'}). They apply it or not with a button.${rejected ? ` ${rejected} entries named a question or option that does not exist and were left out.` : ''}`
+        content: shown
+          ? `Shown to the family as a proposal (${shown} ${shown === 1 ? 'change' : 'changes'}). They apply it or not with a button.${rejected ? ` ${rejected} entries named a question or option that does not exist and were left out.` : ''}`
           : 'Nothing was shown: every entry named a question or option that does not exist. Use ids from the catalog.',
-        ...(valid.length ? {} : { is_error: true }),
+        ...(shown ? {} : { is_error: true }),
       };
     });
     next.push({ role: 'user', content: results });
@@ -278,7 +319,16 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
 
   // the proposal's own sentence, when the reply carried no words of its own
   // no long dashes in what she says, the same rule the onboarding keeps
-  return { said: withoutLongDashes(said || (changes.length ? note : '') || ''), changes, notes, requests, pages, history: next };
+  return {
+    said: withoutLongDashes(said || (changes.length || health.length ? note : '') || ''),
+    changes,
+    event,
+    health,
+    notes,
+    requests,
+    pages,
+    history: next,
+  };
 }
 
 // Said into the history when the family acts on a proposal, so the next answer

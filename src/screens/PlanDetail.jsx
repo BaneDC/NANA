@@ -20,6 +20,7 @@ import BackButton from '../components/BackButton';
 // so the family can always come back and read what they said.
 export default function PlanDetail({
   entry,
+  version,
   unlocked,
   change,
   onBack,
@@ -44,7 +45,9 @@ export default function PlanDetail({
         <PageHeaderText>
           <PageTitle>{title}</PageTitle>
           <PageDescription>
-            {date} ·{' '}
+            {date}
+            {/* the live plan says which version it is: a change to her record writes a new one */}
+            {version ? ` · verzija ${version}` : ''} ·{' '}
             <Badge variant={archived ? 'secondary' : 'success'} className="align-middle">
               {status}
             </Badge>

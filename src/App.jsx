@@ -4,14 +4,13 @@ import Register from './screens/Register';
 import Dashboard from './screens/Dashboard';
 import Plans from './screens/Plans';
 import FindCaregiver from './screens/FindCaregiver';
-import Profile from './screens/Profile';
 import MedicalRecord from './screens/MedicalRecord';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import Logo from './components/Logo';
 import CaregiverSidebar from './components/CaregiverSidebar';
-import KitAssistant, { ChatPane, ChatSource } from './components/KitAssistant';
+import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStore } from './components/KitAssistant';
 import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Plus, X } from 'lucide-react';
@@ -34,13 +33,13 @@ import { SidePanelFrame } from './components/SidePanel';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, canAsk, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { askCaregiver, canAsk, dateOfToday, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { requestMessage, startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
 import { buildPlan, caregivers } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
-import { startRecord, written } from './data/record';
+import { correctionEntry, recordImpact, startRecord, writeEvent, written } from './data/record';
 import { planEntries, seedThreads } from './data/threads';
 
 const formatToday = () =>
@@ -99,6 +98,9 @@ export default function App() {
   // Her medical record: what the answers do not hold (diagnoses, medicines,
   // allergies, aids) and the history of everything written into it.
   const [record, setRecord] = useState(() => startRecord(DEMO));
+  // Which version of the live plan this is: one more each time a change to
+  // the answers writes the plan differently, back one when it is undone.
+  const [planVersion, setPlanVersion] = useState(1);
   // The family's decisions open as a drawer from whichever page shows the thing
   // they concern, and a short line afterwards says what happened.
   const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
@@ -169,7 +171,10 @@ export default function App() {
   // first of them, and "Poništi" takes them all back.
   const changePlan = ({ nextAnswers, nextNotes, source, fromRecord = false }) => {
     const nextPlan = plan ? buildPlan(nextAnswers, nextNotes) : null;
-    const prev = planChange?.prev || { answers, notes, plan };
+    const prev = planChange?.prev || { answers, notes, plan, version: planVersion };
+    // a plan that reads differently is a new version; the same plan is not
+    const version = planDiff(plan, nextPlan).touched.length > 0 ? planVersion + 1 : planVersion;
+    setPlanVersion(version);
     const desc = describeChanges(
       prev.answers,
       Object.keys({ ...prev.answers, ...nextAnswers })
@@ -193,12 +198,20 @@ export default function App() {
     setAnswers(nextAnswers);
     setNotes(nextNotes);
     if (nextPlan) setPlan(nextPlan);
+    return version;
   };
 
-  const editAnswers = (changes, { source = 'manual' } = {}) => {
-    const { answers: next } = applyChanges(answers, changes);
-    changePlan({ nextAnswers: next, nextNotes: notes, source });
-    say(changes.length === 1 ? 'Plan je izmenjen.' : `Plan je izmenjen - ${changes.length} odgovora.`);
+  // What the family agreed to in the assistant: the answers it moves build the
+  // plan again, and what happened is written into her medical record with
+  // every answer and entry it moved, what it did to the plan and what to do
+  // next. The record is where a change to her is kept, whoever proposed it.
+  const applyFromAssistant = (changes, { event, health = [] } = {}) => {
+    const impact = changes.length ? recordImpact({ answers, notes, plan, changes }) : null;
+    const version = changes.length
+      ? changePlan({ nextAnswers: applyChanges(answers, changes).answers, nextNotes: notes, source: 'assistant', fromRecord: true })
+      : planVersion;
+    setRecord((r) => writeEvent(r, care.now, { event, impact, health, version, care }));
+    say(impact?.touched.length ? `Upisano u karton. Plan nege je sada verzija ${version}.` : 'Upisano u karton.');
   };
 
   const addNotes = (added) => {
@@ -210,11 +223,11 @@ export default function App() {
   // A change made in the medical record: the answers it moves go through the
   // same change the plan shows, and the record keeps the line of it. Nothing is
   // erased from a record, so taking the change back is written down too.
-  const changeRecord = ({ changes, entry, planChanged }) => {
+  const changeRecord = ({ changes, part, impact, entry, flash }) => {
     const { answers: next } = applyChanges(answers, changes);
-    changePlan({ nextAnswers: next, nextNotes: notes, source: 'manual', fromRecord: true });
-    setRecord((r) => written(r, care.now, entry));
-    say(plan && planChanged ? 'Upisano u karton. Plan nege je izmenjen.' : 'Upisano u karton.');
+    const version = changePlan({ nextAnswers: next, nextNotes: notes, source: 'manual', fromRecord: true });
+    setRecord((r) => written(r, care.now, entry || correctionEntry({ part, impact, version })));
+    say(flash || (plan && impact?.touched.length ? `Upisano u karton. Plan nege je sada verzija ${version}.` : 'Upisano u karton.'));
   };
 
   const undoPlanChange = () => {
@@ -222,13 +235,17 @@ export default function App() {
     setAnswers(planChange.prev.answers);
     setNotes(planChange.prev.notes);
     setPlan(planChange.prev.plan);
+    setPlanVersion(planChange.prev.version);
     if (planChange.fromRecord) {
       setRecord((r) =>
         written(r, care.now, {
           kind: 'undo',
           by: 'you',
           title: 'Izmene su poništene',
-          lines: [`Vraćeno kako je bilo: ${planChange.rows.map((row) => row.title).join(', ')}.`],
+          lines: [
+            `Vraćeno kako je bilo: ${planChange.rows.map((row) => row.title).join(', ')}.`,
+            `Plan nege je ponovo verzija ${planChange.prev.version}.`,
+          ],
         })
       );
     }
@@ -290,10 +307,13 @@ export default function App() {
     plan,
     answers,
     care,
+    // her medical record and the prototype's day, for what the assistant writes into it
+    record,
+    today: dateOfToday(care),
     user,
     apiKey,
     onAddNotes: addNotes,
-    onApplyChanges: (changes) => editAnswers(changes, { source: 'assistant' }),
+    onApplyChanges: applyFromAssistant,
     onAskCaregiver: assistantAsk,
     onOpenPage: openPage,
     // for what opens in the chat's pane
@@ -318,6 +338,15 @@ export default function App() {
     []
   );
 
+  // "Nešto se promenilo" on the medical record: the assistant opens beside it
+  // already asking what changed (a fixed opener, sent as the family's own).
+  const reportChange = () => {
+    setRightPanel('copilot');
+    const chat = chatStore.get(conversation);
+    const draft = chat?.turns[chat.turns.length - 1];
+    if (draft && !chat.isStreaming) chat.submit(draft.id, CHANGE_OPENER);
+  };
+
   // The demo from the sign-in screen: the same finished case as /?demo.
   const openDemo = () => {
     const answersNow = reconcile({}, demoAnswers).answers;
@@ -327,6 +356,7 @@ export default function App() {
     setPlan(buildPlan(answersNow, demoNotes));
     setCare(startCare(demoUser));
     setRecord(startRecord(true));
+    setPlanVersion(1);
     setView('dashboard');
     setPhase('app');
   };
@@ -358,6 +388,7 @@ export default function App() {
     setPlanChange(null);
     setNotes([]);
     setRecord(startRecord(false));
+    setPlanVersion(1);
     setAnswers({ 'about-you': aboutYou(user) });
     setSelectedPlan('live');
     setOpenPane(null);
@@ -601,6 +632,7 @@ export default function App() {
               {view === 'plan-detail' && openEntry && (
                 <PlanDetail
                   entry={openEntry}
+                  version={openEntry.archived ? null : planVersion}
                   unlocked={unlocked}
                   onBack={() => setView('plans')}
                   onSelectCaregiver={selectCaregiver}
@@ -613,17 +645,6 @@ export default function App() {
                   onDismissChange={() => setPlanChange(null)}
                   onFindCaregivers={() => setView('find-caregiver')}
                   standingOf={(id) => standingWith(care, id)}
-                />
-              )}
-              {view === 'profile' && (
-                <Profile
-                  user={user}
-                  answers={answers}
-                  care={care}
-                  onFlash={say}
-                  onSaveUser={saveUser}
-                  onEditAnswers={editAnswers}
-                  onGoToChat={goToChat}
                 />
               )}
               {view === 'record' && (
@@ -640,6 +661,7 @@ export default function App() {
                   onGoToChat={goToChat}
                   onOpenPlan={() => openPlanPage('live')}
                   onAskAssistant={askAssistant}
+                  onReportChange={reportChange}
                 />
               )}
               {view === 'settings' && (

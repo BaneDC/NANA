@@ -10,7 +10,7 @@ import { DateInput, Field } from './TextField';
 import { chargedFor, dateOfToday, firstName, longDate, money } from '../data/familyCare';
 import { cityOf } from '../data/places';
 
-// Where she lives changed in the profile. That is not a field like the others:
+// Where she lives changed in her medical record. That is not a field like the others:
 // which caregivers can come depends on it. So before anything is saved this
 // asks what it is (docs/patterns.md §10):
 //
@@ -56,7 +56,7 @@ export default function MoveDialog({ open = true, care, from, to, onCorrect, onM
 
   return (
     <Dialog
-      eyebrow="Profil · O kome brinemo"
+      eyebrow="Medicinski karton · Gde živi"
       title="Gde sada živi?"
       description={`Menjate „${from || '-'}" u „${to}". Od mesta zavisi koje negovateljice mogu da dolaze.`}
       wide

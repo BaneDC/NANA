@@ -3,30 +3,33 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { PaneHint, Part, PartText } from '@/components/pane';
+import { Part, PartText } from '@/components/pane';
 import AutoHeight from './AutoHeight';
 import ChangeRows from './ChangeRows';
 import Dialog from './Dialog';
-import { DateInput, Field, Input, Select } from './TextField';
-import { dateOfToday, firstName } from '../data/familyCare';
+import { Field, Input, Select } from './TextField';
+import { firstName } from '../data/familyCare';
 import { srField, srOption, srShort } from '../data/flow.sr';
-import { changeEntry, draftChanges, fieldLocked, partQuestions, recordImpact } from '../data/record';
+import { draftChanges, fieldLocked, partQuestions, recordImpact } from '../data/record';
 
-// A change to a part of the medical record that the care plan is built from
-// (docs/patterns.md §10a). Nothing in the record is a field like the others:
-// the plan, the frailty level and the week of care asked for are read off it.
-// So a change is made in two steps, in one dialog:
+// A correction to a part of the medical record that the care plan is built
+// from (docs/patterns.md §10a). Only for what was written wrong: when
+// something has changed about her, that is told to the assistant, which asks
+// what it needs and proposes the change ("Nešto se promenilo" on the page).
 //
-// 1. what is different now: the part's lines as fields, to change only the
-//    ones that moved;
+// A corrected answer still builds the plan again, so it is made in two steps,
+// in one dialog:
+//
+// 1. what was wrong: the part's lines as fields, one under another, to put
+//    right only the ones that are;
 // 2. what that does, before anything is written: each line as it was and as it
-//    would be; whether her state changed (and from when) or the record was
-//    simply wrong; and what it does to the frailty level, the plan, the week
-//    of care, the questions asked of her and the caregivers who come.
+//    would be, and what it does to the frailty level, the plan, the week of
+//    care, the questions asked of her and the caregivers who come.
 //
-// Confirming writes the change into the record's history and builds the plan
-// again; the plan then says what changed and offers the way back. The second
-// step swaps in place, the dialog growing or shrinking to it (AutoHeight).
+// Confirming writes the correction into the record's history and builds the
+// plan again; the plan then says what changed and offers the way back. The
+// second step swaps in place, the dialog growing or shrinking to it
+// (AutoHeight).
 
 // the badge in a line's name stands over the line, not in it
 const overLine = 'my-[calc((var(--text-xs-leading)-20px)/2)]';
@@ -58,9 +61,6 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
   // only what someone touched; the rest reads from the answers
   const [draft, setDraft] = useState({});
   const [step, setStep] = useState('edit'); // edit | review
-  const [kind, setKind] = useState('state'); // state | correction
-  const today = dateOfToday(care);
-  const [since, setSince] = useState(today);
 
   const valueOf = (q) => draft[q.id] ?? answers[q.id];
   const set = (q, answer) => setDraft((d) => ({ ...d, [q.id]: answer }));
@@ -74,10 +74,10 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
   return (
     <Dialog
       eyebrow={`Medicinski karton · ${part.title}`}
-      title={step === 'edit' ? 'Šta se promenilo?' : 'Šta ova izmena menja'}
+      title={step === 'edit' ? 'Ispravka zapisa' : 'Šta ova ispravka menja'}
       description={
         step === 'edit'
-          ? 'Izmenite samo ono što je sada drugačije. Pre upisa vidite šta to menja u planu nege.'
+          ? 'Ovde se ispravlja ono što je pogrešno upisano. Ako se nešto promenilo, recite asistentu: „Nešto se promenilo" na vrhu kartona.'
           : 'Ništa nije upisano dok ne potvrdite.'
       }
       wide
@@ -135,35 +135,12 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
                 </Field>
               );
             })}
-            {part.id === 'person' && (
-              <PaneHint>Gde živi se za sada menja u Profilu, jer selidba ima svoj tok.</PaneHint>
-            )}
           </div>
         ) : (
           <div key="review" className="flex animate-in flex-col gap-6 fade-in-0 duration-200">
             <Part label="Šta upisujete">
               <ChangeRows rows={impact.rows} />
             </Part>
-
-            <Part label="Šta je u pitanju">
-              <ToggleGroup type="single" size="sm" value={kind} onValueChange={(v) => v && setKind(v)} aria-label="Šta je u pitanju">
-                <ToggleGroupItem value="state">Stanje se promenilo</ToggleGroupItem>
-                <ToggleGroupItem value="correction">Ispravka</ToggleGroupItem>
-              </ToggleGroup>
-              <PaneHint key={kind} className="animate-in fade-in-0 duration-200">
-                {kind === 'state'
-                  ? 'Ranije je bilo kako je pisalo, a sada je drugačije. U istoriji kartona ostaje i jedno i drugo, sa datumom.'
-                  : 'Zapis je bio pogrešan od početka. Ispravlja se, a u istoriji ostaje da je ispravljen.'}
-              </PaneHint>
-            </Part>
-
-            {kind === 'state' && (
-              <Part label="Od kada" className="animate-in fade-in-0 duration-200">
-                <Field>
-                  <DateInput value={since} onChange={setSince} to={today} today={today} ariaLabel="Od kada" />
-                </Field>
-              </Part>
-            )}
 
             <Part label="Šta ovo menja">
               <div className="flex flex-col gap-4">
@@ -182,7 +159,7 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
 
                 {plan &&
                   (impact.touched.length > 0 ? (
-                    <Effect title="Plan nege" badge="Menja se" variant="default">
+                    <Effect title="Plan nege" badge="Nova verzija" variant="default">
                       Ponovo se piše: {impact.touched.join(', ')}. Na planu ćete videti šta je drugačije i moći ćete da poništite
                       izmenu.
                     </Effect>
@@ -212,7 +189,7 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
 
                 {working.length > 0 && (
                   <Effect title="Negovateljice">
-                    {working.join(', ')} {working.length === 1 ? 'dobija' : 'dobijaju'} obaveštenje o izmeni pre sledeće posete.
+                    {working.join(', ')} {working.length === 1 ? 'dobija' : 'dobijaju'} obaveštenje o ispravci pre sledeće posete.
                   </Effect>
                 )}
               </div>
@@ -236,18 +213,7 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
             <Button variant="secondary" onClick={() => setStep('edit')}>
               Nazad
             </Button>
-            <Button
-              disabled={kind === 'state' && !since}
-              onClick={() =>
-                onConfirm({
-                  changes,
-                  planChanged: impact.touched.length > 0,
-                  entry: changeEntry({ part, impact, kind, since: kind === 'state' ? since : null }),
-                })
-              }
-            >
-              Upiši u karton
-            </Button>
+            <Button onClick={() => onConfirm({ changes, part, impact })}>Sačuvaj ispravku</Button>
           </>
         )}
       </DialogFooter>

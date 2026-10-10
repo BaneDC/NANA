@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';
 import { createClient } from '../lib/claudeChat';
 import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
 import { describeChanges } from '../data/planEdits';
+import { healthRows } from '../data/record';
 import { caregivers } from '../data/carePlan';
 import { chatLabelsSr } from '../data/chatLabels.sr';
 import { Button } from '@/components/ui/button';
@@ -48,14 +49,26 @@ function createChatStore() {
 }
 export const chatStore = createChatStore();
 
+// What "Nešto se promenilo" on the medical record says for the family, and
+// what the assistant asks back. Both are fixed, so the way in is instant and
+// costs no request; the model takes over from the family's answer.
+export const CHANGE_OPENER = 'Nešto se promenilo.';
+const CHANGE_REPLY =
+  'Šta se promenilo? Recite svojim rečima, na primer „pala je i slomila nogu" ili „dobila je novi lek". Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege.';
+
 export function ChatSource({ id, ctx, onTitle }) {
   const history = useRef([]);
 
   const send = useCallback(async function* (message, { turnId }) {
     dropKeyboardAfterSend();
-    const { plan, answers, care, apiKey, onAddNotes } = ctx.current;
+    const { plan, answers, care, record, today, apiKey, onAddNotes } = ctx.current;
     if (!plan || !apiKey) {
       yield 'Asistent radi kad plan nege postoji. Završite razgovor sa Minnom, pa se vratite ovde.';
+      return;
+    }
+    if (message === CHANGE_OPENER) {
+      history.current = [...history.current, { role: 'user', content: message }, { role: 'assistant', content: CHANGE_REPLY }];
+      yield CHANGE_REPLY;
       return;
     }
     let r;
@@ -65,6 +78,8 @@ export function ChatSource({ id, ctx, onTitle }) {
         name: plan.firstName,
         answers,
         care,
+        record,
+        today,
         history: history.current,
         text: message,
       });
@@ -83,12 +98,20 @@ export function ChatSource({ id, ctx, onTitle }) {
       onAddNotes(r.notes);
       yield { kind: 'custom', id: `notes-${turnId}`, type: 'note', data: { items: r.notes } };
     }
-    if (r.changes.length) {
+    if (r.changes.length || r.health.length) {
+      // the record's lists read as rows beside the answers
+      const desc = describeChanges(answers, r.changes);
       yield {
         kind: 'custom',
         id: `plan-${turnId}`,
         type: 'plan-diff',
-        data: { changes: r.changes, desc: describeChanges(answers, r.changes), status: 'proposed' },
+        data: {
+          changes: r.changes,
+          event: r.event,
+          health: r.health,
+          desc: { ...desc, rows: [...desc.rows, ...healthRows(r.health)] },
+          status: 'proposed',
+        },
       };
     }
     if (r.requests.length) {
@@ -148,13 +171,18 @@ function KitCard({ title, status, children, foot, actions }) {
 // what would change on the card, and the two answers on the same card.
 function PlanDiffCard({ data, onDecide }) {
   const { desc, status } = data;
+  // something that happened, or an entry in her record's lists: it is written
+  // into the medical record, and the plan follows from it
+  const toRecord = Boolean(data.event || data.health?.length);
   const title =
     status === 'applied' ? (
       <>
-        <Check size={14} strokeWidth={2} /> Primenjeno na plan
+        <Check size={14} strokeWidth={2} /> {toRecord ? 'Upisano u karton' : 'Primenjeno na plan'}
       </>
     ) : status === 'dismissed' ? (
-      'Nije primenjeno'
+      toRecord ? 'Nije upisano' : 'Nije primenjeno'
+    ) : data.event?.what ? (
+      `Predlažem da upišemo: ${data.event.what}`
     ) : (
       'Predlažem ove izmene'
     );
@@ -170,7 +198,7 @@ function PlanDiffCard({ data, onDecide }) {
             </Button>
             <Button onClick={() => onDecide(true)}>
               <Check size={14} strokeWidth={2} />
-              Primeni na plan
+              {toRecord ? 'Upiši u karton' : 'Primeni na plan'}
             </Button>
           </>
         )
@@ -184,7 +212,7 @@ function PlanDiffCard({ data, onDecide }) {
                 Nivo krhkosti: {desc.frailty.before} → {desc.frailty.after}.{' '}
               </>
             )}
-            {status === 'proposed' && 'Ništa se ne menja dok ne primenite.'}
+            {status === 'proposed' && (toRecord ? 'Ništa se ne upisuje dok ne potvrdite.' : 'Ništa se ne menja dok ne primenite.')}
           </>
         )
       }
@@ -351,7 +379,7 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
             <PlanDiffCard
               data={part.data}
               onDecide={(applied) => {
-                if (applied) ctx.current.onApplyChanges(part.data.changes);
+                if (applied) ctx.current.onApplyChanges(part.data.changes, part.data);
                 write({ ...part.data, status: applied ? 'applied' : 'dismissed' });
                 const h = chat.history;
                 h.current = decided(h.current, applied);

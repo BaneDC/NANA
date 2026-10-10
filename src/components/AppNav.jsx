@@ -9,7 +9,6 @@ import {
   Search,
   Send,
   Settings,
-  User,
 } from 'lucide-react';
 import Logo from './Logo';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -38,10 +37,8 @@ import { cn } from '@/lib/utils';
 // for too often for that, so they are a place in the nav.
 const HOME_VIEWS = ['dashboard', 'caregiver', 'visits'];
 
-const FOOTER_ITEMS = [
-  { id: 'profile', label: 'Profil', icon: User },
-  { id: 'settings', label: 'Podešavanja', icon: Settings },
-];
+// the account is in Settings (the Profile page went on 10 October)
+const FOOTER_ITEMS = [{ id: 'settings', label: 'Podešavanja', icon: Settings }];
 
 function Chevron({ open, className }) {
   return (

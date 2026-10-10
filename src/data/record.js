@@ -2,6 +2,7 @@ import { questionById, steps } from './flow';
 import { srField, srShort } from './flow.sr';
 import { answerText, applyChanges, describeChanges, planDiff, planQuestions } from './planEdits';
 import { buildPlan } from './carePlan';
+import { frailtyOf } from './frailty';
 import { planOverview } from './carePlan.sr';
 import { needFrom } from './familyStart';
 import { AMOUNT_LABEL, MOOD_LABEL, START_HOUR, allVisits, dayOf, firstName, longDate, todayOf } from './familyCare';
@@ -10,17 +11,24 @@ import { AMOUNT_LABEL, MOOD_LABEL, START_HOUR, allVisits, dayOf, firstName, long
 // place, as a chart keeps it (docs/patterns.md §10a). The care plan is built
 // for a moment and a need; the record is who she is, whatever the plan.
 //
-// Most of it is not kept twice. Who she is, how she moves and manages, what
-// support she needs and how it began are the answers the family gave Minna,
+// Most of it is not kept twice. Who she is, how she moves and manages and what
+// support she needs are the answers the family gave Minna,
 // read here part by part; changing one is changing the answer, and the plan is
 // built again from it. What a conversation never asked for a chart still
 // holds: diagnoses, medicines, allergies and aids, kept here as entries.
 //
 // A chart is never overwritten. A change is written down beside what was
-// there: what it was and what it is now, whether her state changed (and from
-// when) or the record was simply wrong, who wrote it and what it did to the
+// there: what it was and what it is now, who wrote it and what it did to the
 // plan. That is the history; nothing in it is ever removed, and an entry that
 // no longer holds is closed, not deleted.
+//
+// Two ways in, by what the change is. Something happened to her (a fall, a
+// stay in hospital, she manages less than she did): that is told to the
+// assistant, which asks what it needs to know, proposes the answers that
+// follow from it and, once the family agrees, writes the event here and the
+// plan is built again as a new version. The record was simply wrong (a
+// misspelt name, the wrong option picked): that is corrected by hand, in the
+// part's own dialog.
 
 const stepIds = (id) => steps.find((s) => s.id === id).questions.map((q) => q.id);
 
@@ -30,13 +38,16 @@ export const RECORD_PARTS = {
   daily: { id: 'daily', title: 'Kretanje i samostalnost', questions: stepIds('daily-life') },
   support: { id: 'support', title: 'Podrška koja joj treba', questions: stepIds('support') },
   person: { id: 'person', title: 'Lični podaci', questions: ['about-person', 'household', 'home-condition'] },
-  onset: { id: 'onset', title: 'Kako je počelo', questions: ['reason-for-contact', 'onset', 'hospitalisation'] },
+  contact: { id: 'contact', title: 'Kontakt osoba', questions: ['about-you'] },
 };
+// Why the family called, how it began and whether she was in hospital then are
+// not parts of the chart: they say what brought the family to us, which is the
+// plan's context, and stay with the plan (its overview shows them).
 
-// Where she lives is not changed here yet: a move has a flow of its own, in
-// the profile (MoveDialog).
-const READ_ONLY_FIELDS = { 'about-person': ['city'] };
-export const fieldLocked = (questionId, fieldId) => Boolean(READ_ONLY_FIELDS[questionId]?.includes(fieldId));
+// Where she lives is not a line of "Lični podaci": a move has a flow of its
+// own (MoveDialog), so it is a card of its own with its own way in.
+const OWN_FLOW = { 'about-person': ['city'] };
+export const fieldLocked = (questionId, fieldId) => Boolean(OWN_FLOW[questionId]?.includes(fieldId));
 
 // the questions that are asked of her now: the band decides the support ones
 const askedNow = (answers) => planQuestions(answers).flatMap((s) => s.questions.map(({ q }) => q.id));
@@ -52,7 +63,9 @@ export function partRows(part, answers) {
   const rows = partQuestions(part, answers).flatMap((q) => {
     const answer = answers[q.id];
     if (q.type === 'inputs') {
-      return q.fields.map((f) => ({ key: `${q.id}.${f.id}`, label: srField(q, f.id), value: answer?.values?.[f.id]?.trim() || '-' }));
+      return q.fields
+        .filter((f) => !fieldLocked(q.id, f.id))
+        .map((f) => ({ key: `${q.id}.${f.id}`, label: srField(q, f.id), value: answer?.values?.[f.id]?.trim() || '-' }));
     }
     return [{ key: q.id, label: srShort(q), value: answer ? answerText(q, answer) : '-' }];
   });
@@ -115,7 +128,7 @@ const OPENED = {
   kind: 'opened',
   by: 'minna',
   title: 'Karton je otvoren',
-  lines: ['Iz upoznavanja sa Minnom: lični podaci, svakodnevica, podrška i povod.'],
+  lines: ['Iz upoznavanja sa Minnom: lični podaci, svakodnevica i podrška.'],
 };
 
 // The record as it starts: opened from the conversation, nothing else in it.
@@ -211,9 +224,14 @@ export function recordImpact({ answers, notes = [], plan, changes }) {
   const risksWas = planOverview(answers).risks;
   const risksNow = planOverview(next).risks;
 
+  const bandWas = frailtyOf(answers)?.band ?? null;
+  const bandNow = frailtyOf(next)?.band ?? null;
+
   return {
     rows,
     frailty: desc.frailty,
+    // the kind of support she needs, when the level crosses into another band
+    band: bandWas !== bandNow,
     opened: now.filter((id) => !was.includes(id)).map(short),
     closed: was.filter((id) => !now.includes(id)).map(short),
     touched: plan ? planDiff(plan, buildPlan(next, notes)).touched : [],
@@ -230,25 +248,126 @@ const rowLine = (r) =>
     ? `${r.title}: ${[r.removed.length && `više ne: ${r.removed.join(', ')}`, r.added.length && `sada i: ${r.added.join(', ')}`].filter(Boolean).join('; ')}`
     : `${r.title}: ${r.before} → ${r.after}`;
 
-// The change as the history keeps it: what moved, whether her state changed or
-// the record was corrected, and what it did to the plan.
-export function changeEntry({ part, impact, kind, since }) {
+// what a change did to the plan, as one line of the history
+const planLine = (impact, version) =>
+  [
+    impact.frailty && `Nivo krhkosti: ${impact.frailty.before} → ${impact.frailty.after}.`,
+    impact.touched.length
+      ? `Plan nege je sada verzija ${version}; promenilo se: ${impact.touched.join(', ')}.`
+      : 'Plan nege je ostao isti.',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+// A correction as the history keeps it: what was put right, and what that did
+// to the plan (a corrected answer still builds it again).
+export function correctionEntry({ part, impact, version }) {
   const one = impact.rows.length === 1;
   return {
-    kind,
+    kind: 'correction',
     by: 'you',
-    title: one ? rowLine(impact.rows[0]) : `${part.title}: ${impact.rows.length} izmene`,
-    lines: [
-      ...(one ? [] : impact.rows.map(rowLine)),
-      kind === 'correction' ? 'Ispravka zapisa.' : `Promena stanja${since ? ` od ${longDate(since)}` : ''}.`,
-      [
-        impact.frailty && `Nivo krhkosti: ${impact.frailty.before} → ${impact.frailty.after}.`,
-        impact.touched.length ? `U planu nege se promenilo: ${impact.touched.join(', ')}.` : 'Plan nege je ostao isti.',
-      ]
-        .filter(Boolean)
-        .join(' '),
-    ],
+    title: one ? rowLine(impact.rows[0]) : `${part.title}: ${impact.rows.length} ispravke`,
+    lines: [...(one ? [] : impact.rows.map(rowLine)), 'Ispravka zapisa.', planLine(impact, version)],
   };
+}
+
+// What to do after a change, worked out from what it did, not written by the
+// assistant: a different kind of support goes past the coordinator; a week of
+// care that no longer matches what was agreed means new terms; questions the
+// new level opens are still to be answered; something temporary is looked at
+// again when it ends.
+export function nextSteps({ impact, care, until }) {
+  const working = (care?.arrangements || []).filter((a) => !a.endedOn);
+  const names = working.map((a) => firstName(a.caregiver.name)).join(', ');
+  return [
+    impact?.band && 'Promenila se vrsta podrške koja joj treba. Pre novog dogovora neka koordinatorka pogleda plan.',
+    impact?.week &&
+      (working.length
+        ? `Plan sada traži „${impact.week.after}", a dogovoreno je drugačije. Zatražite nove uslove (${names}).`
+        : `Plan sada traži „${impact.week.after}". Novi upiti idu sa ovom verzijom plana.`),
+    impact?.opened.length > 0 && `Otvorila su se nova pitanja: ${impact.opened.join(', ')}. Asistent može da ih prođe sa vama.`,
+    until && `Privremeno je, do ${longDate(until)}. Tada javite asistentu kako je, da se plan vrati ili ostane.`,
+  ].filter(Boolean);
+}
+
+// A day the assistant named, "2026-08-03", as a date; null when it is not one.
+export function dayFrom(text) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(text || '').trim());
+  if (!m) return null;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// What the assistant proposed for the lists (a medicine added, an aid no
+// longer used), checked against the record: an entry to end has to be there.
+export function healthOps(record, ops = []) {
+  return ops
+    .map((op) => {
+      const list = healthList(op.list);
+      const name = String(op.name || '').trim();
+      if (!list || !name) return null;
+      if (op.action === 'end') {
+        const entry = record.health[list.id].find((e) => e.name.toLowerCase() === name.toLowerCase());
+        return entry ? { list: list.id, action: 'end', id: entry.id, name: entry.name } : null;
+      }
+      return { list: list.id, action: 'add', name, note: String(op.note || '').trim() };
+    })
+    .filter(Boolean);
+}
+
+// the same, as rows the proposal reads beside the answers
+export const healthRows = (ops) =>
+  ops.map((op, i) => ({
+    questionId: `health-${i}`,
+    title: healthList(op.list).title,
+    before: op.action === 'end' ? op.name : '-',
+    after: op.action === 'end' ? healthList(op.list).end.toLowerCase() : [op.name, op.note].filter(Boolean).join(' · '),
+  }));
+
+const withHealth = (record, ops, since) => ({
+  ...record,
+  health: ops.reduce(
+    (h, op, i) => ({
+      ...h,
+      [op.list]:
+        op.action === 'end'
+          ? h[op.list].filter((e) => e.id !== op.id)
+          : [...h[op.list], { id: `h${record.log.length}-${i}`, name: op.name, note: op.note, since }],
+    }),
+    record.health
+  ),
+});
+
+// Something that happened, written into the record once the family agreed to
+// what the assistant proposed: what it was and from when, each answer and
+// entry it moved, what it did to the plan, and what to do next.
+export function writeEvent(record, at, { event = {}, impact, health = [], version, care }) {
+  const since = dayFrom(event.since);
+  const until = dayFrom(event.until);
+  const rows = [...(impact?.rows || []), ...healthRows(health)];
+  const next = nextSteps({ impact, care, until });
+  return written(withHealth(record, health, since), at, {
+    kind: 'state',
+    by: 'you',
+    via: 'assistant',
+    title: String(event.what || '').trim() || (rows.length === 1 ? rowLine(rows[0]) : `Promena stanja: ${rows.length} izmene`),
+    lines: [
+      ...rows.map(rowLine),
+      [since && `Od ${longDate(since)}`, until && `privremeno, do ${longDate(until)}`].filter(Boolean).join(', ') || null,
+      impact ? planLine(impact, version) : 'Plan nege je ostao isti.',
+    ].filter(Boolean),
+    next,
+  });
+}
+
+// What the assistant is told about the record, so it knows what is already
+// written and does not ask for it again.
+export function recordState(record, today) {
+  return [
+    `Today is ${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.`,
+    'Her medical record, the lists the plan is not built from:',
+    JSON.stringify(Object.fromEntries(HEALTH.map((h) => [h.id, record.health[h.id].map((e) => ({ name: e.name, note: e.note || undefined }))]))),
+  ].join('\n');
 }
 
 // ── reading it ──────────────────────────────────────────────────────────────
