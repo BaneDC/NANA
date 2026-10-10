@@ -33,7 +33,7 @@ import { SidePanelFrame } from './components/SidePanel';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, canAsk, dateOfToday, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { askCaregiver, canAsk, dateOfToday, firstName, plansToConfirm, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { requestMessage, startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
@@ -491,7 +491,7 @@ export default function App() {
           onView={setView}
           user={user}
           recordOf={answers['about-person']?.values?.name}
-          careBadge={waitingOnYou(care).length}
+          careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
           requestsBadge={unseenAnswers(care)}
           threads={conversationEntries}
           activeThread={conversation}
@@ -577,6 +577,15 @@ export default function App() {
                   care={care}
                   user={user}
                   plan={plan}
+                  unlocked={unlocked}
+                  planChange={planChange}
+                  onSelectCaregiver={selectCaregiver}
+                  onOpenCaregiver={showProfile}
+                  onUnlock={() => setPaywall({ caregiver: null })}
+                  standingOf={(id) => standingWith(care, id)}
+                  onOpenPlan={() => openPlanPage('live')}
+                  onCare={setCare}
+                  onFlash={say}
                   onDrawer={setDrawer}
                   onCaregiver={showCaregiver}
                   onView={setView}
@@ -738,10 +747,12 @@ export default function App() {
             onNote={onNote}
             apiKey={apiKey}
             onPlan={onPlan}
+            // The first thing after the onboarding is the home, which is the
+            // care plan itself until someone comes (docs/patterns.md §4a).
             onFinish={() => {
               setVariant('classic');
               setSelectedPlan('live');
-              setView('plan-detail');
+              setView('dashboard');
             }}
             // the saved key goes, so a reload cannot bring the same one back
             onKeyRejected={() => {

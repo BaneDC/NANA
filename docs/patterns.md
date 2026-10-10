@@ -170,11 +170,42 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") i jedino on započinje razgovor. Ispod njega je **„Istorija razgovora"** (odlučeno 2. 10.; ranije „Razgovor"): ceo red samo otvara i zatvara spisak ranijih razgovora i ne vodi nigde, a strelica je na kraju reda. Po defaultu je zatvoren. Prazan spisak kaže „Još nema razgovora.". „Moji upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Mojim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
-- **Moja nega pre prve saradnje (odlučeno 5. 10.):** Moja nega nema karticu „Moji upiti"; upiti su samo na stranici „Moji upiti". Dok nije poslat nijedan upit, narandžasti deo „Sledeći korak" ima samo „Pronađi negovateljicu". Čim je poslat prvi upit, a još niko ne dolazi, isti deo kaže gde su stvari („Čeka se odgovor": ko još nije odgovorio; „Stigli su odgovori": svi su odbili) i ima samo „Pogledaj upite", koji vodi na „Moji upiti"; „Pronađi negovateljicu" se tu više ne nudi (ostaje u meniju). Kad neko dolazi, stranica je o njoj i o upitima ne govori.
+- **Moja nega pre prve saradnje (odlučeno 5. 10., izmenjeno 10. 10.):** Moja nega nema karticu „Moji upiti"; upiti su samo na stranici „Moji upiti". Dok nije poslat nijedan upit, **stranica je sam plan nege** (§4a), pa nema posebnog narandžastog dela „Sledeći korak": sledeći korak je u planu, uz negovateljice koje preporučuje. „Sledeći korak" ostaje samo dok plana još nema (razgovor sa Minnom nije završen). Čim je poslat prvi upit, a još niko ne dolazi, narandžasti deo kaže gde su stvari („Čeka se odgovor": ko još nije odgovorio; „Stigli su odgovori": svi su odbili) i ima samo „Pogledaj upite"; ispod njega je i dalje plan. Kad neko dolazi, stranica je pregled (§4a) i o upitima ne govori.
 - **Stranica osobe** (avatar pored imena, `PagePerson`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava `PageHeader`; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici. „Pronađi negovateljicu" za sada nema pretragu (odlučeno 2. 10.): lista je poređana po poklapanju sa planom, sa stranama po 10.
 - **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog, dodatni sati; `waitingOnYou`), a „Moji upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Mojih upita" odgovori su viđeni.
+
+---
+
+## 4a. Početna: Moja nega kao pregled (odlučeno 10. 10.)
+
+Moja nega (`src/screens/Dashboard.jsx`) je početna stranica i mesto sa kog porodica retko mora da ode: sve bitno je tu, a detalji su jedan klik dalje. Posle onboardinga se otvara ona, a ne stranica plana. Šta prikazuje zavisi od toga dokle se stiglo:
+
+| Stanje | Šta je na stranici |
+|---|---|
+| Plan još ne postoji | „Sledeći korak": završite razgovor sa Minnom |
+| Plan postoji, niko nije pitan | **plan nege je stranica** (`PlanContents`): Minnino pismo, „Šta preporučujemo" sa negovateljicama, koordinatorka |
+| Upit poslat, niko još ne dolazi | „Čeka se odgovor" ili „Stigli su odgovori", a ispod plan nege |
+| Neko dolazi | **pregled**, redom ispod |
+
+Pregled je **mreža** (odlučeno 10. 10.; prva verzija je bila jedan stubac), agregat svega sa platforme rečen kratko. Plan nege, karton i posete imaju svoje stranice; ovde je od svakog samo ono što se čita odmah.
+
+1. **„Čeka na vas"** (narandžasti deo, §5), preko cele širine, **samo kad nešto čeka**. Tu prvo stigne i **plan posete** (odlučeno 10. 10.): kartica „Sanna je poslala plan posete za sutra" sa dugmetom „Potvrdi plan" (`default`); naslov otvara plan, gde se može i javiti da nešto nije u redu ili otkazati. Tek potvrđen plan prelazi u karticu „Predstoji" i u broj „sledeća poseta" (`plansToConfirm`, `confirmPlan` u `src/data/familyCare.js`; isto dugme je i u samom planu posete). Broj u meniju uz „Moja nega" broji i planove koji čekaju potvrdu. Kad ne čeka ništa, na početnoj nema narandžastog dela („Ništa ne čeka" je uklonjeno odavde; na njenoj stranici ostaje).
+2. **Tri broja, svaki svoja kartica** (`StatCard` u `Dashboard.jsx`: broj 24 / 32 medium, ispod šta broji i napomena, kao `Stat` u §8): poseta do sada (od kada), sledeća poseta (vreme i ko dolazi), rezervisano (i šta se sada naplaćuje). Tri u redu; na telefonu dve, a treća ispod preko cele širine. Kartica koja ima nešto iza sebe je cela klikabilna (`CardLink` na oznaci): prva otvara sve posete, druga plan posete. Nikad zbir plaćenog (§8).
+3. **Kartice po dve u redu**, ovim redom:
+   - „Predstoji" (zakazane posete; red otvara plan posete) i „Poslednja poseta" (kako je bila i šta je negovateljica zapisala; red otvara radni nalog);
+   - „Vaše negovateljice" (red otvara njenu stranicu) i „Ponude partnera";
+   - koordinatorka, preko cele širine: kartica koja ostane sama na kraju zauzima ceo red.
+
+- **Svaka kartica ima svoje mesto i uvek je tu**, i kad nema šta da pokaže: tada to kaže jednom rečenicom („Nijedna poseta nije zakazana.", „Još nije bilo posete."). Tako se raspored ne menja kako nega teče; menja se samo ono što je u karticama. Jedino „Čeka na vas" dolazi i odlazi, iznad svega.
+- **Mreža prati širinu stranice, ne prozora** (`@container`): dve kartice u redu dok je stubac širok bar 672; uže od toga (telefon, ili otvoren asistent pored) jedna ispod druge. Razmak je 12 u oba smera. Kartice u istom redu su iste visine.
+- **Red na početnoj je sažet:** naslov i red ispod njega su **4** jedan od drugog (ime i ono što ide uz njega, §3; na ostalim stranicama je 8, §6), i **desno nema ničega**: ni dugmeta, ni broja, ni strelice. Red ili kartica se otvara klikom bilo gde, a akcija je u detaljima. Iznos je deo rečenice („3 h · 54 € rezervisano"), ne oznaka, da red ostane jedna linija. Ovo je izuzetak od §7 („red ima akciju desno") samo za početnu, jer je kartica široka pola stranice.
+- **Red posete nema avatar** („Predstoji", „Poslednja poseta"; samo na početnoj): red je poseta, rečena danom i satima, a ko dolazi piše u redu ispod. Avatar imaju samo negovateljice (38, 44 na dodir: naslov i red ispod, 4 jedan od drugog).
+- **„Ponude partnera"** (ne „Iz plana nege"): red po ponudi, a rečenica šta je to je **na dnu kartice**, sitnim tekstom (ne ispod naslova). Red: prvo partner (logo visok 20, ili ime gde logoa nema) i desno značka `success` „−10% preko Minne", a 8 ispod za šta je (naziv preporuke, otvara plan). Cene i zakazivanje su u planu.
+- **„Čeka na vas" zadržava svoja dugmad** (§5): to je jedino na početnoj što traži odluku.
+- Karton nije na početnoj: do njega se dolazi iz menija.
+- Na početnu ide samo ono što se čita odmah ili traži odluku. Cela istorija poseta, ceo plan sa cenama partnera, ugovor i karton ostaju na svojim stranicama.
 
 ---
 
@@ -212,7 +243,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 </Attention>
 ```
 
-- Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice. Rečenica ispod naslova je 8 ispod njega, kao ispod svakog naslova (odlučeno 6. 10.; bilo je 4).
+- Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice. Rečenica ispod naslova je 4 ispod njega: naslov i rečenica su jedna glava (odlučeno 10. 10.; od 6. 10. je bilo 8, što je razdvajalo naslov od njegove rečenice).
 - Stavka koja nešto otvara je `Card` u redu (avatar levo): naslov kartice kao `CardLink` (14), tekst, dugme desno. **U „Čeka na vas" dugme ostaje i na telefonu** (odlučeno 6. 10.): narandžasti deo je inače informativan, pa dugme kaže šta treba uraditi („Pogledaj uslove", „Pogledaj radni nalog"). Na telefonu je ispod sadržaja, u koloni teksta i široko koliko ona, 16 ispod, kao kod kartice upita.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
 - **Prazna stranica je isto ovo** (odlučeno 6. 10.): svaka prazna stranica izgleda kao „Sledeći korak" na Mojoj nezi. Naslov kaže šta nedostaje („Još niste poslali nijedan upit", „Nema aktivnog plana", „Ovde još nema ničega"), a bela kartica ispod rečenicu šta da se uradi i jedno dugme levo u `CardFooter`. Prazno bez akcije je ista stvar bez dugmeta (kao „Ništa ne čeka"). Siva ploča `Empty` je uklonjena iz projekta (6. 10.) i ne vraća se.
@@ -339,7 +370,7 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 - **Izbor u modalu menja sadržaj na mestu.** Jedan izbor je izabran od početka (najčešći), a drugi izbor menja samo delove ispod njega: novi ulaze iz prozirnog (200 ms), a modal raste ili se skuplja do njih (`AutoHeight`, `src/components/AutoHeight.jsx`: 250 ms, `ease-out-strong`), umesto da skoči kao da se otvorio novi.
 - Na telefonu su oba bottom sheet (§12).
 - **Klik van drawer-a ili modala ga zatvara samo ako je i pritisak počeo van njega.** Kad se iz polja razvlači ili selektuje tekst pa se miš pusti van prozora, prozor ostaje otvoren. shadcn (Radix) to radi sam, jer zatvara na pritisak van prozora, a ne na klik. Novi prozor se pravi od `Dialog` ili `Modal`, pa to dobija sam.
-- **Kad se prozor otvori, fokus je na prozoru** (ili na polju sa `autoFocus`), a ne na prvom dugmetu, da nijedno dugme ne izgleda kao da je izabrano tastaturom.
+- **Kad se prozor otvori, fokus je na prozoru** (ili na polju sa `autoFocus`), a ne na prvom dugmetu, da nijedno dugme ne izgleda kao da je izabrano tastaturom. **Prozor čija je svrha da se nešto napiše fokusira polje odmah** (odlučeno 10. 10.): poruka negovateljici („Pošalji poruku") se otvara sa kursorom u polju, da može odmah da se kuca.
 - **Otvara se i zatvara preko `open`**, kao svaki shadcn prozor: `<Dialog open={otvoren} onClose={…}>`. Prozor ostaje u kodu i kad je zatvoren, pa shadcn odigra i animaciju zatvaranja. Kad prozor drži formu ili prikazuje nešto što se pri zatvaranju briše (koji je drawer otvoren), to se drži dok se ne zatvori `useKept` (`src/hooks/use-kept.js`): `{kept && <PasswordModal open={passwordOpen} …/>}`. Sledeće otvaranje kreće ispočetka. Ne uklanjaj prozor iz koda da bi ga zatvorio (`{x && <Dialog/>}`), jer onda nema animacije zatvaranja.
 - **Animacije:** modal dolazi odozdo i malo uvećan, na opruzi (`ease-spring-dialog`, 490 ms); drawer dolazi 28 sa desna (`ease-spring-pane`, 430 ms), a odlazi kratkom krivom (160 ms). Pozadina se pojavljuje za 180 ms. Na telefonu je to shadcn `Drawer` sa svojom animacijom.
 
@@ -373,7 +404,7 @@ Vrsta vrednosti određuje raspored:
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
 - **Ispod naslova kartice `Facts` počinje 20 niže** (odlučeno 9. 10.): 8 kartice i 12 više, pa je naslov jasno naslov kartice, a prvi red jedan od redova (između redova je 12, linija, 12). `Facts` to radi sam kad stoji odmah posle `CardHeader`: kartice u kartonu, „Vaši podaci" u Podešavanjima i „Vaši odgovori" u pregledu plana.
 - **Jedini izuzetak je cenovnik partnera** (u `RecommendationCard`): naziv levo, redovna i Minnina cena u koloni desno.
-- **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. Za sada samo u pregledu negovateljice.
+- **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. U pregledu negovateljice i na početnoj (§4a), gde stoje u kartici.
 - **PDV u radnom nalogu** (odlučeno 6. 10.): cena koju porodica vidi već sadrži PDV (25,5%, finski), pa se ništa ne dodaje. Ispod ukupnog iznosa radnog naloga i ispod rezervisanog iznosa u planu posete stoji red „Od toga PDV (25,5%)" sa iznosom, kao na računu (`vatIn`, `vatText`). Cena po satu svuda gde se prikazuje ugovor (kartica „Ugovor o nezi", novi uslovi, pregled, sve verzije) kaže „18 € / h, PDV uključen" (`rateText`). Sve je u `src/data/familyCare.js`. Kod otkazane posete i iznosa 0 reda sa PDV-om nema.
 - **Nikad zbir plaćenog** (odlučeno 5. 10.): porodici se ne prikazuje koliko je ukupno platila, ni do sada, ni po mesecu, ni po negovateljici. Iznos stoji samo uz pojedinačnu posetu (rezervisano, biće naplaćeno, naplaćeno) i uz ono što se sada dešava („Rezervisano za zakazane posete", „Naplaćuje se sada" u Podešavanjima). Broj poseta je u redu, zbir novca nije.
 

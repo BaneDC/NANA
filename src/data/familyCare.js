@@ -337,6 +337,23 @@ export const declineTerms = (caregiverId) => (c) => {
   );
 };
 
+// A visit plan the family has not said yes to yet. It arrives from the
+// caregiver and waits at the top of the home; once confirmed it is one of the
+// visits that are coming. Saying something is wrong with it, or calling the
+// visit off, is done from the plan itself.
+export const plansToConfirm = (c) => allVisits(c).filter((v) => v.status === 'planned' && !v.planOk);
+
+export const confirmPlan = (visitId) => (c) => {
+  const v = findVisit(c, visitId);
+  return logged(mapVisit(c, visitId, (x) => ({ ...x, planOk: true })), {
+    kind: 'visit',
+    caregiverId: v.caregiver.id,
+    by: 'you',
+    title: 'Potvrdili ste plan posete',
+    detail: `${v.date} · ${v.time}.`,
+  });
+};
+
 // Saying it is fine only brings the charge forward. Silence does the same thing
 // 24 hours later, which is the arrangement they signed up to.
 export const confirmVisit = (visitId) => (c) => {
