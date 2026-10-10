@@ -16,7 +16,6 @@ Pravilo je u `docs/patterns.md` §8a (odlučeno 6. 10.): lista duža od onoga š
 | Poslednja poseta | Moja nega | 1; „Sve posete" u glavi je veza na stranicu Posete, ne produžetak liste | ✅ |
 | Negovateljice u preporuci | Plan nege | 5; „Pogledajte još negovateljica" je veza na „Pronađi" (pretraga) | ✅ |
 | Moji upiti | Stranica „Moji upiti" | Sve (sa filterima) | ✅ |
-| Planovi nege | Stranica i bočni meni | Sve | ✅ |
 | Vaše negovateljice | Moja nega | Sve | ✅ |
 | Sve verzije ugovora (drawer) | Njena stranica | Sve | ✅ |
 | Čeka na vas | Moja nega | Sve (ono što čeka mora da se vidi) | ✅ |

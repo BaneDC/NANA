@@ -26,7 +26,7 @@ import { AMOUNT_LABEL, MOOD_LABEL, START_HOUR, allVisits, dayOf, firstName, long
 // stay in hospital, she manages less than she did): that is told to the
 // assistant, which asks what it needs to know, proposes the answers that
 // follow from it and, once the family agrees, writes the event here and the
-// plan is built again as a new version. The record was simply wrong (a
+// plan is built again (one plan, never versions of it: docs/plan-nege.md). The record was simply wrong (a
 // misspelt name, the wrong option picked): that is corrected by hand, in the
 // part's own dialog.
 
@@ -251,25 +251,23 @@ const rowLine = (r) =>
     : `${r.title}: ${r.before} → ${r.after}`;
 
 // what a change did to the plan, as one line of the history
-const planLine = (impact, version) =>
+const planLine = (impact) =>
   [
     impact.frailty && `Nivo krhkosti: ${impact.frailty.before} → ${impact.frailty.after}.`,
-    impact.touched.length
-      ? `Plan nege je sada verzija ${version}; promenilo se: ${impact.touched.join(', ')}.`
-      : 'Plan nege je ostao isti.',
+    impact.touched.length ? `U planu nege se promenilo: ${impact.touched.join(', ')}.` : 'Plan nege je ostao isti.',
   ]
     .filter(Boolean)
     .join(' ');
 
 // A correction as the history keeps it: what was put right, and what that did
 // to the plan (a corrected answer still builds it again).
-export function correctionEntry({ part, impact, version }) {
+export function correctionEntry({ part, impact }) {
   const one = impact.rows.length === 1;
   return {
     kind: 'correction',
     by: 'you',
     title: one ? rowLine(impact.rows[0]) : `${part.title}: ${impact.rows.length} ispravke`,
-    lines: [...(one ? [] : impact.rows.map(rowLine)), 'Ispravka zapisa.', planLine(impact, version)],
+    lines: [...(one ? [] : impact.rows.map(rowLine)), 'Ispravka zapisa.', planLine(impact)],
   };
 }
 
@@ -286,7 +284,7 @@ export function nextSteps({ impact, care, until }) {
     impact?.week &&
       (working.length
         ? `Plan sada traži „${impact.week.after}", a dogovoreno je drugačije. Zatražite nove uslove (${names}).`
-        : `Plan sada traži „${impact.week.after}". Novi upiti idu sa ovom verzijom plana.`),
+        : `Plan sada traži „${impact.week.after}". Novi upiti idu sa izmenjenim planom.`),
     impact?.opened.length > 0 && `Otvorila su se nova pitanja: ${impact.opened.join(', ')}. Asistent može da ih prođe sa vama.`,
     until && `Privremeno je, do ${longDate(until)}. Tada javite asistentu kako je, da se plan vrati ili ostane.`,
   ].filter(Boolean);
@@ -348,7 +346,7 @@ const withHealth = (record, ops, since) => ({
 // Something that happened, written into the record once the family agreed to
 // what the assistant proposed: what it was and from when, each answer and
 // entry it moved, what it did to the plan, and what to do next.
-export function writeEvent(record, at, { event = {}, impact, health = [], version, care }) {
+export function writeEvent(record, at, { event = {}, impact, health = [], care }) {
   const since = dayFrom(event.since);
   const until = dayFrom(event.until);
   const rows = [...(impact?.rows || []), ...healthRows(health)];
@@ -361,7 +359,7 @@ export function writeEvent(record, at, { event = {}, impact, health = [], versio
     lines: [
       ...rows.map(rowLine),
       [since && `Od ${longDate(since)}`, until && `privremeno, do ${longDate(until)}`].filter(Boolean).join(', ') || null,
-      impact ? planLine(impact, version) : 'Plan nege je ostao isti.',
+      impact ? planLine(impact) : 'Plan nege je ostao isti.',
     ].filter(Boolean),
     next,
   });

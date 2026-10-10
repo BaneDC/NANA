@@ -4,7 +4,7 @@ import FamilyDrawer from '../components/family/FamilyDrawer';
 import { buildPlan, caregivers } from '../data/carePlan';
 import { demoAnswers, demoNotes, demoUser } from '../data/demoCase';
 import { reconcile } from '../data/dependencies';
-import { planEntries, seedThreads } from '../data/threads';
+import { planEntries } from '../data/threads';
 import { startCare } from '../data/familyStart';
 import { startRecord } from '../data/record';
 import { dateText, standingWith } from '../data/familyCare';
@@ -17,8 +17,7 @@ import CaregiverPage from './CaregiverPage';
 import VisitsPage from './VisitsPage';
 import RequestsPage from './RequestsPage';
 import FindCaregiver from './FindCaregiver';
-import PlanDetail from './PlanDetail';
-import Plans from './Plans';
+import PlanDetail, { NoPlan } from './PlanDetail';
 import Settings from './Settings';
 import MedicalRecord from './MedicalRecord';
 import CaregiverApp from './caregiver/CaregiverApp';
@@ -236,10 +235,9 @@ const SECTIONS = [
   { id: 'upiti-prazno', title: 'Moji upiti, prazno', where: 'Još nijedan upit: sledeći korak kao na Mojoj nezi' },
   { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
   { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)' },
-  { id: 'planovi', title: 'Planovi nege', where: 'Lista planova' },
-  { id: 'planovi-prazno', title: 'Planovi nege, prazno', where: 'Nema aktivnog plana' },
+  { id: 'plan-prazno', title: 'Plan nege, prazno', where: 'Još nema plana' },
   { id: 'podesavanja', title: 'Podešavanja', where: 'Nalog, Plaćanje, Bezbednost, Opšte, Privatnost' },
-  { id: 'karton', title: 'Medicinski karton', where: 'Na šta paziti, skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju' },
+  { id: 'karton', title: 'Medicinski karton', where: 'Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju' },
   { id: 'karton-prazno', title: 'Medicinski karton, prazno', where: 'Kartona još nema' },
   { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },
 ];
@@ -270,7 +268,7 @@ export default function CardGallery() {
   const answers = useMemo(() => reconcile({}, demoAnswers).answers, []);
   const plan = useMemo(() => buildPlan(answers, demoNotes), [answers]);
   const entries = useMemo(
-    () => planEntries({ plan, threads: seedThreads, caregiverCount: caregivers.length, today: '1. oktobra 2026.', answers, notes: demoNotes }),
+    () => planEntries({ plan, caregiverCount: caregivers.length, today: '1. oktobra 2026.', answers, notes: demoNotes }),
     [plan]
   );
   const live = entries.find((e) => e.id === 'live') || entries[0];
@@ -361,7 +359,6 @@ export default function CardGallery() {
         <PlanDetail
           entry={live}
           unlocked
-          onBack={noop}
           onSelectCaregiver={noop}
           onOpenCaregiver={noop}
           onUnlock={noop}
@@ -373,11 +370,8 @@ export default function CardGallery() {
           standingOf={(id) => standingWith(care, id)}
         />
       </Frame>
-      <Frame {...S('planovi')}>
-        <Plans entries={entries} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} />
-      </Frame>
-      <Frame {...S('planovi-prazno')}>
-        <Plans entries={[]} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} />
+      <Frame {...S('plan-prazno')}>
+        <NoPlan onGoToChat={noop} />
       </Frame>
       <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />

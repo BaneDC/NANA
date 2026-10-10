@@ -141,11 +141,6 @@ export default function AppNav({
   onNewChat,
   chatListOpen,
   onToggleChatList,
-  planEntries,
-  selectedPlan,
-  onSelectPlan,
-  planListOpen,
-  onTogglePlanList,
 }) {
   // the latest five conversations, then ten more in place (docs/patterns.md §8a)
   const chats = useShowMore(threads, { first: 5 });
@@ -236,25 +231,13 @@ export default function AppNav({
             onClick={go(() => onView('requests'))}
           />
 
-          <Section
-            label="Planovi nege"
+          {/* one plan per person (docs/plan-nege.md): the plan itself, no list */}
+          <Place
             icon={FileText}
-            active={view === 'plans' || view === 'plan-detail'}
-            onOpen={go(() => onView('plans'))}
-            open={planListOpen}
-            onToggle={onTogglePlanList}
-            empty="Još nema planova"
-          >
-            {planEntries.map((e) => (
-              <SubItem
-                key={e.id}
-                active={view === 'plan-detail' && selectedPlan === e.id}
-                title={e.title}
-                note={e.archived ? e.date : 'Aktivan'}
-                onClick={go(() => onSelectPlan(e.id))}
-              />
-            ))}
-          </Section>
+            label="Plan nege"
+            active={view === 'plan-detail'}
+            onClick={go(() => onView('plan-detail'))}
+          />
         </SidebarMenu>
       </SidebarContent>
 

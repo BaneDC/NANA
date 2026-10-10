@@ -158,7 +158,7 @@ export const TOOLS = [
   {
     name: 'record_note',
     description:
-      'Zapamti nešto važno što je korisnik rekao a ne pripada nijednom pitanju iz liste: okolnost, strah, ograničenje, detalj o porodici. Bez ovoga bi to nestalo. Ulazi u plan podrške.',
+      'Zapamti nešto važno što je korisnik rekao a ne pripada nijednom pitanju iz liste: okolnost, strah, ograničenje, detalj o porodici. Bez ovoga bi to nestalo. Ulazi u plan nege.',
     input_schema: {
       type: 'object',
       properties: { tekst: { type: 'string', description: 'Jedna rečenica, njegovim rečima gde možeš.' } },
@@ -303,7 +303,7 @@ export function stateMessage(answers, notes = []) {
   const frailty = frailtyOf(answers);
 
   if (!remaining.length) {
-    return 'Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada praviš plan podrške. Ne pozivaj `ask` ni `follow_up`.';
+    return 'Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada praviš plan nege. Ne pozivaj `ask` ni `follow_up`.';
   }
 
   return [

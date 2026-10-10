@@ -159,7 +159,7 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
 
                 {plan &&
                   (impact.touched.length > 0 ? (
-                    <Effect title="Plan nege" badge="Nova verzija" variant="default">
+                    <Effect title="Plan nege" badge="Menja se" variant="default">
                       Ponovo se piše: {impact.touched.join(', ')}. Na planu ćete videti šta je drugačije i moći ćete da poništite
                       izmenu.
                     </Effect>
