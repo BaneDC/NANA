@@ -11,7 +11,6 @@ import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PagePer
 import { Fact, Facts } from '@/components/data-list';
 import { useKept } from '@/hooks/use-kept';
 import { useShowMore } from '@/hooks/use-show-more';
-import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
 import Dialog from '../components/Dialog';
 import MoveDialog from '../components/MoveDialog';
@@ -25,6 +24,7 @@ import { dayLabel, hourText, pl, todayOf } from '../data/familyCare';
 import {
   HEALTH,
   HISTORY_KIND,
+  NOTED_ONLY,
   RECORD_PARTS,
   alertsOf,
   entryLine,
@@ -44,7 +44,7 @@ import {
 // is the plan's, not hers, and is not here.
 //
 // The family does not change her state by hand. When something has happened,
-// "Nešto se promenilo" opens the assistant, which asks what it needs, proposes
+// "Prijavi promenu", the page's one action, opens the assistant, which asks what it needs, proposes
 // what follows and, once agreed, writes the event here; the plan is built
 // again as a new version. The pencil on a part is only for putting right what
 // was written wrong (RecordChangeDialog), and that too says what it does to
@@ -204,7 +204,6 @@ export default function MedicalRecord({
   onFlash,
   onGoToChat,
   onOpenPlan,
-  onAskAssistant,
   onReportChange,
 }) {
   const [side, setSide] = useState('now');
@@ -318,12 +317,11 @@ export default function MedicalRecord({
             </PageDescription>
           </PageHeaderText>
         </PagePerson>
-        {/* The one way to say her state has changed: the assistant, already
-            asking what. Beside it the assistant for anything else, as an icon
-            (in the top bar on a narrow screen). */}
+        {/* The page's one action, and the one way to say her state has
+            changed: the assistant opens already asking what. Anything else can
+            be asked in the same conversation, so there is no second button. */}
         <PageActions>
-          <Button onClick={onReportChange}>Nešto se promenilo</Button>
-          <AskAssistant iconOnly onClick={onAskAssistant} />
+          <Button onClick={onReportChange}>Prijavi promenu</Button>
         </PageActions>
       </PageHeader>
 
@@ -387,6 +385,8 @@ export default function MedicalRecord({
                 onOpen={(entry) => open({ list, entry })}
               />
             ))}
+            {/* what these lists are, said once under them, where the cards' text starts */}
+            <p className="px-4 text-small text-disabled">{NOTED_ONLY}</p>
           </PageSection>
 
           <PageSection title="Osnovno">

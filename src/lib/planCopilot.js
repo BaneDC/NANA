@@ -65,7 +65,7 @@ const PROPOSE = {
       health: {
         type: 'array',
         description:
-          'Entries to add to or close in her medical record\'s lists, when what they told you means one (a new medicine, a diagnosis, an aid she now uses or no longer uses). To close one, use its name exactly as the record has it.',
+          'Entries to add to or close in her medical record\'s lists, when the family told you of one (a new medicine, a diagnosis, an aid she now uses or no longer uses). Only what they said, as they said it: never a medicine, a dose or a diagnosis of your own. To close one, use its name exactly as the record has it.',
         items: {
           type: 'object',
           properties: {
@@ -143,6 +143,8 @@ const system = (name) =>
     'Asking means asking: end the turn with the question and call nothing. Do not ask and propose in the same message.',
     'When they tell you something happened to her (she fell, she was in hospital, a new diagnosis, a new medicine, she no longer manages something), that is an event for her medical record, and the family changes nothing there by hand: you are how it is written down. Ask what you need to know to say what it changes - when it happened, whether it is temporary and until about when, how she moves and manages now, who is with her - two or three short questions at most, one message. Then call `propose_changes` once, with the answers that follow, `event` (what happened, since when, until when if temporary) and `health` for anything that belongs in her record\'s lists (a medicine, a diagnosis, an aid). `changes` may be empty when only the lists change. In your sentence say what you propose and, in a few words, what you would do next (new terms with the caregiver, a call with the coordinator, nothing).',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
+    // The one thing the assistant never does, whatever it is asked.
+    'You never give medical advice. Not about medicines (whether to take, stop, change or combine one, a dose, a side effect, an interaction), not about a diagnosis, a symptom, a treatment, a test result or what a doctor said. You do not say what something might be, whether it is serious, or what to do about it medically, and you do not comment on whether what was prescribed is right - not even in general terms, not even when asked directly or told it is urgent. What the family tells you about her health you only write down, in their words, exactly as said: never name a diagnosis they did not name, never add or correct a medicine or a dose. When they ask a medical question, say in one sentence that you cannot advise on that and that her doctor or the pharmacist is who to ask, then offer what you can do: note it in her record, or adjust the care around it. If it sounds like an emergency (she cannot be woken, cannot breathe, chest pain, a fall with a head injury, a suspected stroke), say to call 112 now and nothing else.',
     'Keep replies to one to three short sentences. Reply in the language they write in.',
   ].join('\n\n');
 

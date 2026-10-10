@@ -7,7 +7,7 @@ import AutoHeight from './AutoHeight';
 import Dialog from './Dialog';
 import { DateInput, Field, Input } from './TextField';
 import { dateOfToday, firstName, longDate } from '../data/familyCare';
-import { entryLine } from '../data/record';
+import { NOTED_ONLY, entryLine } from '../data/record';
 
 // An entry in one of the record's lists (a diagnosis, a medicine, an allergy,
 // an aid), written or changed (docs/patterns.md §10a). The plan is not built
@@ -34,7 +34,7 @@ export default function RecordEntryDialog({ open = true, list, entry, care, onSa
 
   const fields = (
     <div className="flex flex-col gap-3">
-      <Field label={list.name}>
+      <Field label={list.name} hint={list.nameHint}>
         <Input value={name} onChange={setName} placeholder={list.namePlaceholder} autoFocus={!entry} />
       </Field>
       <Field label="Napomena" hint="Nije obavezno.">
@@ -87,6 +87,7 @@ export default function RecordEntryDialog({ open = true, list, entry, care, onSa
               {list.id === 'allergies' && mode !== 'end' && 'Alergija stoji i u „Na šta paziti", na vrhu kartona. '}
               Plan nege ostaje isti: preporuke se ne pišu iz ovog spiska.{told || ''}
             </PartText>
+            <PaneHint>{NOTED_ONLY}</PaneHint>
           </Part>
         </div>
       </AutoHeight>

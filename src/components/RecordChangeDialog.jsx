@@ -15,7 +15,7 @@ import { draftChanges, fieldLocked, partQuestions, recordImpact } from '../data/
 // A correction to a part of the medical record that the care plan is built
 // from (docs/patterns.md §10a). Only for what was written wrong: when
 // something has changed about her, that is told to the assistant, which asks
-// what it needs and proposes the change ("Nešto se promenilo" on the page).
+// what it needs and proposes the change ("Prijavi promenu" on the page).
 //
 // A corrected answer still builds the plan again, so it is made in two steps,
 // in one dialog:
@@ -77,7 +77,7 @@ export default function RecordChangeDialog({ open = true, part, answers, notes, 
       title={step === 'edit' ? 'Ispravka zapisa' : 'Šta ova ispravka menja'}
       description={
         step === 'edit'
-          ? 'Ovde se ispravlja ono što je pogrešno upisano. Ako se nešto promenilo, recite asistentu: „Nešto se promenilo" na vrhu kartona.'
+          ? 'Ovde se ispravlja ono što je pogrešno upisano. Ako se nešto promenilo, to se javlja asistentu: „Prijavi promenu" na vrhu kartona.'
           : 'Ništa nije upisano dok ne potvrdite.'
       }
       wide

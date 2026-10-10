@@ -2,9 +2,9 @@ import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-// Opens the co-pilot against the current page. Only Moja nega, a care plan and
-// the medical record carry one in their head (decided 8 October, the record
-// added on the 10th); on a narrow screen it steps
+// Opens the co-pilot against the current page. Only Moja nega and a care plan
+// carry one in their head (decided 8 October; the medical record opens the
+// assistant through its own one action, "Prijavi promenu"); on a narrow screen it steps
 // aside and the one in the top bar, beside the logo and the menu, is the one,
 // and never squeezing a page's title (docs/patterns.md §4).
 export default function AskAssistant({ onClick, label = 'Pitaj asistenta', iconOnly, className }) {

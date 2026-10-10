@@ -162,7 +162,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **Stranica ne klizi u stranu kad naraste** (odlučeno 9. 10.): mesto za skrolbar je uvek čuvano, sa obe strane (`scrollbar-gutter: stable both-edges` na `Page`), pa kad sadržaj pređe visinu ekrana (drugi tab, „Prikaži još") ništa se ne pomera, a stubac ostaje u sredini.
 
 - Akcije stranice su samo u `PageHeader`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
-- **„Pitaj asistenta" je samo na Mojoj nezi, na jednom planu nege i na medicinskom kartonu** (odlučeno 8. 10.; karton dodat 10. 10.). Podešavanja, Profil, Planovi nege, Pronađi negovateljicu i ostale stranice ga nemaju.
+- **„Pitaj asistenta" je samo na Mojoj nezi i na jednom planu nege** (odlučeno 8. 10.). Medicinski karton ima svoju jednu akciju, „Prijavi promenu", koja otvara istog asistenta (§10a), pa nema i „Pitaj asistenta". Podešavanja, Profil, Planovi nege, Pronađi negovateljicu i ostale stranice ga nemaju.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (`AskAssistant` to radi sam, kad je u `PageHeader`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
 - **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (32, na dodir 44), a ne koliko čip (28).
@@ -494,7 +494,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 
 Stranica o osobi o kojoj se brine (`src/screens/MedicalRecord.jsx`, podaci i logika u `src/data/record.js`). Plan nege je napisan za jedan trenutak i jednu potrebu; karton je ko je ona, bez obzira na plan. Otvara se **karticom naloga u dnu bočnog menija** (ime i avatar onoga ko je prijavljen); kartica se na hover i dok je karton otvoren uokviri, kao svaka kartica koja nešto otvara. Stranica je iz menija, pa nema „nazad".
 
-- **Glava** je stranica osobe (`PagePerson`): avatar, ime, a ispod „Medicinski karton · 84 godine · Töölö, Helsinki". Desno su **„Nešto se promenilo"** (`default`) i „Pitaj asistenta" kao ikonica (§4); na uskom ekranu je asistent u gornjoj traci, a „Nešto se promenilo" ispod imena. Prazan karton nema nijedno.
+- **Glava** je stranica osobe (`PagePerson`): avatar, ime, a ispod „Medicinski karton · 84 godine · Töölö, Helsinki". Desno je **jedno dugme, „Prijavi promenu"** (`default`, bez ikonice; odlučeno 10. 10.): jedina akcija stranice. Na telefonu je ispod imena. Nema „Pitaj asistenta" ni u glavi ni u gornjoj traci, jer „Prijavi promenu" otvara istog asistenta i u tom razgovoru se može pitati bilo šta. Naziv dugmeta je akcija (glagol i šta), ne rečenica o stanju. Prazan karton nema dugme.
 - **Dva prikaza iste stvari, tabovi (§10):** „Stanje sada" i „Istorija".
 - **Stanje sada**, grupe redom: „Ukratko" („Na šta paziti": rizici iz plana i alergije, kao oznake; skala krhkosti), „Svakodnevica" (kretanje i samostalnost; podrška koja joj treba), „Zdravlje" (dijagnoze i stanja, lekovi, alergije, pomagala), „Osnovno" (lični podaci; gde živi; kontakt osoba). **Povoda nema** (odlučeno 10. 10.): zašto se porodica javila, kako je počelo i boravak u bolnici su kontekst plana, a ne osobe, pa ostaju na planu („Pregled i odgovori").
 - **„Gde živi" je svoja kartica** sa svojom olovkom: prvo se bira mesto (`PlaceField`, `src/components/PlaceField.jsx`), pa „Gde sada živi?" (`MoveDialog`, §10) pita šta je u pitanju. Ispravka i selidba menjaju adresu i ostavljaju red u istoriji; privremeni boravak i selidba tamo gde ne radimo ostavljaju samo red.
@@ -502,10 +502,11 @@ Stranica o osobi o kojoj se brine (`src/screens/MedicalRecord.jsx`, podaci i log
 - **Karton ne čuva ništa dva puta.** Delovi iz razgovora sa Minnom (lični podaci, svakodnevica, podrška) čitaju se iz istih odgovora iz kojih se pravi plan (`RECORD_PARTS`), pa izmena u kartonu jeste izmena odgovora i plan se pravi ponovo, kao nova verzija. Samo ono što razgovor ne pita (dijagnoze, lekovi, alergije, pomagala; `HEALTH`) karton čuva sam.
 - **Deo iz odgovora** je kartica sa `Facts` i olovkom u glavi (`secondary`, `size="icon"`, `aria-label` „Ispravi: …"); olovka je samo za ispravku. Šta još nije upisano je „-", a koliko toga ima kaže značka u glavi („Nije upisano: 2").
 - **Spisak u „Zdravlju"** je kartica sa redovima (`Item`, §6): ime zapisa je `ItemLink` i otvara zapis, ispod je napomena i od kada. Novi zapis se dodaje dugmetom „+" u glavi (`secondary`, `size="icon"`, sa `aria-label`). Prazan spisak to kaže jednom rečenicom.
+- **Bez medicinskih saveta, nigde** (odlučeno 10. 10.): NANA beleži ono što porodica kaže o lekovima, dijagnozama i terapiji, i ništa više. Ni tekst interfejsa ni asistent ne kažu da li neki lek treba uzimati, menjati ili kombinovati, šta nešto „može da bude", ni da li je prepisano kako treba. Na medicinsko pitanje asistent kaže da o tome ne savetuje i da pita lekara ili farmaceuta, pa ponudi ono što sme: da zabeleži, ili da prilagodi negu. Na hitan slučaj kaže da se zove 112. U zapis ne dodaje lek, dozu ni dijagnozu koje porodica nije rekla. Ispod spiskova u „Zdravlju" i u prozoru svakog zapisa stoji rečenica da su to beleške (`NOTED_ONLY`), a polje za lek kaže „Upišite kako je lekar prepisao.". Uputiti na lekara ili partnera (pregled terapije kod interniste) je u redu; to nije savet.
 - **Ništa se ne čuva dok se kuca, i ništa se ne briše.** Svaka izmena ostavlja red u istoriji.
 - **Dva puta, po tome šta je izmena** (odlučeno 10. 10.): **nešto se desilo** (pad, bolnica, snalazi se slabije) ide preko asistenta; **zapis je bio pogrešan** se ispravlja ručno, olovkom. Porodica ne prevodi sama događaj u odgovore.
 
-**„Nešto se promenilo"** otvara asistenta pored kartona, sa gotovim pitanjem „Šta se promenilo?" (pitanje je fiksno, bez zahteva modelu; `CHANGE_OPENER` u `src/components/KitAssistant.jsx`). Dalje:
+**„Prijavi promenu"** otvara asistenta pored kartona: u razgovoru stoji porodičino „Nešto se promenilo." i gotovo pitanje „Šta se promenilo?" (pitanje je fiksno, bez zahteva modelu; `CHANGE_OPENER` u `src/components/KitAssistant.jsx`). Dalje:
 
 1. Porodica kaže šta se desilo svojim rečima. Asistent postavi dva do tri potpitanja (kada, da li je privremeno, kako se sada kreće i snalazi, ko je uz nju).
 2. Asistent **predlaže, ne upisuje**: kartica „Predlažem da upišemo: …" sa svakim odgovorom (bilo → sada), zapisima za „Zdravlje" (novi lek, dijagnoza, pomagalo) i nivoom krhkosti ako se pomera. Dugmad „Ne sada" i „Upiši u karton".
@@ -536,7 +537,7 @@ Prototip: karton se ne čuva između prijava (osim onoga što je u odgovorima); 
 **Ikonica ostaje uvek:**
 - dugme bez teksta (`iconOnly`), uz `aria-label`;
 - strelica koja pokazuje da li je nešto otvoreno ili zatvoreno (disclosure);
-- „Pitaj asistenta", ista komponenta gde postoji (Moja nega, plan nege, medicinski karton);
+- „Pitaj asistenta", ista komponenta gde postoji (Moja nega, plan nege);
 - kvačice u listama i u znački stanja, jer to nisu dugmad.
 
 ## 12. Telefon
@@ -613,6 +614,7 @@ Očekivano: `cards` → `24px/16px`; `titles` → `card-title 14px` i `section-t
 ## 14. Zabranjeno — kratko
 
 - druga klasa za karticu, kutija sa ivicom ili senkom u kartici, radius van skale;
+- medicinski savet u tekstu interfejsa ili u odgovoru asistenta: o lekovima, dijagnozama i terapiji se samo beleži ono što porodica kaže (§10a);
 - narandžasta kartica sa sadržajem direktno na narandžastom (sadržaj ide u belu karticu u `Attention`);
 - uvučen citat u kurzivu; tekst kao dugme-link umesto `Button`;
 - velika slova (nigde, ni u onboardingu);

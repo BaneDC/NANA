@@ -94,6 +94,8 @@ export const HEALTH = [
     name: 'Lek i doza',
     namePlaceholder: 'npr. Amlodipin 5 mg',
     notePlaceholder: 'npr. jednom dnevno, ujutru',
+    // written as prescribed: this is a note of it, never our word on it
+    nameHint: 'Upišite kako je lekar prepisao.',
     empty: 'Nijedan lek nije upisan.',
     end: 'Više ne uzima',
   },
@@ -297,6 +299,11 @@ export function dayFrom(text) {
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   return Number.isNaN(d.getTime()) ? null : d;
 }
+
+// What every list under "Zdravlje" is, said on the page and in each dialog:
+// a note of what the family told us. NANA gives no medical advice, on
+// medicines or anything else (docs/patterns.md §10a, §14).
+export const NOTED_ONLY = 'Ovo su beleške, upisane onako kako ste nam rekli. NANA ne daje medicinske savete: o lekovima, dijagnozama i terapiji odlučuje lekar.';
 
 // What the assistant proposed for the lists (a medicine added, an aid no
 // longer used), checked against the record: an entry to end has to be there.

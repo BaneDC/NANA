@@ -338,7 +338,7 @@ export default function App() {
     []
   );
 
-  // "Nešto se promenilo" on the medical record: the assistant opens beside it
+  // "Prijavi promenu" on the medical record: the assistant opens beside it
   // already asking what changed (a fixed opener, sent as the family's own).
   const reportChange = () => {
     setRightPanel('copilot');
@@ -478,12 +478,10 @@ export default function App() {
         <div className="hidden shrink-0 items-center gap-2 px-3 py-2 narrow:flex">
           <SidebarTrigger />
           <Logo width={96} />
-          {/* only where the pages carry one: Moja nega, a care plan and the
-              medical record once there is one (docs/patterns.md §4); the chat
-              is the assistant itself */}
-          {(view === 'dashboard' || view === 'plan-detail' || (view === 'record' && answers['about-person']?.values?.name)) && (
-            <AskAssistant className="ml-auto" onClick={askAssistant} />
-          )}
+          {/* only where the pages carry one: Moja nega and a care plan
+              (docs/patterns.md §4); the chat is the assistant itself, and the
+              medical record has its own one action, "Prijavi promenu" */}
+          {(view === 'dashboard' || view === 'plan-detail') && <AskAssistant className="ml-auto" onClick={askAssistant} />}
         </div>
       )}
 
@@ -660,7 +658,6 @@ export default function App() {
                   onFlash={say}
                   onGoToChat={goToChat}
                   onOpenPlan={() => openPlanPage('live')}
-                  onAskAssistant={askAssistant}
                   onReportChange={reportChange}
                 />
               )}

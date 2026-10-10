@@ -49,12 +49,12 @@ function createChatStore() {
 }
 export const chatStore = createChatStore();
 
-// What "Nešto se promenilo" on the medical record says for the family, and
+// What "Prijavi promenu" on the medical record says for the family, and
 // what the assistant asks back. Both are fixed, so the way in is instant and
 // costs no request; the model takes over from the family's answer.
 export const CHANGE_OPENER = 'Nešto se promenilo.';
 const CHANGE_REPLY =
-  'Šta se promenilo? Recite svojim rečima, na primer „pala je i slomila nogu" ili „dobila je novi lek". Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege.';
+  'Šta se promenilo? Recite svojim rečima, na primer „pala je i slomila nogu" ili „dobila je novi lek". Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.';
 
 export function ChatSource({ id, ctx, onTitle }) {
   const history = useRef([]);
