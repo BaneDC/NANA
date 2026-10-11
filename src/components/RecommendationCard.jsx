@@ -21,6 +21,7 @@ export default function RecommendationCard({
   rec,
   standingOf,
   unlocked,
+  askNote,
   bookable = true,
   changed,
   changeKey,
@@ -29,8 +30,11 @@ export default function RecommendationCard({
   onFindCaregivers,
 }) {
   return (
-    // keyed by the change, so the highlight plays again for a second change
+    // keyed by the change, so the highlight plays again for a second change.
+    // `data-rec` is how the home's "Sledeći korak" finds the caregivers to
+    // scroll to (docs/patterns.md §4a).
     <Card
+      data-rec={rec.kind}
       className={cn(changed && 'animate-plan-changed shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]')}
       key={changed ? changeKey : 'rec'}
     >
@@ -65,6 +69,10 @@ export default function RecommendationCard({
           )}
         </ItemGroup>
       )}
+      {/* Before a subscription, what writing to one of them takes is said
+          here, by the buttons, and not only in the dialog they open
+          (docs/patterns.md §4b). */}
+      {rec.kind === 'caregivers' && !unlocked && askNote && <p className="text-small text-muted-foreground">{askNote}</p>}
 
       {rec.kind === 'offer' && <Offer rec={rec} bookable={unlocked && bookable} />}
 

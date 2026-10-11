@@ -9,6 +9,7 @@ import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PagePer
 import { Fact, Facts } from '@/components/data-list';
 import { useShowMore } from '@/hooks/use-show-more';
 import Attention from '../components/Attention';
+import FirstTime from '../components/FirstTime';
 import FrailtyScale from '../components/FrailtyScale';
 import ShowMore from '../components/ShowMore';
 import Tags, { Group } from '../components/Tags';
@@ -216,6 +217,12 @@ export default function MedicalRecord({
           <Button onClick={onReportChange}>Prijavi promenu</Button>
         </PageActions>
       </PageHeader>
+
+      {/* Why there is nothing to edit here, until the family has reported a
+          first change and so knows (docs/patterns.md §4b). */}
+      <FirstTime show={!record.log.some((e) => e.via === 'assistant')}>
+        Karton se ne menja ručno: sve promene i ispravke idu preko „Prijavi promenu".
+      </FirstTime>
 
       {/* a change here rewrote the plan: where to see it, and take it back.
           Not when it left the plan as it was (a corrected age, a phone number):

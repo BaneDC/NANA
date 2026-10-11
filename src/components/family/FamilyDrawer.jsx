@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { AlertTriangle, Check, CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { statusVariant } from '../Standing';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import ShowMore from '../ShowMore';
 import VisitsDrawer from './VisitsDrawer';
+import { CaregiversDrawer, ComingDrawer, OffersDrawer } from './HomeDrawers';
 import { useShowMore } from '@/hooks/use-show-more';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
@@ -420,6 +421,15 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const [reason, setReason] = useState(CALL_OFF_REASONS[0]);
   const [other, setOther] = useState('');
   const v = findVisit(care, visitId);
+  // A plan that is opened has been seen: it leaves "Čeka na vas" on the home,
+  // where it stood only so as not to be missed (docs/patterns.md §4a). There
+  // is nothing to approve: the visit was booked when the plan came.
+  const unseen = Boolean(v && v.status === 'planned' && !v.planOk);
+  useEffect(() => {
+    if (unseen) onCare(confirmPlan(visitId));
+    // once, when the plan opens
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   if (!v) return null;
   const first = firstName(v.caregiver.name);
   const held = chargedFor(v.hours, v.rate);
@@ -429,11 +439,6 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const query = () => {
     onCare(queryVisit(visitId, text.trim()));
     onFlash('Poslato koordinatorki. Negovateljica je obaveštena da ne dolazi dok se ne reši.');
-    onClose();
-  };
-  const confirm = () => {
-    onCare(confirmPlan(visitId));
-    onFlash('Označeno kao viđeno.');
     onClose();
   };
   const callOff = () => {
@@ -464,6 +469,12 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
         {/* the VAT inside it, as on the work order: it adds nothing */}
         {held > 0 && <Line label={`Od toga PDV (${vatText})`} value={money(vatIn(held))} />}
       </DataList>
+      {/* Until when calling it off costs nothing: said here, and not only in
+          the dialog that calls it off, where it would be learnt too late.
+          The hour is LATE_HOURS. */}
+      <PaneHint>
+        Posetu možete da otkažete bez naplate do sat vremena pre dolaska. U poslednjem satu se naplaćuje u celosti.
+      </PaneHint>
 
       <SheetFooter>
         <Button variant="secondary" onClick={() => setMode('call-off')}>
@@ -472,8 +483,6 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
         <Button variant="secondary" onClick={() => setMode('query')}>
           Nešto nije u redu
         </Button>
-        {/* a plan just sent is booked already; this only says it was seen */}
-        {v.status === 'planned' && !v.planOk && <Button onClick={confirm}>Video sam</Button>}
       </SheetFooter>
     </Modal>
 
@@ -606,7 +615,7 @@ function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen 
 
 // ── someone they might ask ──────────────────────────────────────────────────
 
-function Profile({ open = true, care, caregiverId, unlocked, onContact, onCaregiver, onClose }) {
+function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact, onCaregiver, onClose }) {
   const c = caregivers.find((x) => x.id === caregiverId);
   if (!c) return null;
   // where the family stands with her is said at the top, under who she is,
@@ -648,10 +657,8 @@ function Profile({ open = true, care, caregiverId, unlocked, onContact, onCaregi
       </DataList>
       {!unlocked && <PaneHint>Telefon i e-mail se otključavaju pretplatom.</PaneHint>}
 
-      <PaneHint>
-        Upit joj šalje plan nege. Ništa ne košta i nikoga ne obavezuje - ona odgovara, a ništa nije
-        dogovoreno dok zajedno ne postavite uslove.
-      </PaneHint>
+      {/* what asking her costs, as it is said everywhere (firstSteps.js) */}
+      {askNote && <PaneHint>{askNote}</PaneHint>}
 
       {/* Never asked: write to her. Asked before and free to ask again (a no,
           or a cooperation that ended): the same, said as again; and when she
@@ -888,5 +895,9 @@ export default function FamilyDrawer({ drawer, ...rest }) {
   if (drawer.kind === 'overview') return <Overview key="overview" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'versions') return <Versions key="versions" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'visits') return <VisitsDrawer key="visits" {...rest} />;
+  // the whole of a list the home shows three of (docs/patterns.md §4a)
+  if (drawer.kind === 'coming') return <ComingDrawer key="coming" {...rest} />;
+  if (drawer.kind === 'caregivers') return <CaregiversDrawer key="caregivers" {...rest} />;
+  if (drawer.kind === 'offers') return <OffersDrawer key="offers" {...rest} />;
   return null;
 }

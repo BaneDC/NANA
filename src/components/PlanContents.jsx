@@ -18,6 +18,7 @@ import { PageSection } from '@/components/page';
 export default function PlanContents({
   plan,
   unlocked,
+  askNote,
   onSelectCaregiver,
   onOpenCaregiver,
   onUnlock,
@@ -41,6 +42,7 @@ export default function PlanContents({
               key={rec.id}
               rec={rec}
               unlocked={unlocked}
+              askNote={askNote}
               bookable
               changed={Boolean(change?.recs.includes(rec.id))}
               changeKey={change?.at}

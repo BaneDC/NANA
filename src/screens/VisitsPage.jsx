@@ -32,7 +32,8 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
       <ToggleGroup
         type="single"
         size="sm"
-        className="items-center"
+        // 16 in, on the line the title's text keeps (docs/patterns.md §4)
+        className="items-center pl-4"
         value={who}
         onValueChange={(id) => {
           if (!id) return;

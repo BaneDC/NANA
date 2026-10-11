@@ -10,6 +10,7 @@ import Attention from '../components/Attention';
 import { Group, Groups } from '../components/Tags';
 import { caregivers } from '../data/carePlan';
 import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../data/familyCare';
+import { USUAL_ANSWER } from '../data/firstSteps';
 
 // Everyone the family has asked about care, and where each one stands. A "yes"
 // that became an arrangement links to her page; a "no" always says why, so
@@ -26,7 +27,7 @@ const BADGE = { pending: 'warning', accepted: 'success', declined: 'destructive'
 const ICON = { pending: Clock, accepted: CheckCircle2, declined: XCircle };
 const TABS = ['all', 'pending', 'accepted', 'declined'];
 
-export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onFind, onContact }) {
+export default function RequestsPage({ care, askNote, onCare, onCaregiver, onProfile, onFind, onContact }) {
   const [tab, setTab] = useState('all');
   const mine = care.requests;
   useEffect(() => {
@@ -48,10 +49,7 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
       {!mine.length && (
         <Attention title="Još niste poslali nijedan upit">
           <Card>
-            <CardDescription>
-              Upit šalje plan nege negovateljici i ništa ne košta. Možete da pitate više njih, a ništa nije dogovoreno
-              dok zajedno ne postavite uslove.
-            </CardDescription>
+            <CardDescription>{askNote}</CardDescription>
             <CardFooter>
               <Button onClick={onFind}>
                 <Search size={14} strokeWidth={1.75} />
@@ -64,8 +62,10 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
 
       {mine.length > 0 && (
         <>
-          {/* one is always chosen: pressing the chosen one again does nothing */}
-          <ToggleGroup type="single" size="sm" value={tab} onValueChange={(t) => t && setTab(t)} aria-label="Upiti po odgovoru">
+          {/* One is always chosen: pressing the chosen one again does nothing.
+              16 in, on the line the title's text and the cards' avatars keep
+              (docs/patterns.md §4). */}
+          <ToggleGroup type="single" size="sm" className="pl-4" value={tab} onValueChange={(t) => t && setTab(t)} aria-label="Upiti po odgovoru">
             {TABS.map((t) => (
               <ToggleGroupItem key={t} value={t}>
                 {t === 'all' ? 'Svi' : LABEL[t]}
@@ -118,7 +118,7 @@ export default function RequestsPage({ care, onCare, onCaregiver, onProfile, onF
                               {r.detail}
                             </>
                           ) : r.status === 'pending' ? (
-                            `${firstName(cg.name)} još nije odgovorila. Javićemo vam u svakom slučaju.`
+                            `${firstName(cg.name)} još nije odgovorila. ${USUAL_ANSWER} Javićemo vam u svakom slučaju.`
                           ) : linked ? (
                             `${firstName(cg.name)} je prihvatila. Ugovor i posete su na njenoj stranici.`
                           ) : (

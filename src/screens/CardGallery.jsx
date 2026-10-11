@@ -181,7 +181,8 @@ export function sampleCare() {
 }
 
 // The same family a year on: enough visits and events that every long list
-// shows its first few and "Prikaži još" (docs/patterns.md §8a).
+// shows its first few and "Prikaži još" (docs/patterns.md §8a), and every card
+// on the home its three and the button to the rest (§4a).
 function longCare() {
   const c = sampleCare();
   const a = c.arrangements[0];
@@ -230,7 +231,7 @@ const SECTIONS = [
   { id: 'bez-ugovora', title: 'Njena stranica, prihvatila bez ugovora', where: 'Prihvatila je, ugovor stiže' },
   { id: 'odbijeni-uslovi', title: 'Njena stranica, odbijeni uslovi', where: 'Uslovi su odbijeni, verzija 1 odbijena' },
   { id: 'posete', title: 'Sve posete', where: 'Posete po mesecima' },
-  { id: 'duge-liste', title: 'Duge liste', where: 'Godinu dana kasnije: Predstoji 3, Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"' },
+  { id: 'duge-liste', title: 'Duge liste', where: 'Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve zakazane", „Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"' },
   { id: 'upiti', title: 'Moji upiti', where: 'Upit: čeka, prihvaćen, odbijen' },
   { id: 'upiti-prazno', title: 'Moji upiti, prazno', where: 'Još nijedan upit: sledeći korak kao na Mojoj nezi' },
   { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
@@ -284,6 +285,16 @@ export default function CardGallery() {
   // which sample the open drawer reads: the usual one, or the year-on one
   const [drawerCare, setDrawerCare] = useState('sample');
   const long = useMemo(longCare, []);
+  // the same plan with more from the partners than a card on the home shows
+  const longPlan = useMemo(() => {
+    const offers = plan.recommendations.filter((r) => r.kind === 'offer');
+    const more = ['Kontrolni pregled', 'Rukohvati u kupatilu', 'Šetalica'].map((title, i) => ({
+      ...offers[i % offers.length],
+      id: `g-long-offer-${i}`,
+      title,
+    }));
+    return { ...plan, recommendations: [...plan.recommendations, ...more] };
+  }, [plan]);
   const family = { onDrawer: (d) => { setDrawerCare('sample'); setDrawer(d); }, onCare: noop, onFlash: noop };
   const familyLong = { onDrawer: (d) => { setDrawerCare('long'); setDrawer(d); }, onCare: noop, onFlash: noop };
 
@@ -343,7 +354,7 @@ export default function CardGallery() {
         <VisitsPage care={care} onDrawer={noop} onBack={noop} />
       </Frame>
       <Frame {...S('duge-liste')}>
-        <Dashboard care={long} user={user} plan={plan} {...home} />
+        <Dashboard care={long} user={user} plan={longPlan} {...home} {...familyLong} />
         <VisitsPage care={long} onDrawer={noop} onBack={noop} />
         <CaregiverPage care={long} caregiverId="sanna" onBack={noop} {...familyLong} />
       </Frame>
@@ -393,6 +404,7 @@ export default function CardGallery() {
           drawer={shownDrawer}
           open={Boolean(drawer)}
           care={drawerCare === 'long' ? long : care}
+          plan={drawerCare === 'long' ? longPlan : plan}
           unlocked
           onCare={noop}
           onFlash={noop}
@@ -400,6 +412,7 @@ export default function CardGallery() {
           onOpen={setDrawer}
           onContact={noop}
           onCaregiver={noop}
+          onOpenPlan={noop}
         />
       )}
     </div>
