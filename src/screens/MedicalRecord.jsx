@@ -1,23 +1,15 @@
 import { useState } from 'react';
-import { Pencil, Plus } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { DialogFooter } from '@/components/ui/dialog';
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemLink, ItemTitle } from '@/components/ui/item';
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
 import { Fact, Facts } from '@/components/data-list';
-import { useKept } from '@/hooks/use-kept';
 import { useShowMore } from '@/hooks/use-show-more';
 import Attention from '../components/Attention';
-import Dialog from '../components/Dialog';
-import MoveDialog from '../components/MoveDialog';
-import PlaceField from '../components/PlaceField';
 import FrailtyScale from '../components/FrailtyScale';
-import RecordChangeDialog from '../components/RecordChangeDialog';
-import RecordEntryDialog from '../components/RecordEntryDialog';
 import ShowMore from '../components/ShowMore';
 import Tags, { Group } from '../components/Tags';
 import { dayLabel, hourText, pl, todayOf } from '../data/familyCare';
@@ -30,7 +22,6 @@ import {
   entryLine,
   partRows,
   recordHistory,
-  written,
 } from '../data/record';
 
 // The medical record of the person being cared for (docs/patterns.md §10a):
@@ -43,13 +34,12 @@ import {
 // and aids; who she is and who to call. Why the family called and how it began
 // is the plan's, not hers, and is not here.
 //
-// The family does not change her state by hand. When something has happened,
-// "Prijavi promenu", the page's one action, opens the assistant, which asks what it needs, proposes
-// what follows and, once agreed, writes the event here; the plan is built
-// again as a new version. The pencil on a part is only for putting right what
-// was written wrong (RecordChangeDialog), and that too says what it does to
-// the plan before it is saved. The lists under "Zdravlje" can also be kept by
-// hand: the plan is not built from them.
+// The page is read, not edited (11. 10.): there is no pencil on a part, no "+"
+// on a list and nothing to press on an entry. Whatever is to be different, a
+// change in her state, a correction of what was written wrong, a medicine, a
+// move, is told to the assistant through "Prijavi promenu", the page's one
+// action: it asks what it needs, proposes what follows and, once agreed,
+// writes it here; the plan is built again from the same answers.
 
 // the badge in a row's name stands over the line, not in it
 const overLine = 'my-[calc((var(--text-xs-leading)-20px)/2)]';
@@ -63,20 +53,19 @@ const initialsOf = (name) =>
     .join('')
     .toUpperCase();
 
-// a part read from the answers: its lines, and the way in to change them
-function PartCard({ part, answers, onEdit }) {
+// a part read from the answers: its lines, and how many are not written yet
+function PartCard({ part, answers }) {
   const { rows, missing } = partRows(part, answers);
   if (!rows.length) return null;
   return (
     <Card>
       <CardHeader>
         <CardTitle>{part.title}</CardTitle>
-        <CardAction>
-          {missing > 0 && <Badge>Nije upisano: {missing}</Badge>}
-          <Button variant="secondary" size="icon" aria-label={`Ispravi: ${part.title}`} title="Ispravi zapis" onClick={onEdit}>
-            <Pencil size={14} strokeWidth={1.75} />
-          </Button>
-        </CardAction>
+        {missing > 0 && (
+          <CardAction>
+            <Badge>Nije upisano: {missing}</Badge>
+          </CardAction>
+        )}
       </CardHeader>
       <Facts>
         {rows.map((r) => (
@@ -89,40 +78,12 @@ function PartCard({ part, answers, onEdit }) {
   );
 }
 
-// Where she lives, picked: the first of two dialogs. What the change is (a
-// move, a stay elsewhere, a correction) and what it does to the caregivers is
-// asked by the one after it (MoveDialog).
-function PlaceDialog({ open, value, onNext, onClose }) {
-  const [place, setPlace] = useState(value);
-  const moved = place.trim() && place.trim() !== value.trim();
-  return (
-    <Dialog eyebrow="Medicinski karton" title="Gde živi" open={open} onClose={onClose}>
-      <div className="flex flex-col gap-3">
-        <PlaceField label="Grad" value={value} onChange={setPlace} />
-      </div>
-      <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          Otkaži
-        </Button>
-        <Button disabled={!moved} onClick={() => onNext(place.trim())}>
-          Dalje
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-
-// a list of entries: each a row that opens it, and the way to add one
-function HealthCard({ list, items, onAdd, onOpen }) {
+// a list of entries, as rows: read here, changed through the assistant
+function HealthCard({ list, items }) {
   return (
     <Card className="[&>[data-slot=item-group]]:mt-2">
       <CardHeader>
         <CardTitle>{list.title}</CardTitle>
-        <CardAction>
-          <Button variant="secondary" size="icon" aria-label={list.add} title={list.add} onClick={onAdd}>
-            <Plus size={14} strokeWidth={1.75} />
-          </Button>
-        </CardAction>
       </CardHeader>
       {items.length > 0 ? (
         <ItemGroup>
@@ -130,7 +91,7 @@ function HealthCard({ list, items, onAdd, onOpen }) {
             <Item key={e.id}>
               <ItemContent>
                 <ItemTitle className={entryLine(e) ? 'mb-1' : undefined}>
-                  <ItemLink onClick={() => onOpen(e)}>{e.name}</ItemLink>
+                  {e.name}
                 </ItemTitle>
                 {entryLine(e) && <ItemDescription>{entryLine(e)}</ItemDescription>}
               </ItemContent>
@@ -194,30 +155,16 @@ function History({ entries, today }) {
 
 export default function MedicalRecord({
   answers,
-  notes,
   plan,
   care,
   record,
   planChange,
-  onChange,
-  onRecord,
-  onFlash,
   onGoToChat,
   onOpenPlan,
   onReportChange,
 }) {
   const [side, setSide] = useState('now');
-  // what is being changed: { part } or { list, entry? }; kept while it closes
-  const [editing, setEditing] = useState(null);
-  const shown = useKept(editing);
-  // each opening is a dialog of its own, starting from what is written now
-  const open = (what) => setEditing({ ...what, n: Date.now() });
-
   const person = answers['about-person']?.values || {};
-  // a change of where she lives, waiting on what it is; kept while it closes
-  const [move, setMove] = useState(null);
-  const shownMove = useKept(move);
-
   if (!person.name) {
     return (
       <Page>
@@ -247,62 +194,6 @@ export default function MedicalRecord({
   const today = todayOf(care);
   const history = recordHistory(record, care);
 
-  // the new place written in, with its line of history and what is said after
-  const place = (kind, lines, flash) => {
-    onChange({
-      changes: [{ questionId: 'about-person', answer: { values: { ...person, city: move.to } } }],
-      flash,
-      entry: { kind, by: 'you', title: `Gde živi: ${move.from || '-'} → ${move.to}`, lines },
-    });
-    setMove(null);
-  };
-  // something about where she is that does not change the address
-  const note = (entry, flash) => {
-    onRecord((r) => written(r, care.now, { by: 'you', ...entry }));
-    onFlash(flash);
-    setMove(null);
-  };
-
-  // an entry of a list, written into the record with its line of history
-  const saveEntry = (list, entry) => (values, mode) => {
-    const id = entry?.id || `h${Date.now()}`;
-    const line = entryLine(values);
-    onRecord((r) =>
-      written(
-        {
-          ...r,
-          health: {
-            ...r.health,
-            [list.id]: entry ? r.health[list.id].map((e) => (e.id === id ? { ...e, ...values } : e)) : [...r.health[list.id], { id, ...values }],
-          },
-        },
-        care.now,
-        {
-          kind: mode === 'change' ? 'state' : mode,
-          by: 'you',
-          title: `${list.title}: ${values.name}`,
-          lines: entry
-            ? [`Bilo je: ${[entry.name, entryLine(entry)].filter(Boolean).join(' · ')}.`, mode === 'correction' ? 'Ispravka zapisa.' : 'Promena stanja.']
-            : [line].filter(Boolean),
-        }
-      )
-    );
-    onFlash('Upisano u karton.');
-    setEditing(null);
-  };
-  const endEntry = (list, entry) => (when) => {
-    onRecord((r) =>
-      written({ ...r, health: { ...r.health, [list.id]: r.health[list.id].filter((e) => e.id !== entry.id) } }, care.now, {
-        kind: 'ended',
-        by: 'you',
-        title: `${list.title}: ${entry.name}`,
-        lines: [`${list.end} od ${when}.`],
-      })
-    );
-    onFlash('Zapis je zaključen i ostaje u istoriji kartona.');
-    setEditing(null);
-  };
-
   return (
     <Page>
       <PageHeader>
@@ -317,20 +208,23 @@ export default function MedicalRecord({
             </PageDescription>
           </PageHeaderText>
         </PagePerson>
-        {/* The page's one action, and the one way to say her state has
-            changed: the assistant opens already asking what. Anything else can
-            be asked in the same conversation, so there is no second button. */}
+        {/* The page's one action, and the one way anything here is changed
+            or put right: the assistant opens already asking what. Anything
+            else can be asked in the same conversation, so there is no second
+            button. */}
         <PageActions>
           <Button onClick={onReportChange}>Prijavi promenu</Button>
         </PageActions>
       </PageHeader>
 
-      {/* a change here rewrote the plan: where to see it, and take it back */}
-      {planChange && plan && (
+      {/* a change here rewrote the plan: where to see it, and take it back.
+          Not when it left the plan as it was (a corrected age, a phone number):
+          the history says so, and the banner would say the opposite. */}
+      {planChange && plan && planChange.touched.length > 0 && (
         <Attention title="Plan nege je izmenjen">
           <Card>
             <CardDescription>
-              {planChange.touched.length > 0 ? `Promenilo se: ${planChange.touched.join(', ')}. ` : ''}
+              Promenilo se: {planChange.touched.join(', ')}.{' '}
               Na planu vidite šta je drugačije i možete da poništite izmenu.
             </CardDescription>
             {/* what to do next, from the last thing written here */}
@@ -371,41 +265,30 @@ export default function MedicalRecord({
           </PageSection>
 
           <PageSection title="Svakodnevica">
-            <PartCard part={RECORD_PARTS.daily} answers={answers} onEdit={() => open({ part: RECORD_PARTS.daily })} />
-            <PartCard part={RECORD_PARTS.support} answers={answers} onEdit={() => open({ part: RECORD_PARTS.support })} />
+            <PartCard part={RECORD_PARTS.daily} answers={answers} />
+            <PartCard part={RECORD_PARTS.support} answers={answers} />
           </PageSection>
 
           <PageSection title="Zdravlje">
             {HEALTH.map((list) => (
-              <HealthCard
-                key={list.id}
-                list={list}
-                items={record.health[list.id]}
-                onAdd={() => open({ list })}
-                onOpen={(entry) => open({ list, entry })}
-              />
+              <HealthCard key={list.id} list={list} items={record.health[list.id]} />
             ))}
             {/* what these lists are, said once under them, where the cards' text starts */}
             <p className="px-4 text-small text-disabled">{NOTED_ONLY}</p>
           </PageSection>
 
           <PageSection title="Osnovno">
-            <PartCard part={RECORD_PARTS.person} answers={answers} onEdit={() => open({ part: RECORD_PARTS.person })} />
-            {/* her address is a card of its own: changing it is a move, with a flow of its own */}
+            <PartCard part={RECORD_PARTS.person} answers={answers} />
+            {/* her address is a card of its own: a new one is a move, not a detail */}
             <Card>
               <CardHeader>
                 <CardTitle>Gde živi</CardTitle>
-                <CardAction>
-                  <Button variant="secondary" size="icon" aria-label="Izmeni: Gde živi" title="Izmeni" onClick={() => open({ place: true })}>
-                    <Pencil size={14} strokeWidth={1.75} />
-                  </Button>
-                </CardAction>
               </CardHeader>
               <Facts>
                 <Fact label="Mesto">{person.city?.trim() || '-'}</Fact>
               </Facts>
             </Card>
-            <PartCard part={RECORD_PARTS.contact} answers={answers} onEdit={() => open({ part: RECORD_PARTS.contact })} />
+            <PartCard part={RECORD_PARTS.contact} answers={answers} />
           </PageSection>
         </TabsContent>
 
@@ -413,78 +296,6 @@ export default function MedicalRecord({
           <History entries={history} today={today} />
         </TabsContent>
       </Tabs>
-
-      {shown?.part && (
-        <RecordChangeDialog
-          key={shown.n}
-          open={Boolean(editing?.part)}
-          part={shown.part}
-          answers={answers}
-          notes={notes}
-          plan={plan}
-          care={care}
-          onConfirm={(change) => {
-            onChange(change);
-            setEditing(null);
-          }}
-          onClose={() => setEditing(null)}
-        />
-      )}
-
-      {shown?.place && (
-        <PlaceDialog
-          key={shown.n}
-          open={Boolean(editing?.place)}
-          value={person.city || ''}
-          onNext={(to) => {
-            setEditing(null);
-            setMove({ from: person.city || '', to });
-          }}
-          onClose={() => setEditing(null)}
-        />
-      )}
-
-      {shownMove && (
-        <MoveDialog
-          open={Boolean(move)}
-          care={care}
-          from={shownMove.from}
-          to={shownMove.to}
-          onCorrect={() => place('correction', ['Ispravka zapisa.'], 'Upisano u karton.')}
-          onMove={(when) =>
-            when
-              ? place(
-                  'state',
-                  [`Selidba od ${when}.`, 'Koordinatorka zove oko negovateljica.'],
-                  `Selidba je zabeležena od ${when}. Koordinatorka će vas pozvati oko negovateljica.`
-                )
-              : note(
-                  { kind: 'added', title: `Selidba prijavljena: ${move.to}`, lines: ['Tamo još ne radimo. Koordinatorka zove da dogovori šta dalje.'] },
-                  'Koordinatorka će vas pozvati oko selidbe.'
-                )
-          }
-          onPause={(until) =>
-            note(
-              { kind: 'state', title: 'Privremeno je negde drugde', lines: [`Do ${until}. Adresa je ostala ista, a posete su pauzirane.`] },
-              `Posete su pauzirane do ${until}. Adresa je ostala ista.`
-            )
-          }
-          onClose={() => setMove(null)}
-        />
-      )}
-
-      {shown?.list && (
-        <RecordEntryDialog
-          key={shown.n}
-          open={Boolean(editing?.list)}
-          list={shown.list}
-          entry={shown.entry}
-          care={care}
-          onSave={saveEntry(shown.list, shown.entry)}
-          onEnd={endEntry(shown.list, shown.entry)}
-          onClose={() => setEditing(null)}
-        />
-      )}
     </Page>
   );
 }

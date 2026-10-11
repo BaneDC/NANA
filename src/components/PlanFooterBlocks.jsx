@@ -30,20 +30,28 @@ function ContactRow({ href, icon: Icon, label, value }) {
   );
 }
 
+// The three ways to reach her, as rows: in her card at the foot of the plan and
+// of the home, and in the menu's "Pomoć" (HelpDialog).
+export function CoordinatorRows({ coordinator }) {
+  return (
+    <ItemGroup>
+      <ContactRow
+        href={`https://wa.me/${coordinator.whatsapp.replace(/\D/g, '')}`}
+        icon={MessageCircle}
+        label="WhatsApp"
+        value={coordinator.whatsapp}
+      />
+      <ContactRow href={`tel:${coordinator.phone.replace(/\s/g, '')}`} icon={Phone} label="Telefon" value={coordinator.phone} />
+      <ContactRow href={`mailto:${coordinator.email}`} icon={Mail} label="Email" value={coordinator.email} />
+    </ItemGroup>
+  );
+}
+
 export function CoordinatorContact({ coordinator }) {
   return (
     <Card>
       <CardTitle>Ako želite da se direktno javite koordinatorki</CardTitle>
-      <ItemGroup>
-        <ContactRow
-          href={`https://wa.me/${coordinator.whatsapp.replace(/\D/g, '')}`}
-          icon={MessageCircle}
-          label="WhatsApp"
-          value={coordinator.whatsapp}
-        />
-        <ContactRow href={`tel:${coordinator.phone.replace(/\s/g, '')}`} icon={Phone} label="Telefon" value={coordinator.phone} />
-        <ContactRow href={`mailto:${coordinator.email}`} icon={Mail} label="Email" value={coordinator.email} />
-      </ItemGroup>
+      <CoordinatorRows coordinator={coordinator} />
       <p className="mt-1 text-xs leading-body text-muted-foreground">
         Od sada ne morate sve sami da organizujete. Kad god vam zatreba pomoć, pozovite me.
       </p>

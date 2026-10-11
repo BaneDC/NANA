@@ -13,6 +13,7 @@ import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStore } from './
 import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Plus, X } from 'lucide-react';
+import HelpDialog from './components/HelpDialog';
 import PaywallModal from './components/PaywallModal';
 import AskAssistant from './components/AskAssistant';
 import SharePlanModal from './components/SharePlanModal';
@@ -37,9 +38,9 @@ import { requestMessage, startCare, withAnswers } from './data/familyStart';
 import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
-import { buildPlan, caregivers } from './data/carePlan';
+import { buildPlan, caregivers, coordinator } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
-import { correctionEntry, recordImpact, writeEvent, written } from './data/record';
+import { recordImpact, writeEvent, written } from './data/record';
 import { planEntries } from './data/threads';
 import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
@@ -102,6 +103,8 @@ export default function App() {
   // null when closed, otherwise { caregiver } — a caregiver means the user tapped one
   // to request their number, no caregiver means they unlocked the recommendations.
   const [paywall, setPaywall] = useState(null);
+  // "Pomoć" in the menu: the coordinator's contact, over whatever page is open
+  const [help, setHelp] = useState(false);
   const shownPaywall = useKept(paywall);
   // the history of conversations opens when asked for
   const [chatListOpen, setChatListOpen] = useState(false);
@@ -213,13 +216,15 @@ export default function App() {
   // What the family agreed to in the assistant: the answers it moves build the
   // plan again, and what happened is written into her medical record with
   // every answer and entry it moved, what it did to the plan and what to do
-  // next. The record is where a change to her is kept, whoever proposed it.
-  const applyFromAssistant = (changes, { event, health = [] } = {}) => {
+  // next. The record is where a change to her is kept, and the assistant is
+  // the only way one is made: a correction of what was written wrong comes
+  // through here too, and is kept as a correction.
+  const applyFromAssistant = (changes, { event, health = [], correction = false } = {}) => {
     const impact = changes.length ? recordImpact({ answers, notes, plan, changes }) : null;
     if (changes.length) {
       changePlan({ nextAnswers: applyChanges(answers, changes).answers, nextNotes: notes, source: 'assistant', fromRecord: true });
     }
-    setRecord((r) => writeEvent(r, care.now, { event, impact, health, care }));
+    setRecord((r) => writeEvent(r, care.now, { event, impact, health, care, correction }));
     say(impact?.touched.length ? 'Upisano u karton. Plan nege je izmenjen.' : 'Upisano u karton.');
   };
 
@@ -227,16 +232,6 @@ export default function App() {
     const fresh = added.filter((t) => !notes.includes(t));
     if (!fresh.length) return;
     changePlan({ nextAnswers: answers, nextNotes: [...notes, ...fresh], source: 'assistant' });
-  };
-
-  // A change made in the medical record: the answers it moves go through the
-  // same change the plan shows, and the record keeps the line of it. Nothing is
-  // erased from a record, so taking the change back is written down too.
-  const changeRecord = ({ changes, part, impact, entry, flash }) => {
-    const { answers: next } = applyChanges(answers, changes);
-    changePlan({ nextAnswers: next, nextNotes: notes, source: 'manual', fromRecord: true });
-    setRecord((r) => written(r, care.now, entry || correctionEntry({ part, impact })));
-    say(flash || (plan && impact?.touched.length ? 'Upisano u karton. Plan nege je izmenjen.' : 'Upisano u karton.'));
   };
 
   const undoPlanChange = () => {
@@ -455,6 +450,7 @@ export default function App() {
           onView={setView}
           user={user}
           recordOf={answers['about-person']?.values?.name}
+          onHelp={() => setHelp(true)}
           careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
           requestsBadge={unseenAnswers(care)}
           threads={conversationEntries}
@@ -604,14 +600,10 @@ export default function App() {
               {view === 'record' && (
                 <MedicalRecord
                   answers={answers}
-                  notes={notes}
                   plan={plan}
                   care={care}
                   record={record}
                   planChange={planChange}
-                  onChange={changeRecord}
-                  onRecord={setRecord}
-                  onFlash={say}
                   onGoToChat={goToChat}
                   onOpenPlan={() => setView('plan-detail')}
                   onReportChange={reportChange}
@@ -659,7 +651,7 @@ export default function App() {
         )}
         {rightPanel === 'copilot' && (
           <SidePanelFrame key="copilot-panel">
-            <KitAssistant id={conversation} ctx={chatCtx} title="Asistent" actions={panelActions} />
+            <KitAssistant id={conversation} ctx={chatCtx} title="Asistent" actions={panelActions} className="chat-side" />
           </SidePanelFrame>
         )}
       </AnimatePresence>
@@ -774,6 +766,8 @@ export default function App() {
         <ChatSource key={c.id} id={c.id} ctx={chatCtx} onTitle={titleConversation} />
       ))}
       <Toast flash={flash} onDone={() => setFlash(null)} />
+
+      <HelpDialog open={help} coordinator={plan?.coordinator || coordinator} onClose={() => setHelp(false)} />
 
       {shownPaywall && plan && (
           <PaywallModal

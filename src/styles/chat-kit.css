@@ -50,6 +50,37 @@
   min-height: 0;
 }
 
+/* The assistant beside a page (`chat-side`, in SidePanelFrame): a column 420
+   wide, where the kit's own gutter of 32 and its head's 24 on top left the
+   conversation a narrow strip. 12 on the top and the two sides, the page's own
+   margin. The kit writes those as plain numbers, in four places, so each is
+   said again here; `ick-chat-page` and `ick-chat-feed` are its own stable
+   names. Only while it is a column: at 900 and under it covers the screen and
+   keeps the kit's phone gutter and safe-area insets. */
+@media (min-width: 901px) {
+  .nana-chat.chat-side .ick-chat-page {
+    padding-right: var(--spacing-3);
+    padding-left: var(--spacing-3);
+  }
+
+  .nana-chat.chat-side .ick-chat-feed {
+    margin-right: calc(var(--spacing-3) * -1);
+    margin-left: calc(var(--spacing-3) * -1);
+    padding-right: var(--spacing-3);
+    padding-left: var(--spacing-3);
+  }
+
+  .nana-chat.chat-side .ick-chat-page > [class*='ick-header-'] {
+    padding: var(--spacing-3) var(--spacing-3) var(--spacing-6);
+  }
+
+  /* the fade over the composer reaches the pane's edges, as it did */
+  .nana-chat.chat-side [class*='ick-dock-']::before {
+    right: calc(var(--spacing-3) * -1);
+    left: calc(var(--spacing-3) * -1);
+  }
+}
+
 /* The question, once sent, as NANA's own bubble: flat primary with white
    text, the composer's corner, and no glass, rim, highlight or shadow. */
 .nana-chat [class*='ick-surface-'][class*='ick-glass-'] {

@@ -61,11 +61,17 @@ const PROPOSE = {
         },
         required: ['what'],
       },
+      // The record was wrong, and nothing happened to her: kept as a correction.
+      correction: {
+        type: 'boolean',
+        description:
+          'True when nothing happened to her and what is written was simply wrong (a misspelt name, a wrong age or phone number, an answer or a list entry entered by mistake). Leave `event` out then.',
+      },
       // Her record's lists, which no question covers.
       health: {
         type: 'array',
         description:
-          'Entries to add to or close in her medical record\'s lists, when the family told you of one (a new medicine, a diagnosis, an aid she now uses or no longer uses). Only what they said, as they said it: never a medicine, a dose or a diagnosis of your own. To close one, use its name exactly as the record has it.',
+          'Entries to add to or close in her medical record\'s lists, when the family told you of one (a new medicine, a diagnosis, an aid she now uses or no longer uses). Only what they said, as they said it: never a medicine, a dose or a diagnosis of your own. To close one, use its name exactly as the record has it. An entry that is different now (another dose) or was written wrong is closed and added again as it should read, both in this call.',
         items: {
           type: 'object',
           properties: {
@@ -141,7 +147,9 @@ const system = (name) =>
     'One thing said often touches more than one question - what they still manage alone and where they need hands-on help, how they get around and whether they can go out alone. Look at every question it bears on and propose all of them in one call.',
     'Some answers carry the rest of the plan: the ones marked `carriesPlan` in the catalog set how much help she needs overall, and that decides which questions the plan asks at all and which caregivers fit. When what they tell you changes one of those, do not propose it on what they said alone. Ask first - one or two short questions about what else has changed around it, the ones whose answers you would need to fill in the rest - and propose the whole set once they answer. This is the only reason to ask rather than propose; for everything else, propose.',
     'Asking means asking: end the turn with the question and call nothing. Do not ask and propose in the same message.',
-    'When they tell you something happened to her (she fell, she was in hospital, a new diagnosis, a new medicine, she no longer manages something), that is an event for her medical record, and the family changes nothing there by hand: you are how it is written down. Ask what you need to know to say what it changes - when it happened, whether it is temporary and until about when, how she moves and manages now, who is with her - two or three short questions at most, one message. Then call `propose_changes` once, with the answers that follow, `event` (what happened, since when, until when if temporary) and `health` for anything that belongs in her record\'s lists (a medicine, a diagnosis, an aid). `changes` may be empty when only the lists change. In your sentence say what you propose and, in a few words, what you would do next (new terms with the caregiver, a call with the coordinator, nothing).',
+    'When they tell you something happened to her (she fell, she was in hospital, a new diagnosis, a new medicine, she no longer manages something), that is an event for her medical record. The family changes nothing in the record by hand, not even a typo: the page has no edit buttons, and you are the only way anything in it is written, changed or put right. Ask what you need to know to say what it changes - when it happened, whether it is temporary and until about when, how she moves and manages now, who is with her - two or three short questions at most, one message. Then call `propose_changes` once, with the answers that follow, `event` (what happened, since when, until when if temporary) and `health` for anything that belongs in her record\'s lists (a medicine, a diagnosis, an aid). `changes` may be empty when only the lists change. In your sentence say what you propose and, in a few words, what you would do next (new terms with the caregiver, a call with the coordinator, nothing).',
+    'When they say something in her record is wrong (her name, her age, where she lives, the contact person, an answer, a medicine written down wrongly), that is a correction, not an event: do not ask what happened. Ask only if you cannot tell what it should say, then call `propose_changes` with the answers or list entries as they should read and `correction: true`, without `event`. Her name, age and the place she lives are fields of the question `about-person`; the contact person is a question of its own.',
+    'When she has moved or is about to, propose the new place in the `city` field of `about-person` with `event` (what, since when), and say in your sentence that the coordinator will call about which caregivers can still come. When she is only staying somewhere else for a while (hospital, rehabilitation, with family) her address does not change: keep it with `add_note`, with until when, and say the coordinator will call about the visits in between.',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
     // The one thing the assistant never does, whatever it is asked.
     'You never give medical advice. Not about medicines (whether to take, stop, change or combine one, a dose, a side effect, an interaction), not about a diagnosis, a symptom, a treatment, a test result or what a doctor said. You do not say what something might be, whether it is serious, or what to do about it medically, and you do not comment on whether what was prescribed is right - not even in general terms, not even when asked directly or told it is urgent. What the family tells you about her health you only write down, in their words, exactly as said: never name a diagnosis they did not name, never add or correct a medicine or a dose. When they ask a medical question, say in one sentence that you cannot advise on that and that her doctor or the pharmacist is who to ask, then offer what you can do: note it in her record, or adjust the care around it. If it sounds like an emergency (she cannot be woken, cannot breathe, chest pain, a fall with a head injury, a suspected stroke), say to call 112 now and nothing else.',
@@ -291,6 +299,8 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
   let note = null;
   // what happened and what it does to her record's lists, with the proposal
   let event = null;
+  // the record was wrong and is put right: nothing happened to her
+  let correction = false;
   let health = [];
   const notes = [];
   const requests = [];
@@ -326,6 +336,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
       health = health.concat(lists);
       const shown = valid.length + lists.length;
       if (shown && call.input.event?.what) event = call.input.event;
+      if (shown && call.input.correction === true && !call.input.event?.what) correction = true;
       return {
         type: 'tool_result',
         tool_use_id: call.id,
@@ -344,6 +355,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
     said: withoutLongDashes(said || (changes.length || health.length ? note : '') || ''),
     changes,
     event,
+    correction,
     health,
     notes,
     requests,

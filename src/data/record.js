@@ -45,7 +45,7 @@ export const RECORD_PARTS = {
 // plan's context, and stay with the plan (its overview shows them).
 
 // Where she lives is not a line of "Lični podaci": a move has a flow of its
-// own (MoveDialog), so it is a card of its own with its own way in.
+// own, so it is a card of its own.
 const OWN_FLOW = { 'about-person': ['city'] };
 export const fieldLocked = (questionId, fieldId) => Boolean(OWN_FLOW[questionId]?.includes(fieldId));
 
@@ -73,49 +73,33 @@ export function partRows(part, answers) {
 }
 
 // ── what a conversation does not ask ────────────────────────────────────────
-// Each list says what it holds, how a new entry is asked for, and how an entry
-// that no longer holds is said to have ended.
+// Each list says what it holds, what it says when it is empty, and how an
+// entry that no longer holds is said to have ended. Entries are written and
+// closed by the assistant (`healthOps`), never by hand.
 
 export const HEALTH = [
   {
     id: 'conditions',
     title: 'Dijagnoze i stanja',
-    add: 'Dodaj dijagnozu ili stanje',
-    name: 'Dijagnoza ili stanje',
-    namePlaceholder: 'npr. povišen krvni pritisak',
-    notePlaceholder: 'npr. pod kontrolom, uz terapiju',
     empty: 'Nijedna dijagnoza nije upisana.',
     end: 'Više ne važi',
   },
   {
     id: 'medications',
     title: 'Lekovi',
-    add: 'Dodaj lek',
-    name: 'Lek i doza',
-    namePlaceholder: 'npr. Amlodipin 5 mg',
-    notePlaceholder: 'npr. jednom dnevno, ujutru',
     // written as prescribed: this is a note of it, never our word on it
-    nameHint: 'Upišite kako je lekar prepisao.',
     empty: 'Nijedan lek nije upisan.',
     end: 'Više ne uzima',
   },
   {
     id: 'allergies',
     title: 'Alergije',
-    add: 'Dodaj alergiju',
-    name: 'Na šta je alergična',
-    namePlaceholder: 'npr. penicilin',
-    notePlaceholder: 'npr. osip i otok',
     empty: 'Nijedna alergija nije upisana.',
     end: 'Više ne važi',
   },
   {
     id: 'aids',
     title: 'Pomagala',
-    add: 'Dodaj pomagalo',
-    name: 'Pomagalo',
-    namePlaceholder: 'npr. štap',
-    notePlaceholder: 'npr. samo napolju',
     empty: 'Nijedno pomagalo nije upisano.',
     end: 'Više ne koristi',
   },
@@ -177,23 +161,6 @@ export function written(record, at, entry) {
 }
 
 // ── a change to what the answers hold ───────────────────────────────────────
-
-const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-
-// What the form holds (only the questions someone touched), as the answers
-// that differ from the ones kept: an answer put back as it was is no change.
-export function draftChanges(answers, draft) {
-  return Object.keys(draft)
-    .filter((id) => {
-      const q = questionById[id];
-      const was = answers[id];
-      const now = draft[id];
-      if (q.type === 'multi') return !was || !same([...(was.optionIds || [])].sort(), [...(now.optionIds || [])].sort());
-      if (q.type === 'single') return now.optionId && now.optionId !== was?.optionId;
-      return q.fields.some((f) => (now.values?.[f.id] || '').trim() !== (was?.values?.[f.id] || '').trim());
-    })
-    .map((id) => ({ questionId: id, answer: draft[id] }));
-}
 
 const short = (id) => srShort(questionById[id]);
 
@@ -258,18 +225,6 @@ const planLine = (impact) =>
   ]
     .filter(Boolean)
     .join(' ');
-
-// A correction as the history keeps it: what was put right, and what that did
-// to the plan (a corrected answer still builds it again).
-export function correctionEntry({ part, impact }) {
-  const one = impact.rows.length === 1;
-  return {
-    kind: 'correction',
-    by: 'you',
-    title: one ? rowLine(impact.rows[0]) : `${part.title}: ${impact.rows.length} ispravke`,
-    lines: [...(one ? [] : impact.rows.map(rowLine)), 'Ispravka zapisa.', planLine(impact)],
-  };
-}
 
 // What to do after a change, worked out from what it did, not written by the
 // assistant: a different kind of support goes past the coordinator; a week of
@@ -346,18 +301,26 @@ const withHealth = (record, ops, since) => ({
 // Something that happened, written into the record once the family agreed to
 // what the assistant proposed: what it was and from when, each answer and
 // entry it moved, what it did to the plan, and what to do next.
-export function writeEvent(record, at, { event = {}, impact, health = [], care }) {
-  const since = dayFrom(event.since);
-  const until = dayFrom(event.until);
+export function writeEvent(record, at, { event, impact, health = [], care, correction = false }) {
+  // a proposal that is not an event (a correction, a plain change of the
+  // plan) comes with none: `null`, which a default would not catch
+  const what = String(event?.what || '').trim();
+  const since = dayFrom(event?.since);
+  const until = dayFrom(event?.until);
   const rows = [...(impact?.rows || []), ...healthRows(health)];
   const next = nextSteps({ impact, care, until });
   return written(withHealth(record, health, since), at, {
-    kind: 'state',
+    // nothing happened to her: the record was wrong and is put right
+    kind: correction ? 'correction' : 'state',
     by: 'you',
     via: 'assistant',
-    title: String(event.what || '').trim() || (rows.length === 1 ? rowLine(rows[0]) : `Promena stanja: ${rows.length} izmene`),
+    title:
+      what ||
+      (rows.length === 1 ? rowLine(rows[0]) : `${correction ? 'Ispravka zapisa' : 'Promena stanja'}: ${rows.length} izmene`),
     lines: [
-      ...rows.map(rowLine),
+      // one change with no event is its own title: not said twice
+      ...(what || rows.length !== 1 ? rows.map(rowLine) : []),
+      correction ? 'Ispravka zapisa.' : null,
       [since && `Od ${longDate(since)}`, until && `privremeno, do ${longDate(until)}`].filter(Boolean).join(', ') || null,
       impact ? planLine(impact) : 'Plan nege je ostao isti.',
     ].filter(Boolean),

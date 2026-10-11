@@ -54,7 +54,7 @@ export const chatStore = createChatStore();
 // costs no request; the model takes over from the family's answer.
 export const CHANGE_OPENER = 'Nešto se promenilo.';
 const CHANGE_REPLY =
-  'Šta se promenilo? Recite svojim rečima, na primer „pala je i slomila nogu" ili „dobila je novi lek". Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.';
+  'Šta se promenilo, ili šta treba ispraviti? Recite svojim rečima, na primer „pala je i slomila nogu", „dobila je novi lek" ili „pogrešno je upisan broj telefona". Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.';
 
 export function ChatSource({ id, ctx, onTitle }) {
   const history = useRef([]);
@@ -152,6 +152,7 @@ export function ChatSource({ id, ctx, onTitle }) {
         data: {
           changes: r.changes,
           event: r.event,
+          correction: r.correction,
           health: r.health,
           desc: { ...desc, rows: [...desc.rows, ...healthRows(r.health)] },
           status: 'proposed',
@@ -215,9 +216,10 @@ function KitCard({ title, status, children, foot, actions }) {
 // what would change on the card, and the two answers on the same card.
 function PlanDiffCard({ data, onDecide }) {
   const { desc, status } = data;
-  // something that happened, or an entry in her record's lists: it is written
-  // into the medical record, and the plan follows from it
-  const toRecord = Boolean(data.event || data.health?.length);
+  // something that happened, an entry in her record's lists, or a correction
+  // of what the record says: it is written into the medical record, and the
+  // plan follows from it
+  const toRecord = Boolean(data.event || data.health?.length || data.correction);
   const title =
     status === 'applied' ? (
       <>
@@ -227,6 +229,8 @@ function PlanDiffCard({ data, onDecide }) {
       toRecord ? 'Nije upisano' : 'Nije primenjeno'
     ) : data.event?.what ? (
       `Predlažem da upišemo: ${data.event.what}`
+    ) : data.correction ? (
+      'Predlažem ovu ispravku'
     ) : (
       'Predlažem ove izmene'
     );

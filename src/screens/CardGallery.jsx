@@ -378,10 +378,10 @@ export default function CardGallery() {
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
       <Frame {...S('karton')}>
-        <MedicalRecord answers={answers} notes={demoNotes} plan={plan} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />
+        <MedicalRecord answers={answers} plan={plan} care={care} record={record} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />
       </Frame>
       <Frame {...S('karton-prazno')}>
-        <MedicalRecord answers={{}} notes={[]} plan={null} care={care} record={record} onChange={noop} onRecord={noop} onFlash={noop} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />
+        <MedicalRecord answers={{}} plan={null} care={care} record={record} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />
       </Frame>
       <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />

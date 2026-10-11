@@ -2,6 +2,7 @@ import { Children } from 'react';
 import { useShowMore } from '@/hooks/use-show-more';
 import {
   ChevronDown,
+  CircleHelp,
   FileText,
   LayoutDashboard,
   MessageSquare,
@@ -39,6 +40,8 @@ const HOME_VIEWS = ['dashboard', 'caregiver', 'visits'];
 
 // the account is in Settings (the Profile page went on 10 October)
 const FOOTER_ITEMS = [{ id: 'settings', label: 'Podešavanja', icon: Settings }];
+// "Pomoć" stands over them and is not a page: it opens the coordinator's
+// contact in a dialog (HelpDialog), so it is never the selected item
 
 function Chevron({ open, className }) {
   return (
@@ -133,6 +136,7 @@ export default function AppNav({
   onView,
   user,
   recordOf,
+  onHelp,
   careBadge,
   requestsBadge,
   threads,
@@ -243,6 +247,7 @@ export default function AppNav({
 
       <SidebarFooter>
         <SidebarMenu className="gap-2">
+          <Place icon={CircleHelp} label="Pomoć" onClick={go(() => onHelp())} />
           {FOOTER_ITEMS.map(({ id, label, icon }) => (
             <Place key={id} icon={icon} label={label} active={view === id} onClick={go(() => onView(id))} />
           ))}
