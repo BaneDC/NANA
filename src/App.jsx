@@ -32,7 +32,7 @@ import { SidePanelFrame } from './components/SidePanel';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, canAsk, dateOfToday, firstName, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { askCaregiver, canAsk, dateOfToday, firstName, plansToConfirm, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { requestMessage, startCare, withAnswers } from './data/familyStart';
 import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
@@ -455,7 +455,7 @@ export default function App() {
           onView={setView}
           user={user}
           recordOf={answers['about-person']?.values?.name}
-          careBadge={waitingOnYou(care).length}
+          careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
           requestsBadge={unseenAnswers(care)}
           threads={conversationEntries}
           activeThread={conversation}
