@@ -71,29 +71,73 @@ export function ChatSource({ id, ctx, onTitle }) {
       yield CHANGE_REPLY;
       return;
     }
-    let r;
-    try {
-      r = await askPlanCopilot({
-        client: createClient(apiKey),
-        name: plan.firstName,
-        answers,
-        care,
-        record,
-        today,
-        history: history.current,
-        text: message,
+    // Her words are handed to the kit as they are written, not once the whole
+    // answer is in: the call puts each piece in a queue and this generator
+    // gives the queue out, waiting when it is empty.
+    const pieces = [];
+    let wake = null;
+    let r = null;
+    let failed = null;
+    let over = false;
+    const nudge = () => {
+      wake?.();
+      wake = null;
+    };
+    askPlanCopilot({
+      client: createClient(apiKey),
+      name: plan.firstName,
+      answers,
+      care,
+      record,
+      today,
+      history: history.current,
+      text: message,
+      onText: (piece) => {
+        pieces.push(piece);
+        nudge();
+      },
+    })
+      .then(
+        (result) => {
+          r = result;
+        },
+        (e) => {
+          failed = e;
+        }
+      )
+      .finally(() => {
+        over = true;
+        nudge();
       });
-    } catch (e) {
-      console.error(e);
-      yield { kind: 'custom', id: `err-${turnId}`, type: 'note', data: { tone: 'danger', items: [e?.message || String(e)] } };
+    let shown = '';
+    while (!over || pieces.length) {
+      if (pieces.length) {
+        const piece = pieces.shift();
+        shown += piece;
+        yield piece;
+      } else {
+        await new Promise((resolve) => {
+          wake = resolve;
+        });
+      }
+    }
+    if (failed) {
+      console.error(failed);
+      yield { kind: 'custom', id: `err-${turnId}`, type: 'note', data: { tone: 'danger', items: [failed?.message || String(failed)] } };
       return;
     }
     history.current = r.history;
     // The sentence goes as the answer's own prose, and the cards after it. The
     // kit stamps each part with how much prose had arrived when it did, so the
     // order it is sent in is the order on screen — which also means the answer
-    // keeps its markdown and its copy/regenerate row.
-    if (r.said) yield r.said;
+    // keeps its markdown and its copy/regenerate row. Most of it is on screen
+    // by now; what is left is the end that was held back, or the proposal's own
+    // sentence when she wrote none.
+    if (r.said.startsWith(shown)) {
+      if (r.said.length > shown.length) yield r.said.slice(shown.length);
+    } else if (!shown) {
+      yield r.said;
+    }
     if (r.notes.length) {
       onAddNotes(r.notes);
       yield { kind: 'custom', id: `notes-${turnId}`, type: 'note', data: { items: r.notes } };

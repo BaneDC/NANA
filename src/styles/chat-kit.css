@@ -417,7 +417,9 @@
 .chat-pane-wrap {
   flex-shrink: 0;
   height: 100%;
-  overflow: hidden;
+  /* hides the pane while it grows, and leaves its hairline and shadow the 12
+     of the page's margin on the other three sides (see SidePanelFrame) */
+  clip-path: inset(-12px -12px -12px 0);
 }
 
 .chat-pane-wrap .chat-pane {
@@ -453,6 +455,8 @@
     width: auto !important;
     height: auto;
     padding: var(--spacing-2);
+    overflow: hidden;
+    clip-path: none;
     background: rgba(42, 42, 42, 0.3);
     backdrop-filter: blur(2px);
   }

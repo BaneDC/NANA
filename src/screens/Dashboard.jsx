@@ -99,15 +99,16 @@ function StatCard({ value, label, note, onOpen, className }) {
 }
 
 // A row in a card of the overview (docs/patterns.md §4a): the avatar as tall
-// as the title and the line under it, which sit 4 apart here, as a name and
-// what goes with it do (§3); the text beside it. The row opens what it is
+// as the name and the line under it, which sit 4 apart here, as a name and
+// what goes with it do (§3); the text beside it. The name is 16, as a
+// partner's is in the card beside this one (`rowName`). The row opens what it is
 // about from anywhere on it and has nothing on its right: half a page wide,
 // there is no room for a button, and the details have the action.
 function Row({ initials, ended, className, children }) {
   return (
     <Item
       className={cn(
-        'items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-1)+var(--text-body-leading))]',
+        'items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+var(--text-body-leading))]',
         className
       )}
     >
@@ -120,9 +121,9 @@ function Row({ initials, ended, className, children }) {
 }
 
 const rowTitle = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
+// a caregiver's name: a step up, the size of a partner's name beside it
+const rowName = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-foreground';
 const rowBody = 'text-xs leading-body text-muted-foreground';
-// a badge in a row's title crosses its 16px line rather than heightening it
-const titleBadge = 'my-[calc((var(--text-xs-leading)-20px)/2)]';
 
 // The same, as a card of its own in the tinted tray of what waits on the
 // family: white like every card, its title a card's title, its avatar as tall
@@ -469,15 +470,15 @@ export default function Dashboard({
                   return (
                     <Row key={a.caregiver.id} initials={a.caregiver.initials} ended={ended}>
                       <ItemContent>
-                        <p className={cn(rowTitle, ended && 'text-muted-foreground')}>
+                        <p className={cn(rowName, ended && 'text-muted-foreground')}>
                           <ItemLink onClick={() => onCaregiver(a.caregiver.id)}>{a.caregiver.name}</ItemLink>
                           {pen && (
-                            <Badge variant="warning" className={titleBadge}>
+                            <Badge variant="warning">
                               {act ? 'Novi uslovi' : 'Ugovor čeka'}
                             </Badge>
                           )}
                           {!pen && !act && !ended && lastVersion(a)?.status === 'declined' && (
-                            <Badge variant="destructive" className={titleBadge}>
+                            <Badge variant="destructive">
                               Uslovi odbijeni
                             </Badge>
                           )}

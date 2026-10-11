@@ -208,6 +208,7 @@ Pregled je **mreža** (odlučeno 10. 10.; prva verzija je bila jedan stubac), ag
 - **Mreža prati širinu stranice, ne prozora** (`@container`): dve kartice u redu dok je stubac širok bar 672; uže od toga (telefon, ili otvoren asistent pored) jedna ispod druge. Razmak je 12 u oba smera. Kartice u istom redu su iste visine.
 - **Red na početnoj je sažet:** naslov i red ispod njega su **4** jedan od drugog (ime i ono što ide uz njega, §3; na ostalim stranicama je 8, §6), i **desno nema ničega**: ni dugmeta, ni broja, ni strelice. Red ili kartica se otvara klikom bilo gde, a akcija je u detaljima. Iznos je deo rečenice („3 h · 54 € rezervisano"), ne oznaka, da red ostane jedna linija. Ovo je izuzetak od §7 („red ima akciju desno") samo za početnu, jer je kartica široka pola stranice.
 - **Red posete nema avatar** („Predstoji", „Poslednja poseta"; samo na početnoj): red je poseta, rečena danom i satima, a ko dolazi piše u redu ispod. Avatar imaju samo negovateljice (38, 44 na dodir: naslov i red ispod, 4 jedan od drugog).
+- **Ime negovateljice u „Vaše negovateljice" je 16** (`text-sm`, medium; odlučeno 11. 10.), koliko i ime partnera u kartici pored, da dve kartice u istom redu imaju isti glavni red. To je izuzetak od §2 (naslov reda je inače 14): ime je ovde veliko koliko naslov kartice iznad njega. Rečenica ispod ostaje 14, a avatar je 48.
 - **„Ponude partnera"** (ne „Iz plana nege"): red po ponudi, a rečenica šta je to je **na dnu kartice**, sitnim tekstom (ne ispod naslova). Red: prvo partner (logo visok 20, ili ime gde logoa nema) i desno značka `success` „−10% preko Minne", a 8 ispod za šta je (naziv preporuke, otvara plan). Cene i zakazivanje su u planu.
 - **„Sve posete" je drawer** (odlučeno 11. 10.): dugme „Sve posete" (`secondary`, bez strelice, jer ne vodi na drugu stranicu) u glavi kartice „Poslednja poseta", i broj „poseta do sada", otvaraju drawer sa svim posetama (`kind: 'visits'`, `src/components/family/VisitsDrawer.jsx`), da porodica zbog istorije ne mora sa početne. Složen je kao „Šta se desilo" (§7): čipovi ko je dolazio (samo kad ih je više), „N poseta · najnovije prvo", pa posete po mesecima sa brojem pored meseca, isti red posete kao svuda (`VisitRow`), po 10 sa „Prikaži još". Poseta koja ima šta da otvori (plan posete, radni nalog) otvara to umesto spiska. Stranica „Posete" i dalje postoji i čita isti spisak (`useVisitHistory`). Ovo je izuzetak od §8a („lista ne otvara drawer za ostatak"): kartica na početnoj ne pokazuje početak te liste, nego samo poslednju posetu.
 - **„Čeka na vas" zadržava svoja dugmad** (§5): to je jedino na početnoj što traži odluku.
@@ -311,7 +312,7 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 | Gde | Naslov + red ispod | Visina |
 |---|---|---|
 | Red u kartici (`Item`: Moji upiti, chat) | 14 i rečenica | 48 |
-| Red na početnoj (Vaše negovateljice; naslov → red ispod je tu 4, §4a) | 14 i rečenica | 44 |
+| Red na početnoj (Vaše negovateljice; naslov → red ispod je tu 4, §4a) | 16 i rečenica | 48 |
 | Negovateljica u planu (`CaregiverRow`) | 14 i meta | 44 |
 | Kartica na „Pronađi", glava detalja | 16 i meta | 48 |
 | Kartica u „Čeka na vas", upit (Moji upiti) | 16 i rečenica | 52 |

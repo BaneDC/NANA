@@ -12,10 +12,15 @@ import { cn } from '@/lib/utils';
 // from the page, r24 with the container's shadow; on a narrow screen it covers
 // everything, square. The head is the eyebrow and title with the close, over
 // a hairline; the body scrolls.
+//
+// The frame hides the panel while it grows, but only on the side it grows
+// from: `overflow: hidden` cut the panel's hairline and shadow off flush with
+// its top, right and bottom edge, so it looked sliced under the composer. A
+// clip-path leaves them the 12 of the page's own margin, as the page has.
 export function SidePanelFrame({ className, children }) {
   return (
     <motion.div
-      className="h-full shrink-0 overflow-hidden narrow:fixed narrow:inset-0 narrow:z-35 narrow:h-auto narrow:w-auto! narrow:bg-[rgba(42,42,42,0.3)] narrow:backdrop-blur-[2px] pointer-coarse:narrow:bottom-[calc(100%-var(--app-height,100%))]"
+      className="h-full shrink-0 [clip-path:inset(-12px_-12px_-12px_0)] narrow:fixed narrow:overflow-hidden narrow:[clip-path:none] narrow:inset-0 narrow:z-35 narrow:h-auto narrow:w-auto! narrow:bg-[rgba(42,42,42,0.3)] narrow:backdrop-blur-[2px] pointer-coarse:narrow:bottom-[calc(100%-var(--app-height,100%))]"
       initial={{ width: 0, opacity: 0 }}
       animate={{ width: 432, opacity: 1 }}
       exit={{ width: 0, opacity: 0 }}

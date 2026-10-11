@@ -228,8 +228,13 @@ function toChange(entry, answers) {
  * One message from the family, answered. Returns the assistant's words, any
  * proposal it made (already checked against the questions), and the history
  * to send next time.
+ *
+ * `onText` gets her words as she writes them, a piece at a time, already
+ * without long dashes. What follows a dash depends on what comes after it, so
+ * a piece is held back while it ends in a space, a comma or a dash; the rest
+ * arrives with the next one, and whatever is left is in `said` at the end.
  */
-export async function askPlanCopilot({ client, name, answers, care, record, today, history, text }) {
+export async function askPlanCopilot({ client, name, answers, care, record, today, history, text, onText }) {
   const messages = [...history, { role: 'user', content: text }];
   // what she is working from: the questions, where the family stands, and
   // what her medical record already holds
@@ -237,7 +242,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
     .filter(Boolean)
     .join('\n\n');
 
-  const response = await client.beta.messages.create({
+  const stream = client.beta.messages.stream({
     model: MODEL,
     max_tokens: 16000,
     // Thinking stays on where the model has it: with it off this model can
@@ -254,6 +259,20 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
     tools: [PROPOSE, NOTE, REQUEST, SHOW],
     messages: SYSTEM_TURNS() ? [...messages, { role: 'system', content: state }] : messages,
   });
+
+  let written = '';
+  let given = 0;
+  if (onText) {
+    stream.on('text', (delta) => {
+      written += delta;
+      const settled = withoutLongDashes(written.trimStart().replace(/[\s,—–]+$/, ''));
+      if (settled.length > given) {
+        onText(settled.slice(given));
+        given = settled.length;
+      }
+    });
+  }
+  const response = await stream.finalMessage();
 
   if (response.stop_reason === 'refusal') {
     console.error('Refusal', response.stop_details);
