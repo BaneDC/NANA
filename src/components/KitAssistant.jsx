@@ -307,9 +307,9 @@ function NoteCard({ data }) {
   );
 }
 
-function SendRequestCard({ data, onSend, onOpen }) {
+function SendRequestCard({ data, foot, onSend, onOpen }) {
   return (
-    <KitCard title="Upit sa planom nege" foot="Upit ništa ne košta i nikoga ne obavezuje.">
+    <KitCard title="Upit sa planom nege" foot={foot}>
       <ul className="kc-rows">
         {data.ids.map((id) => {
           const c = caregivers.find((x) => x.id === id);
@@ -431,6 +431,7 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
         case 'send-request':
           return (
             <SendRequestCard
+              foot={ctx.current.askFoot}
               data={part.data}
               onOpen={(id) => openArtifact(`page:caregiver:${id}`)}
               onSend={(id) => {
@@ -451,20 +452,27 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
   // opens is never a copy of when the answer was written.
   const artifact = useCallback((openId) => paneFor(openId, ctx.current), [ctx]);
 
-  const { plan, care } = ctx.current;
+  const { plan, care, firstChat } = ctx.current;
+  // Before anything has ever been asked, the empty conversation says what the
+  // assistant is for and how it is used; after the first question it is the
+  // short greeting again (docs/patterns.md §4b). No tour: this is where a
+  // first question is typed, so this is where it is said.
+  const first = Boolean(plan && firstChat);
   const empty = useMemo(
     () => ({
-      title: 'Kako mogu da pomognem?',
-      description: plan
-        ? 'Mogu da izmenim plan, predložim negovateljice i pošaljem im upit, ili objasnim kako šta ide.'
-        : 'Asistent radi kad plan nege postoji.',
+      title: first ? 'Vaš asistent za negu' : 'Kako mogu da pomognem?',
+      description: !plan
+        ? 'Asistent radi kad plan nege postoji.'
+        : first
+          ? 'Pitajte svojim rečima ili recite šta se promenilo. Asistent zna vaš plan nege, negovateljice i posete, pa može da objasni kako šta ide i da predloži izmenu plana ili upit negovateljici. Ništa se ne menja dok vi ne potvrdite. Medicinske savete ne daje.'
+          : 'Mogu da izmenim plan, predložim negovateljice i pošaljem im upit, ili objasnim kako šta ide.',
       suggestions: care?.requests.length
         ? ['Šta sada čeka na mene?', 'Sada hoda uz hodalicu', 'Kako se plaća poseta?']
         : ['Koja negovateljica joj najviše odgovara?', 'Sada hoda uz hodalicu', 'Kako ide dogovor sa negovateljicom?'],
     }),
     // the openers only show before the first message
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [Boolean(plan), Boolean(care?.requests.length)]
+    [Boolean(plan), first, Boolean(care?.requests.length)]
   );
 
   return (

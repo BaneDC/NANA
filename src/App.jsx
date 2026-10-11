@@ -41,6 +41,7 @@ import { useKept } from './hooks/use-kept';
 import { buildPlan, caregivers, coordinator } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { recordImpact, writeEvent, written } from './data/record';
+import { requestFoot, requestNote } from './data/firstSteps';
 import { planEntries } from './data/threads';
 import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
@@ -105,6 +106,8 @@ export default function App() {
   const [paywall, setPaywall] = useState(null);
   // "Pomoć" in the menu: the coordinator's contact, over whatever page is open
   const [help, setHelp] = useState(false);
+  // what asking a caregiver costs, said the same wherever it is said
+  const askNote = requestNote(unlocked, user.country);
   const shownPaywall = useKept(paywall);
   // the history of conversations opens when asked for
   const [chatListOpen, setChatListOpen] = useState(false);
@@ -317,6 +320,10 @@ export default function App() {
     onOpenPage: openPage,
     // for what opens in the chat's pane
     unlocked,
+    askFoot: requestFoot(unlocked),
+    // nothing has been asked of the assistant yet: it says what it is for
+    // (docs/patterns.md §4b)
+    firstChat: !conversations.some((c) => c.title),
     planChange,
     onContact: contactCaregiver,
     onUnlock: () => setPaywall({ caregiver: null }),
@@ -531,6 +538,7 @@ export default function App() {
                   user={user}
                   plan={plan}
                   unlocked={unlocked}
+                  askNote={askNote}
                   planChange={planChange}
                   onSelectCaregiver={selectCaregiver}
                   onOpenCaregiver={showProfile}
@@ -564,6 +572,7 @@ export default function App() {
               {view === 'requests' && (
                 <RequestsPage
                   care={care}
+                  askNote={askNote}
                   onCare={setCare}
                   onContact={contactCaregiver}
                   onCaregiver={showCaregiver}
@@ -574,6 +583,7 @@ export default function App() {
               {view === 'find-caregiver' && (
                 <FindCaregiver
                   care={care}
+                  askNote={askNote}
                   onContact={contactCaregiver}
                   onCare={setCare}
                   onDrawer={setDrawer}
@@ -585,6 +595,7 @@ export default function App() {
                 <PlanDetail
                   entry={openEntry}
                   unlocked={unlocked}
+                  askNote={askNote}
                   onSelectCaregiver={selectCaregiver}
             onOpenCaregiver={showProfile}
                   onUnlock={() => setPaywall({ caregiver: null })}
@@ -712,6 +723,7 @@ export default function App() {
             open={Boolean(drawer)}
             care={care}
             unlocked={unlocked}
+            askNote={askNote}
             onCare={setCare}
             onClose={() => setDrawer(null)}
             onOpen={setDrawer}

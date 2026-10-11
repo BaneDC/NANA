@@ -32,7 +32,7 @@ const PER_PAGE = 10;
 // what stands under her text on a phone starts where her name does
 const underText = 'phone:ml-[calc(var(--avatar)+var(--spacing-3))]';
 
-export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
+export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFlash }) {
   const [page, setPage] = useState(1);
 
   // best match first, as the recommendation it is
@@ -50,9 +50,7 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
         <PageHeaderText>
           <PageTitle>Pronađi negovateljicu</PageTitle>
           <PageDescription>
-            Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju. Upit im
-            šalje plan nege i ništa ne košta - možete da pitate više njih, a ništa nije dogovoreno dok
-            zajedno ne postavite uslove.
+            Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju. {askNote}
           </PageDescription>
         </PageHeaderText>
       </PageHeader>

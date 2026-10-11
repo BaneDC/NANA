@@ -24,6 +24,7 @@ import {
   waitingOnYou,
 } from '../data/familyCare';
 import { coordinator } from '../data/carePlan';
+import { USUAL_ANSWER, waitingOnHer } from '../data/firstSteps';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -132,9 +133,10 @@ const rowBody = 'text-xs leading-body text-muted-foreground';
 // and the sentence under it, 2 apart (42).
 // What waits needs doing, so its button stays on a phone too: under what the
 // card says, in its column and as wide as it, 16 below (docs/patterns.md §7).
-// `onAct`: what the button does when that is not opening the card (a plan is
-// confirmed from here, and opened by its title).
-function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen, onAct = onOpen }) {
+// `onAct`: what the button does when that is not opening the card. `aside`:
+// a second, quieter button beside it (a visit plan can be put away from here
+// without being opened).
+function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen, onAct = onOpen, aside }) {
   return (
     <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-body-leading))] phone:flex-wrap">
       <Avatar>
@@ -146,7 +148,12 @@ function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen
         </p>
         {body}
       </ItemContent>
-      <div className="flex shrink-0 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
+      <div className="flex shrink-0 gap-2 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
+        {aside && (
+          <Button variant="secondary" onClick={aside.onClick}>
+            {aside.label}
+          </Button>
+        )}
         <Button variant={variant} onClick={onAct}>
           {action}
         </Button>
@@ -160,6 +167,7 @@ export default function Dashboard({
   user,
   plan,
   unlocked,
+  askNote,
   planChange,
   onDrawer,
   onCaregiver,
@@ -167,7 +175,6 @@ export default function Dashboard({
   onAskAssistant,
   onFindCaregiver,
   onCare,
-  onFlash,
   onSelectCaregiver,
   onOpenCaregiver,
   onUnlock,
@@ -212,6 +219,7 @@ export default function Dashboard({
     <PlanContents
       plan={plan}
       unlocked={unlocked}
+      askNote={askNote}
       change={planChange}
       onSelectCaregiver={onSelectCaregiver}
       onOpenCaregiver={onOpenCaregiver}
@@ -220,6 +228,31 @@ export default function Dashboard({
       standingOf={standingOf}
     />
   );
+
+  // Down the page to the caregivers the plan recommends, not to any one of
+  // them: choosing is the family's. A plan without them leads to the page that
+  // has everyone.
+  const toCaregivers = (e) => {
+    const page = e.currentTarget.closest('[data-slot=page]');
+    const list = page?.querySelector('[data-rec=caregivers]');
+    if (!list) return onFindCaregiver();
+    // with the group's title when they are the first thing under it, so the
+    // title is never half off the top; and as far from the top as the page's
+    // first thing is
+    const group = list.closest('[data-slot=page-section]');
+    const to = group?.querySelector('[data-rec]') === list ? group : list;
+    const top =
+      page.scrollTop +
+      to.getBoundingClientRect().top -
+      page.getBoundingClientRect().top -
+      parseFloat(getComputedStyle(page).paddingTop);
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    page.scrollTo({ top, behavior: still ? 'auto' : 'smooth' });
+  };
+
+  // on the way to the first visit, when nothing waits on the family: who is
+  // on the move, and what comes next (docs/patterns.md §4a 1a)
+  const ahead = running ? waitingOnHer(care) : null;
 
   const hasTerms = waiting.some((w) => w.kind === 'terms');
   const hasOrder = waiting.some((w) => w.kind === 'work-order' || w.kind === 'extra');
@@ -270,14 +303,34 @@ export default function Dashboard({
         </Attention>
       )}
 
+      {/* The plan is there and nobody has been written to: the one step, said
+          where every other state says who is on the move. It goes by the
+          state, not by a first visit, so it stays until the first request is
+          out, and "Čeka se odgovor" takes its place (docs/patterns.md §4a).
+          The way down to the caregivers is a button only on a phone, where
+          their rows have none and the first is two screens down; wider, they
+          are right under the letter, each with its own "Pošalji poruku". */}
+      {fresh && plan && (
+        <Attention title="Sledeći korak">
+          <Card>
+            <CardDescription>
+              Kad budete spremni, pišite negovateljici koja vam odgovara. Upit nikoga ne obavezuje.
+            </CardDescription>
+            <CardFooter className="hidden phone:flex">
+              <Button onClick={toCaregivers}>Pogledaj negovateljice</Button>
+            </CardFooter>
+          </Card>
+        </Attention>
+      )}
+
       {asked && (
         <Attention title={pendingNames.length ? 'Čeka se odgovor' : 'Stigli su odgovori'}>
           <Card>
             <CardDescription>
               {pendingNames.length === 1
-                ? `${pendingNames[0]} još nije odgovorila na vaš upit. Javićemo vam čim odgovori, a upit i odgovor su na stranici „Moji upiti".`
+                ? `${pendingNames[0]} još nije odgovorila na vaš upit. ${USUAL_ANSWER} Javićemo vam čim odgovori, a upit i odgovor su na stranici „Moji upiti".`
                 : pendingNames.length > 1
-                  ? `Čeka se odgovor od ${pl(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica')}. Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Moji upiti".`
+                  ? `Čeka se odgovor od ${pl(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica')}. ${USUAL_ANSWER} Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Moji upiti".`
                   : latest.length === 1
                     ? `${caregivers.find((c) => c.id === latest[0].caregiverId)?.name || 'Negovateljica'} ne može da preuzme. Na stranici „Moji upiti" piše zašto.`
                     : 'Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Moji upiti" piše zašto.'}
@@ -296,6 +349,14 @@ export default function Dashboard({
 
       {/* nobody comes yet: the plan itself, with its next step in it */}
       {thePlan}
+
+      {ahead && (
+        <Attention title={ahead.title}>
+          <Card>
+            <CardDescription>{ahead.text}</CardDescription>
+          </Card>
+        </Attention>
+      )}
 
       {(waiting.length > 0 || toConfirm.length > 0) && (
         <Attention title="Čeka na vas" sub={waitNote}>
@@ -349,7 +410,9 @@ export default function Dashboard({
               />
             )
           )}
-          {/* a visit plan: its title opens it, the button says it was seen */}
+          {/* A visit plan is here so that it is not missed, not to be approved:
+              the visit is booked already. It is opened (which marks it seen),
+              or put away with "U redu" without being opened. */}
           {toConfirm.map((v) => (
             <OpenCard
               key={`plan-${v.id}`}
@@ -360,13 +423,10 @@ export default function Dashboard({
                   {v.time} · {v.hours} h. {money(chargedFor(v.hours, v.rate))} je rezervisano, a naplaćuje se tek posle posete.
                 </p>
               }
-              action="Video sam"
+              action="Pogledaj plan"
               variant="default"
               onOpen={() => onDrawer({ kind: 'plan', visitId: v.id })}
-              onAct={() => {
-                onCare(confirmPlan(v.id));
-                onFlash('Označeno kao viđeno.');
-              }}
+              aside={{ label: 'U redu', onClick: () => onCare(confirmPlan(v.id)) }}
             />
           ))}
         </Attention>

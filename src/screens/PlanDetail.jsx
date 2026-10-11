@@ -22,6 +22,7 @@ import AskAssistant from '../components/AskAssistant';
 export default function PlanDetail({
   entry,
   unlocked,
+  askNote,
   change,
   onSelectCaregiver,
   onOpenCaregiver,
@@ -73,6 +74,7 @@ export default function PlanDetail({
           <PlanContents
             plan={{ ...plan, caregiverCount: entry.caregiverCount }}
             unlocked={unlocked}
+            askNote={askNote}
             change={shownChange}
             onSelectCaregiver={onSelectCaregiver}
             onOpenCaregiver={onOpenCaregiver}
