@@ -15,13 +15,19 @@ import { Item, ItemGroup } from '@/components/ui/item';
 // Each way to reach her is a row that is a link (docs/patterns.md §6): the
 // icon, what it is, and the number or address on the right; on hover the row
 // goes grey, and its text stays as it is.
+//
+// A phone number and an address open the phone's own app (`tel:`, `mailto:`)
+// and leave the page where it is. WhatsApp is a web address: without the app
+// it would load in this tab and take the family out of NANA, so it opens in a
+// tab of its own.
 function ContactRow({ href, icon: Icon, label, value }) {
+  const web = href.startsWith('http');
   return (
     <Item
       asChild
       className="items-center gap-2 no-underline hover:bg-muted hover:before:opacity-0 pointer-coarse:min-h-11 [[data-slot=item]:hover+&]:before:opacity-0"
     >
-      <a href={href}>
+      <a href={href} {...(web ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
         <Icon size={14} strokeWidth={1.75} className="shrink-0 text-primary-600" />
         <span className="flex-1 text-xs text-muted-foreground">{label}</span>
         <span className="text-xs font-medium text-foreground">{value}</span>
