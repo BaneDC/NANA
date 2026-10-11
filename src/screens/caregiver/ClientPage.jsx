@@ -161,7 +161,7 @@ function Visits({ client }) {
               </div>
               <p className="text-xs leading-body text-muted-foreground">{v.note}</p>
               {v.services?.length > 0 && (
-                <p className="text-[11px] leading-4 text-disabled">{v.services.map(serviceShort).join(' · ')}</p>
+                <p className="text-small text-disabled">{v.services.map(serviceShort).join(' · ')}</p>
               )}
               {v.concern && (
                 <Concern>
@@ -169,7 +169,7 @@ function Visits({ client }) {
                   {v.concern}
                 </Concern>
               )}
-              <div className="flex items-center gap-3 text-[11px] leading-4 text-disabled">
+              <div className="flex items-center gap-3 text-small text-disabled">
                 {Mood && (
                   <span className="inline-flex items-center gap-1">
                     <Mood size={13} strokeWidth={1.75} />
@@ -212,7 +212,7 @@ function Activity({ client }) {
               </span>
               <div className="min-w-0 flex-1 pt-1">
                 <p className="text-xs leading-body text-foreground">{e.text}</p>
-                <p className="text-[11px] leading-4 text-disabled">{e.when}</p>
+                <p className="text-small text-disabled">{e.when}</p>
               </div>
             </li>
           );
@@ -409,7 +409,7 @@ export default function ClientPage({
                   className={cn('transition-transform duration-200', !termsOpen && 'rotate-180')}
                 />
               </span>
-              <span className="text-[11px] leading-4 text-disabled">{summary}</span>
+              <span className="text-small text-disabled">{summary}</span>
             </CollapsibleTrigger>
             {badge}
             {state === 'draft' && (

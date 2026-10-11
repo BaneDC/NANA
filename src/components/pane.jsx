@@ -68,7 +68,7 @@ export function Concern({ className, ...props }) {
     <p
       data-slot="concern"
       className={cn(
-        'flex items-start gap-2 rounded-lg bg-destructive-muted px-3 py-2 text-[11px] leading-4 text-destructive',
+        'flex items-start gap-2 rounded-lg bg-destructive-muted px-3 py-2 text-small text-destructive',
         className
       )}
       {...props}

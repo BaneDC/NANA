@@ -124,7 +124,7 @@ const BoardCard = forwardRef(function BoardCard(
           >
             {client.elder}
           </button>
-          <p className="text-[11px] leading-4 text-disabled">
+          <p className="text-small text-disabled">
             {client.age} · {client.area} · {client.distance}
           </p>
         </div>

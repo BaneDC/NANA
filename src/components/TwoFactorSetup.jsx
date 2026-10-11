@@ -36,7 +36,7 @@ function Stepper({ at }) {
           >
             <span
               className={cn(
-                'flex size-5 items-center justify-center rounded-full text-[11px]',
+                'flex size-5 items-center justify-center rounded-full text-small',
                 done
                   ? 'bg-success-muted text-success'
                   : i === at

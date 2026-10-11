@@ -31,7 +31,7 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
           {onOpen ? <ItemLink onClick={() => onOpen(caregiver)}>{caregiver.name}</ItemLink> : <span>{caregiver.name}</span>}
           <Badge className="my-[calc((var(--text-xs-leading)-20px)/2)] ml-2">Poklapanje · {caregiver.match}%</Badge>
         </ItemTitle>
-        <div className="text-[11px] leading-4 text-muted-foreground pointer-coarse:text-small">
+        <div className="text-small text-muted-foreground">
           <Rating caregiver={caregiver} /> · {caregiver.rate} · {caregiver.area}, do {caregiver.radius} km
         </div>
       </ItemContent>

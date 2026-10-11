@@ -57,7 +57,7 @@ function SubItem({ active, title, note, onClick }) {
       <SidebarMenuSubButton asChild isActive={active}>
         <button type="button" onClick={onClick}>
           <span className={cn('truncate text-small', active && 'font-medium')}>{title}</span>
-          <span className="text-[11px] leading-[14px] text-(--nav-text-muted)">{note}</span>
+          <span className="text-small text-(--nav-text-muted)">{note}</span>
         </button>
       </SidebarMenuSubButton>
     </SidebarMenuSubItem>
@@ -76,7 +76,7 @@ function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, chi
   const list = hasItems
     ? children
     : empty && (
-        <SidebarMenuSubItem className="px-2 py-2 text-[11px] leading-[14px] text-(--nav-text-muted)">
+        <SidebarMenuSubItem className="px-2 py-2 text-small text-(--nav-text-muted)">
           {empty}
         </SidebarMenuSubItem>
       );
@@ -257,14 +257,14 @@ export default function AppNav({
           aria-current={view === 'record' ? 'page' : undefined}
           aria-label={`Medicinski karton${recordOf ? `: ${recordOf}` : ''}`}
           title="Medicinski karton"
-          className="flex cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left transition-shadow duration-150 outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] [--avatar:calc(var(--text-xs-leading)+14px)]"
+          className="flex cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left transition-shadow duration-150 outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
         >
           <Avatar>
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-xs font-medium text-foreground">{user.name || 'Gost'}</span>
-            <span className="truncate text-[11px] leading-[14px] text-muted-foreground">{user.email}</span>
+            <span className="truncate text-small text-muted-foreground">{user.email}</span>
           </span>
         </button>
       </SidebarFooter>

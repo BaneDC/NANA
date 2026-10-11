@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { focusPane } from "@/lib/sheet"
 
 // shadcn's sidebar as NANA's menu (docs/patterns.md §4). With a mouse it is a
-// column beside the page, 232 wide, straight on the warm ground, and it never
+// column beside the page, 248 wide, straight on the warm ground, and it never
 // folds away; on a narrow screen (≤900, `useIsMobile`) it is a drawer from the
 // left on the ground's tint, over the same dimmed page as every pane.
 //
@@ -29,7 +29,7 @@ import { focusPane } from "@/lib/sheet"
 // - No `SidebarInput`, `SidebarMenuSkeleton` or `SidebarSeparator`: nothing
 //   uses them.
 
-const SIDEBAR_WIDTH = "232px"
+const SIDEBAR_WIDTH = "248px"
 const SIDEBAR_WIDTH_MOBILE = "min(280px,84vw)"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
@@ -368,7 +368,7 @@ function SidebarMenuBadge({
       data-slot="sidebar-menu-badge"
       data-sidebar="menu-badge"
       className={cn(
-        "pointer-events-none absolute top-1/2 right-3 min-w-4 -translate-y-1/2 rounded-lg bg-primary px-1 text-center text-[11px] leading-4 font-medium text-primary-foreground tabular-nums select-none",
+        "pointer-events-none absolute top-1/2 right-3 min-w-4 -translate-y-1/2 rounded-lg bg-primary px-1 text-center text-small font-medium text-primary-foreground tabular-nums select-none",
         className
       )}
       {...props}

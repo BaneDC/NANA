@@ -97,11 +97,12 @@
 }
 
 /* The rest of tokens.css, as Tailwind utilities. Each one points at the token
-   rather than copying its value, so what tokens.css changes for a finger
-   (`pointer: coarse` raises the text a step) reaches the utilities too:
-   `text-xs` is 12/16 with a mouse and 14/20 under a finger, as `.tip-body` was.
+   rather than copying its value, so the scale is set in one place: `text-xs`
+   is 14/20 (body), `text-sm` 16/24 (a card's title), `text-base` 20/28 (a
+   page's), the same with a mouse and under a finger.
    `text-small` is the small text that does not grow (labels, hints, meta),
-   `leading-body` the line of a paragraph, `text-badge` the status pill's 11. */
+   `leading-body` the line of a paragraph, `text-badge` the status pill's 12 on a
+   line of 12, so the pill stays 20 tall. */
 @theme inline {
   --text-xs: var(--text-xs-size);
   --text-xs--line-height: var(--text-xs-leading);
@@ -111,7 +112,7 @@
   --text-base--line-height: var(--text-base-leading);
   --text-small: var(--text-small-size);
   --text-small--line-height: var(--text-small-leading);
-  --text-badge: 11px;
+  --text-badge: 12px;
   --text-badge--line-height: 12px;
   --leading-body: var(--text-body-leading);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;

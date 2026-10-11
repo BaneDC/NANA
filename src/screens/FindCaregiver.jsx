@@ -84,7 +84,7 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
                     <CardLink onClick={() => onDrawer({ kind: 'profile', caregiverId: c.id })}>{c.name}</CardLink>
                   </span>
                 </CaregiverName>
-                <div className="text-[11px] leading-4 text-muted-foreground pointer-coarse:text-small">
+                <div className="text-small text-muted-foreground">
                   <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
                 </div>
                 {/* Why she comes up (the platform's reasons) and what she is,

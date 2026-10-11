@@ -19,9 +19,9 @@
      composer at 12 while the sent bubble carries the app's 14, so a question
      and its answer were set in different type. All three are the app's body
      size now, on the app's leading. */
-  --ick-answer-size: var(--text-sm-size);
-  --ick-answer-leading: var(--text-sm-leading);
-  --ick-composer-size: var(--text-sm-size);
+  --ick-answer-size: var(--text-chat-size);
+  --ick-answer-leading: var(--text-chat-leading);
+  --ick-composer-size: var(--text-chat-size);
   --ick-ink-rgb: 62 62 62;
   --ick-paper-rgb: 255 255 255;
   --ick-marker-rgb: 252 112 60;
@@ -66,6 +66,15 @@
   backdrop-filter: none;
 }
 
+/* Under the mouse the kit lightens its glass (`ick-hovered-`: a 20% white
+   fill and dark ink). Ours is not glass: on the white pane that fill took the
+   bubble away, white text and all. It stays what it is, one fill and one ink. */
+.nana-chat [class*='ick-surface-'][class*='ick-glass-'][class*='ick-hovered-'] {
+  --ick-input-fill: var(--primary);
+  --ick-input-text: var(--primary-foreground);
+  color: var(--primary-foreground);
+}
+
 .nana-chat [class*='ick-surface-'][class*='ick-glass-']::before,
 .nana-chat [class*='ick-surface-'][class*='ick-glass-']::after {
   display: none;
@@ -73,13 +82,13 @@
 
 /* the composer's own leading, on the app's grid rather than the kit's ratio */
 .nana-chat [class*='ick-editor-'] {
-  line-height: var(--text-sm-leading);
+  line-height: var(--text-chat-leading);
 }
 
 .nana-chat [class*='ick-surface-'][class*='ick-glass-'] [class*='ick-editor-'] {
   color: var(--primary-foreground);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
+  font-size: var(--text-chat-size);
+  line-height: var(--text-chat-leading);
   font-weight: 400;
 }
 
