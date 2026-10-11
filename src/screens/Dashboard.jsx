@@ -531,7 +531,9 @@ export default function Dashboard({
                               )}
                               <Badge variant="success">−{partner.discount}% preko Minne</Badge>
                             </div>
-                            <p className={rowTitle}>
+                            {/* the partner is the row's title; what the offer is
+                                for reads as the line under it, not a second title */}
+                            <p className={rowBody}>
                               <ItemLink onClick={onOpenPlan}>{rec.title}</ItemLink>
                             </p>
                           </ItemContent>
