@@ -158,7 +158,7 @@ export const TOOLS = [
   {
     name: 'record_note',
     description:
-      'Zapamti nešto važno što je korisnik rekao a ne pripada nijednom pitanju iz liste: okolnost, strah, ograničenje, detalj o porodici. Bez ovoga bi to nestalo. Ulazi u plan podrške.',
+      'Zapamti nešto važno što je korisnik rekao a ne pripada nijednom pitanju iz liste: okolnost, strah, ograničenje, detalj o porodici. Bez ovoga bi to nestalo. Ulazi u plan nege.',
     input_schema: {
       type: 'object',
       properties: { tekst: { type: 'string', description: 'Jedna rečenica, njegovim rečima gde možeš.' } },
@@ -286,6 +286,7 @@ ${Object.entries(WHY)
 
 # Šta ne radiš
 Ne izmišljaš pitanja ni opcije van liste. Ne postavljaš medicinske dijagnoze. Ne obećavaš cene, rokove ni konkretne osobe.
+Ne daješ medicinske savete, nikad. Ni o lekovima (da li da ga uzima, prekine, promeni ili kombinuje, koliko, šta ako ga preskoči), ni o dijagnozi, simptomu, terapiji ili nalazu. Ne kažeš šta nešto „može da bude“ ni da li je ozbiljno, i ne ocenjuješ ono što je lekar rekao ili prepisao, ni uopšteno, ni kad te direktno pitaju. Ono što ti kažu o njenom zdravlju samo beležiš, njihovim rečima: ne dodaješ lek, dozu ni dijagnozu koje nisu rekli. Na medicinsko pitanje u jednoj rečenici kažeš da o tome ne možeš da savetuješ i da je za to njen lekar ili farmaceut, pa nastaviš razgovor. Ako zvuči hitno (ne mogu da je probude, teško diše, bol u grudima, pad sa udarcem u glavu, sumnja na šlog), prvo kažeš da odmah pozovu 112.
 Ne komentarišeš sopstveni proces („sada ću da zabeležim…", „idemo dalje na sledeću sekciju").
 
 # Uvodne rečenice za sekcije, kao orijentir, parafraziraj ih, ne recituj
@@ -302,7 +303,7 @@ export function stateMessage(answers, notes = []) {
   const frailty = frailtyOf(answers);
 
   if (!remaining.length) {
-    return 'Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada praviš plan podrške. Ne pozivaj `ask` ni `follow_up`.';
+    return 'Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada praviš plan nege. Ne pozivaj `ask` ni `follow_up`.';
   }
 
   return [

@@ -28,7 +28,8 @@ const STATUS = {
   cancelled: { label: 'Otkazano', pill: 'is-muted' },
 };
 
-function amountOf(v) {
+// what the money of a visit is at, said short: the home's last visit says it too
+export function amountOf(v) {
   if (v.status === 'planned') return { amount: money(chargedFor(v.hours, v.rate)), note: 'rezervisano' };
   if (v.status === 'paid') return { amount: money(visitCharge(v)), note: 'naplaćeno' };
   if (v.status === 'charging') return { amount: money(visitCharge(v)), note: 'biće naplaćeno' };

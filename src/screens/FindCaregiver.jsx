@@ -57,7 +57,8 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
         </PageHeaderText>
       </PageHeader>
 
-      <div className="flex items-baseline gap-3 text-small leading-body text-muted-foreground">
+      {/* text outside a card: in line with the text in the cards under it (§3) */}
+      <div className="flex items-baseline gap-3 pl-4 text-small leading-body text-muted-foreground">
         {/* what this page shows, out of everyone */}
         <span>
           {shown.length} od {results.length} negovateljica
@@ -70,21 +71,21 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
           return (
             // The whole card opens her profile — the name is the link, and it
             // covers the card (docs/patterns.md §7). The avatar is as tall as
-            // her name and the line under it, 8 apart (44, 48 under a finger).
+            // her name (14, a row's title) and the line under it, 2 apart (38).
             <Card
               key={c.id}
-              className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+16px)] phone:flex-wrap"
+              className="flex-row items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-small-leading))] phone:flex-wrap"
             >
               <Avatar>
                 <AvatarFallback>{c.initials}</AvatarFallback>
               </Avatar>
               <div className="flex min-w-0 flex-1 flex-col gap-1 phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
                 <CaregiverName name={c.name} match={c.match}>
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-xs font-medium text-foreground">
                     <CardLink onClick={() => onDrawer({ kind: 'profile', caregiverId: c.id })}>{c.name}</CardLink>
                   </span>
                 </CaregiverName>
-                <div className="text-[11px] leading-4 text-muted-foreground pointer-coarse:text-small">
+                <div className="text-small text-muted-foreground">
                   <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
                 </div>
                 {/* Why she comes up (the platform's reasons) and what she is,

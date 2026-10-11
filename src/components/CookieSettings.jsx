@@ -43,13 +43,13 @@ function Group({ group, on, onChange }) {
               className={cn('shrink-0 text-muted-foreground transition-transform duration-200', open && 'rotate-180')}
             />
             <span className="text-xs font-medium text-foreground group-hover/summary:text-primary-700">{group.label}</span>
-            <span className="text-[11px] leading-4 text-disabled">
+            <span className="text-small text-disabled">
               {group.cookies.length ? `${group.cookies.length} kolačića` : 'spisak još nije unet'}
             </span>
           </button>
           {/* The state says itself, in a word, beside the switch: a switch alone
               is read wrong often enough that the word is worth the room. */}
-          <span className={cn('shrink-0 text-[11px] leading-4', on ? 'text-primary-600' : 'text-muted-foreground')}>
+          <span className={cn('shrink-0 text-small', on ? 'text-primary-600' : 'text-muted-foreground')}>
             {on ? 'Uključeno' : 'Isključeno'}
           </span>
           {/* what cannot be turned off still has its switch, so the list reads
@@ -71,9 +71,9 @@ function Group({ group, on, onChange }) {
           <ul className="flex list-none flex-col">
             {group.cookies.map((c) => (
               <li key={c.name} className="flex flex-col gap-1 border-t border-(--card-line) py-2">
-                <span className="font-mono text-[11px] leading-4 text-foreground">{c.name}</span>
+                <span className="font-mono text-small text-foreground">{c.name}</span>
                 <span className="text-xs leading-body text-foreground">{c.why}</span>
-                <span className="text-[11px] leading-4 text-disabled">
+                <span className="text-small text-disabled">
                   Postavlja {c.by} · traje {c.keeps}
                 </span>
               </li>

@@ -65,7 +65,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
         {visit.date} · {visit.time} - planirano {visit.hours} h, po dogovorenih {money(client.rate)}/h.
       </DialogDescription>
       {visit.planNotes && (
-        <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-[11px] leading-4 text-muted-foreground">
+        <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-small text-muted-foreground">
           <ClipboardList size={13} strokeWidth={1.75} />
           Planirano: {visit.planNotes}
         </p>

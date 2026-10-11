@@ -10,6 +10,7 @@ import { Callout, Concern, PaneHint, PaneLabel, ReportRow, ReportRows, Stat, Sta
 import { statusVariant } from '../Standing';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import ShowMore from '../ShowMore';
+import VisitsDrawer from './VisitsDrawer';
 import { useShowMore } from '@/hooks/use-show-more';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
@@ -27,6 +28,7 @@ import {
   answerExtra,
   arrangementOf,
   callOffVisit,
+  confirmPlan,
   canAsk,
   chargedFor,
   confirmVisit,
@@ -429,6 +431,11 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
     onFlash('Poslato koordinatorki. Negovateljica je obaveštena da ne dolazi dok se ne reši.');
     onClose();
   };
+  const confirm = () => {
+    onCare(confirmPlan(visitId));
+    onFlash('Označeno kao viđeno.');
+    onClose();
+  };
   const callOff = () => {
     onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : reason));
     onFlash(late ? `Otkazano. ${money(held)} se naplaćuje - bilo je u poslednjem satu.` : `Otkazano. ${money(held)} se vraća na vašu karticu.`);
@@ -465,6 +472,8 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
         <Button variant="secondary" onClick={() => setMode('query')}>
           Nešto nije u redu
         </Button>
+        {/* a plan just sent is booked already; this only says it was seen */}
+        {v.status === 'planned' && !v.planOk && <Button onClick={confirm}>Video sam</Button>}
       </SheetFooter>
     </Modal>
 
@@ -878,5 +887,6 @@ export default function FamilyDrawer({ drawer, ...rest }) {
   if (drawer.kind === 'activity') return <ActivityDrawer key="activity" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'overview') return <Overview key="overview" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'versions') return <Versions key="versions" caregiverId={drawer.caregiverId} {...rest} />;
+  if (drawer.kind === 'visits') return <VisitsDrawer key="visits" {...rest} />;
   return null;
 }

@@ -2,6 +2,7 @@ import { Children } from 'react';
 import { useShowMore } from '@/hooks/use-show-more';
 import {
   ChevronDown,
+  CircleHelp,
   FileText,
   LayoutDashboard,
   MessageSquare,
@@ -9,7 +10,6 @@ import {
   Search,
   Send,
   Settings,
-  User,
 } from 'lucide-react';
 import Logo from './Logo';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFold,
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
@@ -38,10 +39,10 @@ import { cn } from '@/lib/utils';
 // for too often for that, so they are a place in the nav.
 const HOME_VIEWS = ['dashboard', 'caregiver', 'visits'];
 
-const FOOTER_ITEMS = [
-  { id: 'profile', label: 'Profil', icon: User },
-  { id: 'settings', label: 'Podešavanja', icon: Settings },
-];
+// the account is in Settings (the Profile page went on 10 October)
+const FOOTER_ITEMS = [{ id: 'settings', label: 'Podešavanja', icon: Settings }];
+// "Pomoć" stands over them and is not a page: it opens the coordinator's
+// contact in a dialog (HelpDialog), so it is never the selected item
 
 function Chevron({ open, className }) {
   return (
@@ -60,7 +61,7 @@ function SubItem({ active, title, note, onClick }) {
       <SidebarMenuSubButton asChild isActive={active}>
         <button type="button" onClick={onClick}>
           <span className={cn('truncate text-small', active && 'font-medium')}>{title}</span>
-          <span className="text-[11px] leading-[14px] text-(--nav-text-muted)">{note}</span>
+          <span className="text-small text-(--nav-text-muted)">{note}</span>
         </button>
       </SidebarMenuSubButton>
     </SidebarMenuSubItem>
@@ -73,13 +74,33 @@ function SubItem({ active, title, note, onClick }) {
 // whole row its button, so pressing it never lands somewhere unasked
 // (docs/patterns.md §4). The list hangs off a line, 16 in.
 function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, children }) {
+  const { collapsed, setCollapsed } = useSidebar();
   // An empty list still drew its rule and its margins, which read as a gap
   // between this section and the next.
   const hasItems = Children.toArray(children).length > 0;
+  // Folded to icons there is nowhere for the list to open: the icon opens the
+  // menu, with the list.
+  if (collapsed) {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          isActive={active}
+          aria-label={label}
+          title={label}
+          onClick={() => {
+            setCollapsed(false);
+            onToggle(true);
+          }}
+        >
+          <Icon size={16} strokeWidth={1.75} />
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
   const list = hasItems
     ? children
     : empty && (
-        <SidebarMenuSubItem className="px-2 py-2 text-[11px] leading-[14px] text-(--nav-text-muted)">
+        <SidebarMenuSubItem className="px-2 py-2 text-small text-(--nav-text-muted)">
           {empty}
         </SidebarMenuSubItem>
       );
@@ -119,12 +140,19 @@ function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, chi
 }
 
 // A row that opens a page, with its count of what waits.
+// Folded to icons it is its icon, and says its name in `title`.
 function Place({ icon: Icon, label, active, count, onClick }) {
+  const { collapsed } = useSidebar();
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton isActive={active} onClick={onClick}>
+      <SidebarMenuButton
+        isActive={active}
+        onClick={onClick}
+        aria-label={collapsed ? label : undefined}
+        title={collapsed ? label : undefined}
+      >
         <Icon size={16} strokeWidth={1.75} />
-        <span>{label}</span>
+        {!collapsed && <span>{label}</span>}
       </SidebarMenuButton>
       {count > 0 && <SidebarMenuBadge>{count}</SidebarMenuBadge>}
     </SidebarMenuItem>
@@ -135,6 +163,8 @@ export default function AppNav({
   view,
   onView,
   user,
+  recordOf,
+  onHelp,
   careBadge,
   requestsBadge,
   threads,
@@ -143,17 +173,12 @@ export default function AppNav({
   onNewChat,
   chatListOpen,
   onToggleChatList,
-  planEntries,
-  selectedPlan,
-  onSelectPlan,
-  planListOpen,
-  onTogglePlanList,
 }) {
   // the latest five conversations, then ten more in place (docs/patterns.md §8a)
   const chats = useShowMore(threads, { first: 5 });
   // On a narrow screen the nav is a drawer over the page, so anything that
   // navigates also closes it — otherwise the page it opened is behind the nav.
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, collapsed } = useSidebar();
   const go = (fn) => (...args) => {
     fn?.(...args);
     setOpenMobile(false);
@@ -170,17 +195,26 @@ export default function AppNav({
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex items-center px-2 pt-2">
-          <Logo width={110} />
+        {/* the logo, and the button that folds the menu to icons; folded, the
+            button alone, where the icons under it stand */}
+        <div className="flex h-7 items-center justify-between pl-2 menu-folded:h-auto menu-folded:justify-center menu-folded:pl-0">
+          {!collapsed && <Logo width={110} />}
+          <SidebarFold />
         </div>
 
         {/* Starting a conversation is the one thing the menu asks for, so it is a
             button of its own above the list of them, not a "+" folded into the
             row beside a chevron. */}
-        <Button variant="secondary" className="w-full shrink-0" onClick={go(onNewChat)}>
-          <Plus size={14} strokeWidth={1.75} />
-          Novi razgovor
-        </Button>
+        {collapsed ? (
+          <Button variant="secondary" size="icon-lg" aria-label="Novi razgovor" title="Novi razgovor" onClick={go(onNewChat)}>
+            <Plus size={14} strokeWidth={1.75} />
+          </Button>
+        ) : (
+          <Button variant="secondary" className="w-full shrink-0" onClick={go(onNewChat)}>
+            <Plus size={14} strokeWidth={1.75} />
+            Novi razgovor
+          </Button>
+        )}
       </SidebarHeader>
 
       <SidebarContent>
@@ -238,45 +272,45 @@ export default function AppNav({
             onClick={go(() => onView('requests'))}
           />
 
-          <Section
-            label="Planovi nege"
+          {/* one plan per person (docs/plan-nege.md): the plan itself, no list */}
+          <Place
             icon={FileText}
-            active={view === 'plans' || view === 'plan-detail'}
-            onOpen={go(() => onView('plans'))}
-            open={planListOpen}
-            onToggle={onTogglePlanList}
-            empty="Još nema planova"
-          >
-            {planEntries.map((e) => (
-              <SubItem
-                key={e.id}
-                active={view === 'plan-detail' && selectedPlan === e.id}
-                title={e.title}
-                note={e.archived ? e.date : 'Aktivan'}
-                onClick={go(() => onSelectPlan(e.id))}
-              />
-            ))}
-          </Section>
+            label="Plan nege"
+            active={view === 'plan-detail'}
+            onClick={go(() => onView('plan-detail'))}
+          />
         </SidebarMenu>
       </SidebarContent>
 
       <SidebarFooter>
         <SidebarMenu className="gap-2">
+          <Place icon={CircleHelp} label="Pomoć" onClick={go(() => onHelp())} />
           {FOOTER_ITEMS.map(({ id, label, icon }) => (
             <Place key={id} icon={icon} label={label} active={view === id} onClick={go(() => onView(id))} />
           ))}
         </SidebarMenu>
         {/* who is signed in: a white card, the avatar as tall as the name and
-            the e-mail */}
-        <div className="flex items-start gap-3 rounded-2xl bg-(--nav-card) p-2 [--avatar:calc(var(--text-xs-leading)+14px)]">
+            the e-mail. It opens the medical record of the person they care for
+            (docs/patterns.md §10a), ringed on hover and while that page is
+            open, as a card that opens something is. */}
+        <button
+          type="button"
+          onClick={go(() => onView('record'))}
+          aria-current={view === 'record' ? 'page' : undefined}
+          aria-label={`Medicinski karton${recordOf ? `: ${recordOf}` : ''}`}
+          title="Medicinski karton"
+          className="flex cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:justify-center menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:p-0 transition-shadow duration-150 outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
+        >
           <Avatar>
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-xs font-medium text-foreground">{user.name || 'Gost'}</span>
-            <span className="truncate text-[11px] leading-[14px] text-muted-foreground">{user.email}</span>
-          </span>
-        </div>
+          {!collapsed && (
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-xs font-medium text-foreground">{user.name || 'Gost'}</span>
+              <span className="truncate text-small text-muted-foreground">{user.email}</span>
+            </span>
+          )}
+        </button>
       </SidebarFooter>
     </Sidebar>
   );

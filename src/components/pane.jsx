@@ -16,6 +16,23 @@ export function PaneHint({ className, ...props }) {
   return <p data-slot="pane-hint" className={cn('text-small text-muted-foreground', className)} {...props} />;
 }
 
+// A part of a dialog's body (docs/patterns.md §7): its name, as a group's name
+// on a page (12, grey, medium, so a name under it reads as one of its rows),
+// and what it holds 8 under it. Parts follow one another 24 apart.
+export function Part({ label, className, children, ...props }) {
+  return (
+    <section data-slot="pane-part" className={cn('flex flex-col gap-2', className)} {...props}>
+      <h3 className="text-small font-medium text-muted-foreground">{label}</h3>
+      {children}
+    </section>
+  );
+}
+
+// a sentence in a part
+export function PartText({ className, ...props }) {
+  return <p className={cn('text-xs leading-body text-muted-foreground', className)} {...props} />;
+}
+
 // Something the pane needs first (add a card before the terms can be agreed):
 // the primary's pale ground and line, its sentence and its button under it.
 export function Callout({ className, ...props }) {
@@ -51,7 +68,7 @@ export function Concern({ className, ...props }) {
     <p
       data-slot="concern"
       className={cn(
-        'flex items-start gap-2 rounded-lg bg-destructive-muted px-3 py-2 text-[11px] leading-4 text-destructive',
+        'flex items-start gap-2 rounded-lg bg-destructive-muted px-3 py-2 text-small text-destructive',
         className
       )}
       {...props}

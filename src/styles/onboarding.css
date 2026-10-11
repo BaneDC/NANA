@@ -89,6 +89,16 @@
 
 /* ---------- Immersive questionnaire ---------- */
 
+/* Its buttons and fields too, with a mouse: the app's grew with its text
+   (tokens.css, 11. 10.), the onboarding's did not. Under a finger both are 44,
+   as before. */
+@media not (pointer: coarse) {
+  .immersive {
+    --button-size: 32px;
+    --input-size: 36px;
+  }
+}
+
 /* The onboarding has its own type, and the phone's larger scale (tokens.css) is
    not for it: it keeps the scale it was designed on. */
 .immersive {

@@ -6,6 +6,7 @@ import { answerText, planQuestions } from '../data/planEdits';
 import { srField, srOption, srTitle } from '../data/flow.sr';
 import { caregivers, daysText, slotsText } from '../data/carePlan';
 import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/familyCare';
+import { HEALTH, healthOps, recordState } from '../data/record';
 
 // The assistant beside a finished care plan, able to change it. The plan is
 // built from the family's answers, so the assistant changes it the only way
@@ -45,6 +46,41 @@ const PROPOSE = {
             },
           },
           required: ['questionId'],
+        },
+      },
+      // What happened, when the change is something that happened to her: it
+      // is written into her medical record with the change.
+      event: {
+        type: 'object',
+        description:
+          'Only when the family told you something happened or changed about her (a fall, a hospital stay, a diagnosis, she manages less than before). Leave it out for a plain correction.',
+        properties: {
+          what: { type: 'string', description: 'What happened, as a short title in the language they wrote in, e.g. "Pala je i slomila nogu".' },
+          since: { type: 'string', description: 'The day it happened or began, YYYY-MM-DD, worked out from today\'s date in the system message.' },
+          until: { type: 'string', description: 'Only when it is temporary (a cast, a recovery): the day it is expected to end, YYYY-MM-DD.' },
+        },
+        required: ['what'],
+      },
+      // The record was wrong, and nothing happened to her: kept as a correction.
+      correction: {
+        type: 'boolean',
+        description:
+          'True when nothing happened to her and what is written was simply wrong (a misspelt name, a wrong age or phone number, an answer or a list entry entered by mistake). Leave `event` out then.',
+      },
+      // Her record's lists, which no question covers.
+      health: {
+        type: 'array',
+        description:
+          'Entries to add to or close in her medical record\'s lists, when the family told you of one (a new medicine, a diagnosis, an aid she now uses or no longer uses). Only what they said, as they said it: never a medicine, a dose or a diagnosis of your own. To close one, use its name exactly as the record has it. An entry that is different now (another dose) or was written wrong is closed and added again as it should read, both in this call.',
+        items: {
+          type: 'object',
+          properties: {
+            list: { type: 'string', enum: HEALTH.map((h) => h.id) },
+            action: { type: 'string', enum: ['add', 'end'] },
+            name: { type: 'string' },
+            note: { type: 'string', description: 'For "add": dose, how often, or anything short worth knowing. No dates here: when it began and ends is in `event`.' },
+          },
+          required: ['list', 'action', 'name'],
         },
       },
     },
@@ -111,7 +147,12 @@ const system = (name) =>
     'One thing said often touches more than one question - what they still manage alone and where they need hands-on help, how they get around and whether they can go out alone. Look at every question it bears on and propose all of them in one call.',
     'Some answers carry the rest of the plan: the ones marked `carriesPlan` in the catalog set how much help she needs overall, and that decides which questions the plan asks at all and which caregivers fit. When what they tell you changes one of those, do not propose it on what they said alone. Ask first - one or two short questions about what else has changed around it, the ones whose answers you would need to fill in the rest - and propose the whole set once they answer. This is the only reason to ask rather than propose; for everything else, propose.',
     'Asking means asking: end the turn with the question and call nothing. Do not ask and propose in the same message.',
+    'When they tell you something happened to her (she fell, she was in hospital, a new diagnosis, a new medicine, she no longer manages something), that is an event for her medical record. The family changes nothing in the record by hand, not even a typo: the page has no edit buttons, and you are the only way anything in it is written, changed or put right. Ask what you need to know to say what it changes - when it happened, whether it is temporary and until about when, how she moves and manages now, who is with her - two or three short questions at most, one message. Then call `propose_changes` once, with the answers that follow, `event` (what happened, since when, until when if temporary) and `health` for anything that belongs in her record\'s lists (a medicine, a diagnosis, an aid). `changes` may be empty when only the lists change. In your sentence say what you propose and, in a few words, what you would do next (new terms with the caregiver, a call with the coordinator, nothing).',
+    'When they say something in her record is wrong (her name, her age, where she lives, the contact person, an answer, a medicine written down wrongly), that is a correction, not an event: do not ask what happened. Ask only if you cannot tell what it should say, then call `propose_changes` with the answers or list entries as they should read and `correction: true`, without `event`. Her name, age and the place she lives are fields of the question `about-person`; the contact person is a question of its own.',
+    'When she has moved or is about to, propose the new place in the `city` field of `about-person` with `event` (what, since when), and say in your sentence that the coordinator will call about which caregivers can still come. When she is only staying somewhere else for a while (hospital, rehabilitation, with family) her address does not change: keep it with `add_note`, with until when, and say the coordinator will call about the visits in between.',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
+    // The one thing the assistant never does, whatever it is asked.
+    'You never give medical advice. Not about medicines (whether to take, stop, change or combine one, a dose, a side effect, an interaction), not about a diagnosis, a symptom, a treatment, a test result or what a doctor said. You do not say what something might be, whether it is serious, or what to do about it medically, and you do not comment on whether what was prescribed is right - not even in general terms, not even when asked directly or told it is urgent. What the family tells you about her health you only write down, in their words, exactly as said: never name a diagnosis they did not name, never add or correct a medicine or a dose. When they ask a medical question, say in one sentence that you cannot advise on that and that her doctor or the pharmacist is who to ask, then offer what you can do: note it in her record, or adjust the care around it. If it sounds like an emergency (she cannot be woken, cannot breathe, chest pain, a fall with a head injury, a suspected stroke), say to call 112 now and nothing else.',
     'Keep replies to one to three short sentences. Reply in the language they write in.',
   ].join('\n\n');
 
@@ -195,13 +236,21 @@ function toChange(entry, answers) {
  * One message from the family, answered. Returns the assistant's words, any
  * proposal it made (already checked against the questions), and the history
  * to send next time.
+ *
+ * `onText` gets her words as she writes them, a piece at a time, already
+ * without long dashes. What follows a dash depends on what comes after it, so
+ * a piece is held back while it ends in a space, a comma or a dash; the rest
+ * arrives with the next one, and whatever is left is in `said` at the end.
  */
-export async function askPlanCopilot({ client, name, answers, care, history, text }) {
+export async function askPlanCopilot({ client, name, answers, care, record, today, history, text, onText }) {
   const messages = [...history, { role: 'user', content: text }];
-  // what she is working from: the questions and where the family stands
-  const state = [catalog(answers), care ? situation(care) : null].filter(Boolean).join('\n\n');
+  // what she is working from: the questions, where the family stands, and
+  // what her medical record already holds
+  const state = [catalog(answers), care ? situation(care) : null, record && today ? recordState(record, today) : null]
+    .filter(Boolean)
+    .join('\n\n');
 
-  const response = await client.beta.messages.create({
+  const stream = client.beta.messages.stream({
     model: MODEL,
     max_tokens: 16000,
     // Thinking stays on where the model has it: with it off this model can
@@ -219,6 +268,20 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
     messages: SYSTEM_TURNS() ? [...messages, { role: 'system', content: state }] : messages,
   });
 
+  let written = '';
+  let given = 0;
+  if (onText) {
+    stream.on('text', (delta) => {
+      written += delta;
+      const settled = withoutLongDashes(written.trimStart().replace(/[\s,—–]+$/, ''));
+      if (settled.length > given) {
+        onText(settled.slice(given));
+        given = settled.length;
+      }
+    });
+  }
+  const response = await stream.finalMessage();
+
   if (response.stop_reason === 'refusal') {
     console.error('Refusal', response.stop_details);
     throw new Error('Asistent nije mogao da odgovori na to. Probajte da kažete drugačije.');
@@ -234,6 +297,11 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
   const next = [...messages, { role: 'assistant', content: response.content }];
   let changes = [];
   let note = null;
+  // what happened and what it does to her record's lists, with the proposal
+  let event = null;
+  // the record was wrong and is put right: nothing happened to her
+  let correction = false;
+  let health = [];
   const notes = [];
   const requests = [];
   const pages = [];
@@ -264,13 +332,18 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
       const valid = entries.map((e) => toChange(e, answers)).filter(Boolean);
       changes = changes.concat(valid);
       const rejected = entries.length - valid.length;
+      const lists = call.name === 'propose_changes' && record ? healthOps(record, call.input.health) : [];
+      health = health.concat(lists);
+      const shown = valid.length + lists.length;
+      if (shown && call.input.event?.what) event = call.input.event;
+      if (shown && call.input.correction === true && !call.input.event?.what) correction = true;
       return {
         type: 'tool_result',
         tool_use_id: call.id,
-        content: valid.length
-          ? `Shown to the family as a proposal (${valid.length} ${valid.length === 1 ? 'change' : 'changes'}). They apply it or not with a button.${rejected ? ` ${rejected} entries named a question or option that does not exist and were left out.` : ''}`
+        content: shown
+          ? `Shown to the family as a proposal (${shown} ${shown === 1 ? 'change' : 'changes'}). They apply it or not with a button.${rejected ? ` ${rejected} entries named a question or option that does not exist and were left out.` : ''}`
           : 'Nothing was shown: every entry named a question or option that does not exist. Use ids from the catalog.',
-        ...(valid.length ? {} : { is_error: true }),
+        ...(shown ? {} : { is_error: true }),
       };
     });
     next.push({ role: 'user', content: results });
@@ -278,7 +351,17 @@ export async function askPlanCopilot({ client, name, answers, care, history, tex
 
   // the proposal's own sentence, when the reply carried no words of its own
   // no long dashes in what she says, the same rule the onboarding keeps
-  return { said: withoutLongDashes(said || (changes.length ? note : '') || ''), changes, notes, requests, pages, history: next };
+  return {
+    said: withoutLongDashes(said || (changes.length || health.length ? note : '') || ''),
+    changes,
+    event,
+    correction,
+    health,
+    notes,
+    requests,
+    pages,
+    history: next,
+  };
 }
 
 // Said into the history when the family acts on a proposal, so the next answer

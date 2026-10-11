@@ -149,10 +149,14 @@ export function herVisits(a) {
   return [...open, ...rest].map((v) => ({ ...v, caregiver: a.caregiver }));
 }
 
-// The newest paid visit, by its date.
+// A visit that has been: its time is over, whether or not it is paid yet
+// (waiting for its work order, being charged, reported, paid).
+export const hasBeen = (v) => ['awaiting', 'charging', 'disputed', 'paid'].includes(v.status);
+
+// The newest visit that has been, by its date.
 export const lastVisit = (c) =>
   allVisits(c)
-    .filter((v) => v.status === 'paid')
+    .filter(hasBeen)
     .sort((x, y) => dayOf(y.date, todayOf(c)) - dayOf(x.date, todayOf(c)))[0];
 
 // What is waiting on the family, in the order it blocks things: terms stop every
@@ -335,6 +339,24 @@ export const declineTerms = (caregiverId) => (c) => {
     })),
     { kind: 'agreement', caregiverId, by: 'you', title: `Odbili ste uslove, verzija ${pen.version}`, detail: 'Koordinatorka će vas pozvati.' }
   );
+};
+
+// A visit plan the family has not seen yet. It is booked as soon as it
+// arrives, so it is one of the visits that are coming either way; until they
+// say they have seen it ("Video sam"), it also waits at the top of the home.
+// It is not a yes: saying something is wrong with it, or calling the visit
+// off, is done from the plan itself.
+export const plansToConfirm = (c) => allVisits(c).filter((v) => v.status === 'planned' && !v.planOk);
+
+export const confirmPlan = (visitId) => (c) => {
+  const v = findVisit(c, visitId);
+  return logged(mapVisit(c, visitId, (x) => ({ ...x, planOk: true })), {
+    kind: 'visit',
+    caregiverId: v.caregiver.id,
+    by: 'you',
+    title: 'Videli ste plan posete',
+    detail: `${v.date} · ${v.time}.`,
+  });
 };
 
 // Saying it is fine only brings the charge forward. Silence does the same thing

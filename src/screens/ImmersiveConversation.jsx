@@ -838,7 +838,7 @@ export default function ImmersiveConversation({
           {stage === 'plan' && overview && (
             <motion.div key="plan" className="imm-screen is-wide is-plan" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                Vaš plan podrške
+                Vaš plan nege
               </motion.p>
               {/* Minna's closing sentence, revealed in place like every other
                   line of hers; this was the last one still grown a character
@@ -851,7 +851,7 @@ export default function ImmersiveConversation({
                     <Line full={line} shown={doneTyping ? line.length + TAIL : typed.length} />
                   </span>
                 ) : (
-                  'Plan podrške je spreman.'
+                  'Plan nege je spreman.'
                 )}
               </motion.h1>
 

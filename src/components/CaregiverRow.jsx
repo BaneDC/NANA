@@ -18,20 +18,20 @@ import Standing from './Standing';
 // the button's place (`standing`), as her card on Pronađi does; on a phone
 // under the text, in line with it.
 //
-// The avatar is as tall as the name and the meta under it, 8 apart (40, 44
-// under a finger: docs/patterns.md §6).
+// The avatar is as tall as the name and the meta under it, 2 apart (38:
+// docs/patterns.md §6).
 export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) {
   return (
-    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--spacing-2)+16px)] phone:flex-wrap">
+    <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-small-leading))] phone:flex-wrap">
       <Avatar>
         <AvatarFallback>{caregiver.initials}</AvatarFallback>
       </Avatar>
       <ItemContent className="phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
-        <ItemTitle className="mb-1">
+        <ItemTitle className="-mb-0.5">
           {onOpen ? <ItemLink onClick={() => onOpen(caregiver)}>{caregiver.name}</ItemLink> : <span>{caregiver.name}</span>}
           <Badge className="my-[calc((var(--text-xs-leading)-20px)/2)] ml-2">Poklapanje · {caregiver.match}%</Badge>
         </ItemTitle>
-        <div className="text-[11px] leading-4 text-muted-foreground pointer-coarse:text-small">
+        <div className="text-small text-muted-foreground">
           <Rating caregiver={caregiver} /> · {caregiver.rate} · {caregiver.area}, do {caregiver.radius} km
         </div>
       </ItemContent>

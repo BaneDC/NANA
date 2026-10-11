@@ -99,28 +99,35 @@
   --radius-3xl: 24px;
   --radius-4xl: 32px;
 
-  /* ---- typography ---- */
+  /* ---- typography ----
+     One scale for a mouse and a finger (11. 10.). The mouse had its own, a step
+     smaller (12 / 14 / 16), and on a desktop the text of a card read as small
+     print. Body text is 14, a card's title 16, a page's 20. */
   --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --text-xs-size: 12px;
-  --text-xs-leading: 16px;
-  --text-sm-size: 14px;
-  --text-sm-leading: 20px;
-  --text-base-size: 16px;
-  --text-base-leading: 24px;
-  /* body text's line (the xs size runs on 18 in paragraphs) */
-  --text-body-leading: 18px;
-  /* labels, hints, meta: the one size that does not grow on a phone */
+  --text-xs-size: 14px;
+  --text-xs-leading: 20px;
+  --text-sm-size: 16px;
+  --text-sm-leading: 24px;
+  --text-base-size: 20px;
+  --text-base-leading: 28px;
+  /* body text's line: the same 20 a single line stands on */
+  --text-body-leading: 20px;
+  /* labels, hints, meta: the smallest text there is, on every screen */
   --text-small-size: 12px;
   --text-small-leading: 16px;
+  /* the conversation with the assistant: body text with a mouse, a field's 16
+     under a finger (chat-kit.css) */
+  --text-chat-size: 14px;
+  --text-chat-leading: 20px;
   --font-normal: 400;
   --font-medium: 500;
 
   /* ---- component sizes ---- */
-  --button-size: 32px;
+  --button-size: 36px;
   --chip-size: 28px;
   --chip-radius: 8px;
   --chip-px: 8px;
-  --input-size: 36px;
+  --input-size: 40px;
 
   /* ---- effects ----
      A card is drawn by its edge first and its shadow second. The old pair was
@@ -151,20 +158,14 @@
   --gradient-secondary: linear-gradient(164deg, var(--surface-elevated-3) 16.3%, var(--surface-transparent) 84.2%);
 }
 
-/* The type scale under a finger, one step up. Fields have to be 16 there (iOS
-   zooms into anything smaller), and against 12px text they stood out as the
-   largest thing on the page. Body text is 14, a field one step above it, titles
-   a step above that; labels and hints stay 12 (`--text-small-*`). The
-   onboarding keeps its own scale (see .immersive in onboarding.css). */
+/* Under a finger the text is what it is with a mouse; what grows is what is
+   pressed. Fields have to be 16 there (iOS zooms into anything smaller), which
+   each field sets itself (base.css). The onboarding keeps its own scale (see
+   .immersive in onboarding.css). */
 @media (pointer: coarse) {
   :root {
-    --text-xs-size: 14px;
-    --text-xs-leading: 20px;
-    --text-sm-size: 16px;
-    --text-sm-leading: 24px;
-    --text-base-size: 20px;
-    --text-base-leading: 28px;
-    --text-body-leading: 20px;
+    --text-chat-size: 16px;
+    --text-chat-leading: 24px;
     /* a field is tapped as much as a button is, so both grow to 44 */
     --button-size: 44px;
     --input-size: 44px;

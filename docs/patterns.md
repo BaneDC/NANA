@@ -27,7 +27,7 @@ Onboarding na telefonu (odlučeno 6. 10.):
 Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), prilagođenih ovim pravilima, a raspored je u **Tailwind** klasama. Developeri aplikaciju prave u Next.js-u sa shadcn-om, pa stranicu mogu da prenesu kakva jeste. Imena varijanti su shadcn-ova, a izgled je ovaj iz dokumenta.
 
 - Komponente u `src/components/ui/` se menjaju direktno, kako shadcn i preporučuje. **Ne pokreći `shadcn add … --overwrite`** na postojećoj komponenti: to vraća izvorni izgled. Nova komponenta se dodaje bez `--overwrite`, pa se prilagodi ovom dokumentu.
-- Vrednosti dolaze iz `src/styles/tokens.css`, kao Tailwind klase (`src/styles/index.css`): `text-xs` (12, na dodir 14), `text-sm` (14 / 16), `text-base` (16 / 20), `text-small` (sitan tekst, 12, ne raste), `text-badge` (11), `leading-body` (red paragrafa), `bg-muted`, `text-muted-foreground`, `bg-primary-50` … `text-primary-700`, `bg-success-muted text-success` (i `warning`, `destructive`), `shadow-card`. Ništa se ne kuca ručno.
+- Vrednosti dolaze iz `src/styles/tokens.css`, kao Tailwind klase (`src/styles/index.css`): `text-xs` (14), `text-sm` (16), `text-base` (20), `text-small` (sitan tekst, 12), `text-badge` (12), `leading-body` (red paragrafa), `bg-muted`, `text-muted-foreground`, `bg-primary-50` … `text-primary-700`, `bg-success-muted text-success` (i `warning`, `destructive`), `shadow-card`. Ništa se ne kuca ručno.
 - Prelomi: `phone:` (≤640) i `narrow:` (≤900), kao u §12. `pointer-coarse:` je dodir.
 - Nova stranica ili komponenta: samo shadcn komponente i Tailwind klase, bez novih klasa u CSS fajlovima. `app.css` više ne postoji: globalna pravila su u `src/styles/base.css`, onboarding u `src/styles/onboarding.css`, a ono čime oblačimo chat kit u `src/styles/chat-kit.css`.
 - Pre pravljenja nečeg svog, proveri shadcn katalog (Field, InputGroup, InputOTP, Collapsible, Item…; `Empty` ne, prazna stranica je §5).
@@ -60,6 +60,8 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 | Grupe oznaka | `Groups` › `Tags` / `Group` (`src/components/Tags.jsx`) | `.tag-rows` › `.tag-row` |
 | Delovi drawer-a i modala | `PaneLabel`, `PaneHint`, `Callout`, `ReportRows` › `ReportRow`, `Concern`, `Total`, `Stats` › `Stat` (`src/components/pane.jsx`) | `.ag-label`, `.ag-hint`, `.fam-callout`, `.report-rows`, `.visit-concern`, `.bc-total`, `.fam-stats` |
 | Stranica osobe (avatar uz ime) | `PagePerson` u `PageHeader` (`src/components/page.jsx`) | `.fam-person` |
+| Deo modala (ime dela, pa sadržaj 8 ispod) | `Part`, `PartText` (`src/components/pane.jsx`) | lokalni `Part` u `MoveDialog` |
+| Skala krhkosti (kartica) | `FrailtyScale` (`src/components/FrailtyScale.jsx`), ista u pregledu plana i u kartonu | — |
 | Bočni meni | shadcn `Sidebar` (`@/components/ui/sidebar`), sklopljen u `src/components/AppNav.jsx`: `SidebarMenuButton` za red, `SidebarMenuAction` za strelicu „Planova nege", `SidebarMenuBadge` za broj, `SidebarMenuSub` za spisak koji se sklapa (`Collapsible`). Na uskom ekranu (≤900) je fioka sleva, a otvara je `SidebarTrigger`. | `.app-nav`, `.nav-item`, `.nav-sub`, `.nav-badge` |
 | Saglasnost (registracija) | `Checkbox` | `.reg-check`, `.reg-box` |
 
@@ -69,14 +71,14 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 
 | Pravilo | Vrednost |
 |---|---|
-| Mreža | svaki razmak je deljiv sa 4 |
+| Mreža | svaki razmak je deljiv sa 4 (jedini izuzetak: naslov → red ispod uz avatar je 2, §6) |
 | Radiusi | samo 4 / 8 / 16 / 24 / 32 (`--radius-sm/lg/2xl/3xl/4xl`) |
 | Koncentrični uglovi | **spoljni radius = unutrašnji radius + padding između njih** |
 | Boje | samo tokeni iz `src/styles/tokens.css`, bez hex vrednosti u komponentama |
 | Jedna podloga, jedna boja teksta | na istoj podlozi tekst iste uloge ima istu boju; na narandžastoj podlozi tekst je u boji te podloge (`--color-primary-700`) |
 | Čipovi i značke | nikad pun krug (999px): čip (`ToggleGroupItem`, 32–44px) r8, značka i oznaka (`Badge`, 20px) r4 |
 | Velika slova | nikad, ni u onboardingu (`text-transform: uppercase` je zabranjen svuda; odlučeno 8. 10.) |
-| Najmanji tekst | 12px za sve što se čita; 11px samo u znački (`Badge`) i u meta liniji (`text-[11px]`, ocena i mesto negovateljice) |
+| Najmanji tekst | 12px (`text-small`), svuda. 11px više ne postoji (odlučeno 11. 10.): značka i meta linija su 12 |
 
 **Koncentrični uglovi, primeri koji važe u kodu:**
 - kartica r24, padding 16 → ono što je unutra i dodiruje ugao ima r8 (24 = 8 + 16);
@@ -90,32 +92,38 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 
 ## 2. Tipografija — šta je koje veličine
 
-Dve skale: sa mišem i na dodir (`pointer: coarse`). Na dodir je sve osim sitnog teksta jedan korak veće. Polja moraju biti 16px (inače iOS zumira), pa je osnovni tekst 14, da polje bude samo jedan korak iznad. Skala je u tokenima (`tokens.css`); klase je ne biraju same.
+**Jedna skala, sa mišem i na dodir (odlučeno 11. 10.).** Do tada je miš imao svoju, korak manju (12 / 14 / 16), pa je tekst kartice na desktopu bio sitan, a ime u redu samo 2px ispod naslova kartice. Sada je osnovni tekst 14, naslov kartice 16, a naslov stranice 20. Na dodir raste samo ono što se pritiska: dugme i polje su 44, a polje je 16px (inače iOS zumira). Skala je u tokenima (`tokens.css`); klase je ne biraju same.
 
-| Uloga | Klasa | Miš | Dodir | Težina | Boja |
-|---|---|---|---|---|---|
-| Naslov stranice | `PageTitle` (`text-base`) | 16 / 24 | 20 / 28 | medium | primary |
-| Naslov kartice | `CardTitle` (`text-sm`) | 14 / 20 | 16 / 24 | medium | primary |
-| Polje, chat | `TextField`, composer | 12 / 16 (chat 14 / 20) | 16 / 24 | normal | primary |
-| Naslov reda u kartici | `ItemTitle` (`text-xs font-medium`) | 12 / 16 | 14 / 20 | medium | primary |
-| Tekst kartice, podnaslov stranice | `CardDescription`, `DialogDescription`, `PageDescription`, `ItemDescription` (`text-xs leading-body`) | 12 / 18 | 14 / 20 | normal | secondary |
-| Dugme | `Button` | 12 | 14 | normal (odlučeno 5. 10.) | — |
-| Sitan tekst: naslov grupe, oznaka, napomena, meta, eyebrow | `text-small`: naslov u `PageSection`, `FieldLabel`, `FieldDescription`, `DialogEyebrow`, `PaneLabel`, `PaneHint`, oznaka u `Fact`, `Group` | 12 / 16 | 12 / 16 | medium ili normal | secondary |
-| Značka | `Badge` (`text-badge`) | 11 | 11 | medium | po stanju |
+| Uloga | Klasa | Veličina / red | Težina | Boja |
+|---|---|---|---|---|
+| Naslov stranice | `PageTitle` (`text-base`) | 20 / 28 | medium | primary |
+| Naslov kartice | `CardTitle` (`text-sm`) | 16 / 24 | medium | primary |
+| Naslov reda u kartici | `ItemTitle` (`text-xs font-medium`) | 14 / 20 | medium | primary |
+| Stavka bočnog menija | `SidebarMenuButton` (`text-xs`) | 14 / 20 (odlučeno 11. 10.; na 16 je meni bio krupniji od stranice) | normal, izabrana medium | meni (`--nav-text`) |
+| Tekst kartice, podnaslov stranice | `CardDescription`, `DialogDescription`, `PageDescription`, `ItemDescription` (`text-xs leading-body`) | 14 / 20 | normal | secondary |
+| Polje | `TextField` | 14 / 20 (na dodir 16 / 24) | normal | primary |
+| Chat | composer, poruka, odgovor (`--text-chat-*`) | 14 / 20 (na dodir 16 / 24) | normal | primary |
+| Dugme | `Button` | 14 | normal (odlučeno 5. 10.) | — |
+| Sitan tekst: naslov grupe, oznaka, napomena, meta, eyebrow | `text-small`: naslov u `PageSection`, `FieldLabel`, `FieldDescription`, `DialogEyebrow`, `PaneLabel`, `PaneHint`, oznaka u `Fact`, `Group`, meta linija (ocena i mesto negovateljice), e-mail u meniju | 12 / 16 | medium ili normal | secondary |
+| Značka | `Badge` (`text-badge`) | 12 / 12 (značka ostaje visoka 20) | medium | po stanju |
+| Broj (početna, tabla, cena pretplate) | `text-[24px] leading-8` (tabla 22 / 28) | 24 / 32 | medium | primary |
+
+**Visine:** dugme 36, polje 40, čip i ikonica-dugme 28; na dodir dugme i polje 44 (`--button-size`, `--input-size`, `--chip-size`). Bočni meni je širok 232 (skupljen 60, na dodir 68; §4), a stavka u njemu visoka 36 (na dodir 44).
 
 **Tokeni:**
-- `--text-xs-*` (tekst), `--text-sm-*` (naslovi kartica) i `--text-base-*` (naslov stranice) rastu na dodir.
-- `--text-small-*` je sitan tekst i ne raste.
-- `--text-body-leading` je visina reda paragrafa: 18, a na dodir 20.
-- Novi sitan tekst uvek ide na `--text-small-*`, a nikad na `--text-xs-*`.
+- `--text-xs-*` (tekst), `--text-sm-*` (naslovi kartica) i `--text-base-*` (naslov stranice) su isti sa mišem i na dodir.
+- `--text-small-*` je sitan tekst, najmanji koji postoji.
+- `--text-body-leading` je visina reda paragrafa: 20.
+- `--text-chat-*` je razgovor sa asistentom: 14 / 20, na dodir 16 / 24.
+- Novi sitan tekst uvek ide na `--text-small-*`, a nikad na `--text-xs-*`. Veličina se ne kuca ručno (`text-[11px]` i slično); jedini izuzetak je broj.
 
-**Onboarding** (`.immersive`) zaključava tokene na skali sa mišem, jer ima svoj vizuelni jezik.
+**Onboarding** (`.immersive`) zaključava tokene na staroj skali (12 / 14 / 16, dugme 32, polje 36 sa mišem), jer ima svoj vizuelni jezik.
 
 Za novi tekst kartice koristi `CardDescription` (u prozoru `DialogDescription`). Ne uvodi novu klasu istog izgleda.
 
-**Rečenica u redu** (linija ispod posete, napomena na dnu stranice) je tekst kartice: 12 / 14 na dodir. Kratka oznaka pored broja („rezervisano", „Plaćenih poseta") je sitan tekst, 12. Ništa od toga nije 11.
+**Rečenica u redu** (linija ispod posete, napomena na dnu stranice) je tekst kartice, 14. Kratka oznaka pored broja („rezervisano", „Plaćenih poseta") je sitan tekst, 12.
 
-Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je veličine naslova kartice.
+Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov stavke je korak ispod naslova kartice. **Naslov stavke je uvek 14 medium** (`text-xs font-medium`; odlučeno 11. 10.), i kad je stavka sama kartica na stranici: ime negovateljice na „Pronađi" i u glavi njenih detalja, upit u „Moji upiti", kartica u „Čeka na vas", red u „Vaše negovateljice" i ime partnera u „Ponude partnera". 16 medium je samo ono što imenuje karticu, prozor ili panel (`CardTitle`, naslov prozora, naslov „Čeka na vas"). Ranije je stavka koja je sama kartica imala 16, pa je na početnoj nadjačavala naslove kartica oko sebe.
 
 ---
 
@@ -126,6 +134,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 | Između elemenata stranice (`Page`), tj. kartica jedne ispod druge | 12 (odlučeno 2. 10.; 16 je bilo previše) |
 | Između kartica u listi ili grupi (`PageSection`, lista kartica) | 12 (bilo je 8) |
 | Od naslova grupe do prve kartice | 12 (gap grupe) |
+| Tekst van kartice (naslov grupe, glava stranice) od leve ivice kartica | 16, koliko je i padding kartice (§4) |
 | Između grupa | 32 (`PageSection` + `PageSection`: gap 12 + 20) |
 | Od ivice panela do sadržaja stranice | 24 sa svih strana (`Page`; na telefonu 16) |
 | Unutar kartice, između delova | 8 (gap kartice) |
@@ -154,22 +163,59 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 
 Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 široka, a delovi su 12 jedan od drugog.
 
+- **Tekst van kartice počinje gde i tekst u karticama** (odlučeno 10. 10.): naslov grupe (`PageSection`) i glava stranice (`PageHeader`: naslov, podnaslov, avatar na stranici osobe) su uvučeni 16 sleva, koliko je padding kartice, pa naslov stranice, naslovi grupa i naslovi kartica stoje na istoj liniji. Kutije ostaju na ivici: kartice, tabovi, narandžasti deo i akcije stranice desno (dugme i dalje završava na desnoj ivici kartica). `PageSection` i `PageHeader` to rade sami, na svakoj stranici; ne dodaj uvlačenje ručno. „Nazad" je tekst, pa i njegova strelica stoji na toj liniji.
+
 - **Stranica ne klizi u stranu kad naraste** (odlučeno 9. 10.): mesto za skrolbar je uvek čuvano, sa obe strane (`scrollbar-gutter: stable both-edges` na `Page`), pa kad sadržaj pređe visinu ekrana (drugi tab, „Prikaži još") ništa se ne pomera, a stubac ostaje u sredini.
 
 - Akcije stranice su samo u `PageHeader`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
-- **„Pitaj asistenta" je samo na Mojoj nezi i na jednom planu nege** (odlučeno 8. 10.). Podešavanja, Profil, Planovi nege, Pronađi negovateljicu i ostale stranice ga nemaju.
+- **„Pitaj asistenta" je samo na Mojoj nezi i na planu nege** (odlučeno 8. 10.). Medicinski karton ima svoju jednu akciju, „Prijavi promenu", koja otvara istog asistenta (§10a), pa nema i „Pitaj asistenta". Podešavanja, Pronađi negovateljicu i ostale stranice ga nemaju.
+- **Plan nege je jedan** (odlučeno 10. 10., `docs/plan-nege.md`): u bočnom meniju je jedna stavka „Plan nege", koja otvara plan, a dok ga nema prazno stanje. Nema liste planova, „Novi plan" ni značke „Aktivan", i **nema verzija plana**: izmena menja isti plan i ostavlja red u spisku izmena.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (`AskAssistant` to radi sam, kad je u `PageHeader`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
-- **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (32, na dodir 44), a ne koliko čip (28).
-- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `PageHeader`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice 12 i 4 dugmeta). Strelica je na levoj ivici stranice, a padding dugmeta izlazi u marginu. Nema drugog stila za „nazad" (stari „nazad" link je uklonjen).
+- **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (36, na dodir 44), a ne koliko čip (28).
+- **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `PageHeader`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice 12 i 4 dugmeta). Strelica je 16 od leve ivice kartica, na liniji naslova ispod nje (odlučeno 10. 10.; bila je na ivici stranice). Nema drugog stila za „nazad" (stari „nazad" link je uklonjen).
 - **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") i jedino on započinje razgovor. Ispod njega je **„Istorija razgovora"** (odlučeno 2. 10.; ranije „Razgovor"): ceo red samo otvara i zatvara spisak ranijih razgovora i ne vodi nigde, a strelica je na kraju reda. Po defaultu je zatvoren. Prazan spisak kaže „Još nema razgovora.". „Moji upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
+- **Meni se skuplja u traku sa ikonicama** (odlučeno 11. 10.; do tada se nije skupljao). Dugme je u glavi menija, desno od logoa („Skupi meni" / „Proširi meni", `ghost`, ikonica), a radi i `Ctrl/⌘ B`. Skupljen je širok 60 (68 na dodir): samo ikonice, svaka kvadrat 36 (44 na dodir) sa imenom stavke u `title` i `aria-label`; izabrana je i dalje obojena. „Novi razgovor" je „+" (`secondary`, kvadrat), logo se ne vidi, a broj uz stavku je u njenom gornjem desnom uglu. „Istorija razgovora" u traci nema gde da otvori spisak, pa klik na nju širi meni i otvara ga. Ko je prijavljen je samo avatar (i dalje otvara karton). Stanje se **ne pamti** posle osvežavanja: pamćenje bi bilo još jedan zapis u pregledaču, o čemu odlučuju kolačići. Na uskom ekranu (≤900) meni je fioka i ne skuplja se.
+- **„Pomoć" u bočnom meniju** (odlučeno 11. 10.) stoji iznad „Podešavanja" i nije stranica: otvara modal „Pomoć" (`src/components/HelpDialog.jsx`) sa kontaktom koordinatorke, ista tri reda kao u kartici na početnoj i na planu (`CoordinatorRows` u `src/components/PlanFooterBlocks.jsx`): WhatsApp, telefon i e-mail, svaki red je link. Stavka se zato nikad ne boji kao izabrana, a modal nema footer: zatvara se na „×". Ovo je modal iako ne traži akciju (§7 bi dao drawer), jer je kratak i do njega se dolazi sa bilo koje stranice.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Mojim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
-- **Moja nega pre prve saradnje (odlučeno 5. 10.):** Moja nega nema karticu „Moji upiti"; upiti su samo na stranici „Moji upiti". Dok nije poslat nijedan upit, narandžasti deo „Sledeći korak" ima samo „Pronađi negovateljicu". Čim je poslat prvi upit, a još niko ne dolazi, isti deo kaže gde su stvari („Čeka se odgovor": ko još nije odgovorio; „Stigli su odgovori": svi su odbili) i ima samo „Pogledaj upite", koji vodi na „Moji upiti"; „Pronađi negovateljicu" se tu više ne nudi (ostaje u meniju). Kad neko dolazi, stranica je o njoj i o upitima ne govori.
+- **Moja nega pre prve saradnje (odlučeno 5. 10., izmenjeno 10. 10.):** Moja nega nema karticu „Moji upiti"; upiti su samo na stranici „Moji upiti". Dok nije poslat nijedan upit, **stranica je sam plan nege** (§4a), pa nema posebnog narandžastog dela „Sledeći korak": sledeći korak je u planu, uz negovateljice koje preporučuje. „Sledeći korak" ostaje samo dok plana još nema (razgovor sa Minnom nije završen). Čim je poslat prvi upit, a još niko ne dolazi, narandžasti deo kaže gde su stvari („Čeka se odgovor": ko još nije odgovorio; „Stigli su odgovori": svi su odbili) i ima samo „Pogledaj upite"; ispod njega je i dalje plan. Kad neko dolazi, stranica je pregled (§4a) i o upitima ne govori.
 - **Stranica osobe** (avatar pored imena, `PagePerson`): avatar je poravnat po vrhu sa imenom. Na telefonu avatar i ime zauzimaju ceo red, a akcija stranice (npr. telefon) je ispod njih, 12px niže.
 - Na telefonu (≤640px) su naslov i akcije u istom redu, a podnaslov je ispod njih celom širinom. To rešava `PageHeader`; ne menjaj markup.
 - Pretraga i filteri stoje direktno na stranici (`<Field><Input icon={Search} … /></Field>`), nikad u kartici. „Pronađi negovateljicu" za sada nema pretragu (odlučeno 2. 10.): lista je poređana po poklapanju sa planom, sa stranama po 10.
 - **Broj u bočnom meniju** kaže samo da nešto stiglo i čeka porodicu: „Moja nega" broji ono što čeka na nju (novi uslovi ili ugovor, radni nalog, dodatni sati; `waitingOnYou`), a „Moji upiti" odgovore koje još nije videla (prihvatila ili odbila; `unseenAnswers`). Poslat upit se ne broji. Otvaranjem „Mojih upita" odgovori su viđeni.
+
+---
+
+## 4a. Početna: Moja nega kao pregled (odlučeno 10. 10.)
+
+Moja nega (`src/screens/Dashboard.jsx`) je početna stranica i mesto sa kog porodica retko mora da ode: sve bitno je tu, a detalji su jedan klik dalje. Posle onboardinga se otvara ona, a ne stranica plana. Šta prikazuje zavisi od toga dokle se stiglo:
+
+| Stanje | Šta je na stranici |
+|---|---|
+| Plan još ne postoji | „Sledeći korak": završite razgovor sa Minnom |
+| Plan postoji, niko nije pitan | **plan nege je stranica** (`PlanContents`): Minnino pismo, „Šta preporučujemo" sa negovateljicama, koordinatorka |
+| Upit poslat, niko još ne dolazi | „Čeka se odgovor" ili „Stigli su odgovori", a ispod plan nege |
+| Neko dolazi | **pregled**, redom ispod |
+
+Pregled je **mreža** (odlučeno 10. 10.; prva verzija je bila jedan stubac), agregat svega sa platforme rečen kratko. Plan nege, karton i posete imaju svoje stranice; ovde je od svakog samo ono što se čita odmah.
+
+1. **„Čeka na vas"** (narandžasti deo, §5), preko cele širine, **samo kad nešto čeka**. Tu prvo stigne i **plan posete** (odlučeno 10. 10.): kartica „Sanna je poslala plan posete za sutra" sa dugmetom **„Video sam"** (`default`), a iznad rečenica „Sanna je zakazala posetu. Ako nešto ne odgovara, otvorite plan i javite."; naslov otvara plan, gde se može i javiti da nešto nije u redu ili otkazati. Dugme znači da je porodica plan **videla**, a ne da ga odobrava (odlučeno 11. 10.): poseta je zakazana čim plan stigne, pa je odmah i u „Predstoji" i u broju „sledeća poseta", a novac se rezerviše odmah. Posle klika kartica odlazi odozgo, poruka je „Označeno kao viđeno.", a u istoriji „Videli ste plan posete" (`plansToConfirm`, `confirmPlan` u `src/data/familyCare.js`; isto dugme je i u samom planu posete). Broj u meniju uz „Moja nega" broji i planove koji još nisu viđeni. Kad ne čeka ništa, na početnoj nema narandžastog dela („Ništa ne čeka" je uklonjeno odavde; na njenoj stranici ostaje).
+2. **Tri broja, svaki svoja kartica** (`StatCard` u `Dashboard.jsx`: broj 24 / 32 medium, ispod šta broji i napomena, kao `Stat` u §8): poseta do sada (od kada), sledeća poseta (vreme i ko dolazi), rezervisano (i šta se sada naplaćuje). Tri u redu; na telefonu dve, a treća ispod preko cele širine. Kartica koja ima nešto iza sebe je cela klikabilna (`CardLink` na oznaci): prva otvara drawer „Sve posete", druga plan posete. Nikad zbir plaćenog (§8).
+3. **Kartice po dve u redu**, ovim redom:
+   - „Predstoji" (zakazane posete; red otvara plan posete) i „Poslednja poseta" (kako je bila i šta je negovateljica zapisala; red otvara radni nalog);
+   - „Vaše negovateljice" (red otvara njenu stranicu) i „Ponude partnera";
+   - koordinatorka, preko cele širine: kartica koja ostane sama na kraju zauzima ceo red.
+
+- **Svaka kartica ima svoje mesto i uvek je tu**, i kad nema šta da pokaže: tada to kaže jednom rečenicom („Nijedna poseta nije zakazana.", „Još nije bilo posete."). Tako se raspored ne menja kako nega teče; menja se samo ono što je u karticama. Jedino „Čeka na vas" dolazi i odlazi, iznad svega.
+- **Mreža prati širinu stranice, ne prozora** (`@container`): dve kartice u redu dok je stubac širok bar 672; uže od toga (telefon, ili otvoren asistent pored) jedna ispod druge. Razmak je 12 u oba smera. Kartice u istom redu su iste visine.
+- **Red na početnoj je sažet:** naslov i red ispod njega su **4** jedan od drugog (ime i ono što ide uz njega, §3; na ostalim stranicama je 8, §6), i **desno nema ničega**: ni dugmeta, ni broja, ni strelice. Red ili kartica se otvara klikom bilo gde, a akcija je u detaljima. Iznos je deo rečenice („3 h · 54 € rezervisano"), ne oznaka, da red ostane jedna linija. Ovo je izuzetak od §7 („red ima akciju desno") samo za početnu, jer je kartica široka pola stranice.
+- **Red posete nema avatar** („Predstoji", „Poslednja poseta"; samo na početnoj): red je poseta, rečena danom i satima, a ko dolazi piše u redu ispod. Avatar imaju samo negovateljice (38, 44 na dodir: naslov i red ispod, 4 jedan od drugog).
+- **„Ponude partnera"** (ne „Iz plana nege"): red po ponudi, a rečenica šta je to je **na dnu kartice**, sitnim tekstom (ne ispod naslova). Red: prvo partner (logo visok 20, ili ime gde logoa nema) i desno značka `success` „−10% preko Minne", a 8 ispod za šta je (naziv preporuke, otvara plan), **tekstom reda: 14, normal, sivo** (`text-xs leading-body text-muted-foreground`; odlučeno 11. 10.), isto kao red ispod imena u „Vaše negovateljice". Partner je naslov reda, pa ono ispod njega nije drugi naslov. Cene i zakazivanje su u planu.
+- **„Sve posete" je drawer** (odlučeno 11. 10.): dugme „Sve posete" (`secondary`, bez strelice, jer ne vodi na drugu stranicu) u glavi kartice „Poslednja poseta", i broj „poseta do sada", otvaraju drawer sa svim posetama (`kind: 'visits'`, `src/components/family/VisitsDrawer.jsx`), da porodica zbog istorije ne mora sa početne. Složen je kao „Šta se desilo" (§7): čipovi ko je dolazio (samo kad ih je više), „N poseta · najnovije prvo", pa posete po mesecima sa brojem pored meseca, isti red posete kao svuda (`VisitRow`), po 10 sa „Prikaži još". Poseta koja ima šta da otvori (plan posete, radni nalog) otvara to umesto spiska. Stranica „Posete" i dalje postoji i čita isti spisak (`useVisitHistory`). Ovo je izuzetak od §8a („lista ne otvara drawer za ostatak"): kartica na početnoj ne pokazuje početak te liste, nego samo poslednju posetu. Dugme i broj se pojavljuju tek **kad je bila bar jedna poseta** (odlučeno 11. 10.; „bila" znači da je poseta gotova, a ne da je plaćena: čeka radni nalog, naplaćuje se, prijavljena je ili je plaćena, `hasBeen` u `src/data/familyCare.js`; isto važi za broj „poseta do sada" i za karticu „Poslednja poseta", koja tada kaže gde je novac, npr. „54 € biće naplaćeno", a radni nalog otvara tek kad ga ima): pre toga bi spisak imao samo ono što već stoji u „Predstoji", a kartica bi govorila „Još nije bilo posete" pored dugmeta „Sve posete".
+- **„Čeka na vas" zadržava svoja dugmad** (§5): to je jedino na početnoj što traži odluku.
+- Karton nije na početnoj: do njega se dolazi iz menija.
+- Na početnu ide samo ono što se čita odmah ili traži odluku. Cela istorija poseta, ceo plan sa cenama partnera, ugovor i karton ostaju na svojim stranicama.
 
 ---
 
@@ -207,7 +253,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 </Attention>
 ```
 
-- Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice. Rečenica ispod naslova je 8 ispod njega, kao ispod svakog naslova (odlučeno 6. 10.; bilo je 4).
+- Mere: r32, padding 8, ivica od 1px nacrtana unutra (ne uzima od 8), 8 između kartica. Kartica unutra je r24 (32 = 24 + 8). Naslov je 16 od vrha i 24 od leve ivice, tamo gde je tekst kartica, i 12 iznad prve kartice. Rečenica ispod naslova je 4 ispod njega: naslov i rečenica su jedna glava (odlučeno 10. 10.; od 6. 10. je bilo 8, što je razdvajalo naslov od njegove rečenice).
 - Stavka koja nešto otvara je `Card` u redu (avatar levo): naslov kartice kao `CardLink` (14), tekst, dugme desno. **U „Čeka na vas" dugme ostaje i na telefonu** (odlučeno 6. 10.): narandžasti deo je inače informativan, pa dugme kaže šta treba uraditi („Pogledaj uslove", „Pogledaj radni nalog"). Na telefonu je ispod sadržaja, u koloni teksta i široko koliko ona, 16 ispod, kao kod kartice upita.
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
 - **Prazna stranica je isto ovo** (odlučeno 6. 10.): svaka prazna stranica izgleda kao „Sledeći korak" na Mojoj nezi. Naslov kaže šta nedostaje („Još niste poslali nijedan upit", „Nema aktivnog plana", „Ovde još nema ničega"), a bela kartica ispod rečenicu šta da se uradi i jedno dugme levo u `CardFooter`. Prazno bez akcije je ista stvar bez dugmeta (kao „Ništa ne čeka"). Siva ploča `Empty` je uklonjena iz projekta (6. 10.) i ne vraća se.
@@ -242,7 +288,7 @@ Red je `Item` u `ItemGroup` (`src/components/ui/item.jsx`). Mere (sve radi `Item
 - padding reda je 8 sa svih strana, pa je podloga na hover-u isto daleko od teksta gore, dole i sa strane (odlučeno 1. 10.; bilo je 16 gore i dole a 8 sa strane);
 - između redova je 16, a linija od 1px je na sredini tog razmaka, uvučena 8 da bude poravnata sa tekstom; tekst je tako 16 od linije (odlučeno 5. 10.; bilo je 8 između redova, 12 od linije);
 - radius reda je 16 (vidi se samo na hover-u);
-- na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, ime dobija `--color-primary-700`, a oznake (`Badge variant="tag"`) u njemu postanu bele, da ne nestanu u sivom.
+- na hover (samo red koji se otvara): podloga `--surface-2`, linije iznad i ispod se sklanjaju, a oznake (`Badge variant="tag"`) u njemu postanu bele, da ne nestanu u sivom. **Tekst ne menja boju** (odlučeno 11. 10.; ime je do tada na hover dobijalo `--color-primary-700`): na sivoj podlozi tekst ostaje kakav jeste, i u redu kontakta koordinatorke. Narandžasto mastilo je samo za narandžastu podlogu (§1).
 
 ```jsx
 <ItemGroup>
@@ -263,21 +309,19 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 
 **Kartica upita (odlučeno 5. 10.)** je cela klikabilna (ime je `CardLink`): kad saradnja postoji, otvara njenu stranicu, a inače njen profil. Nema dugme za otvaranje („Pogledaj saradnju" je uklonjeno). Jedino dugme je **„Pitaj ponovo"**, samo na odbijenom upitu kad sme ponovo da joj se piše (`canAsk`), jer šalje novi upit, a ne otvara nešto; zato ostaje i na telefonu. Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
 
-**Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + 8 + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa raste zajedno sa tekstom na dodir:
+**Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + 2 + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa prati skalu:
 
-| Gde | Naslov + red ispod | Miš / dodir |
+| Gde | Naslov + red ispod | Visina |
 |---|---|---|
-| Red u kartici (`Item`: Predstoji, poslednja poseta, Vaše negovateljice, Moji upiti, chat) | 12 i rečenica | 42 / 48 |
-| Negovateljica u planu (`CaregiverRow`) | 12 i meta | 40 / 44 |
-| Kartica na „Pronađi", glava detalja | 14 i meta | 44 / 48 |
-| Kartica u „Čeka na vas", upit (Moji upiti) | 14 i rečenica | 46 / 52 |
-| Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 42 / 48 |
-| Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 32 / 36; 36 / 40 |
-| Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 30 / 34 |
+| Red u kartici (`Item`: chat, Vaše negovateljice), kartica u „Čeka na vas", upit (Moji upiti) | 14 i rečenica | 42 |
+| Negovateljica u planu (`CaregiverRow`), kartica na „Pronađi", glava detalja | 14 i meta | 38 |
+| Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 48 |
+| Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 36; 40 |
+| Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 36 |
 
-**Naslov → red ispod je 8** (odlučeno 5. 10.; bilo je 4, pa je značka pored imena ležala na oceni ispod). Kolona teksta ima razmak 4, a naslov dobija još 4 svoje margine (`mb-1`), pa ostali delovi kolone ostaju gde su. U redu posete, gde kolona nema razmak, naslov ima `mb-2`.
+**Uz avatar je naslov → red ispod 2** (odlučeno 11. 10.; od 5. 10. je bilo 8, pa probano 4 i 0). Visine redova (24 ili 20 za naslov, 20 ili 16 ispod) same daju vazduh između dva reda teksta: sa 8 i sa 4 naslov je stajao odvojeno od svoje rečenice, a bez razmaka su se redovi slepili. **Ovo je jedini razmak van mreže od 4 (§1)**, namerno, pa je i avatar uz njega van mreže (42, 38). Kolona teksta i dalje ima razmak 4 za ono što dolazi posle (treći red, stanje, oznake), a naslov mu svojom marginom oduzima 2 (`-mb-0.5`). Red bez avatara (poseta, zapis u kartonu) i dalje ima 8.
 
-Značka u naslovu reda (20) ne povećava red od 16, nego prelazi preko njega, pa naslov ostaje u visini avatara. Kad se naslov prelomi u dva reda, avatar ostaje poravnat sa vrhom. Novo mesto sa avatarom dobija svoj `--avatar` po ovom pravilu; avatar nema fiksnu veličinu.
+Značka u naslovu reda (20) je visoka koliko i red (20), pa naslov ostaje u visini avatara. Kad se naslov prelomi u dva reda, avatar ostaje poravnat sa vrhom. Novo mesto sa avatarom dobija svoj `--avatar` po ovom pravilu; avatar nema fiksnu veličinu.
 
 **Poravnanje u redu (`Item`):** sve počinje od prve linije. Avatar je poravnat po vrhu sa naslovom, a ono desno (dugme, broj, strelica) počinje u istoj visini kao naslov. Ništa se ne centrira po visini reda, jer red sa oznakama ima tri i više linija.
 
@@ -334,7 +378,7 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 - **Izbor u modalu menja sadržaj na mestu.** Jedan izbor je izabran od početka (najčešći), a drugi izbor menja samo delove ispod njega: novi ulaze iz prozirnog (200 ms), a modal raste ili se skuplja do njih (`AutoHeight`, `src/components/AutoHeight.jsx`: 250 ms, `ease-out-strong`), umesto da skoči kao da se otvorio novi.
 - Na telefonu su oba bottom sheet (§12).
 - **Klik van drawer-a ili modala ga zatvara samo ako je i pritisak počeo van njega.** Kad se iz polja razvlači ili selektuje tekst pa se miš pusti van prozora, prozor ostaje otvoren. shadcn (Radix) to radi sam, jer zatvara na pritisak van prozora, a ne na klik. Novi prozor se pravi od `Dialog` ili `Modal`, pa to dobija sam.
-- **Kad se prozor otvori, fokus je na prozoru** (ili na polju sa `autoFocus`), a ne na prvom dugmetu, da nijedno dugme ne izgleda kao da je izabrano tastaturom.
+- **Kad se prozor otvori, fokus je na prozoru** (ili na polju sa `autoFocus`), a ne na prvom dugmetu, da nijedno dugme ne izgleda kao da je izabrano tastaturom. **Prozor čija je svrha da se nešto napiše fokusira polje odmah** (odlučeno 10. 10.): poruka negovateljici („Pošalji poruku") se otvara sa kursorom u polju, da može odmah da se kuca.
 - **Otvara se i zatvara preko `open`**, kao svaki shadcn prozor: `<Dialog open={otvoren} onClose={…}>`. Prozor ostaje u kodu i kad je zatvoren, pa shadcn odigra i animaciju zatvaranja. Kad prozor drži formu ili prikazuje nešto što se pri zatvaranju briše (koji je drawer otvoren), to se drži dok se ne zatvori `useKept` (`src/hooks/use-kept.js`): `{kept && <PasswordModal open={passwordOpen} …/>}`. Sledeće otvaranje kreće ispočetka. Ne uklanjaj prozor iz koda da bi ga zatvorio (`{x && <Dialog/>}`), jer onda nema animacije zatvaranja.
 - **Animacije:** modal dolazi odozdo i malo uvećan, na opruzi (`ease-spring-dialog`, 490 ms); drawer dolazi 28 sa desna (`ease-spring-pane`, 430 ms), a odlazi kratkom krivom (160 ms). Pozadina se pojavljuje za 180 ms. Na telefonu je to shadcn `Drawer` sa svojom animacijom.
 
@@ -366,9 +410,9 @@ Vrsta vrednosti određuje raspored:
 
 - Oznaka je u oba slučaja 12px secondary, a vrednost primary.
 - Slobodan tekst se prelama i nikad se ne seče tri tačke.
-- **Ispod naslova kartice `Facts` počinje 20 niže** (odlučeno 9. 10.): 8 kartice i 12 više, pa je naslov jasno naslov kartice, a prvi red jedan od redova (između redova je 12, linija, 12). `Facts` to radi sam kad stoji odmah posle `CardHeader`: kartice u Profilu i „Vaši odgovori" u pregledu plana.
+- **Ispod naslova kartice `Facts` počinje 20 niže** (odlučeno 9. 10.): 8 kartice i 12 više, pa je naslov jasno naslov kartice, a prvi red jedan od redova (između redova je 12, linija, 12). `Facts` to radi sam kad stoji odmah posle `CardHeader`: kartice u kartonu, „Vaši podaci" u Podešavanjima i „Vaši odgovori" u pregledu plana.
 - **Jedini izuzetak je cenovnik partnera** (u `RecommendationCard`): naziv levo, redovna i Minnina cena u koloni desno.
-- **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. Za sada samo u pregledu negovateljice.
+- **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. U pregledu negovateljice i na početnoj (§4a), gde stoje u kartici.
 - **PDV u radnom nalogu** (odlučeno 6. 10.): cena koju porodica vidi već sadrži PDV (25,5%, finski), pa se ništa ne dodaje. Ispod ukupnog iznosa radnog naloga i ispod rezervisanog iznosa u planu posete stoji red „Od toga PDV (25,5%)" sa iznosom, kao na računu (`vatIn`, `vatText`). Cena po satu svuda gde se prikazuje ugovor (kartica „Ugovor o nezi", novi uslovi, pregled, sve verzije) kaže „18 € / h, PDV uključen" (`rateText`). Sve je u `src/data/familyCare.js`. Kod otkazane posete i iznosa 0 reda sa PDV-om nema.
 - **Nikad zbir plaćenog** (odlučeno 5. 10.): porodici se ne prikazuje koliko je ukupno platila, ni do sada, ni po mesecu, ni po negovateljici. Iznos stoji samo uz pojedinačnu posetu (rezervisano, biće naplaćeno, naplaćeno) i uz ono što se sada dešava („Rezervisano za zakazane posete", „Naplaćuje se sada" u Podešavanjima). Broj poseta je u redu, zbir novca nije.
 
@@ -382,7 +426,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 **Ocena** se svuda piše isto (`Rating`, `src/components/Rating.jsx`): broj, pa zvezdica, pa broj ocena: „4,9 ★ (64)". Ko još nema ocena je „Nova", bez zvezdice.
 
-**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. Avatar je visok koliko ime i red ispod njega (§6), 44 sa mišem, 48 na dodir. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom: „Poklapanje" 4 iznad imena, ocena 8 ispod njega (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
+**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. Avatar je visok koliko ime i red ispod njega (§6), 38. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom: „Poklapanje" 4 iznad imena, ocena 8 ispod njega (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
 | Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |
@@ -409,7 +453,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 | **Lista na stranici, uz drugi sadržaj** | koliko staje u taj deo, pa „Prikaži još" po 10 | Predstoji (3), posete na njenoj stranici (10), istorija razgovora u meniju (5) |
 | **Puna lista koja raste sa vremenom** | 10, najnovije prvo (po mesecu ili danu gde postoji), pa „Prikaži još" po 10 | Sve posete (stranica), Šta se desilo, posete i aktivnost klijenta na strani negovateljice |
 | **Pretraga, poređenje** | numerisana paginacija (`Pagination`), 10 po strani | samo „Pronađi negovateljicu" |
-| **Kratka lista po prirodi** | sve, bez ograničenja | Moji upiti, Planovi nege, verzije ugovora, Vaše negovateljice |
+| **Kratka lista po prirodi** | sve, bez ograničenja | Moji upiti, verzije ugovora, Vaše negovateljice |
 
 - Numerisana paginacija je samo za pretragu: tu se negovateljice porede, ide se napred-nazad i vraća na isto mesto. Kroz posete i događaje se ne ide „na stranu 4".
 - „Prikaži još" kaže koliko dodaje („Prikaži još 10", na kraju „Prikaži još 3").
@@ -436,6 +480,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
   | Dvofaktorska prijava | „Uključi" — default | „Isključi" — secondary | akcija postaje gašenje |
   | Način plaćanja | „Dodaj karticu" — default | „Promeni karticu" — secondary | kartica je podešena, a menjanje je održavanje, ne preporuka |
   | Lozinka | „Promenite lozinku" — secondary | isto | lozinka uvek postoji, pa je ovo uvek menjanje |
+  | Vaši podaci (nalog) | „Izmenite podatke" — secondary | isto | podaci uvek postoje, pa je ovo uvek menjanje |
   | Kolačići | „Podešavanja kolačića" — default | isto | nema stanja |
 - **U dijalogu i drawer-u** akcije su dole desno (`DialogFooter`, `SheetFooter`): prvo secondary, pa glavna.
 - `Button` je iz `@/components/ui/button`. Varijante: `default` (narandžasto, glavna radnja), `secondary`, `ghost` (tiha radnja pored `secondary`, npr. „Odbij sve"), `destructive`. Veličine: `default` (32), `lg` (40, samo ekrani preko celog prozora), `icon` (28; u `PageActions` 32). Na pritisak se smanji na 97%.
@@ -453,17 +498,16 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 - **Dodatni sati** (odlučeno 3. 10.): radni nalog sa više sati nego što je rezervisano naplaćuje samo rezervisano. Višak je deo „Dodatni sati" u radnom nalogu sa „Odbij dodatne sate" (secondary) i „Odobri X €" (primary), a do odgovora je i stavka u „Čeka na vas". Manje sati: naplaćuje se koliko je radila, a razlika se vraća („Vraća se" u obračunu).
 - **Grupa oznaka uvek kaže šta je:** ime grupe (`label`, 12px sivo), a ispod njega oznake, 4 razmaka, kao jedna grupa (`Group`). Sledeća grupa je 12 niže (`Groups`). Primeri: „Poklapa se" i „Klasifikacije" na kartici negovateljice, „Usluge" u redu negovateljice i u ugovoru, „Urađeno" u poslednjoj poseti. U drawer-u ime grupe je `PaneLabel` sekcije, pa se `label` ne zadaje.
 - Grupa oznaka u redu stoji 12px ispod teksta reda.
-- **Ono što je neko napisao** (beleška negovateljice, njena poruka uz uslove, „O sebi", vaša poruka u upitu, ono što ste prijavili) je **običan tekst ispod imena dela**: `Group` sa `text` (`src/components/Tags.jsx`: 12 / 18, boja vrednosti), a u drawer-u `PaneLabel` pa `SheetDescription`. **Nikad uvučen citat u kurzivu** sa linijom levo (stari citat je uklonjen).
+- **Ono što je neko napisao** (beleška negovateljice, njena poruka uz uslove, „O sebi", vaša poruka u upitu, ono što ste prijavili) je **običan tekst ispod imena dela**: `Group` sa `text` (`src/components/Tags.jsx`: 14 / 20, boja vrednosti), a u drawer-u `PaneLabel` pa `SheetDescription`. **Nikad uvučen citat u kurzivu** sa linijom levo (stari citat je uklonjen).
 - Tekst značke počinje velikim slovom („Važi", „Čeka vaš odgovor"), kao i sve značke.
 - **Stanje** se kaže samo značkom `Badge` sa jednom od varijanti: `success` (zeleno, gotovo; ranije `is-accepted`), `warning` (čeka; `is-pending`), `destructive` (ne; `is-declined`), `secondary` (neutralno; `is-muted`), `default` (narandžasto: poklapanje, izmenjeno; `is-attention`). Oznaka je `Badge variant="tag"`.
 - **Poklapanje** se svuda piše „Poklapanje · 97%", kao značka `Badge` `default`.
 - **Polja** su samo iz `src/components/TextField.jsx`: `Field`, `Input` (opciono `icon`, `suffix`), `Password`, `TextArea`, `Select`, `DateInput`. Iznutra su shadcn `Field`, `FieldLabel`, `FieldDescription`, `Input`, `InputGroup`, `Textarea` i `Select`. Nijedna forma nema svoje `<input>` ni native `<select>`.
 - Labela je iznad polja, napomena ispod; obe su uvučene 12, da počnu gde i tekst u polju. **U modalu na desktopu** polje izlazi 12 u padding sa obe strane, pa labela i tekst u polju počinju tamo gde i naslov modala (odlučeno 9. 10.; `Dialog` to radi sam). Na telefonu ne, jer bi polje bilo 4 od ivice ekrana.
 - **Datum se bira iz kalendara, ne kuca** (odlučeno 9. 10.): `DateInput`. Polje izgleda kao `Select`, ikonica kalendara na kraju, a izabrani dan piše kako se kaže („20. avgusta 2026"). Otvara mesec 4 ispod polja, poravnat sa njegovim desnim krajem (gde je ikonica kalendara) i širok pola polja (najmanje 268, na dodir 324) (`Popover`: r16, p8; raste iz polja, sa 97%, 150 ms); dani dele širinu. Mesec počinje velikim slovom („Avgust 2026"). Dani su 36 (44 na dodir), r8; nedelja počinje ponedeljkom; današnji dan je narandžast, izabrani popunjen, a oni koji ne mogu da se izaberu sivi (`from`, `to`). Danas je dan prototipa (`dateOfToday`), ne sat računara. Izbor dana zatvara kalendar. Tako su „Od kada" i „Do kada" u „Gde sada živi?".
-- **Gde živi** se bira, ne kuca (odlučeno 9. 10.): grad iz spiska gradova gde radimo (`src/data/places.js`), uz neobavezan deo grada, ili „Drugo mesto" i njegovo ime.
 - **Modal sa jednim tekstualnim poljem** (odlučeno 5. 10.): polje nema labelu. Šta ide u njega kažu naslov modala i placeholder; labela ide u `aria-label`, za čitač ekrana. Tako su „Šta nije u redu?" kod radnog naloga i plana posete, poruka negovateljici i drugi razlog otkazivanja. Kad modal ima dva ili više polja (slanje plana), svako ima labelu. Polje je 36 (44 na dodir). Na fokusu polje dobija narandžastu ivicu, bez prstena. Lozinka uvek ima oko za prikaz.
 - **Prijava sa dvofaktorskom zaštitom** (odlučeno 8. 10.): posle tačnog emaila i lozinke ide drugi korak na istom ekranu, istog izgleda kao prijava: naslov „Dvofaktorska prijava", šest kućica (`CodeInput`): kad se upiše šesta cifra, kod se šalje sam, a pogrešan se briše da se odmah upiše ponovo. Ispod je red „Koristite rezervni kod" (`secondary`) i „Potvrdi" (pola-pola; na telefonu svako koliko mu treba), pa „Nazad na prijavu". Rezervni kod se upisuje u polje i šalje sa „Potvrdi"; svaki važi jednom. Rezervni kodovi se čuvaju samo heširani, kao lozinka (`hashBackupCodes`, `spendBackupCode` u `src/lib/account.js`).
-- **Gde živi osoba o kojoj brinemo** (odlučeno 9. 10., prototip): promena u Profilu se ne čuva odmah, nego otvara „Gde sada živi?" (`src/components/MoveDialog.jsx`) sa tri izbora, od kojih je „Seli se" izabran od početka. **Seli se**: od kada, i pre potvrde za svaku negovateljicu da li dolazi i dalje (nova adresa u njenom radijusu) ili ne (saradnja se završava na dan selidbe, zakazane posete posle toga se otkazuju, rezervisano se vraća); upiti onima van domašaja se povlače; plan ostaje, a osvežavaju se negovateljice na „Pronađi" i lokalne preporuke. Mesto gde još ne radimo se ne potvrđuje: zove koordinatorka. **Ispravka**: samo se sačuva. **Privremeno je negde drugde** (bolnica, rehabilitacija, kod porodice): adresa ostaje, posete se pauziraju do datuma. Bez novog onboarding-a.
+- **Gde živi osoba o kojoj brinemo** se od 11. 10. ne menja u prozoru: selidba se javlja asistentu iz medicinskog kartona (§10a). Prozor „Gde sada živi?" iz 9. 10. je uklonjen.
 - **Kod od šest cifara** je `InputOTP` i dobija fokus čim se pojavi (uključivanje i isključivanje 2FA, prijava): tri i tri kućice (44×52, na telefonu 40×48), kratka crta između, a kućica u koju ide sledeća cifra ima narandžastu ivicu dok je polje u fokusu. Labela „Kod iz aplikacije" je sitan tekst iznad.
 - **Prekidač** (`Switch`) je za podešavanje koje je uključeno ili isključeno. Ceo red je labela (naziv, opis ispod, prekidač desno), pa klik bilo gde u redu menja stanje. Podešavanje koje se ne može menjati (neophodni kolačići) i dalje ima prekidač, da lista izgleda kao celina, ali je on `disabled`: bleđi je i ne pomera se, pa se vidi da ne može da se isključi (odlučeno 5. 10.).
 - **Nešto što se rasklapa** (grupa kolačića, ručni unos 2FA ključa) je `Collapsible` ili dugme sa `aria-expanded`, sa strelicom koja se okreće kad je otvoreno.
@@ -484,6 +528,43 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 
 ---
 
+## 10a. Medicinski karton (prototip, odlučeno 10. 10.)
+
+Stranica o osobi o kojoj se brine (`src/screens/MedicalRecord.jsx`, podaci i logika u `src/data/record.js`). Plan nege je napisan za jedan trenutak i jednu potrebu; karton je ko je ona, bez obzira na plan. Otvara se **karticom naloga u dnu bočnog menija** (ime i avatar onoga ko je prijavljen); kartica se na hover i dok je karton otvoren uokviri, kao svaka kartica koja nešto otvara. Stranica je iz menija, pa nema „nazad".
+
+- **Glava** je stranica osobe (`PagePerson`): avatar, ime, a ispod „Medicinski karton · 84 godine · Töölö, Helsinki". Desno je **jedno dugme, „Prijavi promenu"** (`default`, bez ikonice; odlučeno 10. 10.): jedina akcija stranice i, od 11. 10., **jedini način da se u kartonu išta promeni ili ispravi**. Na telefonu je ispod imena. Nema „Pitaj asistenta" ni u glavi ni u gornjoj traci, jer „Prijavi promenu" otvara istog asistenta i u tom razgovoru se može pitati bilo šta. Naziv dugmeta je akcija (glagol i šta), ne rečenica o stanju. Prazan karton nema dugme.
+- **Dva prikaza iste stvari, tabovi (§10):** „Stanje sada" i „Istorija".
+- **Stanje sada**, grupe redom: „Ukratko" („Na šta paziti": rizici iz plana i alergije, kao oznake; skala krhkosti), „Svakodnevica" (kretanje i samostalnost; podrška koja joj treba), „Zdravlje" (dijagnoze i stanja, lekovi, alergije, pomagala), „Osnovno" (lični podaci; gde živi; kontakt osoba). **Povoda nema** (odlučeno 10. 10.): zašto se porodica javila, kako je počelo i boravak u bolnici su kontekst plana, a ne osobe, pa ostaju na planu („Pregled i odgovori").
+- **„Gde živi" je svoja kartica**, bez olovke (odlučeno 11. 10.): selidba se javlja asistentu, koji predlaže novo mesto kao događaj i kaže da će koordinatorka zvati oko negovateljica. Prozor „Gde sada živi?" (`MoveDialog`), izbor mesta (`PlaceField`) i spisak mesta (`places.js`) su uklonjeni.
+- **Stranice Profil više nema** (odlučeno 10. 10.): „O kome brinemo", „Glavni kontakt" i „Čemu se nadate" su uklonjeni, a nalog onoga ko je prijavljen (ime, e-mail, telefon) je kartica „Vaši podaci" u Podešavanjima, prva grupa „Nalog" (`src/components/AccountCard.jsx`). U meniju nema stavke „Profil". Kontakt osoba je u kartonu, a čemu se porodica nada na planu.
+- **Karton ne čuva ništa dva puta.** Delovi iz razgovora sa Minnom (lični podaci, svakodnevica, podrška) čitaju se iz istih odgovora iz kojih se pravi plan (`RECORD_PARTS`), pa izmena u kartonu jeste izmena odgovora i plan se pravi ponovo (isti plan, bez verzija: `docs/plan-nege.md`). Samo ono što razgovor ne pita (dijagnoze, lekovi, alergije, pomagala; `HEALTH`) karton čuva sam.
+- **Deo iz odgovora** je kartica sa `Facts`, **bez olovke**. Šta još nije upisano je „-", a koliko toga ima kaže značka u glavi („Nije upisano: 2").
+- **Spisak u „Zdravlju"** je kartica sa redovima (`Item`, §6): ime zapisa, ispod napomena i od kada. **Red se ne otvara i u glavi nema „+"**: zapise upisuje i zaključuje asistent. Prazan spisak to kaže jednom rečenicom.
+- **Bez medicinskih saveta, nigde** (odlučeno 10. 10.): NANA beleži ono što porodica kaže o lekovima, dijagnozama i terapiji, i ništa više. Ni tekst interfejsa ni asistent ne kažu da li neki lek treba uzimati, menjati ili kombinovati, šta nešto „može da bude", ni da li je prepisano kako treba. Na medicinsko pitanje asistent kaže da o tome ne savetuje i da pita lekara ili farmaceuta, pa ponudi ono što sme: da zabeleži, ili da prilagodi negu. Na hitan slučaj kaže da se zove 112. U zapis ne dodaje lek, dozu ni dijagnozu koje porodica nije rekla. Ispod spiskova u „Zdravlju" stoji rečenica da su to beleške (`NOTED_ONLY`). Uputiti na lekara ili partnera (pregled terapije kod interniste) je u redu; to nije savet.
+- **Ništa se ne čuva dok se kuca, i ništa se ne briše.** Svaka izmena ostavlja red u istoriji.
+- **Jedan put za sve: „Prijavi promenu"** (odlučeno 11. 10.; od 10. 10. su bila dva, a ispravka se radila ručno, olovkom). Karton se čita, a ne uređuje: nema olovke na delu, „+" na spisku ni reda koji se otvara. Bilo da se **nešto desilo** (pad, bolnica, snalazi se slabije, novi lek, selidba) ili je **zapis pogrešan** (ime, godine, telefon, odgovor, lek), porodica to kaže asistentu, a on predlaže šta se upisuje. Porodica ne prevodi sama ni događaj ni ispravku u odgovore.
+
+**„Prijavi promenu"** otvara asistenta pored kartona: u razgovoru stoji porodičino „Nešto se promenilo." i gotovo pitanje „Šta se promenilo, ili šta treba ispraviti?" (pitanje je fiksno, bez zahteva modelu; `CHANGE_OPENER` u `src/components/KitAssistant.jsx`). Dalje:
+
+1. Porodica kaže šta se desilo svojim rečima. Asistent postavi dva do tri potpitanja (kada, da li je privremeno, kako se sada kreće i snalazi, ko je uz nju).
+2. Asistent **predlaže, ne upisuje**: kartica „Predlažem da upišemo: …" sa svakim odgovorom (bilo → sada), zapisima za „Zdravlje" (novi lek, dijagnoza, pomagalo) i nivoom krhkosti ako se pomera. Dugmad „Ne sada" i „Upiši u karton".
+3. Posle potvrde: **događaj u istoriji** (naslov šta se desilo, „vi, preko asistenta", od kada i do kada ako je privremeno, svaka izmena, šta je uradilo planu), spiskovi u „Zdravlju" dopunjeni, a **plan nege je izmenjen** (isti plan; šta se u njemu promenilo piše u istoriji kartona i u poruci, a broja verzije nema). Plan i dalje računa isti kod iz odgovora; model samo predlaže odgovore.
+4. **„Šta dalje"** ne piše model, nego se računa iz izmene (`nextSteps` u `src/data/record.js`): promenjena vrsta podrške ide koordinatorki; nedelja nege koja više ne odgovara dogovoru traži nove uslove; nova pitanja koja je nivo otvorio; privremeno stanje se proverava kad istekne. Stoji u narandžastom delu „Plan nege je izmenjen" na vrhu kartona i u redu istorije.
+
+**Ispravka** ide istim putem (odlučeno 11. 10.). Asistent ne pita šta se desilo, nego samo šta treba da piše ako to nije jasno, i predlaže karticu „Predlažem ovu ispravku" sa istim redovima (bilo → sada) i dugmetom „Upiši u karton". U istoriji je to red sa značkom **„Ispravka"** („vi, preko asistenta"), a ne „Promena stanja" (`correction` u `propose_changes`, `writeEvent` u `src/data/record.js`). I ispravljen odgovor pravi plan ponovo; plan zatim pokazuje „Plan je izmenjen" sa „Poništi izmene", a poništavanje **upisuje se u istoriju kartona** („Izmene su poništene"), ne briše red.
+
+**Zapis u „Zdravlju"** asistent dodaje ili zaključuje (`health` u predlogu: `add`, `end`). Zapis koji je sada drugačiji (druga doza) ili je bio pogrešno upisan zaključuje se i upisuje ponovo kako treba, u istom predlogu. Plan se ne piše iz tih spiskova.
+
+**Privremeni boravak negde drugde** (bolnica, rehabilitacija, kod porodice) ne menja adresu: asistent ga čuva kao belešku uz plan, za koordinatorku. U istoriju kartona za sada ne ulazi.
+
+Ručni prozori su uklonjeni 11. 10.: `RecordChangeDialog` (ispravka dela, dva koraka sa „Šta ova ispravka menja"), `RecordEntryDialog` (zapis u „Zdravlju") i `MoveDialog`. Šta izmena radi planu i dalje se računa istim kodom (`recordImpact`) i piše u istoriji i u „Šta dalje".
+
+**Istorija** je jedna kartica: „N stavki · najnovije prvo", pa redovi bez akcije (`Item`): naslov sa značkom vrste („Otvoren", „Upisano", „Promena stanja", „Ispravka", „Zaključeno", „Poništeno", „Sa posete"; `secondary`, a promena stanja `default`), ispod „ko · kada" (`vi`, `vi, preko asistenta`, `Minna` ili ime negovateljice), pa šta tačno, i „Šta dalje" kad ga ima. U nju ulaze i **zapažanja sa poseta** iz radnih naloga (raspoloženje, ishrana, kretanje, beleška), čitana iz poseta, ne prepisana. Prvih 10, pa „Prikaži još" (§8a).
+
+Prototip: karton se ne čuva između prijava (osim onoga što je u odgovorima); obaveštenje negovateljici i poziv koordinatorke su samo rečenice; privremena promena menja plan kao i trajna (ne vraća se sama kad istekne). Asistent radi sa API ključem (`.env.local`).
+
+---
+
 ## 11. Ikonice
 
 **Podešavanja (odlučeno 28. 9.):** dugme sa tekstom nema ikonicu. To važi za stranicu i za sve njene dijaloge i drawer-e (kartica, lozinka, 2FA, kolačići). Izbor jezika pokazuje podloga čipa, bez kvačice.
@@ -498,8 +579,12 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 
 ## 12. Telefon
 
-- **Prelomi:** ≤640px je telefon, ≤900px je uzak ekran (meni postaje fioka).
-- **Paneli sa strane** (asistent, plan) su na uskom ekranu preko celog ekrana, bez radiusa.
+- **Prelomi:** ≤640px je telefon, ≤900px je uzak ekran (meni postaje fioka). Tablet nema svoj prelom: veličine za prst (dugme i polje 44) dobija po pokazivaču (`pointer: coarse`), a raspored po širini, kao i svaki drugi prozor.
+- **Paneli sa strane** (asistent, plan nege, panel iz chata) imaju tri stanja, po tome ima li mesta (odlučeno 11. 10.; `useSidePaneMode` u `src/hooks/use-side-pane.js`, okvir `SideFrame` u `src/components/SidePanel.jsx`):
+  - **pored stranice** (kolona 420, 12 od stranice, gura je), samo dok stranici ostaje **bar 580**. Sa otvorenim menijem to je od 1280 naviše, sa skupljenim od 1104;
+  - **preko stranice**, kad mesta nema, a ekran je širi od 640: fioka zdesna, 420, r24, 12 od ivica prozora, iza nje zatamnjena stranica; klik pored nje je zatvara. Isto kao drawer „Sve posete" (§7);
+  - **preko celog ekrana**, bez radiusa, na telefonu (≤640).
+  Ranije je panel gurao stranicu sve do 901, pa je između 901 i 1180 stranica ostajala široka 200 do 480 i raspadala se; od 641 do 900 je bio razvučen preko celog ekrana.
 - **Na telefonu je svaki prozor bottom sheet (odlučeno 2. 10.):** drawer (`Modal`), modal (`Dialog`) i izbor plana i poruka negovateljici (`PaywallModal`). Dolazi odozdo, visok je koliko mu treba sadržaj, a najviše do 48px od vrha ekrana (tu se vidi stranica). Gornji uglovi r24, dno na ivici ekrana, preko cele širine, padding 16, na vrhu ručica (36×4). Sadržaj se skroluje, a poslednji red dugmadi je zakačen na dno. **Prevlačenjem glave nadole se zatvara** (preko 96px ili brzim pokretom; kraće se vrati). To je shadcn `Drawer` (vaul, `handleOnly`, sa `DrawerHandle` preko glave), a biraju ga sami `Dialog` i `Modal` kad je ekran telefon (`useIsPhone`, `src/hooks/use-phone.js`); prag od 96px računa `useCloseThreshold` (`src/lib/sheet.js`). Novi prozor se pravi od `Dialog` ili `Modal`, pa to dobija sam. Na desktopu je drawer sa strane, a modal u sredini.
 - **Glava sheet-a na telefonu:** naslov je na sredini dugmeta za zatvaranje (44). U drawer-u je glava centrirana po visini; u modalu je dugme 16 od ivice i na sredini glave (eyebrow i naslov, ili avatar sa dva reda, 40), a kod izbora plana na sredini naslova.
 - **Toast** je na telefonu **gore**, širok koliko ekran (16 od ivica), i dolazi odozgo nadole; na desktopu je dole, koliko tekst, do 520, u sredini. Radius 16, ne pun krug.
@@ -516,6 +601,7 @@ Ova aplikacija je samo porodična, pa sve što bi uradile negovateljice i koordi
 - **Negovateljica:** prihvati ili odbij upit (sa razlogom), pošalji ugovor ili nove uslove, povuci predlog, plan posete za sutra ili za pola sata, radni nalog kako je planirano / sat manje / sat više, poseta se nije desila, otkaže posetu, završi saradnju.
 - **Koordinatorka:** reši prijavu (radni nalog: naplati kako je poslato, umanji za sat, ne naplaćuj; plan: plan ostaje, otkaži posetu).
 - Pravila kao u aplikaciji za negovateljice: jedan plan posete u isto vreme; nijedan dok novi uslovi čekaju, dok je prijava otvorena ili dok prošla poseta čeka radni nalog; najviše dva nenaplaćena radna naloga. Zašto plan ne može, drawer kaže ispod dugmeta.
+- **Ceo primer odjednom:** „Popuni primer nege" na vrhu panela pravi stanje posle nedelju dana nege (dve negovateljice, plaćene posete, radni nalog i plan posete koji čekaju), istim funkcijama koje zovu dugmad ispod (`src/data/demoFill.js`). Isto otvara `/?demo&puno`.
 - Drawer je alat za demo, ne deo proizvoda: ne ide u galeriju i ne proverava se skriptom iz §13. Dugmad su `secondary`, u redovima sa razmakom 8.
 
 ---
@@ -563,13 +649,14 @@ Na `/?kartice` skript uzima glavni panel strane negovateljice (`AppPane`, `[data
 
 Skript prepoznaje komponente po njihovom `data-slot` atributu (`[data-slot=card]`, `[data-slot=card-title]`, `[data-slot=badge]`, `[data-slot=avatar]`), a ne po klasama: shadcn komponente klase nemaju. Ako skript ne nađe nijednu karticu (`cards: []`), proveri da li je selektor tačan, inače bi stranica „prošla" a da ništa nije izmereno.
 
-Očekivano: `cards` → `24px/16px`; `titles` → `card-title 14px` i `section-title 12px` (na dodir je naslov kartice 16px). Kartica na tabli negovateljice je r16 sa 12 paddinga i nije `Card`.
+Očekivano: `cards` → `24px/16px`; `titles` → `card-title 16px` i `section-title 12px`. Kartica na tabli negovateljice je r16 sa 12 paddinga i nije `Card`.
 
 ---
 
 ## 14. Zabranjeno — kratko
 
 - druga klasa za karticu, kutija sa ivicom ili senkom u kartici, radius van skale;
+- medicinski savet u tekstu interfejsa ili u odgovoru asistenta: o lekovima, dijagnozama i terapiji se samo beleži ono što porodica kaže (§10a);
 - narandžasta kartica sa sadržajem direktno na narandžastom (sadržaj ide u belu karticu u `Attention`);
 - uvučen citat u kurzivu; tekst kao dugme-link umesto `Button`;
 - velika slova (nigde, ni u onboardingu);

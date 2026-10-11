@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import VisitRow from '../components/family/VisitRow';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardAction, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +6,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import BackButton from '../components/BackButton';
 import ShowMore from '../components/ShowMore';
-import { useShowMore } from '@/hooks/use-show-more';
-import { allVisits, dayOf, monthOf, pl, todayOf } from '../data/familyCare';
+import { useVisitHistory } from '@/hooks/use-visit-history';
+import { pl } from '../data/familyCare';
 
 // Every visit, newest first, across everyone who has come: who came, how long
 // they stayed, how the day went and what it cost. Grouped by month, because
@@ -16,28 +15,7 @@ import { allVisits, dayOf, monthOf, pl, todayOf } from '../data/familyCare';
 // at a time, "Prikaži još" adding the next (docs/patterns.md §8a).
 
 export default function VisitsPage({ care, onDrawer, onBack }) {
-  const [who, setWho] = useState('all');
-  const today = todayOf(care);
-
-  const all = allVisits(care)
-    .filter((v) => v.status !== 'cancelled' || v.cancelledBy)
-    .sort((a, b) => dayOf(b.date, today) - dayOf(a.date, today));
-  const picked = who === 'all' ? all : all.filter((v) => v.caregiver.id === who);
-  const list = useShowMore(picked, { reset: who });
-  const visible = list.visible;
-
-  // what is booked past tomorrow stands on its own at the top: by month it
-  // split the month in two, either side of "Ove nedelje"
-  const tomorrow = dayOf('sutra', today);
-  const groups = [];
-  for (const v of visible) {
-    const month = dayOf(v.date, today) > tomorrow ? 'Zakazano' : monthOf(v.date, today);
-    const last = groups[groups.length - 1];
-    if (last && last.month === month) last.visits.push(v);
-    else groups.push({ month, visits: [v] });
-  }
-
-  const people = care.arrangements.map((a) => ({ id: a.caregiver.id, name: a.caregiver.name, ended: Boolean(a.endedOn) }));
+  const { who, setWho, all, picked, list, groups, people } = useVisitHistory(care);
 
   return (
     <Page>

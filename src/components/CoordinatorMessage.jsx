@@ -33,10 +33,10 @@ export default function CoordinatorMessage({ letter, changed, changeKey }) {
             </Avatar>
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="text-xs font-medium text-primary-700">{from.name}</span>
-              <span className="text-[11px] leading-4 text-primary-700">{from.role}</span>
+              <span className="text-small text-primary-700">{from.role}</span>
             </span>
             {changed && <Badge className="ml-auto">Izmenjeno</Badge>}
-            <span className="flex shrink-0 items-center gap-1 text-[11px] leading-4 text-primary-600">
+            <span className="flex shrink-0 items-center gap-1 text-small text-primary-600">
               {open ? 'Sakrij poruku' : 'Pročitaj poruku'}
               <ChevronDown size={14} strokeWidth={2} className={cn('transition-transform duration-200', open && 'rotate-180')} />
             </span>

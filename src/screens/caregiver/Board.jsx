@@ -43,11 +43,11 @@ function Column({ stage, cards, children }) {
       <header className="shrink-0 px-1 pb-3">
         <p className="flex items-center gap-2 text-sm font-medium text-foreground">
           {stage.title}
-          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-sm bg-elevated-4 px-2 text-[11px] leading-4 text-muted-foreground">
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-sm bg-elevated-4 px-2 text-small text-muted-foreground">
             {cards.length}
           </span>
         </p>
-        <p className="mt-1 text-[11px] leading-4 text-disabled">{stage.note}</p>
+        <p className="mt-1 text-small text-disabled">{stage.note}</p>
       </header>
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-0 [&.is-scrolling::-webkit-scrollbar-thumb]:bg-black/20">
         <AnimatePresence mode="popLayout" initial={false}>
@@ -71,7 +71,7 @@ function Stat({ value, label, note, tone }) {
         {value}
       </span>
       <span className="text-small text-muted-foreground">{label}</span>
-      {note && <span className={cn('text-[11px] leading-4 text-disabled', tone === 'urgent' && 'text-destructive')}>{note}</span>}
+      {note && <span className={cn('text-small text-disabled', tone === 'urgent' && 'text-destructive')}>{note}</span>}
     </div>
   );
 }

@@ -10,7 +10,8 @@ import { Slot } from "radix-ui"
 // A row that opens something has an `ItemLink` for its name: a real button
 // whose ::after stretches over the whole row, so the keyboard and a screen
 // reader get one target. On hover the row goes grey, the lines beside it step
-// aside, the name takes the primary's dark ink and its tags go white. Buttons
+// aside and its tags go white; the name keeps its ink (on the grey ground
+// text stays as it is, never tinted). Buttons
 // and statuses in it (not its tags) sit above the stretch and do only what they say. On a
 // phone an `ItemAction` (the button that says the same as the link) is gone:
 // the row opens on a tap.
@@ -96,7 +97,7 @@ function ItemLink({
     <button
       type="button"
       data-slot="item-link"
-      className={cn(linkClass, "group-hover/item:text-primary-700", className)}
+      className={cn(linkClass, className)}
       {...props} />
   );
 }

@@ -162,9 +162,11 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
             {!unlocked && ' Poruka se šalje čim se pretplatite.'}
           </DialogDescription>
           {/* no label: the sentence above says what goes in it, and the
-              placeholder says it again inside */}
+              placeholder says it again inside. It takes the focus as the
+              dialog opens, so the message can be typed at once. */}
           <Field>
             <TextArea
+              autoFocus
               value={message}
               rows={5}
               onChange={setMessage}

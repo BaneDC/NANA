@@ -21,13 +21,13 @@ export default function CaregiverTopBar({ user }) {
       <span className="flex-1 text-small text-muted-foreground">Negovateljica</span>
 
       {/* who is signed in: the avatar as tall as the name and the e-mail */}
-      <div className="flex items-start gap-3 [--avatar:calc(var(--text-xs-leading)+14px)]">
+      <div className="flex items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]">
         <Avatar>
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-xs font-medium text-foreground">{user.name || 'Gost'}</span>
-          <span className="truncate text-[11px] leading-[14px] text-muted-foreground">{user.email}</span>
+          <span className="truncate text-small text-muted-foreground">{user.email}</span>
         </span>
       </div>
     </div>

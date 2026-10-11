@@ -35,7 +35,7 @@ import {
 // send terms, plan a visit, send a work order, settle a query, and let time
 // pass. Hidden: Ctrl+H opens it, and nothing in it runs on its own.
 
-export default function SimPanel({ open = true, care, onCare, onFlash, onClose }) {
+export default function SimPanel({ open = true, care, onCare, onFlash, onFill, onClose }) {
   const [reason, setReason] = useState(DECLINE_REASONS[0]);
   const run = (fn, said) => {
     onCare(fn);
@@ -50,6 +50,22 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onClose }
       <SheetDescription>
         Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.
       </SheetDescription>
+
+      {/* the whole example at once, for when clicking through it is not the point */}
+      {onFill && (
+        <>
+          <PaneLabel>Primer</PaneLabel>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={onFill}>
+              Popuni primer nege
+            </Button>
+          </div>
+          <PaneHint>
+            Nedelju dana nege u jednom kliku: dve negovateljice, plaćene posete, radni nalog i plan posete koji čekaju na vas.
+            Briše ono što je do sada kliknuto. Isto otvara i adresa /?demo&puno.
+          </PaneHint>
+        </>
+      )}
 
       <PaneLabel>Vreme</PaneLabel>
       <SheetDescription>

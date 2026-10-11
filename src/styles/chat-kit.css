@@ -19,9 +19,9 @@
      composer at 12 while the sent bubble carries the app's 14, so a question
      and its answer were set in different type. All three are the app's body
      size now, on the app's leading. */
-  --ick-answer-size: var(--text-sm-size);
-  --ick-answer-leading: var(--text-sm-leading);
-  --ick-composer-size: var(--text-sm-size);
+  --ick-answer-size: var(--text-chat-size);
+  --ick-answer-leading: var(--text-chat-leading);
+  --ick-composer-size: var(--text-chat-size);
   --ick-ink-rgb: 62 62 62;
   --ick-paper-rgb: 255 255 255;
   --ick-marker-rgb: 252 112 60;
@@ -50,6 +50,37 @@
   min-height: 0;
 }
 
+/* The assistant beside a page (`chat-side`, in SidePanelFrame): a column 420
+   wide, where the kit's own gutter of 32 and its head's 24 on top left the
+   conversation a narrow strip. 12 on the top and the two sides, the page's own
+   margin. The kit writes those as plain numbers, in four places, so each is
+   said again here; `ick-chat-page` and `ick-chat-feed` are its own stable
+   names. Wherever it is a column or a drawer; on a phone (640 and under) it
+   covers the screen and keeps the kit's own gutter and safe-area insets. */
+@media (min-width: 641px) {
+  .nana-chat.chat-side .ick-chat-page {
+    padding-right: var(--spacing-3);
+    padding-left: var(--spacing-3);
+  }
+
+  .nana-chat.chat-side .ick-chat-feed {
+    margin-right: calc(var(--spacing-3) * -1);
+    margin-left: calc(var(--spacing-3) * -1);
+    padding-right: var(--spacing-3);
+    padding-left: var(--spacing-3);
+  }
+
+  .nana-chat.chat-side .ick-chat-page > [class*='ick-header-'] {
+    padding: var(--spacing-3) var(--spacing-3) var(--spacing-6);
+  }
+
+  /* the fade over the composer reaches the pane's edges, as it did */
+  .nana-chat.chat-side [class*='ick-dock-']::before {
+    right: calc(var(--spacing-3) * -1);
+    left: calc(var(--spacing-3) * -1);
+  }
+}
+
 /* The question, once sent, as NANA's own bubble: flat primary with white
    text, the composer's corner, and no glass, rim, highlight or shadow. */
 .nana-chat [class*='ick-surface-'][class*='ick-glass-'] {
@@ -66,6 +97,15 @@
   backdrop-filter: none;
 }
 
+/* Under the mouse the kit lightens its glass (`ick-hovered-`: a 20% white
+   fill and dark ink). Ours is not glass: on the white pane that fill took the
+   bubble away, white text and all. It stays what it is, one fill and one ink. */
+.nana-chat [class*='ick-surface-'][class*='ick-glass-'][class*='ick-hovered-'] {
+  --ick-input-fill: var(--primary);
+  --ick-input-text: var(--primary-foreground);
+  color: var(--primary-foreground);
+}
+
 .nana-chat [class*='ick-surface-'][class*='ick-glass-']::before,
 .nana-chat [class*='ick-surface-'][class*='ick-glass-']::after {
   display: none;
@@ -73,13 +113,13 @@
 
 /* the composer's own leading, on the app's grid rather than the kit's ratio */
 .nana-chat [class*='ick-editor-'] {
-  line-height: var(--text-sm-leading);
+  line-height: var(--text-chat-leading);
 }
 
 .nana-chat [class*='ick-surface-'][class*='ick-glass-'] [class*='ick-editor-'] {
   color: var(--primary-foreground);
-  font-size: var(--text-sm-size);
-  line-height: var(--text-sm-leading);
+  font-size: var(--text-chat-size);
+  line-height: var(--text-chat-leading);
   font-weight: 400;
 }
 
@@ -402,22 +442,41 @@
   padding: 0 var(--ick-nest-pad) var(--ick-nest-pad);
 }
 
-/* The chat's pane, in the shell's own column beside the conversation: the same
-   card as every other pane here, so it reads as a second surface rather than a
-   strip cut off the chat. */
-.chat-pane-wrap {
-  flex-shrink: 0;
-  height: 100%;
-  overflow: hidden;
-}
-
+/* The chat's pane, the same card as every other pane here, so it reads as a
+   second surface rather than a strip cut off the chat. Where it stands is the
+   frame's (`SideFrame` in SidePanel.jsx: beside the conversation, over it, or
+   the whole screen of a phone), said in its `data-mode`; this is the card. */
 .chat-pane-wrap .chat-pane {
   width: 420px;
+  max-width: 100%;
   height: 100%;
-  margin-left: 12px;
   border-radius: var(--radius-3xl);
   background: var(--surface-elevated);
   box-shadow: var(--shadow-container);
+}
+
+.chat-pane-wrap[data-mode='beside'] .chat-pane {
+  margin-left: 12px;
+}
+
+/* over the conversation: in from the right, as the other panels are */
+.chat-pane-wrap[data-mode='over'] .chat-pane {
+  animation: chat-pane-in 0.3s ease-out;
+}
+
+@keyframes chat-pane-in {
+  from {
+    transform: translateX(32px);
+  }
+}
+
+/* a phone: the card fills the screen, 8 from its edges */
+.chat-pane-wrap[data-mode='full'] {
+  padding: var(--spacing-2);
+}
+
+.chat-pane-wrap[data-mode='full'] .chat-pane {
+  width: 100%;
 }
 
 /* a caregiver's name in a card, pressed to open her beside the conversation */
@@ -435,28 +494,3 @@
   text-decoration-color: currentColor;
 }
 
-@media (max-width: 900px) {
-
-.chat-pane-wrap {
-    position: fixed;
-    inset: 0;
-    z-index: 35;
-    width: auto !important;
-    height: auto;
-    padding: var(--spacing-2);
-    background: rgba(42, 42, 42, 0.3);
-    backdrop-filter: blur(2px);
-  }
-
-.chat-pane-wrap .chat-pane {
-    width: 100%;
-    margin-left: 0;
-  }
-}
-
-@media (pointer: coarse) and (max-width: 900px) {
-
-.chat-pane-wrap {
-    bottom: calc(100% - var(--app-height, 100%));
-  }
-}

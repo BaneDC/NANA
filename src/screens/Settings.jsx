@@ -10,6 +10,7 @@ import { Page, PageHeader, PageHeaderText, PageTitle, PageDescription, PageSecti
 import { CheckList, DataList, DataRow } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
+import AccountCard from '../components/AccountCard';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
 import { Field, Password } from '../components/TextField';
@@ -156,17 +157,21 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   const cancelled = Boolean(subscription?.cancelled);
   const until = subscription ? renewsOn(user?.country, subscription.planId, subscription.at ?? Date.now()) : '';
 
-  // Four groups, each under its own title, in the order people come looking:
-  // what they pay, how the account is kept safe, how the app talks to them, and
+  // Five groups, each under its own title, in the order people come looking:
+  // who they are, what they pay, how the account is kept safe, how the app talks to them, and
   // what is kept about them.
   return (
     <Page>
       <PageHeader>
         <PageHeaderText>
           <PageTitle>Podešavanja</PageTitle>
-          <PageDescription>Plaćanje, bezbednost, jezik i obaveštenja, privatnost.</PageDescription>
+          <PageDescription>Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.</PageDescription>
         </PageHeaderText>
       </PageHeader>
+
+      <PageSection title="Nalog">
+        <AccountCard user={user} onSave={onSaveUser} />
+      </PageSection>
 
       <PageSection title="Plaćanje">
         {/* Started and stopped from here. It used to be startable only from the

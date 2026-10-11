@@ -4,8 +4,9 @@ import FamilyDrawer from '../components/family/FamilyDrawer';
 import { buildPlan, caregivers } from '../data/carePlan';
 import { demoAnswers, demoNotes, demoUser } from '../data/demoCase';
 import { reconcile } from '../data/dependencies';
-import { planEntries, seedThreads } from '../data/threads';
+import { planEntries } from '../data/threads';
 import { startCare } from '../data/familyStart';
+import { startRecord } from '../data/record';
 import { dateText, standingWith } from '../data/familyCare';
 import { Button } from '@/components/ui/button';
 import { toggleVariants } from '@/components/ui/toggle';
@@ -16,10 +17,9 @@ import CaregiverPage from './CaregiverPage';
 import VisitsPage from './VisitsPage';
 import RequestsPage from './RequestsPage';
 import FindCaregiver from './FindCaregiver';
-import PlanDetail from './PlanDetail';
-import Plans from './Plans';
+import PlanDetail, { NoPlan } from './PlanDetail';
 import Settings from './Settings';
-import Profile from './Profile';
+import MedicalRecord from './MedicalRecord';
 import CaregiverApp from './caregiver/CaregiverApp';
 
 // Every card the platform has, on one page, for comparing them side by side:
@@ -105,7 +105,9 @@ export function sampleCare() {
         endedOn: null,
         versions: [terms(1, 'active')],
         visits: [
-          visit('g-planned', 'Sutra', 'planned', { dueInHours: 20, notes: 'Doneću spisak za nabavku.' }),
+          // both booked: the first one's plan was seen, the one after it not yet
+          visit('g-planned', 'Sutra', 'planned', { dueInHours: 20, notes: 'Doneću spisak za nabavku.', planOk: true }),
+          visit('g-to-confirm', '14. avgusta', 'planned', { dueInHours: 68, sentOn: 'danas' }),
           visit('g-charging', 'Juče', 'charging', { report: report(), chargesInHours: 3, sentOn: 'juče u 13:10' }),
           visit('g-awaiting', 'Danas', 'awaiting'),
           visit('g-disputed', '7. avgusta', 'disputed', { report: report({ hours: 2 }), queryReason: 'Ostala je dva sata, ne tri.' }),
@@ -218,9 +220,9 @@ function askedCare(status) {
 }
 
 const SECTIONS = [
-  { id: 'moja-nega', title: 'Moja nega', where: 'Čeka na vas, Predstoji, poslednja poseta, Vaše negovateljice' },
-  { id: 'prvi-korak', title: 'Moja nega, pre prvog upita', where: 'Sledeći korak' },
-  { id: 'upit-poslat', title: 'Moja nega, upit poslat', where: 'Čeka se odgovor, pa „Pogledaj upite"' },
+  { id: 'moja-nega', title: 'Moja nega', where: 'Pregled u mreži: Čeka na vas, tri broja (svaki svoja kartica), pa po dve kartice: Predstoji, Vaše negovateljice, Poslednja poseta, Iz plana nege (partneri sa logom), koordinatorka' },
+  { id: 'prvi-korak', title: 'Moja nega, pre prvog upita', where: 'Plan nege je stranica: Minnino pismo, preporuke, negovateljice' },
+  { id: 'upit-poslat', title: 'Moja nega, upit poslat', where: 'Čeka se odgovor, pa „Pogledaj upite"; ispod plan nege' },
   { id: 'svi-odbili', title: 'Moja nega, svi su odbili', where: 'Stigli su odgovori, pa „Pogledaj upite"' },
   { id: 'njena-stranica', title: 'Njena stranica', where: 'Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Prikaži još")' },
   { id: 'nove-uslove', title: 'Njena stranica, novi uslovi čekaju', where: 'Čeka na vas, Novi uslovi' },
@@ -233,11 +235,10 @@ const SECTIONS = [
   { id: 'upiti-prazno', title: 'Moji upiti, prazno', where: 'Još nijedan upit: sledeći korak kao na Mojoj nezi' },
   { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
   { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)' },
-  { id: 'planovi', title: 'Planovi nege', where: 'Lista planova' },
-  { id: 'planovi-prazno', title: 'Planovi nege, prazno', where: 'Nema aktivnog plana' },
-  { id: 'podesavanja', title: 'Podešavanja', where: 'Plaćanje, Bezbednost, Opšte, Privatnost' },
-  { id: 'profil', title: 'Profil', where: 'O kome brinemo, Glavni kontakt, Čemu se nadate' },
-  { id: 'profil-prazno', title: 'Profil, prazno', where: 'Ovde još nema ničega' },
+  { id: 'plan-prazno', title: 'Plan nege, prazno', where: 'Još nema plana' },
+  { id: 'podesavanja', title: 'Podešavanja', where: 'Nalog, Plaćanje, Bezbednost, Opšte, Privatnost' },
+  { id: 'karton', title: 'Medicinski karton', where: 'Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju' },
+  { id: 'karton-prazno', title: 'Medicinski karton, prazno', where: 'Kartona još nema' },
   { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },
 ];
 
@@ -267,11 +268,14 @@ export default function CardGallery() {
   const answers = useMemo(() => reconcile({}, demoAnswers).answers, []);
   const plan = useMemo(() => buildPlan(answers, demoNotes), [answers]);
   const entries = useMemo(
-    () => planEntries({ plan, threads: seedThreads, caregiverCount: caregivers.length, today: '1. oktobra 2026.', answers, notes: demoNotes }),
+    () => planEntries({ plan, caregiverCount: caregivers.length, today: '1. oktobra 2026.', answers, notes: demoNotes }),
     [plan]
   );
   const live = entries.find((e) => e.id === 'live') || entries[0];
   const user = { ...demoUser };
+  const record = useMemo(() => startRecord(true), []);
+  // what the home reads beside the care: the plan's own actions
+  const home = { unlocked: true, onCare: noop, onFlash: noop, onDrawer: noop, onCaregiver: noop, onView: noop, onAskAssistant: noop, onFindCaregiver: noop, onSelectCaregiver: noop, onOpenCaregiver: noop, onUnlock: noop, onOpenPlan: noop, standingOf: () => null };
   const subscription = { planId: 'monthly', at: Date.now() };
   // Her page's drawers open here (the visits, the terms, the overview…), on
   // the sample data, read only: what is decided in them changes nothing.
@@ -308,16 +312,17 @@ export default function CardGallery() {
       </nav>
 
       <Frame {...S('moja-nega')}>
-        <Dashboard care={care} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+        {/* its drawers open here too (every visit, a visit's plan), on the sample */}
+        <Dashboard care={care} user={user} plan={plan} {...home} {...family} />
       </Frame>
       <Frame {...S('prvi-korak')}>
-        <Dashboard care={startCare(user)} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+        <Dashboard care={startCare(user)} user={user} plan={plan} {...home} />
       </Frame>
       <Frame {...S('upit-poslat')}>
-        <Dashboard care={askedCare('pending')} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+        <Dashboard care={askedCare('pending')} user={user} plan={plan} {...home} />
       </Frame>
       <Frame {...S('svi-odbili')}>
-        <Dashboard care={askedCare('declined')} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+        <Dashboard care={askedCare('declined')} user={user} plan={plan} {...home} />
       </Frame>
       <Frame {...S('njena-stranica')}>
         <CaregiverPage care={care} caregiverId="sanna" onBack={noop} {...family} />
@@ -338,7 +343,7 @@ export default function CardGallery() {
         <VisitsPage care={care} onDrawer={noop} onBack={noop} />
       </Frame>
       <Frame {...S('duge-liste')}>
-        <Dashboard care={long} user={user} plan={plan} onDrawer={noop} onCaregiver={noop} onView={noop} onAskAssistant={noop} onFindCaregiver={noop} />
+        <Dashboard care={long} user={user} plan={plan} {...home} />
         <VisitsPage care={long} onDrawer={noop} onBack={noop} />
         <CaregiverPage care={long} caregiverId="sanna" onBack={noop} {...familyLong} />
       </Frame>
@@ -355,7 +360,6 @@ export default function CardGallery() {
         <PlanDetail
           entry={live}
           unlocked
-          onBack={noop}
           onSelectCaregiver={noop}
           onOpenCaregiver={noop}
           onUnlock={noop}
@@ -367,20 +371,17 @@ export default function CardGallery() {
           standingOf={(id) => standingWith(care, id)}
         />
       </Frame>
-      <Frame {...S('planovi')}>
-        <Plans entries={entries} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} />
-      </Frame>
-      <Frame {...S('planovi-prazno')}>
-        <Plans entries={[]} onOpenPlan={noop} onGoToChat={noop} onNewPlan={noop} />
+      <Frame {...S('plan-prazno')}>
+        <NoPlan onGoToChat={noop} />
       </Frame>
       <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
-      <Frame {...S('profil')}>
-        <Profile user={user} answers={answers} care={care} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} onFlash={noop} />
+      <Frame {...S('karton')}>
+        <MedicalRecord answers={answers} plan={plan} care={care} record={record} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />
       </Frame>
-      <Frame {...S('profil-prazno')}>
-        <Profile user={user} answers={{}} onGoToChat={noop} onSaveUser={noop} onEditAnswers={noop} />
+      <Frame {...S('karton-prazno')}>
+        <MedicalRecord answers={{}} plan={null} care={care} record={record} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />
       </Frame>
       <Frame {...S('negovateljica')} tall>
         <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />
