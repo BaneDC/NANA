@@ -123,7 +123,7 @@ Za novi tekst kartice koristi `CardDescription` (u prozoru `DialogDescription`).
 
 **Rečenica u redu** (linija ispod posete, napomena na dnu stranice) je tekst kartice, 14. Kratka oznaka pored broja („rezervisano", „Plaćenih poseta") je sitan tekst, 12.
 
-Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov reda je korak ispod naslova kartice. Kad je stavka sama kartica na stranici (negovateljica na „Pronađi", upit), naslov joj je veličine naslova kartice.
+Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov stavke je korak ispod naslova kartice. **Naslov stavke je uvek 14 medium** (`text-xs font-medium`; odlučeno 11. 10.), i kad je stavka sama kartica na stranici: ime negovateljice na „Pronađi" i u glavi njenih detalja, upit u „Moji upiti", kartica u „Čeka na vas", red u „Vaše negovateljice" i ime partnera u „Ponude partnera". 16 medium je samo ono što imenuje karticu, prozor ili panel (`CardTitle`, naslov prozora, naslov „Čeka na vas"). Ranije je stavka koja je sama kartica imala 16, pa je na početnoj nadjačavala naslove kartica oko sebe.
 
 ---
 
@@ -209,7 +209,6 @@ Pregled je **mreža** (odlučeno 10. 10.; prva verzija je bila jedan stubac), ag
 - **Mreža prati širinu stranice, ne prozora** (`@container`): dve kartice u redu dok je stubac širok bar 672; uže od toga (telefon, ili otvoren asistent pored) jedna ispod druge. Razmak je 12 u oba smera. Kartice u istom redu su iste visine.
 - **Red na početnoj je sažet:** naslov i red ispod njega su **4** jedan od drugog (ime i ono što ide uz njega, §3; na ostalim stranicama je 8, §6), i **desno nema ničega**: ni dugmeta, ni broja, ni strelice. Red ili kartica se otvara klikom bilo gde, a akcija je u detaljima. Iznos je deo rečenice („3 h · 54 € rezervisano"), ne oznaka, da red ostane jedna linija. Ovo je izuzetak od §7 („red ima akciju desno") samo za početnu, jer je kartica široka pola stranice.
 - **Red posete nema avatar** („Predstoji", „Poslednja poseta"; samo na početnoj): red je poseta, rečena danom i satima, a ko dolazi piše u redu ispod. Avatar imaju samo negovateljice (38, 44 na dodir: naslov i red ispod, 4 jedan od drugog).
-- **Ime negovateljice u „Vaše negovateljice" je 16** (`text-sm`, medium; odlučeno 11. 10.), koliko i ime partnera u kartici pored, da dve kartice u istom redu imaju isti glavni red. To je izuzetak od §2 (naslov reda je inače 14): ime je ovde veliko koliko naslov kartice iznad njega. Rečenica ispod ostaje 14, a avatar je 48.
 - **„Ponude partnera"** (ne „Iz plana nege"): red po ponudi, a rečenica šta je to je **na dnu kartice**, sitnim tekstom (ne ispod naslova). Red: prvo partner (logo visok 20, ili ime gde logoa nema) i desno značka `success` „−10% preko Minne", a 8 ispod za šta je (naziv preporuke, otvara plan). Cene i zakazivanje su u planu.
 - **„Sve posete" je drawer** (odlučeno 11. 10.): dugme „Sve posete" (`secondary`, bez strelice, jer ne vodi na drugu stranicu) u glavi kartice „Poslednja poseta", i broj „poseta do sada", otvaraju drawer sa svim posetama (`kind: 'visits'`, `src/components/family/VisitsDrawer.jsx`), da porodica zbog istorije ne mora sa početne. Složen je kao „Šta se desilo" (§7): čipovi ko je dolazio (samo kad ih je više), „N poseta · najnovije prvo", pa posete po mesecima sa brojem pored meseca, isti red posete kao svuda (`VisitRow`), po 10 sa „Prikaži još". Poseta koja ima šta da otvori (plan posete, radni nalog) otvara to umesto spiska. Stranica „Posete" i dalje postoji i čita isti spisak (`useVisitHistory`). Ovo je izuzetak od §8a („lista ne otvara drawer za ostatak"): kartica na početnoj ne pokazuje početak te liste, nego samo poslednju posetu. Dugme i broj se pojavljuju tek **kad je bila bar jedna poseta** (odlučeno 11. 10.; „bila" znači da je poseta gotova, a ne da je plaćena: čeka radni nalog, naplaćuje se, prijavljena je ili je plaćena, `hasBeen` u `src/data/familyCare.js`; isto važi za broj „poseta do sada" i za karticu „Poslednja poseta", koja tada kaže gde je novac, npr. „54 € biće naplaćeno", a radni nalog otvara tek kad ga ima): pre toga bi spisak imao samo ono što već stoji u „Predstoji", a kartica bi govorila „Još nije bilo posete" pored dugmeta „Sve posete".
 - **„Čeka na vas" zadržava svoja dugmad** (§5): to je jedino na početnoj što traži odluku.
@@ -312,16 +311,13 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 
 | Gde | Naslov + red ispod | Visina |
 |---|---|---|
-| Red u kartici (`Item`: chat) | 14 i rečenica | 42 |
-| Red na početnoj (Vaše negovateljice) | 16 i rečenica | 46 |
-| Negovateljica u planu (`CaregiverRow`) | 14 i meta | 38 |
-| Kartica na „Pronađi", glava detalja | 16 i meta | 42 |
-| Kartica u „Čeka na vas", upit (Moji upiti) | 16 i rečenica | 46 |
+| Red u kartici (`Item`: chat, Vaše negovateljice), kartica u „Čeka na vas", upit (Moji upiti) | 14 i rečenica | 42 |
+| Negovateljica u planu (`CaregiverRow`), kartica na „Pronađi", glava detalja | 14 i meta | 38 |
 | Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 48 |
 | Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 36; 40 |
 | Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 36 |
 
-**Uz avatar je naslov → red ispod 2** (odlučeno 11. 10.; od 5. 10. je bilo 8, pa probano 4 i 0). Visine redova (24 ili 20 za naslov, 20 ili 16 ispod) same daju vazduh između dva reda teksta: sa 8 i sa 4 naslov je stajao odvojeno od svoje rečenice, a bez razmaka su se redovi slepili. **Ovo je jedini razmak van mreže od 4 (§1)**, namerno, pa je i avatar uz njega van mreže (46, 42, 38). Kolona teksta i dalje ima razmak 4 za ono što dolazi posle (treći red, stanje, oznake), a naslov mu svojom marginom oduzima 2 (`-mb-0.5`). Red bez avatara (poseta, zapis u kartonu) i dalje ima 8.
+**Uz avatar je naslov → red ispod 2** (odlučeno 11. 10.; od 5. 10. je bilo 8, pa probano 4 i 0). Visine redova (24 ili 20 za naslov, 20 ili 16 ispod) same daju vazduh između dva reda teksta: sa 8 i sa 4 naslov je stajao odvojeno od svoje rečenice, a bez razmaka su se redovi slepili. **Ovo je jedini razmak van mreže od 4 (§1)**, namerno, pa je i avatar uz njega van mreže (42, 38). Kolona teksta i dalje ima razmak 4 za ono što dolazi posle (treći red, stanje, oznake), a naslov mu svojom marginom oduzima 2 (`-mb-0.5`). Red bez avatara (poseta, zapis u kartonu) i dalje ima 8.
 
 Značka u naslovu reda (20) je visoka koliko i red (20), pa naslov ostaje u visini avatara. Kad se naslov prelomi u dva reda, avatar ostaje poravnat sa vrhom. Novo mesto sa avatarom dobija svoj `--avatar` po ovom pravilu; avatar nema fiksnu veličinu.
 
@@ -428,7 +424,7 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 
 **Ocena** se svuda piše isto (`Rating`, `src/components/Rating.jsx`): broj, pa zvezdica, pa broj ocena: „4,9 ★ (64)". Ko još nema ocena je „Nova", bez zvezdice.
 
-**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (16) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. Avatar je visok koliko ime i red ispod njega (§6), 48. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom: „Poklapanje" 4 iznad imena, ocena 8 ispod njega (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
+**Detalji negovateljice** (drawer profila, njen panel u chatu) imaju naslov „Informacije o negovateljici", a ispod njega glavu kao njena kartica na „Pronađi" (`CaregiverHead`, `src/components/CaregiverHead.jsx`): avatar, pa ime (14) i „Poklapanje" pored njega, a ispod ocena, cena, opština i radijus, pa stanje sa porodicom. Avatar je visok koliko ime i red ispod njega (§6), 38. Isto na kartici na „Pronađi"; ono što na telefonu stoji ispod teksta kartice (dugme, stanje) poravnato je sa imenom (`--cg-indent`). **Na telefonu** su „Poklapanje", ime i ocena svako u svom redu, tim redom: „Poklapanje" 4 iznad imena, ocena 8 ispod njega (pored avatara ime i značka nisu stajali u jedan red); avatar ostaje iste visine, poravnat sa prvim redom. Isto u glavi detalja.
 | Cena od–do (`16–20 €/h`) | meta | meta | zaglavlje, „Kada može da dolazi" |
 | Opština (nikad adresa) i radijus | meta | meta | eyebrow |
 | Razlozi poklapanja (do tri) | grupa oznaka „Poklapa se" ispod mete | — | — |

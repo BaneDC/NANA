@@ -140,13 +140,13 @@ export const SaDugmetomUGlavi = {
 export const KojaSeOtvara = {
   name: 'Kartica koja se otvara',
   render: () => (
-    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+2px+var(--text-small-leading))]">
+    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-small-leading))]">
       <Avatar>
         <AvatarFallback>SV</AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="-mb-0.5 flex flex-wrap items-center gap-2">
-          <CardLink onClick={noop} className="text-sm font-medium">
+          <CardLink onClick={noop} className="text-xs font-medium">
             Sanna Virtanen
           </CardLink>
           <Badge>Poklapanje · 97%</Badge>
