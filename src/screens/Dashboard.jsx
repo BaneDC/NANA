@@ -8,6 +8,7 @@ import {
   chargedFor,
   chargingVisit,
   dayOf,
+  confirmPlan,
   firstName,
   hasBeen,
   heldNow,
@@ -16,6 +17,7 @@ import {
   money,
   pendingVersion,
   pl,
+  plansToConfirm,
   services,
   todayOf,
   visitCharge,
@@ -173,6 +175,9 @@ export default function Dashboard({
   onOpenPlan,
 }) {
   const waiting = waitingOnYou(care);
+  // a plan just sent is booked, so it is one of the visits that are coming;
+  // until it is seen it also waits at the top
+  const toConfirm = plansToConfirm(care);
   // soonest first
   const coming = allVisits(care)
     .filter((v) => v.status === 'planned')
@@ -219,7 +224,11 @@ export default function Dashboard({
   const hasTerms = waiting.some((w) => w.kind === 'terms');
   const hasOrder = waiting.some((w) => w.kind === 'work-order' || w.kind === 'extra');
   const waitNote =
-    hasTerms && hasOrder
+    !waiting.length
+      ? toConfirm.length === 1
+        ? `${firstName(toConfirm[0].caregiver.name)} je zakazala posetu. Ako nešto ne odgovara, otvorite plan i javite.`
+        : 'Posete su zakazane. Ako nešto ne odgovara, otvorite plan i javite.'
+      : hasTerms && hasOrder
       ? 'Uslovi moraju biti prihvaćeni pre nego što išta novo počne. Radni nalog je obrnuto - prolazi sam, osim ako vi nešto ne kažete.'
       : hasTerms
         ? 'Ništa novo ne počinje i ništa se ne naplaćuje dok ne odgovorite.'
@@ -288,7 +297,7 @@ export default function Dashboard({
       {/* nobody comes yet: the plan itself, with its next step in it */}
       {thePlan}
 
-      {waiting.length > 0 && (
+      {(waiting.length > 0 || toConfirm.length > 0) && (
         <Attention title="Čeka na vas" sub={waitNote}>
           {waiting.map((w) =>
             w.kind === 'terms' ? (
@@ -340,6 +349,26 @@ export default function Dashboard({
               />
             )
           )}
+          {/* a visit plan: its title opens it, the button says it was seen */}
+          {toConfirm.map((v) => (
+            <OpenCard
+              key={`plan-${v.id}`}
+              initials={v.caregiver.initials}
+              title={`${firstName(v.caregiver.name)} je poslala plan posete za ${v.date.toLowerCase()}`}
+              body={
+                <p className={rowBody}>
+                  {v.time} · {v.hours} h. {money(chargedFor(v.hours, v.rate))} je rezervisano, a naplaćuje se tek posle posete.
+                </p>
+              }
+              action="Video sam"
+              variant="default"
+              onOpen={() => onDrawer({ kind: 'plan', visitId: v.id })}
+              onAct={() => {
+                onCare(confirmPlan(v.id));
+                onFlash('Označeno kao viđeno.');
+              }}
+            />
+          ))}
         </Attention>
       )}
 

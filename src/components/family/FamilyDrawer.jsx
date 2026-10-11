@@ -28,6 +28,7 @@ import {
   answerExtra,
   arrangementOf,
   callOffVisit,
+  confirmPlan,
   canAsk,
   chargedFor,
   confirmVisit,
@@ -430,6 +431,11 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
     onFlash('Poslato koordinatorki. Negovateljica je obaveštena da ne dolazi dok se ne reši.');
     onClose();
   };
+  const confirm = () => {
+    onCare(confirmPlan(visitId));
+    onFlash('Označeno kao viđeno.');
+    onClose();
+  };
   const callOff = () => {
     onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : reason));
     onFlash(late ? `Otkazano. ${money(held)} se naplaćuje - bilo je u poslednjem satu.` : `Otkazano. ${money(held)} se vraća na vašu karticu.`);
@@ -466,6 +472,8 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
         <Button variant="secondary" onClick={() => setMode('query')}>
           Nešto nije u redu
         </Button>
+        {/* a plan just sent is booked already; this only says it was seen */}
+        {v.status === 'planned' && !v.planOk && <Button onClick={confirm}>Video sam</Button>}
       </SheetFooter>
     </Modal>
 
