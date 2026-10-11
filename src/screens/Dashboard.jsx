@@ -99,8 +99,8 @@ function StatCard({ value, label, note, onOpen, className }) {
 }
 
 // A row in a card of the overview (docs/patterns.md §4a): the avatar as tall
-// as the name and the line under it, which sit 4 apart here, as a name and
-// what goes with it do (§3); the text beside it. The name is 16, as a
+// as the name and the line under it, 2 apart, the one gap off the grid
+// (§6); the text beside it. The name is 16, as a
 // partner's is in the card beside this one (`rowName`). The row opens what it is
 // about from anywhere on it and has nothing on its right: half a page wide,
 // there is no room for a button, and the details have the action.
@@ -108,7 +108,7 @@ function Row({ initials, ended, className, children }) {
   return (
     <Item
       className={cn(
-        'items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-1)+var(--text-body-leading))]',
+        'items-start gap-3 [--avatar:calc(var(--text-sm-leading)+2px+var(--text-body-leading))]',
         className
       )}
     >
@@ -122,24 +122,24 @@ function Row({ initials, ended, className, children }) {
 
 const rowTitle = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
 // a caregiver's name: a step up, the size of a partner's name beside it
-const rowName = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-foreground';
+const rowName = '-mb-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-foreground';
 const rowBody = 'text-xs leading-body text-muted-foreground';
 
 // The same, as a card of its own in the tinted tray of what waits on the
 // family: white like every card, its title a card's title, its avatar as tall
-// as that title and the sentence under it, 8 apart (46, 52 under a finger).
+// as that title and the sentence under it, 2 apart (46).
 // What waits needs doing, so its button stays on a phone too: under what the
 // card says, in its column and as wide as it, 16 below (docs/patterns.md §7).
 // `onAct`: what the button does when that is not opening the card (a plan is
 // confirmed from here, and opened by its title).
 function OpenCard({ initials, title, body, action, variant = 'secondary', onOpen, onAct = onOpen }) {
   return (
-    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+var(--text-body-leading))] phone:flex-wrap">
+    <Card className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+2px+var(--text-body-leading))] phone:flex-wrap">
       <Avatar>
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
       <ItemContent className="phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
-        <p className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
+        <p className="-mb-0.5 flex items-center gap-2 text-sm font-medium text-foreground">
           <CardLink onClick={onOpen}>{title}</CardLink>
         </p>
         {body}

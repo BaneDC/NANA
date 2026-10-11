@@ -71,7 +71,7 @@ Interfejs je napravljen od **shadcn/ui** komponenti (`src/components/ui/`), pril
 
 | Pravilo | Vrednost |
 |---|---|
-| Mreža | svaki razmak je deljiv sa 4 |
+| Mreža | svaki razmak je deljiv sa 4 (jedini izuzetak: naslov → red ispod uz avatar je 2, §6) |
 | Radiusi | samo 4 / 8 / 16 / 24 / 32 (`--radius-sm/lg/2xl/3xl/4xl`) |
 | Koncentrični uglovi | **spoljni radius = unutrašnji radius + padding između njih** |
 | Boje | samo tokeni iz `src/styles/tokens.css`, bez hex vrednosti u komponentama |
@@ -97,8 +97,9 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 | Uloga | Klasa | Veličina / red | Težina | Boja |
 |---|---|---|---|---|
 | Naslov stranice | `PageTitle` (`text-base`) | 20 / 28 | medium | primary |
-| Naslov kartice, stavka menija | `CardTitle`, `SidebarMenuButton` (`text-sm`) | 16 / 24 | medium (meni normal) | primary |
+| Naslov kartice | `CardTitle` (`text-sm`) | 16 / 24 | medium | primary |
 | Naslov reda u kartici | `ItemTitle` (`text-xs font-medium`) | 14 / 20 | medium | primary |
+| Stavka bočnog menija | `SidebarMenuButton` (`text-xs`) | 14 / 20 (odlučeno 11. 10.; na 16 je meni bio krupniji od stranice) | normal, izabrana medium | meni (`--nav-text`) |
 | Tekst kartice, podnaslov stranice | `CardDescription`, `DialogDescription`, `PageDescription`, `ItemDescription` (`text-xs leading-body`) | 14 / 20 | normal | secondary |
 | Polje | `TextField` | 14 / 20 (na dodir 16 / 24) | normal | primary |
 | Chat | composer, poruka, odgovor (`--text-chat-*`) | 14 / 20 (na dodir 16 / 24) | normal | primary |
@@ -107,7 +108,7 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 | Značka | `Badge` (`text-badge`) | 12 / 12 (značka ostaje visoka 20) | medium | po stanju |
 | Broj (početna, tabla, cena pretplate) | `text-[24px] leading-8` (tabla 22 / 28) | 24 / 32 | medium | primary |
 
-**Visine:** dugme 36, polje 40, čip i ikonica-dugme 28; na dodir dugme i polje 44 (`--button-size`, `--input-size`, `--chip-size`). Bočni meni je širok 248.
+**Visine:** dugme 36, polje 40, čip i ikonica-dugme 28; na dodir dugme i polje 44 (`--button-size`, `--input-size`, `--chip-size`). Bočni meni je širok 232, a stavka u njemu visoka 36 (na dodir 44).
 
 **Tokeni:**
 - `--text-xs-*` (tekst), `--text-sm-*` (naslovi kartica) i `--text-base-*` (naslov stranice) su isti sa mišem i na dodir.
@@ -307,20 +308,20 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 
 **Kartica upita (odlučeno 5. 10.)** je cela klikabilna (ime je `CardLink`): kad saradnja postoji, otvara njenu stranicu, a inače njen profil. Nema dugme za otvaranje („Pogledaj saradnju" je uklonjeno). Jedino dugme je **„Pitaj ponovo"**, samo na odbijenom upitu kad sme ponovo da joj se piše (`canAsk`), jer šalje novi upit, a ne otvara nešto; zato ostaje i na telefonu. Izuzetak je kartica klijenta na tabli negovateljice: kolona je preuska, pa je sadržaj ispod glave preko cele širine, 20 od nje.
 
-**Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + 8 + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa prati skalu:
+**Avatar uz ime (odlučeno 5. 10., svuda):** avatar je visok koliko naslov i prvi red ispod njega zajedno (red naslova + 2 + prvi red), poravnat po vrhu sa naslovom, 12 od teksta, radius 8 (r4 u kartici table negovateljice, koja je r16 sa 12 paddinga). Visinu daje `--avatar` na mestu gde avatar stoji, iz tokena za tekst, pa prati skalu:
 
 | Gde | Naslov + red ispod | Visina |
 |---|---|---|
-| Red u kartici (`Item`: Moji upiti, chat) | 14 i rečenica | 48 |
-| Red na početnoj (Vaše negovateljice; naslov → red ispod je tu 4, §4a) | 16 i rečenica | 48 |
-| Negovateljica u planu (`CaregiverRow`) | 14 i meta | 44 |
-| Kartica na „Pronađi", glava detalja | 16 i meta | 48 |
-| Kartica u „Čeka na vas", upit (Moji upiti) | 16 i rečenica | 52 |
+| Red u kartici (`Item`: chat) | 14 i rečenica | 42 |
+| Red na početnoj (Vaše negovateljice) | 16 i rečenica | 46 |
+| Negovateljica u planu (`CaregiverRow`) | 14 i meta | 38 |
+| Kartica na „Pronađi", glava detalja | 16 i meta | 42 |
+| Kartica u „Čeka na vas", upit (Moji upiti) | 16 i rečenica | 46 |
 | Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 48 |
 | Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 36; 40 |
 | Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 36 |
 
-**Naslov → red ispod je 8** (odlučeno 5. 10.; bilo je 4, pa je značka pored imena ležala na oceni ispod). Kolona teksta ima razmak 4, a naslov dobija još 4 svoje margine (`mb-1`), pa ostali delovi kolone ostaju gde su. U redu posete, gde kolona nema razmak, naslov ima `mb-2`.
+**Uz avatar je naslov → red ispod 2** (odlučeno 11. 10.; od 5. 10. je bilo 8, pa probano 4 i 0). Visine redova (24 ili 20 za naslov, 20 ili 16 ispod) same daju vazduh između dva reda teksta: sa 8 i sa 4 naslov je stajao odvojeno od svoje rečenice, a bez razmaka su se redovi slepili. **Ovo je jedini razmak van mreže od 4 (§1)**, namerno, pa je i avatar uz njega van mreže (46, 42, 38). Kolona teksta i dalje ima razmak 4 za ono što dolazi posle (treći red, stanje, oznake), a naslov mu svojom marginom oduzima 2 (`-mb-0.5`). Red bez avatara (poseta, zapis u kartonu) i dalje ima 8.
 
 Značka u naslovu reda (20) je visoka koliko i red (20), pa naslov ostaje u visini avatara. Kad se naslov prelomi u dva reda, avatar ostaje poravnat sa vrhom. Novo mesto sa avatarom dobija svoj `--avatar` po ovom pravilu; avatar nema fiksnu veličinu.
 

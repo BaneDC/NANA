@@ -57,7 +57,8 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
         </PageHeaderText>
       </PageHeader>
 
-      <div className="flex items-baseline gap-3 text-small leading-body text-muted-foreground">
+      {/* text outside a card: in line with the text in the cards under it (§3) */}
+      <div className="flex items-baseline gap-3 pl-4 text-small leading-body text-muted-foreground">
         {/* what this page shows, out of everyone */}
         <span>
           {shown.length} od {results.length} negovateljica
@@ -70,10 +71,10 @@ export default function FindCaregiver({ care, onContact, onDrawer, onFlash }) {
           return (
             // The whole card opens her profile — the name is the link, and it
             // covers the card (docs/patterns.md §7). The avatar is as tall as
-            // her name and the line under it, 8 apart (44, 48 under a finger).
+            // her name and the line under it, 2 apart (42).
             <Card
               key={c.id}
-              className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+var(--spacing-2)+16px)] phone:flex-wrap"
+              className="flex-row items-start gap-3 [--avatar:calc(var(--text-sm-leading)+2px+var(--text-small-leading))] phone:flex-wrap"
             >
               <Avatar>
                 <AvatarFallback>{c.initials}</AvatarFallback>

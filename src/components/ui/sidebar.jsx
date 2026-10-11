@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { focusPane } from "@/lib/sheet"
 
 // shadcn's sidebar as NANA's menu (docs/patterns.md §4). With a mouse it is a
-// column beside the page, 248 wide, straight on the warm ground, and it never
+// column beside the page, 232 wide, straight on the warm ground, and it never
 // folds away; on a narrow screen (≤900, `useIsMobile`) it is a drawer from the
 // left on the ground's tint, over the same dimmed page as every pane.
 //
@@ -29,7 +29,7 @@ import { focusPane } from "@/lib/sheet"
 // - No `SidebarInput`, `SidebarMenuSkeleton` or `SidebarSeparator`: nothing
 //   uses them.
 
-const SIDEBAR_WIDTH = "248px"
+const SIDEBAR_WIDTH = "232px"
 const SIDEBAR_WIDTH_MOBILE = "min(280px,84vw)"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
@@ -299,7 +299,7 @@ function SidebarMenuItem({ className, ...props }) {
 // `SidebarMenuAction` beside it (the fold of Care plans) keeps the action's
 // room on its right and tints with it, as one row.
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground outline-hidden transition-[background-color,color] duration-150 group-has-data-[sidebar=menu-action]/menu-item:pr-9 group-has-data-[sidebar=menu-action]/menu-item:pointer-coarse:pr-14 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground group-hover/menu-item:data-[active=true]:bg-sidebar-primary group-hover/menu-item:data-[active=true]:text-sidebar-primary-foreground pointer-coarse:min-h-11 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground outline-hidden transition-[background-color,color] duration-150 group-has-data-[sidebar=menu-action]/menu-item:pr-9 group-has-data-[sidebar=menu-action]/menu-item:pointer-coarse:pr-14 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground group-hover/menu-item:data-[active=true]:bg-sidebar-primary group-hover/menu-item:data-[active=true]:text-sidebar-primary-foreground pointer-coarse:min-h-11 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
