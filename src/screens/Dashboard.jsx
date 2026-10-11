@@ -7,16 +7,15 @@ import {
   allVisits,
   chargedFor,
   chargingVisit,
-  confirmPlan,
   dayOf,
   firstName,
+  hasBeen,
   heldNow,
   lastVersion,
   lastVisit,
   money,
   pendingVersion,
   pl,
-  plansToConfirm,
   services,
   todayOf,
   visitCharge,
@@ -41,6 +40,7 @@ import { cn } from '@/lib/utils';
 import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
 import VisitReport from '../components/family/VisitReport';
+import { amountOf } from '../components/family/VisitRow';
 import PlanContents from '../components/PlanContents';
 import { CoordinatorContact } from '../components/PlanFooterBlocks';
 import { PARTNERS } from '../data/partners';
@@ -173,12 +173,9 @@ export default function Dashboard({
   onOpenPlan,
 }) {
   const waiting = waitingOnYou(care);
-  // a plan just sent waits at the top for a yes; confirmed, it is one of the
-  // visits that are coming
-  const toConfirm = plansToConfirm(care);
   // soonest first
   const coming = allVisits(care)
-    .filter((v) => v.status === 'planned' && v.planOk)
+    .filter((v) => v.status === 'planned')
     .sort((a, b) => dayOf(a.date, todayOf(care)) - dayOf(b.date, todayOf(care)));
   // the next three, then ten more in place (docs/patterns.md §8a)
   const shownComing = useShowMore(coming, { first: 3 });
@@ -197,7 +194,7 @@ export default function Dashboard({
 
   // the overview's own numbers: visits that have been, the next one, money moving
   const running = care.arrangements.length > 0;
-  const done = allVisits(care).filter((v) => v.status === 'paid').length;
+  const done = allVisits(care).filter(hasBeen).length;
   const next = coming[0];
   const since = care.arrangements.map((a) => a.since).find(Boolean);
   const held = heldNow(care);
@@ -222,9 +219,7 @@ export default function Dashboard({
   const hasTerms = waiting.some((w) => w.kind === 'terms');
   const hasOrder = waiting.some((w) => w.kind === 'work-order' || w.kind === 'extra');
   const waitNote =
-    !waiting.length
-      ? 'Potvrdite plan posete ako vam termin odgovara. Ako ne, otvorite plan i javite šta nije u redu.'
-      : hasTerms && hasOrder
+    hasTerms && hasOrder
       ? 'Uslovi moraju biti prihvaćeni pre nego što išta novo počne. Radni nalog je obrnuto - prolazi sam, osim ako vi nešto ne kažete.'
       : hasTerms
         ? 'Ništa novo ne počinje i ništa se ne naplaćuje dok ne odgovorite.'
@@ -293,7 +288,7 @@ export default function Dashboard({
       {/* nobody comes yet: the plan itself, with its next step in it */}
       {thePlan}
 
-      {(waiting.length > 0 || toConfirm.length > 0) && (
+      {waiting.length > 0 && (
         <Attention title="Čeka na vas" sub={waitNote}>
           {waiting.map((w) =>
             w.kind === 'terms' ? (
@@ -345,26 +340,6 @@ export default function Dashboard({
               />
             )
           )}
-          {/* a visit plan: its title opens it, the button says yes to it */}
-          {toConfirm.map((v) => (
-            <OpenCard
-              key={`plan-${v.id}`}
-              initials={v.caregiver.initials}
-              title={`${firstName(v.caregiver.name)} je poslala plan posete za ${v.date.toLowerCase()}`}
-              body={
-                <p className={rowBody}>
-                  {v.time} · {v.hours} h. {money(chargedFor(v.hours, v.rate))} je rezervisano, a naplaćuje se tek posle posete.
-                </p>
-              }
-              action="Potvrdi plan"
-              variant="default"
-              onOpen={() => onDrawer({ kind: 'plan', visitId: v.id })}
-              onAct={() => {
-                onCare(confirmPlan(v.id));
-                onFlash('Plan posete je potvrđen.');
-              }}
-            />
-          ))}
         </Attention>
       )}
 
@@ -383,7 +358,7 @@ export default function Dashboard({
             <StatCard
               value={next ? next.date : '-'}
               label="sledeća poseta"
-              note={next ? `${next.time} · ${firstName(next.caregiver.name)}` : toConfirm.length ? 'plan čeka vašu potvrdu' : 'nijedna nije zakazana'}
+              note={next ? `${next.time} · ${firstName(next.caregiver.name)}` : 'nijedna nije zakazana'}
               onOpen={next ? () => onDrawer({ kind: 'plan', visitId: next.id }) : null}
             />
             <StatCard
@@ -421,17 +396,17 @@ export default function Dashboard({
                   <ShowMore list={shownComing} />
                 </>
               ) : (
-                <CardDescription>
-                  {toConfirm.length ? 'Plan posete čeka vašu potvrdu, gore.' : 'Nijedna poseta nije zakazana.'}
-                </CardDescription>
+                <CardDescription>Nijedna poseta nije zakazana.</CardDescription>
               )}
             </Section>
 
-            {/* every visit is a drawer away, so the family need not leave the home for them */}
+            {/* every visit is a drawer away, so the family need not leave the home
+                for them; only once one has been, like the number above: before
+                that the list holds only what "Predstoji" already shows */}
             <Section
               title="Poslednja poseta"
               action={
-                allVisits(care).length > 0 && (
+                done > 0 && (
                   <Button variant="secondary" onClick={() => onDrawer({ kind: 'visits' })}>
                     Sve posete
                   </Button>
@@ -443,15 +418,20 @@ export default function Dashboard({
                   <Item>
                     <ItemContent>
                       <p className={rowTitle}>
-                        <ItemLink onClick={() => onDrawer({ kind: 'work-order', visitId: last.id })}>
-                          {last.date} · {last.time}
-                        </ItemLink>
+                        {/* before her work order there is nothing to open */}
+                        {last.report ? (
+                          <ItemLink onClick={() => onDrawer({ kind: 'work-order', visitId: last.id })}>
+                            {last.date} · {last.time}
+                          </ItemLink>
+                        ) : (
+                          `${last.date} · ${last.time}`
+                        )}
                       </p>
                       <p className={rowBody}>
-                        {last.caregiver.name} · {last.hours} h · {money(visitCharge(last))} naplaćeno
+                        {last.caregiver.name} · {last.hours} h · {amountOf(last).amount} {amountOf(last).note}
                       </p>
                       {/* how she was, and what was written; what was done is in the work order */}
-                      <VisitReport report={last.report} first={firstName(last.caregiver.name)} className="mt-2" />
+                      {last.report && <VisitReport report={last.report} first={firstName(last.caregiver.name)} className="mt-2" />}
                     </ItemContent>
                   </Item>
                 </ItemGroup>

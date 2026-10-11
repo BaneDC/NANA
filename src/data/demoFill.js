@@ -1,4 +1,4 @@
-import { agreeTerms, allVisits, askCaregiver, confirmPlan, confirmVisit, linkCard, seeAnswers } from './familyCare';
+import { agreeTerms, allVisits, askCaregiver, confirmVisit, linkCard, seeAnswers } from './familyCare';
 import { requestMessage, startCare } from './familyStart';
 import { answerRequest, passTime, planVisit, sendTerms, sendWorkOrder } from './sim';
 
@@ -11,7 +11,7 @@ import { answerRequest, passTime, planVisit, sendTerms, sendWorkOrder } from './
 //
 // Two caregivers come. Sanna: three visits paid (one an hour short, with what
 // she flagged), a work order waiting on the family, nothing booked after it.
-// Päivi: one visit paid, and a plan for the next one waiting for a yes. A
+// Päivi: one visit paid, and a plan for the next one, booked. A
 // third was asked and has not answered. The card is saved.
 
 // she was asked, said yes, sent her terms, and they were agreed
@@ -27,7 +27,6 @@ const visits = (id, { kind = 'as-planned', settle = true } = {}) => (c) => {
   let next = planVisit(id)(c);
   const v = allVisits(next).find((x) => x.caregiver.id === id && x.status === 'planned');
   if (!v) return c;
-  next = confirmPlan(v.id)(next);
   // the clock, to an hour after she has left
   next = passTime(v.day * 24 + v.start + v.hours + 1 - next.now)(next);
   next = sendWorkOrder(v.id, kind)(next);
@@ -45,7 +44,7 @@ export function fillCare(care) {
     visits('sanna', { kind: 'less' }),
     visits('paivi'),
     visits('sanna'),
-    // what waits on the family: her work order, and Päivi's next plan
+    // what waits on the family: her work order; Päivi's next plan is booked
     visits('sanna', { settle: false }),
     planVisit('paivi'),
     seeAnswers,

@@ -105,8 +105,8 @@ export function sampleCare() {
         endedOn: null,
         versions: [terms(1, 'active')],
         visits: [
-          // booked: its plan was confirmed; the one after it still waits for a yes
-          visit('g-planned', 'Sutra', 'planned', { dueInHours: 20, notes: 'Doneću spisak za nabavku.', planOk: true }),
+          // two booked: a plan is booked as soon as it arrives
+          visit('g-planned', 'Sutra', 'planned', { dueInHours: 20, notes: 'Doneću spisak za nabavku.' }),
           visit('g-to-confirm', '14. avgusta', 'planned', { dueInHours: 68, sentOn: 'danas' }),
           visit('g-charging', 'Juče', 'charging', { report: report(), chargesInHours: 3, sentOn: 'juče u 13:10' }),
           visit('g-awaiting', 'Danas', 'awaiting'),
