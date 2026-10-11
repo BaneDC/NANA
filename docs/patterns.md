@@ -108,7 +108,7 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 | Značka | `Badge` (`text-badge`) | 12 / 12 (značka ostaje visoka 20) | medium | po stanju |
 | Broj (početna, tabla, cena pretplate) | `text-[24px] leading-8` (tabla 22 / 28) | 24 / 32 | medium | primary |
 
-**Visine:** dugme 36, polje 40, čip i ikonica-dugme 28; na dodir dugme i polje 44 (`--button-size`, `--input-size`, `--chip-size`). Bočni meni je širok 232, a stavka u njemu visoka 36 (na dodir 44).
+**Visine:** dugme 36, polje 40, čip i ikonica-dugme 28; na dodir dugme i polje 44 (`--button-size`, `--input-size`, `--chip-size`). Bočni meni je širok 232 (skupljen 60, na dodir 68; §4), a stavka u njemu visoka 36 (na dodir 44).
 
 **Tokeni:**
 - `--text-xs-*` (tekst), `--text-sm-*` (naslovi kartica) i `--text-base-*` (naslov stranice) su isti sa mišem i na dodir.
@@ -175,6 +175,7 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **Ikonica-dugme u glavi stranice** (`secondary`, `size="icon"`, u `PageActions`: „Pošalji plan", „Pregled", „Šta se desilo") je visoka koliko dugme sa tekstom pored nje (36, na dodir 44), a ne koliko čip (28).
 - **„Nazad" je `BackButton`** (`src/components/BackButton.jsx`): naše `ghost` dugme sa strelicom, uvek prvo na stranici, pre `PageHeader`. **16 iznad i 16 ispod** (stranica tada ima 16 gore umesto 24; ispod je gap stranice 12 i 4 dugmeta). Strelica je 16 od leve ivice kartica, na liniji naslova ispod nje (odlučeno 10. 10.; bila je na ivici stranice). Nema drugog stila za „nazad" (stari „nazad" link je uklonjen).
 - **Bočni meni:** „Novi razgovor" je dugme (`secondary`, cela širina, sa „+") i jedino on započinje razgovor. Ispod njega je **„Istorija razgovora"** (odlučeno 2. 10.; ranije „Razgovor"): ceo red samo otvara i zatvara spisak ranijih razgovora i ne vodi nigde, a strelica je na kraju reda. Po defaultu je zatvoren. Prazan spisak kaže „Još nema razgovora.". „Moji upiti" je svoja stavka, sa brojem upita koji čekaju odgovor.
+- **Meni se skuplja u traku sa ikonicama** (odlučeno 11. 10.; do tada se nije skupljao). Dugme je u glavi menija, desno od logoa („Skupi meni" / „Proširi meni", `ghost`, ikonica), a radi i `Ctrl/⌘ B`. Skupljen je širok 60 (68 na dodir): samo ikonice, svaka kvadrat 36 (44 na dodir) sa imenom stavke u `title` i `aria-label`; izabrana je i dalje obojena. „Novi razgovor" je „+" (`secondary`, kvadrat), logo se ne vidi, a broj uz stavku je u njenom gornjem desnom uglu. „Istorija razgovora" u traci nema gde da otvori spisak, pa klik na nju širi meni i otvara ga. Ko je prijavljen je samo avatar (i dalje otvara karton). Stanje se **ne pamti** posle osvežavanja: pamćenje bi bilo još jedan zapis u pregledaču, o čemu odlučuju kolačići. Na uskom ekranu (≤900) meni je fioka i ne skuplja se.
 - **„Pomoć" u bočnom meniju** (odlučeno 11. 10.) stoji iznad „Podešavanja" i nije stranica: otvara modal „Pomoć" (`src/components/HelpDialog.jsx`) sa kontaktom koordinatorke, ista tri reda kao u kartici na početnoj i na planu (`CoordinatorRows` u `src/components/PlanFooterBlocks.jsx`): WhatsApp, telefon i e-mail, svaki red je link. Stavka se zato nikad ne boji kao izabrana, a modal nema footer: zatvara se na „×". Ovo je modal iako ne traži akciju (§7 bi dao drawer), jer je kratak i do njega se dolazi sa bilo koje stranice.
 - **Stranica iz bočnog menija nema „nazad".** „Nazad" imaju samo stranice koje se otvaraju iz druge stranice (njena stranica, sve posete, plan).
 - **Akcija koja je u bočnom meniju ne ponavlja se u glavi stranice** („Pronađi negovateljicu" nije u Mojoj nezi ni u Mojim upitima). Izuzetak je prazna stranica ili kartica „Sledeći korak", gde je to jedini sledeći korak.
@@ -578,8 +579,12 @@ Prototip: karton se ne čuva između prijava (osim onoga što je u odgovorima); 
 
 ## 12. Telefon
 
-- **Prelomi:** ≤640px je telefon, ≤900px je uzak ekran (meni postaje fioka).
-- **Paneli sa strane** (asistent, plan) su na uskom ekranu preko celog ekrana, bez radiusa.
+- **Prelomi:** ≤640px je telefon, ≤900px je uzak ekran (meni postaje fioka). Tablet nema svoj prelom: veličine za prst (dugme i polje 44) dobija po pokazivaču (`pointer: coarse`), a raspored po širini, kao i svaki drugi prozor.
+- **Paneli sa strane** (asistent, plan nege, panel iz chata) imaju tri stanja, po tome ima li mesta (odlučeno 11. 10.; `useSidePaneMode` u `src/hooks/use-side-pane.js`, okvir `SideFrame` u `src/components/SidePanel.jsx`):
+  - **pored stranice** (kolona 420, 12 od stranice, gura je), samo dok stranici ostaje **bar 580**. Sa otvorenim menijem to je od 1280 naviše, sa skupljenim od 1104;
+  - **preko stranice**, kad mesta nema, a ekran je širi od 640: fioka zdesna, 420, r24, 12 od ivica prozora, iza nje zatamnjena stranica; klik pored nje je zatvara. Isto kao drawer „Sve posete" (§7);
+  - **preko celog ekrana**, bez radiusa, na telefonu (≤640).
+  Ranije je panel gurao stranicu sve do 901, pa je između 901 i 1180 stranica ostajala široka 200 do 480 i raspadala se; od 641 do 900 je bio razvučen preko celog ekrana.
 - **Na telefonu je svaki prozor bottom sheet (odlučeno 2. 10.):** drawer (`Modal`), modal (`Dialog`) i izbor plana i poruka negovateljici (`PaywallModal`). Dolazi odozdo, visok je koliko mu treba sadržaj, a najviše do 48px od vrha ekrana (tu se vidi stranica). Gornji uglovi r24, dno na ivici ekrana, preko cele širine, padding 16, na vrhu ručica (36×4). Sadržaj se skroluje, a poslednji red dugmadi je zakačen na dno. **Prevlačenjem glave nadole se zatvara** (preko 96px ili brzim pokretom; kraće se vrati). To je shadcn `Drawer` (vaul, `handleOnly`, sa `DrawerHandle` preko glave), a biraju ga sami `Dialog` i `Modal` kad je ekran telefon (`useIsPhone`, `src/hooks/use-phone.js`); prag od 96px računa `useCloseThreshold` (`src/lib/sheet.js`). Novi prozor se pravi od `Dialog` ili `Modal`, pa to dobija sam. Na desktopu je drawer sa strane, a modal u sredini.
 - **Glava sheet-a na telefonu:** naslov je na sredini dugmeta za zatvaranje (44). U drawer-u je glava centrirana po visini; u modalu je dugme 16 od ivice i na sredini glave (eyebrow i naslov, ili avatar sa dva reda, 40), a kod izbora plana na sredini naslova.
 - **Toast** je na telefonu **gore**, širok koliko ekran (16 od ivica), i dolazi odozgo nadole; na desktopu je dole, koliko tekst, do 520, u sredini. Radius 16, ne pun krug.

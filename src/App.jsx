@@ -650,7 +650,7 @@ export default function App() {
           />
         )}
         {rightPanel === 'copilot' && (
-          <SidePanelFrame key="copilot-panel">
+          <SidePanelFrame key="copilot-panel" onClose={() => setRightPanel(null)}>
             <KitAssistant id={conversation} ctx={chatCtx} title="Asistent" actions={panelActions} className="chat-side" />
           </SidePanelFrame>
         )}

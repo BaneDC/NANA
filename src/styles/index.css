@@ -162,6 +162,11 @@
    Tailwind's own. */
 @custom-variant phone (@media (max-width: 640px));
 @custom-variant narrow (@media (max-width: 900px));
+/* Inside the menu folded to a strip of icons (docs/patterns.md §4): the shell
+   says so (`SidebarProvider`), and a row, its count and the card of who is
+   signed in each draw themselves smaller by it. Never in the drawer, which is
+   outside the shell and is never folded. */
+@custom-variant menu-folded (&:is([data-slot=sidebar-wrapper][data-collapsed=true] *));
 
 /* Radius on our scale only: 4, 8, 16, 24, 32. Tailwind's own `md` (6) and
    `xl` (12) are off it, and shadcn reaches for `md` everywhere, so both are

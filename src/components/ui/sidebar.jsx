@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cva } from "class-variance-authority"
-import { MenuIcon } from "lucide-react"
+import { MenuIcon, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { Slot } from "radix-ui"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
@@ -12,15 +12,18 @@ import { Button } from "@/components/ui/button"
 import { focusPane } from "@/lib/sheet"
 
 // shadcn's sidebar as NANA's menu (docs/patterns.md §4). With a mouse it is a
-// column beside the page, 232 wide, straight on the warm ground, and it never
-// folds away; on a narrow screen (≤900, `useIsMobile`) it is a drawer from the
-// left on the ground's tint, over the same dimmed page as every pane.
+// column beside the page, 232 wide, straight on the warm ground; it can be
+// folded to a strip of icons, 60 wide (11. 10.; until then it never folded).
+// On a narrow screen (≤900, `useIsMobile`) it is a drawer from the left on the
+// ground's tint, over the same dimmed page as every pane, and does not fold.
 //
 // What changed from shadcn's file, and why:
-// - The desktop sidebar is in the page's flow, not fixed, and has no collapsed
-//   state: the menu is always there. So no rail, no gap, no cookie (a cookie
-//   the visitor never agreed to, for a state that cannot change) and no
-//   tooltips for the icon-only state. `Ctrl/⌘ B` still opens the drawer.
+// - The desktop sidebar is in the page's flow, not fixed. Folded, it is the
+//   same column made narrow (`data-collapsed` on the shell, the `menu-folded:`
+//   variant), not shadcn's rail and gap. The state is kept while the app is
+//   open and no longer: a cookie for it is one the visitor never agreed to.
+//   An icon says what it is in `title`, not in a tooltip of ours. `Ctrl/⌘ B`
+//   folds the column, and on a narrow screen opens the drawer.
 // - The drawer is drawn here rather than through our `SheetContent`, which is
 //   the floating pane on the right (§7).
 // - Rows, sub rows and the count are drawn by §4: rows 8 by 12, 8 corners,
@@ -30,6 +33,13 @@ import { focusPane } from "@/lib/sheet"
 //   uses them.
 
 const SIDEBAR_WIDTH = "232px"
+// folded: the 36 of an icon's square and the 12 each side of it (44 and 68
+// under a finger)
+const SIDEBAR_WIDTH_FOLDED = "60px"
+const SIDEBAR_WIDTH_FOLDED_TOUCH = "68px"
+// the same in numbers, for what has to know how much room the menu takes
+// (use-side-pane.js)
+export const MENU_WIDTH = { open: 232, folded: 60, foldedTouch: 68 }
 const SIDEBAR_WIDTH_MOBILE = "min(280px,84vw)"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
@@ -52,9 +62,13 @@ function SidebarProvider({
 }) {
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
+  // folded to icons: only the column, never the drawer
+  const [folded, setFolded] = React.useState(false)
+  const collapsed = !isMobile && folded
 
   const toggleSidebar = React.useCallback(() => {
     if (isMobile) setOpenMobile((open) => !open)
+    else setFolded((is) => !is)
   }, [isMobile])
 
   // Adds a keyboard shortcut to toggle the sidebar.
@@ -78,17 +92,22 @@ function SidebarProvider({
       isMobile,
       openMobile,
       setOpenMobile,
+      collapsed,
+      setCollapsed: setFolded,
       toggleSidebar,
     }),
-    [isMobile, openMobile, toggleSidebar]
+    [isMobile, openMobile, collapsed, toggleSidebar]
   )
 
   return (
     <SidebarContext.Provider value={contextValue}>
       <div
         data-slot="sidebar-wrapper"
+        data-collapsed={collapsed}
         style={{
           "--sidebar-width": SIDEBAR_WIDTH,
+          "--sidebar-width-folded": SIDEBAR_WIDTH_FOLDED,
+          "--sidebar-width-folded-touch": SIDEBAR_WIDTH_FOLDED_TOUCH,
           ...style,
         }}
         className={cn("group/sidebar-wrapper flex w-full", className)}
@@ -146,7 +165,10 @@ function Sidebar({
       data-sidebar="sidebar"
       aria-label={label}
       className={cn(
-        "mr-3 h-full w-(--sidebar-width) shrink-0 rounded-3xl",
+        // the width moves; what is in the column changes at once, so nothing
+        // in it may wrap or show past its edge on the way
+        "mr-3 h-full w-(--sidebar-width) shrink-0 overflow-hidden rounded-3xl whitespace-nowrap transition-[width] duration-200 ease-out",
+        "menu-folded:w-(--sidebar-width-folded) pointer-coarse:menu-folded:w-(--sidebar-width-folded-touch)",
         className
       )}
       {...props}
@@ -184,6 +206,36 @@ function SidebarTrigger({
     >
       <MenuIcon size={18} strokeWidth={1.75} />
       <span className="sr-only">Otvori meni</span>
+    </Button>
+  )
+}
+
+// The button that folds the column to icons and opens it again, in the menu's
+// head. Not drawn in the drawer, which closes instead.
+function SidebarFold({ className, ...props }) {
+  const { isMobile, collapsed, toggleSidebar } = useSidebar()
+  if (isMobile) return null
+  const label = collapsed ? "Proširi meni" : "Skupi meni"
+  const Icon = collapsed ? PanelLeftOpen : PanelLeftClose
+
+  return (
+    <Button
+      data-sidebar="fold"
+      data-slot="sidebar-fold"
+      variant="ghost"
+      size="icon"
+      className={cn(
+        "shrink-0 text-(--nav-text-muted) hover:bg-(--nav-hover) hover:text-(--nav-text)",
+        "menu-folded:size-9 pointer-coarse:menu-folded:size-11",
+        className
+      )}
+      aria-label={label}
+      title={label}
+      aria-expanded={!collapsed}
+      onClick={toggleSidebar}
+      {...props}
+    >
+      <Icon size={16} strokeWidth={1.75} />
     </Button>
   )
 }
@@ -299,7 +351,7 @@ function SidebarMenuItem({ className, ...props }) {
 // `SidebarMenuAction` beside it (the fold of Care plans) keeps the action's
 // room on its right and tints with it, as one row.
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-muted-foreground outline-hidden transition-[background-color,color] duration-150 group-has-data-[sidebar=menu-action]/menu-item:pr-9 group-has-data-[sidebar=menu-action]/menu-item:pointer-coarse:pr-14 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground group-hover/menu-item:data-[active=true]:bg-sidebar-primary group-hover/menu-item:data-[active=true]:text-sidebar-primary-foreground pointer-coarse:min-h-11 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs menu-folded:size-9 menu-folded:justify-center menu-folded:p-0 pointer-coarse:menu-folded:size-11 text-muted-foreground outline-hidden transition-[background-color,color] duration-150 group-has-data-[sidebar=menu-action]/menu-item:pr-9 group-has-data-[sidebar=menu-action]/menu-item:pointer-coarse:pr-14 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground group-hover/menu-item:data-[active=true]:bg-sidebar-primary group-hover/menu-item:data-[active=true]:text-sidebar-primary-foreground pointer-coarse:min-h-11 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -369,6 +421,8 @@ function SidebarMenuBadge({
       data-sidebar="menu-badge"
       className={cn(
         "pointer-events-none absolute top-1/2 right-3 min-w-4 -translate-y-1/2 rounded-lg bg-primary px-1 text-center text-small font-medium text-primary-foreground tabular-nums select-none",
+        // folded: on the corner of the icon's square
+        "menu-folded:top-0 menu-folded:-right-1 menu-folded:-translate-y-1",
         className
       )}
       {...props}
@@ -432,6 +486,7 @@ function SidebarMenuSubButton({
 export {
   Sidebar,
   SidebarContent,
+  SidebarFold,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,

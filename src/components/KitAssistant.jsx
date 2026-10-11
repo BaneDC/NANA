@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { motion } from 'motion/react';
 import { ArtifactPane, ChatExperience, useChatTurns } from 'inline-chat-kit';
 import 'inline-chat-kit/styles.css';
 import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';
 import { createClient } from '../lib/claudeChat';
 import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
+import { SideFrame } from './SidePanel';
 import { describeChanges } from '../data/planEdits';
 import { healthRows } from '../data/record';
 import { caregivers } from '../data/carePlan';
@@ -368,13 +368,7 @@ export function ChatPane({ openId, ctx, onClose }) {
   const pane = paneFor(openId, ctx.current);
   if (!pane) return null;
   return (
-    <motion.div
-      className="chat-pane-wrap"
-      initial={{ width: 0, opacity: 0 }}
-      animate={{ width: 432, opacity: 1 }}
-      exit={{ width: 0, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 32 }}
-    >
+    <SideFrame className="chat-pane-wrap" onClose={onClose}>
       <ArtifactPane
         className="chat-pane"
         title={pane.title}
@@ -386,7 +380,7 @@ export function ChatPane({ openId, ctx, onClose }) {
       >
         {pane.children}
       </ArtifactPane>
-    </motion.div>
+    </SideFrame>
   );
 }
 
