@@ -67,12 +67,15 @@ import { PARTNERS } from '../data/partners';
 // goes through on its own unless someone says it was wrong. The note under
 // "Waiting for you" says which, so neither reads like the other.
 
-// A card of the overview: its title, a sentence if it needs one, and rows.
-function Section({ title, sub, children }) {
+// A card of the overview: its title, what opens beside it (rows under a head
+// with a button start 8 lower, docs/patterns.md §7), a sentence if it needs
+// one, and rows.
+function Section({ title, action, sub, children }) {
   return (
-    <Card>
+    <Card className={cn(action && '[&>[data-slot=item-group]]:mt-2')}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        {action && <CardAction>{action}</CardAction>}
       </CardHeader>
       {sub && <CardDescription>{sub}</CardDescription>}
       {children}
@@ -374,7 +377,7 @@ export default function Dashboard({
               value={done}
               label={`${pl(done, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '')} do sada`}
               note={since ? `od ${since}` : 'još nije bilo posete'}
-              onOpen={done ? () => onView('visits') : null}
+              onOpen={done ? () => onDrawer({ kind: 'visits' }) : null}
             />
             <StatCard
               value={next ? next.date : '-'}
@@ -423,7 +426,17 @@ export default function Dashboard({
               )}
             </Section>
 
-            <Section title="Poslednja poseta">
+            {/* every visit is a drawer away, so the family need not leave the home for them */}
+            <Section
+              title="Poslednja poseta"
+              action={
+                allVisits(care).length > 0 && (
+                  <Button variant="secondary" onClick={() => onDrawer({ kind: 'visits' })}>
+                    Sve posete
+                  </Button>
+                )
+              }
+            >
               {last ? (
                 <ItemGroup>
                   <Item>

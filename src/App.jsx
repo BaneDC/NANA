@@ -34,6 +34,7 @@ import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { askCaregiver, canAsk, dateOfToday, firstName, plansToConfirm, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { requestMessage, startCare, withAnswers } from './data/familyStart';
+import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
 import { buildPlan, caregivers } from './data/carePlan';
@@ -50,6 +51,9 @@ const formatToday = () => formatDate(Date.now());
 // everything after it without talking the conversation through each time.
 const DEMO = wantsDemo();
 const demoStart = DEMO ? reconcile({}, demoAnswers).answers : null;
+// /?demo&puno opens it already a week into care (src/data/demoFill.js), so a
+// reload does not mean clicking through the simulation again.
+const FILLED = DEMO && new URLSearchParams(window.location.search).has('puno');
 
 // What registration already told us about the person writing, as the answer the
 // onboarding would otherwise ask for, so Minna does not ask it again.
@@ -71,7 +75,11 @@ export default function App() {
   // The one person this account cares for (src/data/person.js): her answers and
   // notes, the plan built from them, what changed in it, and the care around
   // her. Everything below reads her from here, so nothing has a second source.
-  const [person, setPerson] = useState(() => (DEMO ? demoPerson(demoStart, demoNotes, demoUser) : newPerson()));
+  const [person, setPerson] = useState(() => {
+    if (!DEMO) return newPerson();
+    const p = demoPerson(demoStart, demoNotes, demoUser);
+    return FILLED ? { ...p, care: fillCare(withAnswers(p.care, demoStart, demoUser)) } : p;
+  });
   // a part of her set on its own, as a value or from the one before
   const setPart = useCallback(
     (key) => (next) => setPerson((p) => ({ ...p, [key]: typeof next === 'function' ? next(p[key]) : next })),
@@ -86,9 +94,9 @@ export default function App() {
   // rebuilt when what it is built from changes, not on every change to her care
   const { planMade } = person;
   const plan = useMemo(() => planOf({ planMade, answers, notes }), [planMade, answers, notes]);
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(FILLED);
   // which plan they paid for and when, so settings can say what they are on
-  const [subscription, setSubscription] = useState(null); // { planId, at }
+  const [subscription, setSubscription] = useState(FILLED ? { planId: 'monthly', at: Date.now() } : null); // { planId, at }
   // one slot on the right: the care plan or the assistant, never both
   const [rightPanel, setRightPanel] = useState(null); // null | 'plan' | 'copilot'
   // null when closed, otherwise { caregiver } — a caregiver means the user tapped one
@@ -730,6 +738,16 @@ export default function App() {
             care={care}
             onCare={setCare}
             onFlash={say}
+            // the whole example in one go, with the subscription it needs
+            onFill={() => {
+              setCare(fillCare);
+              setUnlocked(true);
+              setSubscription((x) => x || { planId: 'monthly', at: Date.now() });
+              setDrawer(null);
+              setView('dashboard');
+              setSim(false);
+              say('Primer je popunjen: dve negovateljice, posete, i dve stvari koje čekaju na vas.');
+            }}
             onClose={() => setSim(false)}
           />
       )}

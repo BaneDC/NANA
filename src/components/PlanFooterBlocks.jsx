@@ -14,16 +14,16 @@ import { Item, ItemGroup } from '@/components/ui/item';
 //
 // Each way to reach her is a row that is a link (docs/patterns.md §6): the
 // icon, what it is, and the number or address on the right; on hover the row
-// goes grey and what it is takes the primary's dark ink.
+// goes grey, and its text stays as it is.
 function ContactRow({ href, icon: Icon, label, value }) {
   return (
     <Item
       asChild
-      className="group/contact items-center gap-2 no-underline hover:bg-muted hover:before:opacity-0 pointer-coarse:min-h-11 [[data-slot=item]:hover+&]:before:opacity-0"
+      className="items-center gap-2 no-underline hover:bg-muted hover:before:opacity-0 pointer-coarse:min-h-11 [[data-slot=item]:hover+&]:before:opacity-0"
     >
       <a href={href}>
         <Icon size={14} strokeWidth={1.75} className="shrink-0 text-primary-600" />
-        <span className="flex-1 text-xs text-muted-foreground group-hover/contact:text-primary-700">{label}</span>
+        <span className="flex-1 text-xs text-muted-foreground">{label}</span>
         <span className="text-xs font-medium text-foreground">{value}</span>
       </a>
     </Item>

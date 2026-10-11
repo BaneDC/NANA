@@ -312,7 +312,8 @@ export default function CardGallery() {
       </nav>
 
       <Frame {...S('moja-nega')}>
-        <Dashboard care={care} user={user} plan={plan} {...home} />
+        {/* its drawers open here too (every visit, a visit's plan), on the sample */}
+        <Dashboard care={care} user={user} plan={plan} {...home} {...family} />
       </Frame>
       <Frame {...S('prvi-korak')}>
         <Dashboard care={startCare(user)} user={user} plan={plan} {...home} />

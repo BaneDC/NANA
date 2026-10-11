@@ -10,6 +10,7 @@ import { Callout, Concern, PaneHint, PaneLabel, ReportRow, ReportRows, Stat, Sta
 import { statusVariant } from '../Standing';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import ShowMore from '../ShowMore';
+import VisitsDrawer from './VisitsDrawer';
 import { useShowMore } from '@/hooks/use-show-more';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
@@ -886,5 +887,6 @@ export default function FamilyDrawer({ drawer, ...rest }) {
   if (drawer.kind === 'activity') return <ActivityDrawer key="activity" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'overview') return <Overview key="overview" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'versions') return <Versions key="versions" caregiverId={drawer.caregiverId} {...rest} />;
+  if (drawer.kind === 'visits') return <VisitsDrawer key="visits" {...rest} />;
   return null;
 }
