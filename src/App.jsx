@@ -722,11 +722,16 @@ export default function App() {
             drawer={shownDrawer}
             open={Boolean(drawer)}
             care={care}
+            plan={plan}
             unlocked={unlocked}
             askNote={askNote}
             onCare={setCare}
             onClose={() => setDrawer(null)}
             onOpen={setDrawer}
+            onOpenPlan={() => {
+              setDrawer(null);
+              setView('plan-detail');
+            }}
             onFlash={(text) => setFlash({ text, at: Date.now() })}
             onContact={(c) => {
               setDrawer(null);

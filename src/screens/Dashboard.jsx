@@ -1,32 +1,25 @@
 import { Clock, Search, Send } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
-import ShowMore from '../components/ShowMore';
-import { useShowMore } from '@/hooks/use-show-more';
 import {
   activeVersion,
   allVisits,
   chargedFor,
   chargingVisit,
-  dayOf,
   confirmPlan,
   firstName,
   hasBeen,
   heldNow,
-  lastVersion,
   lastVisit,
   money,
-  pendingVersion,
   pl,
   plansToConfirm,
   services,
-  todayOf,
   visitCharge,
   waitingOnYou,
 } from '../data/familyCare';
 import { coordinator } from '../data/carePlan';
 import { USUAL_ANSWER, waitingOnHer } from '../data/firstSteps';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -42,11 +35,20 @@ import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTit
 import { cn } from '@/lib/utils';
 import AskAssistant from '../components/AskAssistant';
 import Attention from '../components/Attention';
+import {
+  ArrangementRow,
+  HOME_ROWS,
+  OfferRow,
+  comingVisits,
+  currentFirst,
+  partnerOffers,
+  rowBody,
+  rowTitle,
+} from '../components/family/HomeRows';
 import VisitReport from '../components/family/VisitReport';
 import { amountOf } from '../components/family/VisitRow';
 import PlanContents from '../components/PlanContents';
 import { CoordinatorContact } from '../components/PlanFooterBlocks';
-import { PARTNERS } from '../data/partners';
 
 // The family's home, and the one page they should rarely need to leave
 // (docs/patterns.md §4a). What it shows follows where they are:
@@ -100,32 +102,6 @@ function StatCard({ value, label, note, onOpen, className }) {
     </Card>
   );
 }
-
-// A row in a card of the overview (docs/patterns.md §4a): the avatar as tall
-// as the name and the line under it, 2 apart, the one gap off the grid
-// (§6); the text beside it. The name is a row's title, 14 (`rowName`). The row opens what it is
-// about from anywhere on it and has nothing on its right: half a page wide,
-// there is no room for a button, and the details have the action.
-function Row({ initials, ended, className, children }) {
-  return (
-    <Item
-      className={cn(
-        'items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-body-leading))]',
-        className
-      )}
-    >
-      <Avatar>
-        <AvatarFallback className={cn(ended && 'bg-muted text-muted-foreground')}>{initials}</AvatarFallback>
-      </Avatar>
-      {children}
-    </Item>
-  );
-}
-
-const rowTitle = 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground';
-// a caregiver's name: a row's title, 2 over the line under it (§6)
-const rowName = `${rowTitle} -mb-0.5`;
-const rowBody = 'text-xs leading-body text-muted-foreground';
 
 // The same, as a card of its own in the tinted tray of what waits on the
 // family: white like every card, its title the size of a row's title in the
@@ -186,11 +162,9 @@ export default function Dashboard({
   // until it is seen it also waits at the top
   const toConfirm = plansToConfirm(care);
   // soonest first
-  const coming = allVisits(care)
-    .filter((v) => v.status === 'planned')
-    .sort((a, b) => dayOf(a.date, todayOf(care)) - dayOf(b.date, todayOf(care)));
-  // the next three, then ten more in place (docs/patterns.md §8a)
-  const shownComing = useShowMore(coming, { first: 3 });
+  const coming = comingVisits(care);
+  // who comes first, who no longer does last
+  const carers = currentFirst(care.arrangements);
   const last = lastVisit(care);
   // nobody asked yet: the one thing to do is ask
   const fresh = !care.arrangements.length && !care.requests.length;
@@ -212,7 +186,15 @@ export default function Dashboard({
   const held = heldNow(care);
   const charging = chargingVisit(care);
   // what the plan offers through partners, beside the caregivers
-  const offers = (plan?.recommendations || []).filter((r) => r.kind === 'offer');
+  const offers = partnerOffers(plan);
+  // A card shows three of what it lists; the rest is a drawer away, by a
+  // button in the card's head named for what it opens (docs/patterns.md §4a).
+  const allOf = (list, kind, label) =>
+    list.length > HOME_ROWS && (
+      <Button variant="secondary" onClick={() => onDrawer({ kind })}>
+        {label}
+      </Button>
+    );
   const more = (plan?.recommendations || []).filter((r) => r.locked).length;
   // the plan as the page's content, while nobody comes yet
   const thePlan = plan && !running && (
@@ -463,27 +445,24 @@ export default function Dashboard({
             {/* The visits: what is booked, and how the last one went. A row
                 is a visit, said by its day and hours, so it has no avatar;
                 who came is in the line under it. */}
-            <Section title="Predstoji">
+            <Section title="Predstoji" action={allOf(coming, 'coming', 'Sve zakazane')}>
               {coming.length > 0 ? (
-                <>
-                  <ItemGroup>
-                    {shownComing.visible.map((v) => (
-                      <Item key={v.id}>
-                        <ItemContent>
-                          <p className={rowTitle}>
-                            <ItemLink onClick={() => onDrawer({ kind: 'plan', visitId: v.id })}>
-                              {v.date} · {v.time}
-                            </ItemLink>
-                          </p>
-                          <p className={rowBody}>
-                            {v.caregiver.name} · {v.hours} h · {money(chargedFor(v.hours, v.rate))} rezervisano
-                          </p>
-                        </ItemContent>
-                      </Item>
-                    ))}
-                  </ItemGroup>
-                  <ShowMore list={shownComing} />
-                </>
+                <ItemGroup>
+                  {coming.slice(0, HOME_ROWS).map((v) => (
+                    <Item key={v.id}>
+                      <ItemContent>
+                        <p className={rowTitle}>
+                          <ItemLink onClick={() => onDrawer({ kind: 'plan', visitId: v.id })}>
+                            {v.date} · {v.time}
+                          </ItemLink>
+                        </p>
+                        <p className={rowBody}>
+                          {v.caregiver.name} · {v.hours} h · {money(chargedFor(v.hours, v.rate))} rezervisano
+                        </p>
+                      </ItemContent>
+                    </Item>
+                  ))}
+                </ItemGroup>
               ) : (
                 <CardDescription>Nijedna poseta nije zakazana.</CardDescription>
               )}
@@ -530,76 +509,25 @@ export default function Dashboard({
             </Section>
 
             {/* who cares for her: lower, as it is not what is looked at every day */}
-            <Section title={care.arrangements.length === 1 ? 'Vaša negovateljica' : 'Vaše negovateljice'}>
+            <Section
+              title={care.arrangements.length === 1 ? 'Vaša negovateljica' : 'Vaše negovateljice'}
+              action={allOf(carers, 'caregivers', 'Sve negovateljice')}
+            >
               <ItemGroup>
-                {care.arrangements.map((a) => {
-                  const act = activeVersion(a);
-                  const pen = pendingVersion(a);
-                  const ended = Boolean(a.endedOn);
-                  return (
-                    <Row key={a.caregiver.id} initials={a.caregiver.initials} ended={ended}>
-                      <ItemContent>
-                        <p className={cn(rowName, ended && 'text-muted-foreground')}>
-                          <ItemLink onClick={() => onCaregiver(a.caregiver.id)}>{a.caregiver.name}</ItemLink>
-                          {pen && (
-                            <Badge variant="warning">
-                              {act ? 'Novi uslovi' : 'Ugovor čeka'}
-                            </Badge>
-                          )}
-                          {!pen && !act && !ended && lastVersion(a)?.status === 'declined' && (
-                            <Badge variant="destructive">
-                              Uslovi odbijeni
-                            </Badge>
-                          )}
-                        </p>
-                        <p className={rowBody}>
-                          {ended
-                            ? `Završeno ${a.endedOn}`
-                            : a.since
-                              ? `${a.caregiver.area} · od ${a.since}${act ? ` · ${money(act.rate)}/h` : ''}`
-                              : pen
-                                ? `${a.caregiver.area} · čeka da prihvatite ugovor`
-                                : a.versions.length
-                                  ? `${a.caregiver.area} · ništa još ne važi`
-                                  : `${a.caregiver.area} · prihvatila, ugovor stiže uskoro`}
-                        </p>
-                      </ItemContent>
-                    </Row>
-                  );
-                })}
+                {carers.slice(0, HOME_ROWS).map((a) => (
+                  <ArrangementRow key={a.caregiver.id} arrangement={a} onOpen={onCaregiver} />
+                ))}
               </ItemGroup>
             </Section>
 
-            {/* What our partners offer, from the plan: the partner first (its
-                logo, or its name where it has none) with what it costs less
-                through Minna beside it, and under them what it is for. A row
-                opens the plan, which has the prices and the way to book. */}
+            {/* what our partners offer, from the plan; a row opens the plan */}
             {plan && (
-              <Section title="Ponude partnera">
+              <Section title="Ponude partnera" action={unlocked && allOf(offers, 'offers', 'Sve ponude')}>
                 {unlocked ? (
                   <ItemGroup>
-                    {offers.map((rec) => {
-                      const partner = PARTNERS[rec.partner];
-                      return (
-                        <Item key={rec.id}>
-                          <ItemContent className="gap-2">
-                            <div className="flex items-center justify-between gap-3">
-                              {partner.logo ? (
-                                <img className="block h-5 w-auto rounded-sm" src={partner.logo} alt={partner.name} />
-                              ) : (
-                                <span className="text-xs font-medium text-foreground">{partner.name}</span>
-                              )}
-                              <Badge variant="success">−{partner.discount}% preko Minne</Badge>
-                            </div>
-                            {/* the partner is the row's title; what the offer is
-                                for reads as the line under it, not a second title */}
-                            <p className={rowBody}>
-                              <ItemLink onClick={onOpenPlan}>{rec.title}</ItemLink>
-                            </p>
-                          </ItemContent>
-                        </Item>
-                      );
-                    })}
+                    {offers.slice(0, HOME_ROWS).map((rec) => (
+                      <OfferRow key={rec.id} rec={rec} onOpen={onOpenPlan} />
+                    ))}
                   </ItemGroup>
                 ) : (
                   <CardFooter>

@@ -62,8 +62,10 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
 
       {mine.length > 0 && (
         <>
-          {/* one is always chosen: pressing the chosen one again does nothing */}
-          <ToggleGroup type="single" size="sm" value={tab} onValueChange={(t) => t && setTab(t)} aria-label="Upiti po odgovoru">
+          {/* One is always chosen: pressing the chosen one again does nothing.
+              16 in, on the line the title's text and the cards' avatars keep
+              (docs/patterns.md §4). */}
+          <ToggleGroup type="single" size="sm" className="pl-4" value={tab} onValueChange={(t) => t && setTab(t)} aria-label="Upiti po odgovoru">
             {TABS.map((t) => (
               <ToggleGroupItem key={t} value={t}>
                 {t === 'all' ? 'Svi' : LABEL[t]}
