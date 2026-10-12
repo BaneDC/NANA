@@ -11,7 +11,7 @@ import { statusVariant } from '../Standing';
 import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
 import ShowMore from '../ShowMore';
 import VisitsDrawer from './VisitsDrawer';
-import { CaregiversDrawer, ComingDrawer, OffersDrawer } from './HomeDrawers';
+import { CaregiversDrawer, ComingDrawer, OfferDrawer, OffersDrawer } from './HomeDrawers';
 import { useShowMore } from '@/hooks/use-show-more';
 import Modal from '../Modal';
 import Dialog from '../Dialog';
@@ -902,5 +902,7 @@ export default function FamilyDrawer({ drawer, ...rest }) {
   if (drawer.kind === 'coming') return <ComingDrawer key="coming" {...rest} />;
   if (drawer.kind === 'caregivers') return <CaregiversDrawer key="caregivers" {...rest} />;
   if (drawer.kind === 'offers') return <OffersDrawer key="offers" {...rest} />;
+  // what the plan's page held and the home has no room for (§4a)
+  if (drawer.kind === 'offer') return <OfferDrawer key={`offer-${drawer.recId}`} recId={drawer.recId} {...rest} />;
   return null;
 }

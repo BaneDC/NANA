@@ -122,7 +122,6 @@ const REQUEST = {
 // Said as what the button does, not as the page's name: a lone "Upiti" under
 // an answer does not say it takes you anywhere.
 export const PAGES = {
-  plan: 'Otvori plan nege',
   'my-care': 'Idi na Moju negu',
   'find-caregiver': 'Pronađi negovateljicu',
   visits: 'Pogledaj sve posete',

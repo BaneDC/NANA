@@ -3,7 +3,6 @@ import { useShowMore } from '@/hooks/use-show-more';
 import {
   ChevronDown,
   CircleHelp,
-  FileText,
   LayoutDashboard,
   MessageSquare,
   Plus,
@@ -272,13 +271,9 @@ export default function AppNav({
             onClick={go(() => onView('requests'))}
           />
 
-          {/* one plan per person (docs/plan-nege.md): the plan itself, no list */}
-          <Place
-            icon={FileText}
-            label="Plan nege"
-            active={view === 'plan-detail'}
-            onClick={go(() => onView('plan-detail'))}
-          />
+          {/* The care plan has no place here: before anyone comes it is
+              "Moja nega" itself, and after that what is left of it is on that
+              page too (docs/patterns.md §4a). */}
         </SidebarMenu>
       </SidebarContent>
 

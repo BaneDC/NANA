@@ -232,7 +232,7 @@ export default function MedicalRecord({
           <Card>
             <CardDescription>
               Promenilo se: {planChange.touched.join(', ')}.{' '}
-              Na planu vidite šta je drugačije i možete da poništite izmenu.
+              Na Mojoj nezi vidite šta je drugačije i možete da poništite izmenu.
             </CardDescription>
             {/* what to do next, from the last thing written here */}
             {planChange.fromRecord && record.log[0]?.next?.length > 0 && (
@@ -245,7 +245,7 @@ export default function MedicalRecord({
               </Group>
             )}
             <CardFooter>
-              <Button onClick={onOpenPlan}>Pogledaj plan nege</Button>
+              <Button onClick={onOpenPlan}>Pogledaj izmenu</Button>
             </CardFooter>
           </Card>
         </Attention>

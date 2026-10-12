@@ -12,12 +12,11 @@ import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStore } from './components/KitAssistant';
 import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
-import { FileText, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import HelpDialog from './components/HelpDialog';
 import PaywallModal from './components/PaywallModal';
 import AskAssistant from './components/AskAssistant';
 import SharePlanModal from './components/SharePlanModal';
-import PlanDetail, { NoPlan } from './screens/PlanDetail';
 import ImmersiveConversation from './screens/ImmersiveConversation';
 import FamilyDrawer from './components/family/FamilyDrawer';
 import CaregiverPage from './screens/CaregiverPage';
@@ -42,12 +41,9 @@ import { buildPlan, caregivers, coordinator } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { recordImpact, writeEvent, written } from './data/record';
 import { requestFoot, requestNote } from './data/firstSteps';
-import { planEntries } from './data/threads';
 import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
 
-const formatDate = (at) => new Date(at).toLocaleDateString('sr-Latn-RS', { day: 'numeric', month: 'long', year: 'numeric' });
-const formatToday = () => formatDate(Date.now());
 
 // /?demo opens past the onboarding, on a finished plan — for trying the chat and
 // everything after it without talking the conversation through each time.
@@ -301,8 +297,8 @@ export default function App() {
     return true;
   };
   const openPage = (page) => {
-    if (page === 'plan') return setView('plan-detail');
-    setView({ 'my-care': 'dashboard' }[page] || page);
+    // the care plan has no page of its own: it is on "Moja nega"
+    setView({ 'my-care': 'dashboard', plan: 'dashboard' }[page] || page);
   };
 
   chatCtx.current = {
@@ -334,7 +330,6 @@ export default function App() {
   };
   const chatActions = useMemo(
     () => [
-      { id: 'plan', label: 'Plan nege', icon: <FileText size={16} strokeWidth={1.75} />, onClick: () => chatCtx.current.onOpenPage('plan') },
       { id: 'new', label: 'Novi razgovor', icon: <Plus size={16} strokeWidth={2} />, onClick: () => chatCtx.current.onNewChat() },
     ],
     []
@@ -391,16 +386,6 @@ export default function App() {
   };
 
 
-  const madeAt = planLog.find((e) => e.kind === 'created')?.at;
-  const entries = planEntries({
-    plan,
-    caregiverCount: caregivers.length,
-    // the day it was made, from its history (a plan saved before there was one reads today)
-    today: madeAt ? formatDate(madeAt) : formatToday(),
-    answers,
-    notes,
-  });
-  const openEntry = entries[0];
 
   // The conversation in the nav: Minna until the plan exists, the assistant after.
   // the conversations, as the nav lists them: what was asked first in each
@@ -447,7 +432,7 @@ export default function App() {
           {/* only where the pages carry one: Moja nega and a care plan
               (docs/patterns.md §4); the chat is the assistant itself, and the
               medical record has its own one action, "Prijavi promenu" */}
-          {(view === 'dashboard' || view === 'plan-detail') && <AskAssistant className="ml-auto" onClick={askAssistant} />}
+          {view === 'dashboard' && <AskAssistant className="ml-auto" onClick={askAssistant} />}
         </div>
       )}
 
@@ -544,7 +529,8 @@ export default function App() {
                   onOpenCaregiver={showProfile}
                   onUnlock={() => setPaywall({ caregiver: null })}
                   standingOf={(id) => standingWith(care, id)}
-                  onOpenPlan={() => setView('plan-detail')}
+                  onUndoChange={undoPlanChange}
+                  onDismissChange={() => setPlanChange(null)}
                   onCare={setCare}
                   onFlash={say}
                   onDrawer={setDrawer}
@@ -590,24 +576,6 @@ export default function App() {
                   onFlash={(text) => setFlash({ text, at: Date.now() })}
                 />
               )}
-              {view === 'plan-detail' && !openEntry && <NoPlan onGoToChat={goToChat} />}
-              {view === 'plan-detail' && openEntry && (
-                <PlanDetail
-                  entry={openEntry}
-                  unlocked={unlocked}
-                  askNote={askNote}
-                  onSelectCaregiver={selectCaregiver}
-            onOpenCaregiver={showProfile}
-                  onUnlock={() => setPaywall({ caregiver: null })}
-                  onAskAssistant={askAssistant}
-                  onShare={plan ? () => setSharing(true) : null}
-                  change={planChange}
-                  onUndoChange={undoPlanChange}
-                  onDismissChange={() => setPlanChange(null)}
-                  onFindCaregivers={() => setView('find-caregiver')}
-                  standingOf={(id) => standingWith(care, id)}
-                />
-              )}
               {view === 'record' && (
                 <MedicalRecord
                   answers={answers}
@@ -616,7 +584,7 @@ export default function App() {
                   record={record}
                   planChange={planChange}
                   onGoToChat={goToChat}
-                  onOpenPlan={() => setView('plan-detail')}
+                  onOpenPlan={() => setView('dashboard')}
                   onReportChange={reportChange}
                 />
               )}
@@ -728,10 +696,6 @@ export default function App() {
             onCare={setCare}
             onClose={() => setDrawer(null)}
             onOpen={setDrawer}
-            onOpenPlan={() => {
-              setDrawer(null);
-              setView('plan-detail');
-            }}
             onFlash={(text) => setFlash({ text, at: Date.now() })}
             onContact={(c) => {
               setDrawer(null);

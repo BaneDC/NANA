@@ -12,7 +12,10 @@ import ChangeRows from './ChangeRows';
 // `change` is App's record of the last edit: the answer rows from
 // describeChanges, the recommendations that came out different, and where the
 // edit came from. It arrives from a little above, on the dialog's spring.
-export default function PlanChangeBanner({ change, onUndo, onDismiss }) {
+//
+// `marked` is off where the plan is not on the page under it (the home once
+// someone comes): there is nothing marked to point at.
+export default function PlanChangeBanner({ change, marked = true, onUndo, onDismiss }) {
   const Icon = change.source === 'manual' ? PenLine : Sparkles;
   return (
     <Attention
@@ -25,7 +28,8 @@ export default function PlanChangeBanner({ change, onUndo, onDismiss }) {
           <div>
             <AttentionTitle>Plan je izmenjen</AttentionTitle>
             <AttentionDescription>
-              {{ assistant: 'Preko asistenta', manual: 'Ručno', both: 'Ručno i preko asistenta' }[change.source]} · izmenjeni delovi plana su označeni
+              {{ assistant: 'Preko asistenta', manual: 'Ručno', both: 'Ručno i preko asistenta' }[change.source]}
+              {marked && ' · izmenjeni delovi plana su označeni'}
             </AttentionDescription>
           </div>
         </AttentionHead>
