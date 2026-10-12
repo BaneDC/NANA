@@ -188,11 +188,12 @@ export default function Dashboard({
   // what the plan offers through partners, beside the caregivers
   const offers = partnerOffers(plan);
   // A card shows three of what it lists; the rest is a drawer away, by a
-  // button in the card's head named for what it opens (docs/patterns.md §4a).
+  // button in the card's head named for what it opens, with how many there
+  // are in all, so three rows never read as the whole list (docs/patterns.md §4a).
   const allOf = (list, kind, label) =>
     list.length > HOME_ROWS && (
       <Button variant="secondary" onClick={() => onDrawer({ kind })}>
-        {label}
+        {label} ({list.length})
       </Button>
     );
   const more = (plan?.recommendations || []).filter((r) => r.locked).length;

@@ -249,7 +249,7 @@ const QUERY_REASONS = [
   { id: 'other', label: 'Nešto drugo' },
 ];
 
-function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
+function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash, onOpen }) {
   const [querying, setQuerying] = useState(false);
   const [reason, setReason] = useState('hours');
   const [text, setText] = useState('');
@@ -271,7 +271,10 @@ function WorkOrder({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const confirm = () => {
     onCare(confirmVisit(visitId));
     onFlash(`Plaćeno. ${money(charge)} ide ka negovateljici.`);
-    onClose();
+    // opened on the way to something else (ending the arrangement): paid, it
+    // goes back there rather than leaving the family to find it again
+    if (then) onOpen(then);
+    else onClose();
   };
   const query = () => {
     const label = QUERY_REASONS.find((q) => q.id === reason).label;
@@ -582,7 +585,7 @@ function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen 
               Ne sada
             </Button>
             {blocked[0].status === 'charging' && (
-              <Button onClick={() => onOpen({ kind: 'work-order', visitId: blocked[0].id })}>
+              <Button onClick={() => onOpen({ kind: 'work-order', visitId: blocked[0].id, then: { kind: 'end', caregiverId } })}>
                 Pogledaj radni nalog
               </Button>
             )}
@@ -887,7 +890,7 @@ function Versions({ open = true, care, caregiverId, onClose }) {
 export default function FamilyDrawer({ drawer, ...rest }) {
   if (!drawer) return null;
   if (drawer.kind === 'terms') return <Terms key="terms" caregiverId={drawer.caregiverId} {...rest} />;
-  if (drawer.kind === 'work-order') return <WorkOrder key={`wo-${drawer.visitId}`} visitId={drawer.visitId} {...rest} />;
+  if (drawer.kind === 'work-order') return <WorkOrder key={`wo-${drawer.visitId}`} visitId={drawer.visitId} then={drawer.then} {...rest} />;
   if (drawer.kind === 'plan') return <Plan key={`plan-${drawer.visitId}`} visitId={drawer.visitId} {...rest} />;
   if (drawer.kind === 'end') return <End key="end" caregiverId={drawer.caregiverId} {...rest} />;
   if (drawer.kind === 'profile') return <Profile key="profile" caregiverId={drawer.caregiverId} {...rest} />;
