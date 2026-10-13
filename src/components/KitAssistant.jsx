@@ -60,14 +60,6 @@ const CHANGE_REPLY = msg(
   'Šta se promenilo, ili šta treba ispraviti? Recite svojim rečima, na primer „pala je i slomila nogu“, „dobila je novi lek“ ili „pogrešno je upisan broj telefona“. Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.'
 );
 
-// A fixed answer is ready at once, but the kit measures the sent bubble the
-// moment the answer ends, while the bubble is still growing out of the
-// composer (29px wide, so 308 tall): it takes a short message for a long one,
-// fades its text and offers "Prikaži više" (docs/kit-issues.md). Waiting until
-// the bubble has its width keeps the kit from measuring it mid-flight.
-const BUBBLE_SETTLES_MS = 400;
-const bubbleSettled = () => new Promise((resolve) => setTimeout(resolve, BUBBLE_SETTLES_MS));
-
 export const isOpener = (text) => text === CHANGE_OPENER || text === t(CHANGE_OPENER);
 
 // How far a conversation has got, for "Prijavi promenu" (docs/patterns.md §10a):
@@ -87,7 +79,6 @@ export function ChatSource({ id, ctx, onTitle, opener }) {
     dropKeyboardAfterSend();
     const { plan, answers, care, record, today, apiKey, onAddNotes } = ctx.current;
     if (!plan) {
-      await bubbleSettled();
       yield t('Asistent radi kad plan nege postoji. Završite razgovor sa Minnom, pa se vratite ovde.');
       return;
     }
@@ -95,12 +86,10 @@ export function ChatSource({ id, ctx, onTitle, opener }) {
     if (isOpener(message)) {
       const reply = t(CHANGE_REPLY);
       history.current = [...history.current, { role: 'user', content: message }, { role: 'assistant', content: reply }];
-      await bubbleSettled();
       yield reply;
       return;
     }
     if (!apiKey) {
-      await bubbleSettled();
       yield t('Asistent odgovara preko Claude-a, a ključ za Claude još nije unet. Unesite ga kad pokrenete razgovor sa Minnom (AI), pa se vratite ovde.');
       return;
     }

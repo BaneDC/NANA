@@ -54,4 +54,4 @@ Kit crta svoja dugmad (`Button` iz kita: `primary` je staklo, `secondary` je pro
 
 **Predlog:** meriti posle animacije bubble-a (`onAnimationComplete` ili `ResizeObserver` na `editorWrap`), ili ponovo izmeriti kad se širina promeni i skinuti masku i „Prikaži više" ako poruka više nije dugačka.
 
-**Kod nas:** fiksni odgovori u `src/components/KitAssistant.jsx` čekaju 400 ms pre nego što se vrate (`bubbleSettled`). Kad kit ovo popravi, čekanje se briše.
+**Kod nas:** ništa, čeka se popravka u kitu. Zaobilaženje je moguće (fiksni odgovori u `src/components/KitAssistant.jsx` da čekaju 400 ms pre nego što se vrate, dok se bubble ne razvije); provereno je da radi, ali je namerno vraćeno.
