@@ -568,6 +568,7 @@ export default {
   'Pošalji upit': 'Lähetä pyyntö',
   'Vaš asistent za negu': 'Hoidon avustajanne',
   'Kako mogu da pomognem?': 'Miten voin auttaa?',
+  'Asistent odgovara preko Claude-a, a ključ za Claude još nije unet. Unesite ga kad pokrenete razgovor sa Minnom (AI), pa se vratite ovde.': 'Avustaja vastaa Clauden kautta, eikä Clauden avainta ole vielä annettu. Antakaa se, kun aloitatte keskustelun Minnan kanssa (AI), ja palatkaa sitten tänne.',
   'Asistent radi kad plan nege postoji.': 'Avustaja toimii, kun hoitosuunnitelma on olemassa.',
   'Pitajte svojim rečima ili recite šta se promenilo. Asistent zna vaš plan nege, negovateljice i posete, pa može da objasni kako šta ide i da predloži izmenu plana ili upit negovateljici. Ništa se ne menja dok vi ne potvrdite. Medicinske savete ne daje.': 'Kysykää omin sanoin tai kertokaa, mikä on muuttunut. Avustaja tuntee hoitosuunnitelmanne, hoitajat ja käynnit, joten se voi kertoa, miten asiat etenevät, ja ehdottaa muutosta suunnitelmaan tai pyyntöä hoitajalle. Mikään ei muutu ennen kuin vahvistatte. Lääketieteellisiä neuvoja se ei anna.',
   'Mogu da izmenim plan, predložim negovateljice i pošaljem im upit, ili objasnim kako šta ide.': 'Voin muuttaa suunnitelmaa, ehdottaa hoitajia ja lähettää heille pyynnön tai kertoa, miten asiat etenevät.',

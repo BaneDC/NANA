@@ -565,6 +565,7 @@ export default {
   'Pošalji upit': 'Send request',
   'Vaš asistent za negu': 'Your care assistant',
   'Kako mogu da pomognem?': 'How can I help?',
+  'Asistent odgovara preko Claude-a, a ključ za Claude još nije unet. Unesite ga kad pokrenete razgovor sa Minnom (AI), pa se vratite ovde.': 'The assistant answers through Claude, and no Claude key has been entered yet. Enter it when you start the conversation with Minna (AI), then come back here.',
   'Asistent radi kad plan nege postoji.': 'The assistant works once a care plan exists.',
   'Pitajte svojim rečima ili recite šta se promenilo. Asistent zna vaš plan nege, negovateljice i posete, pa može da objasni kako šta ide i da predloži izmenu plana ili upit negovateljici. Ništa se ne menja dok vi ne potvrdite. Medicinske savete ne daje.': 'Ask in your own words or say what has changed. The assistant knows your care plan, caregivers and visits, so it can explain how things work and propose a change to the plan or a request to a caregiver. Nothing changes until you confirm. It doesn\'t give medical advice.',
   'Mogu da izmenim plan, predložim negovateljice i pošaljem im upit, ili objasnim kako šta ide.': 'I can change the plan, suggest caregivers and send them a request, or explain how things work.',

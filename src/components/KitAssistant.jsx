@@ -66,14 +66,19 @@ export function ChatSource({ id, ctx, onTitle }) {
   const send = useCallback(async function* (message, { turnId }) {
     dropKeyboardAfterSend();
     const { plan, answers, care, record, today, apiKey, onAddNotes } = ctx.current;
-    if (!plan || !apiKey) {
+    if (!plan) {
       yield t('Asistent radi kad plan nege postoji. Završite razgovor sa Minnom, pa se vratite ovde.');
       return;
     }
+    // fixed, so it needs no key
     if (message === CHANGE_OPENER || message === t(CHANGE_OPENER)) {
       const reply = t(CHANGE_REPLY);
       history.current = [...history.current, { role: 'user', content: message }, { role: 'assistant', content: reply }];
       yield reply;
+      return;
+    }
+    if (!apiKey) {
+      yield t('Asistent odgovara preko Claude-a, a ključ za Claude još nije unet. Unesite ga kad pokrenete razgovor sa Minnom (AI), pa se vratite ovde.');
       return;
     }
     // Her words are handed to the kit as they are written, not once the whole
