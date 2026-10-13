@@ -169,6 +169,17 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 
 - Akcije stranice su samo u `PageHeader`, desno. **Između teksta glave i dugmeta je 32**, da dugačak podnaslov ne dolazi do dugmeta. Stranica ima 24 gore kao i sa strane, pa dugme stoji podjednako daleko od vrha i od ivice panela, u njegovom uglu.
 - **„Pitaj asistenta" je samo na Mojoj nezi i na planu nege** (odlučeno 8. 10.). Medicinski karton ima svoju jednu akciju, „Prijavi promenu", koja otvara istog asistenta (§10a), pa nema i „Pitaj asistenta". Podešavanja, Pronađi negovateljicu i ostale stranice ga nemaju.
+- **Panel asistenta: kako se otvara, zatvara i šta pokazuje** (odlučeno 13. 10.; `reportChange` i `askAssistant` u `App.jsx`, `chatStage` u `KitAssistant.jsx`):
+  - **Jedan razgovor.** Panel, sa koje god stranice da se otvori, i stranica Razgovor pokazuju isti, trenutni razgovor. Prazan razgovor pokazuje dobrodošlicu i predloge, a razgovor u kome nešto piše pokazuje svoj naslov.
+  - **Dugme je prekidač.** „Pitaj asistenta" i „Prijavi promenu" otvaraju panel, a ako je već otvoren, zatvaraju ga.
+  - **Panel se vidi samo na Mojoj nezi, planu nege i kartonu.** Na drugoj stranici (i u Razgovoru) se sklanja. Kad se porodica vrati na neku od te tri, opet je otvoren, sa istim razgovorom. Zatvara se samo na X ili ponovnim klikom na dugme.
+  - **„Prijavi promenu" gleda trenutni razgovor:**
+    - prazan: u njega se upiše „Nešto se promenilo." i gotovo pitanje;
+    - u njemu je samo to gotovo pitanje, bez porodičinog odgovora: panel se samo otvori, ništa se ne dopisuje;
+    - porodica je u njemu nešto otkucala: pravi se **nov** razgovor sa gotovim pitanjem, a stari ostaje u istoriji.
+  - **U „Istoriji razgovora" je samo razgovor u kome je porodica nešto otkucala.** „Nešto se promenilo." i gotovo pitanje se ne računaju, pa klikovi bez kucanja ne prave razgovore. Naslov je prvo što je porodica otkucala.
+  - **„Novi razgovor" je u glavi panela, pored X** (`+`; oba su prikačena i ne idu u meni). Nov razgovor ostaje u panelu. Ako je trenutni razgovor prazan, klik ne radi ništa.
+  - **Novi dolazak** (nova prijava, osvežena stranica) počinje praznim razgovorom, a raniji su u istoriji. Prototip razgovore ne čuva između prijava, pa je istorija tada prazna.
 - **Plan nege je jedan** (odlučeno 10. 10., `docs/plan-nege.md`): u bočnom meniju je jedna stavka „Plan nege", koja otvara plan, a dok ga nema prazno stanje. Nema liste planova, „Novi plan" ni značke „Aktivan", i **nema verzija plana**: izmena menja isti plan i ostavlja red u spisku izmena.
 - **„Pitaj asistenta" na uskom ekranu (≤900px)** stoji u gornjoj traci, pored logoa i dugmeta za meni, uvek na istom mestu. Iz glave stranice se tada sklanja (`AskAssistant` to radi sam, kad je u `PageHeader`). U Razgovoru ga nema, jer je chat već asistent.
 - **Dugačak tekst ne ide u isti red sa dugmetom.** Ako pored dugmeta nema mesta za tekst u jednom redu, dugme ide na drugo mesto (u traku, u footer), a ne gura tekst u uzak stubac.
@@ -564,7 +575,7 @@ Stranica o osobi o kojoj se brine (`src/screens/MedicalRecord.jsx`, podaci i log
 - **Ništa se ne čuva dok se kuca, i ništa se ne briše.** Svaka izmena ostavlja red u istoriji.
 - **Jedan put za sve: „Prijavi promenu"** (odlučeno 11. 10.; od 10. 10. su bila dva, a ispravka se radila ručno, olovkom). Karton se čita, a ne uređuje: nema olovke na delu, „+" na spisku ni reda koji se otvara. Bilo da se **nešto desilo** (pad, bolnica, snalazi se slabije, novi lek, selidba) ili je **zapis pogrešan** (ime, godine, telefon, odgovor, lek), porodica to kaže asistentu, a on predlaže šta se upisuje. Porodica ne prevodi sama ni događaj ni ispravku u odgovore.
 
-**„Prijavi promenu"** otvara asistenta pored kartona: u razgovoru stoji porodičino „Nešto se promenilo." i gotovo pitanje „Šta se promenilo, ili šta treba ispraviti?" (pitanje je fiksno, bez zahteva modelu; `CHANGE_OPENER` u `src/components/KitAssistant.jsx`). Dalje:
+**„Prijavi promenu"** otvara asistenta pored kartona: u razgovoru stoji porodičino „Nešto se promenilo." i gotovo pitanje „Šta se promenilo, ili šta treba ispraviti?" (pitanje je fiksno, bez zahteva modelu i bez ključa; `CHANGE_OPENER` u `src/components/KitAssistant.jsx`). Kada ide u trenutni, a kada u nov razgovor, i to da je dugme prekidač, piše u §4 („Panel asistenta"). Dalje:
 
 1. Porodica kaže šta se desilo svojim rečima. Asistent postavi dva do tri potpitanja (kada, da li je privremeno, kako se sada kreće i snalazi, ko je uz nju).
 2. Asistent **predlaže, ne upisuje**: kartica „Predlažem da upišemo: …" sa svakim odgovorom (bilo → sada), zapisima za „Zdravlje" (novi lek, dijagnoza, pomagalo) i nivoom krhkosti ako se pomera. Dugmad „Ne sada" i „Upiši u karton".

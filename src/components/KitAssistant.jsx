@@ -60,7 +60,19 @@ const CHANGE_REPLY = msg(
   'Šta se promenilo, ili šta treba ispraviti? Recite svojim rečima, na primer „pala je i slomila nogu“, „dobila je novi lek“ ili „pogrešno je upisan broj telefona“. Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.'
 );
 
-export function ChatSource({ id, ctx, onTitle }) {
+export const isOpener = (text) => text === CHANGE_OPENER || text === t(CHANGE_OPENER);
+
+// How far a conversation has got, for "Prijavi promenu" (docs/patterns.md §10a):
+// 'empty' nothing said yet, 'opener' only the fixed opener (however many times),
+// 'talk' the family has said something of their own.
+export function chatStage(chat) {
+  const said = (chat?.turns || []).map((x) => x.user.trim()).filter(Boolean);
+  if (!said.length) return 'empty';
+  return said.every(isOpener) ? 'opener' : 'talk';
+}
+
+// `opener`: the conversation starts with the fixed opener, sent once the chat exists.
+export function ChatSource({ id, ctx, onTitle, opener }) {
   const history = useRef([]);
 
   const send = useCallback(async function* (message, { turnId }) {
@@ -71,7 +83,7 @@ export function ChatSource({ id, ctx, onTitle }) {
       return;
     }
     // fixed, so it needs no key
-    if (message === CHANGE_OPENER || message === t(CHANGE_OPENER)) {
+    if (isOpener(message)) {
       const reply = t(CHANGE_REPLY);
       history.current = [...history.current, { role: 'user', content: message }, { role: 'assistant', content: reply }];
       yield reply;
@@ -189,7 +201,18 @@ export function ChatSource({ id, ctx, onTitle }) {
   });
   const { turns, isStreaming } = chat;
   // What the conversation is called in the nav: the first thing asked in it.
-  const first = turns.find((t) => t.user.trim())?.user.trim() || '';
+  // The fixed opener is not something the family typed, so a conversation with
+  // only that in it has no name and is not listed.
+  const first = turns.map((x) => x.user.trim()).find((u) => u && !isOpener(u)) || '';
+  const opened = useRef(false);
+  useEffect(() => {
+    const draft = turns[turns.length - 1];
+    if (!opener || opened.current || !draft || isStreaming) return;
+    opened.current = true;
+    // after the kit has finished setting itself up
+    setTimeout(() => chat.submit(draft.id, t(CHANGE_OPENER)), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opener, turns, isStreaming]);
   useEffect(() => {
     onTitle?.(id, first);
   }, [id, first, onTitle]);

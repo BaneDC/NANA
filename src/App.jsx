@@ -9,7 +9,7 @@ import AppNav from './components/AppNav';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import Logo from './components/Logo';
 import CaregiverSidebar from './components/CaregiverSidebar';
-import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStore } from './components/KitAssistant';
+import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStage, chatStore } from './components/KitAssistant';
 import { demoAnswersNow, demoCountry, demoNotesNow, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Plus, X } from 'lucide-react';
@@ -65,6 +65,8 @@ const aboutYou = (u) => ({ values: { 'your-name': u.name, 'your-phone': u.phone 
 
 // The screen: the menu and the pane beside it, 12 from the window's edges;
 // on a narrow screen the top bar above the pane, edge to edge.
+// the pages "Pitaj asistenta" or "Prijavi promenu" open the assistant from (docs/patterns.md §4)
+const ASSISTANT_PAGES = ['dashboard', 'plan-detail', 'record'];
 const shell = 'flex h-full overflow-hidden p-3 narrow:flex-col narrow:p-0';
 
 export default function App() {
@@ -278,7 +280,8 @@ export default function App() {
   };
   const goToChat = () => setView('chat');
   // In Razgovor the assistant is the page itself, so it is not opened again beside it.
-  const askAssistant = () => (view === 'chat' ? null : setRightPanel('copilot'));
+  // "Pitaj asistenta" and "Prijavi promenu" open the panel and, pressed again, close it.
+  const askAssistant = () => (view === 'chat' ? null : setRightPanel((p) => (p === 'copilot' ? null : 'copilot')));
   // The assistant's conversation: one, wherever it is open. <ChatSource> holds
   // it and is remounted, under a new key, for a new conversation.
   // Every conversation stays: each keeps its own live chat, and the nav lists
@@ -290,10 +293,10 @@ export default function App() {
     (id, title) => setConversations((list) => list.map((c) => (c.id === id && c.title !== title ? { ...c, title } : c))),
     []
   );
-  const startConversation = () => {
+  const startConversation = (opener = false) => {
     convSeq.current += 1;
     const id = `c${convSeq.current}`;
-    setConversations((list) => [...list, { id, title: '', at: Date.now() }]);
+    setConversations((list) => [...list, { id, title: '', at: Date.now(), opener }]);
     setConversation(id);
     return id;
   };
@@ -305,9 +308,6 @@ export default function App() {
   const shownSharing = useKept(sharing);
   const [sharedWith, setSharedWith] = useState([]);
   const chatCtx = useRef({});
-  useEffect(() => {
-    if (view === 'chat') setRightPanel((p) => (p === 'copilot' ? null : p));
-  }, [view]);
   // Writing to a caregiver goes through the one modal: the message can be
   // written any time and is sent once the subscription is paid. Returns whether
   // it went out now, so the assistant's card can say so.
@@ -328,6 +328,7 @@ export default function App() {
   };
 
   chatCtx.current = {
+    conversation,
     plan,
     answers,
     care,
@@ -362,19 +363,35 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lang]
   );
+  // a new conversation stays in the panel; while this one is empty there is nothing to leave
   const panelActions = useMemo(
-    () => [{ id: 'close', label: t('Zatvori panel'), icon: <X size={16} strokeWidth={1.75} />, onClick: () => setRightPanel(null), pinned: true }],
+    () => [
+      {
+        id: 'new',
+        label: t('Novi razgovor'),
+        icon: <Plus size={16} strokeWidth={2} />,
+        onClick: () => chatStage(chatStore.get(chatCtx.current.conversation)) !== 'empty' && startConversation(),
+        pinned: true,
+      },
+      { id: 'close', label: t('Zatvori panel'), icon: <X size={16} strokeWidth={1.75} />, onClick: () => setRightPanel(null), pinned: true },
+    ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lang]
   );
 
   // "Prijavi promenu" on the medical record: the assistant opens beside it
   // already asking what changed (a fixed opener, sent as the family's own).
+  // Pressed again it closes. An empty conversation gets the opener, one that
+  // has only the opener is just shown again, and one where the family has said
+  // something is left as it is for a new conversation (docs/patterns.md §10a).
   const reportChange = () => {
+    if (rightPanel === 'copilot') return setRightPanel(null);
     setRightPanel('copilot');
     const chat = chatStore.get(conversation);
+    const stage = chatStage(chat);
+    if (stage === 'talk') return startConversation(true);
     const draft = chat?.turns[chat.turns.length - 1];
-    if (draft && !chat.isStreaming) chat.submit(draft.id, t(CHANGE_OPENER));
+    if (stage === 'empty' && draft && !chat.isStreaming) chat.submit(draft.id, t(CHANGE_OPENER));
   };
 
   // The demo from the sign-in screen: the same finished case as /?demo.
@@ -684,7 +701,9 @@ export default function App() {
             onClose={() => setRightPanel(null)}
           />
         )}
-        {rightPanel === 'copilot' && (
+        {/* open stays open, but it is shown only on the pages it opens from;
+            elsewhere it steps aside and is back on the way back */}
+        {rightPanel === 'copilot' && ASSISTANT_PAGES.includes(view) && (
           <SidePanelFrame key="copilot-panel" onClose={() => setRightPanel(null)}>
             <KitAssistant id={conversation} ctx={chatCtx} title={t('Asistent')} actions={panelActions} className="chat-side" />
           </SidePanelFrame>
@@ -804,7 +823,7 @@ export default function App() {
       )}
 
       {conversations.map((c) => (
-        <ChatSource key={c.id} id={c.id} ctx={chatCtx} onTitle={titleConversation} />
+        <ChatSource key={c.id} id={c.id} ctx={chatCtx} onTitle={titleConversation} opener={c.opener} />
       ))}
       <Toast flash={flash} onDone={() => setFlash(null)} />
 
