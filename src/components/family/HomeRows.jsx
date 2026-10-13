@@ -87,8 +87,8 @@ export function ArrangementRow({ arrangement: a, onOpen }) {
 
 // What a partner offers, from the plan: the partner first (its logo, or its
 // name where it has none) with what it costs less through Minna beside it, and
-// under them what it is for. The row opens the plan, which has the prices and
-// the way to book.
+// under them what it is for. The row opens the offer: the prices and the way
+// to book.
 export function OfferRow({ rec, onOpen }) {
   const partner = PARTNERS[rec.partner];
   return (

@@ -2,7 +2,9 @@ import { ItemGroup } from '@/components/ui/item';
 import { PaneHint } from '@/components/pane';
 import { useShowMore } from '@/hooks/use-show-more';
 import Modal from '../Modal';
+import { Offer } from '../RecommendationCard';
 import ShowMore from '../ShowMore';
+import { Group, Groups } from '../Tags';
 import VisitRow from './VisitRow';
 import { ArrangementRow, OfferRow, comingVisits, currentFirst, partnerOffers } from './HomeRows';
 import { t, tn } from '@/i18n';
@@ -52,9 +54,9 @@ export function CaregiversDrawer({ open = true, care, onClose, onCaregiver }) {
   );
 }
 
-// Everything our partners offer from the plan. A row opens the plan, which has
+// Everything our partners offer from the plan. A row opens that offer, with
 // the prices and the way to book.
-export function OffersDrawer({ open = true, care, plan, onClose, onOpenPlan }) {
+export function OffersDrawer({ open = true, care, plan, onClose, onOpen }) {
   const all = partnerOffers(plan);
   const list = useShowMore(all);
   return (
@@ -62,10 +64,27 @@ export function OffersDrawer({ open = true, care, plan, onClose, onOpenPlan }) {
       <PaneHint>{t('Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.')}</PaneHint>
       <ItemGroup>
         {list.visible.map((rec) => (
-          <OfferRow key={rec.id} rec={rec} onOpen={onOpenPlan} />
+          <OfferRow key={rec.id} rec={rec} onOpen={() => onOpen({ kind: 'offer', recId: rec.id })} />
         ))}
       </ItemGroup>
       <ShowMore list={list} />
+    </Modal>
+  );
+}
+
+// One offer of a partner's, with what the home's row has no room for: why we
+// recommend it, what the partner charges and what the family pays through
+// Minna, and the way to have her book it. This is where the plan's page used
+// to be needed (docs/patterns.md §4a).
+export function OfferDrawer({ open = true, care, plan, recId, unlocked, onClose }) {
+  const rec = partnerOffers(plan).find((r) => r.id === recId);
+  if (!rec) return null;
+  return (
+    <Modal eyebrow={care.elder.name || t('Vaša nega')} title={rec.title} open={open} onClose={onClose}>
+      <Groups>
+        <Group label={t('Zašto ovo preporučujemo')} text={rec.why} />
+      </Groups>
+      <Offer rec={rec} bookable={unlocked} />
     </Modal>
   );
 }

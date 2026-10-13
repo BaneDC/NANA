@@ -2,6 +2,8 @@
 
 Dogovoreno 10. 10. Ovaj dokument kaže šta smo odlučili, zašto, kako je sada u kodu i šta treba promeniti. Pravila iz njega se upisuju u `docs/patterns.md` kad se urade.
 
+> **Izmena 12. 10. (odluka dizajna):** plan nege više nema svoju stranicu ni stavku u bočnom meniju, jer je bila duplikat Moje nege. Plan je i dalje jedan i menja se kao što ovde piše; promenilo se samo gde se vidi (`docs/patterns.md` §4a, `docs/changes/2026-10-12.md`). Sve što se u ovom dokumentu odnosi na „stranicu plana" (glava „Napravljen … · izmenjen …", ikonica „Izmene plana", tab „Pregled i odgovori", `PlanDetail.jsx`, `NoPlan`) više ne važi kako je napisano i čeka novu odluku gde ide.
+
 ## Ukratko
 
 - Jedna osoba ima **jedan plan nege**. On se menja kad se nešto promeni, a novi plan se ne pravi.

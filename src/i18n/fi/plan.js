@@ -626,4 +626,12 @@ export default {
   Nova: 'Uusi',
   ocena: 'arvio',
   'Prikaži još {count}': 'Näytä {count} lisää',
+  // bez-stranice-plana (merged 13. 10.)
+  "Pregled u mreži: Čeka na vas, tri broja (svaki svoja kartica), pa po dve kartice: Predstoji, Poslednja poseta, Vaše negovateljice, Ponude partnera (red otvara drawer ponude sa cenama), poruka koordinatorke (skupljena) i koordinatorka": "Ruudukkonäkymä: Odottaa teitä, kolme lukua (kukin omana korttinaan), sitten kaksi korttia rivissä: Tulossa, Viimeisin käynti, Hoitajanne, Kumppanien tarjoukset (rivi avaa tarjouksen hintoineen), koordinaattorin viesti (suljettuna) ja koordinaattori",
+  "Plan nege je ova stranica (svoju više nema): „Sledeći korak\", Minnino pismo, preporuke, partneri, negovateljice": "Hoitosuunnitelma on tämä sivu (omaa sivua ei enää ole): ”Seuraava askel”, Minnan kirje, suositukset, kumppanit, hoitajat",
+  "Poruka koordinatorke {name}": "Koordinaattori {name}n viesti",
+  "Sakrij": "Piilota",
+  "Pročitaj": "Lue",
+  "Na Mojoj nezi vidite šta je drugačije i možete da poništite izmenu.": "Oma hoito -sivulla näette, mikä on muuttunut, ja voitte perua muutoksen.",
+  "Pogledaj izmenu": "Katso muutos",
 };

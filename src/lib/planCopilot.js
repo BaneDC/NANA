@@ -133,7 +133,6 @@ const REQUEST = {
 // an answer does not say it takes you anywhere.
 // The words are Serbian and translated where the button is drawn: t(PAGES[page]).
 export const PAGES = {
-  plan: msg('Otvori plan nege'),
   'my-care': msg('Idi na Moju negu'),
   'find-caregiver': msg('Pronađi negovateljicu'),
   visits: msg('Pogledaj sve posete'),

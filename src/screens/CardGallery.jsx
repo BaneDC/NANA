@@ -4,7 +4,6 @@ import FamilyDrawer from '../components/family/FamilyDrawer';
 import { buildPlan, caregivers } from '../data/carePlan';
 import { demoAnswers, demoNotes, demoUser } from '../data/demoCase';
 import { reconcile } from '../data/dependencies';
-import { planEntries } from '../data/threads';
 import { startCare } from '../data/familyStart';
 import { startRecord } from '../data/record';
 import { dateText, hoursSaid, relanguage, servicesSaid, standingWith } from '../data/familyCare';
@@ -18,7 +17,6 @@ import CaregiverPage from './CaregiverPage';
 import VisitsPage from './VisitsPage';
 import RequestsPage from './RequestsPage';
 import FindCaregiver from './FindCaregiver';
-import PlanDetail, { NoPlan } from './PlanDetail';
 import Settings from './Settings';
 import MedicalRecord from './MedicalRecord';
 import CaregiverApp from './caregiver/CaregiverApp';
@@ -229,8 +227,8 @@ function askedCare(status) {
 }
 
 const SECTIONS = [
-  { id: 'moja-nega', title: msg('Moja nega'), where: msg('Pregled u mreži: Čeka na vas, tri broja (svaki svoja kartica), pa po dve kartice: Predstoji, Vaše negovateljice, Poslednja poseta, Iz plana nege (partneri sa logom), koordinatorka') },
-  { id: 'prvi-korak', title: msg('Moja nega, pre prvog upita'), where: msg('Plan nege je stranica: Minnino pismo, preporuke, negovateljice') },
+  { id: 'moja-nega', title: msg('Moja nega'), where: msg('Pregled u mreži: Čeka na vas, tri broja (svaki svoja kartica), pa po dve kartice: Predstoji, Poslednja poseta, Vaše negovateljice, Ponude partnera (red otvara drawer ponude sa cenama), poruka koordinatorke (skupljena) i koordinatorka') },
+  { id: 'prvi-korak', title: msg('Moja nega, pre prvog upita'), where: msg('Plan nege je ova stranica (svoju više nema): „Sledeći korak", Minnino pismo, preporuke, partneri, negovateljice') },
   { id: 'upit-poslat', title: msg('Moja nega, upit poslat'), where: msg('Čeka se odgovor, pa „Pogledaj upite"; ispod plan nege') },
   { id: 'svi-odbili', title: msg('Moja nega, svi su odbili'), where: msg('Stigli su odgovori, pa „Pogledaj upite"') },
   { id: 'njena-stranica', title: msg('Njena stranica'), where: msg('Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Prikaži još")') },
@@ -243,8 +241,6 @@ const SECTIONS = [
   { id: 'upiti', title: msg('Moji upiti'), where: msg('Upit: čeka, prihvaćen, odbijen') },
   { id: 'upiti-prazno', title: msg('Moji upiti, prazno'), where: msg('Još nijedan upit: sledeći korak kao na Mojoj nezi') },
   { id: 'pronadji', title: msg('Pronađi negovateljicu'), where: msg('Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije') },
-  { id: 'plan', title: msg('Plan nege'), where: msg('Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)') },
-  { id: 'plan-prazno', title: msg('Plan nege, prazno'), where: msg('Još nema plana') },
   { id: 'podesavanja', title: msg('Podešavanja'), where: msg('Nalog, Plaćanje, Bezbednost, Opšte, Privatnost') },
   { id: 'karton', title: msg('Medicinski karton'), where: msg('Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju') },
   { id: 'karton-prazno', title: msg('Medicinski karton, prazno'), where: msg('Kartona još nema') },
@@ -280,15 +276,10 @@ export default function CardGallery() {
   const care = useMemo(() => inLang(sampleCare()), [lang]);
   const answers = useMemo(() => reconcile({}, demoAnswers).answers, []);
   const plan = useMemo(() => buildPlan(answers, demoNotes), [answers]);
-  const entries = useMemo(
-    () => planEntries({ plan, caregiverCount: caregivers.length, today: '1. oktobra 2026.', answers, notes: demoNotes }),
-    [plan]
-  );
-  const live = entries.find((e) => e.id === 'live') || entries[0];
   const user = { ...demoUser };
   const record = useMemo(() => startRecord(true), []);
   // what the home reads beside the care: the plan's own actions
-  const home = { unlocked: true, onCare: noop, onFlash: noop, onDrawer: noop, onCaregiver: noop, onView: noop, onAskAssistant: noop, onFindCaregiver: noop, onSelectCaregiver: noop, onOpenCaregiver: noop, onUnlock: noop, onOpenPlan: noop, standingOf: () => null };
+  const home = { unlocked: true, onCare: noop, onFlash: noop, onDrawer: noop, onCaregiver: noop, onView: noop, onAskAssistant: noop, onFindCaregiver: noop, onSelectCaregiver: noop, onOpenCaregiver: noop, onUnlock: noop, onUndoChange: noop, onDismissChange: noop, standingOf: () => null };
   const subscription = { planId: 'monthly', at: Date.now() };
   // Her page's drawers open here (the visits, the terms, the overview…), on
   // the sample data, read only: what is decided in them changes nothing.
@@ -380,24 +371,6 @@ export default function CardGallery() {
       <Frame {...S('pronadji')}>
         <FindCaregiver care={care} onContact={noop} onDrawer={noop} onFlash={noop} />
       </Frame>
-      <Frame {...S('plan')}>
-        <PlanDetail
-          entry={live}
-          unlocked
-          onSelectCaregiver={noop}
-          onOpenCaregiver={noop}
-          onUnlock={noop}
-          onAskAssistant={noop}
-          onShare={noop}
-          onUndoChange={noop}
-          onDismissChange={noop}
-          onFindCaregivers={noop}
-          standingOf={(id) => standingWith(care, id)}
-        />
-      </Frame>
-      <Frame {...S('plan-prazno')}>
-        <NoPlan onGoToChat={noop} />
-      </Frame>
       <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
@@ -425,7 +398,6 @@ export default function CardGallery() {
           onOpen={setDrawer}
           onContact={noop}
           onCaregiver={noop}
-          onOpenPlan={noop}
         />
       )}
     </div>

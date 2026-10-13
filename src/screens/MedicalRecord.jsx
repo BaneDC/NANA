@@ -233,7 +233,7 @@ export default function MedicalRecord({
           <Card>
             <CardDescription>
               {t('Promenilo se: {parts}.', { parts: planChange.touched.map((x) => t(x)).join(', ') })}{' '}
-              {t('Na planu vidite šta je drugačije i možete da poništite izmenu.')}
+              {t('Na Mojoj nezi vidite šta je drugačije i možete da poništite izmenu.')}
             </CardDescription>
             {/* what to do next, from the last thing written here */}
             {planChange.fromRecord && record.log[0]?.next?.length > 0 && (
@@ -246,7 +246,7 @@ export default function MedicalRecord({
               </Group>
             )}
             <CardFooter>
-              <Button onClick={onOpenPlan}>{t('Pogledaj plan nege')}</Button>
+              <Button onClick={onOpenPlan}>{t('Pogledaj izmenu')}</Button>
             </CardFooter>
           </Card>
         </Attention>

@@ -625,4 +625,12 @@ export default {
   Nova: 'New',
   ocena: 'rating',
   'Prikaži još {count}': 'Show {count} more',
+  // bez-stranice-plana (merged 13. 10.)
+  "Pregled u mreži: Čeka na vas, tri broja (svaki svoja kartica), pa po dve kartice: Predstoji, Poslednja poseta, Vaše negovateljice, Ponude partnera (red otvara drawer ponude sa cenama), poruka koordinatorke (skupljena) i koordinatorka": "Grid overview: Waiting on you, three numbers (each its own card), then two cards per row: Coming up, Last visit, Your caregivers, Partner offers (a row opens the offer drawer with prices), the coordinator's message (folded) and the coordinator",
+  "Plan nege je ova stranica (svoju više nema): „Sledeći korak\", Minnino pismo, preporuke, partneri, negovateljice": "The care plan is this page (it has no page of its own): “Next step”, Minna's letter, recommendations, partners, caregivers",
+  "Poruka koordinatorke {name}": "Message from your coordinator {name}",
+  "Sakrij": "Hide",
+  "Pročitaj": "Read",
+  "Na Mojoj nezi vidite šta je drugačije i možete da poništite izmenu.": "On My care you can see what is different and undo the change.",
+  "Pogledaj izmenu": "See the change",
 };

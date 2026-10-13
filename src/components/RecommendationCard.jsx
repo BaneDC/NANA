@@ -93,8 +93,9 @@ export default function RecommendationCard({
 
 // A partner's price list. Every row shows what the partner charges and what the
 // family pays through Minna, so the saving is read row by row, not worked out
-// (docs/patterns.md §8: the one exception to label and value).
-function Offer({ rec, bookable }) {
+// (docs/patterns.md §8: the one exception to label and value). The home's
+// drawer of one offer draws the same (docs/patterns.md §4a).
+export function Offer({ rec, bookable }) {
   const partner = PARTNERS[rec.partner];
   const [sent, setSent] = useState(false);
   const ordering = rec.id === 'aids';

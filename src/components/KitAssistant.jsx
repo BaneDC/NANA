@@ -385,7 +385,9 @@ function SendRequestCard({ data, foot, onSend, onOpen }) {
 function OpenPageButtons({ data, onOpen }) {
   return (
     <div className="kc-pages">
-      {data.pages.map((pg) => (
+      {/* a page that is gone (the care plan's, in an older conversation) has
+          no button */}
+      {data.pages.filter((pg) => PAGES[pg]).map((pg) => (
         <Button key={pg} variant="secondary" onClick={() => onOpen(pg)}>
           {t(PAGES[pg])}
           <ArrowRight size={14} strokeWidth={1.75} />
