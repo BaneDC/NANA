@@ -45,8 +45,9 @@ import { requestFoot, requestNote } from './data/firstSteps';
 import { planEntries } from './data/threads';
 import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
+import { locale, setLang, useLang } from './i18n';
 
-const formatDate = (at) => new Date(at).toLocaleDateString('sr-Latn-RS', { day: 'numeric', month: 'long', year: 'numeric' });
+const formatDate = (at) => new Date(at).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
 const formatToday = () => formatDate(Date.now());
 
 // /?demo opens past the onboarding, on a finished plan — for trying the chat and
@@ -66,6 +67,8 @@ const aboutYou = (u) => ({ values: { 'your-name': u.name, 'your-phone': u.phone 
 const shell = 'flex h-full overflow-hidden p-3 narrow:flex-col narrow:p-0';
 
 export default function App() {
+  // A switch of language draws everything under here again; what App keeps stays.
+  const lang = useLang();
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
   const [view, setView] = useState(DEMO ? 'dashboard' : 'chat');
   // `role` is chosen at registration and decides which of the two applications
@@ -74,6 +77,10 @@ export default function App() {
   const [user, setUser] = useState(
     DEMO ? { ...demoUser, country: demoCountry() } : { name: '', email: '', role: 'family' }
   );
+  // An account that chose a language in Settings opens in it.
+  useEffect(() => {
+    if (user.language) setLang(user.language);
+  }, [user.language]);
   // The one person this account cares for (src/data/person.js): her answers and
   // notes, the plan built from them, what changed in it, and the care around
   // her. Everything below reads her from here, so nothing has a second source.
@@ -415,7 +422,7 @@ export default function App() {
       date:
         c.id === conversation
           ? 'Trenutni'
-          : new Date(c.at).toLocaleTimeString('sr-Latn-RS', { hour: '2-digit', minute: '2-digit' }),
+          : new Date(c.at).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' }),
     }));
   const openConversation = (id) => {
     setConversation(id);
@@ -429,14 +436,14 @@ export default function App() {
 
   if (phase === 'app' && isCaregiver) {
     return (
-      <div className={shell}>
+      <div key={lang} className={shell}>
         <CaregiverApp user={user} />
       </div>
     );
   }
 
   return (
-    <SidebarProvider className={shell}>
+    <SidebarProvider key={lang} className={shell}>
       {/* On a phone there is no room for a nav beside the page, so it becomes a
           drawer and this bar is what opens it. Above 900px the bar is not
           drawn at all and the nav is a column again. */}

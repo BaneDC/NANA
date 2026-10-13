@@ -12,6 +12,7 @@ import { Field, Input, Password, Select } from '../components/TextField';
 import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
+import { LANGUAGES, setLang, t, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -274,7 +275,30 @@ function DemoLink({ onDemo }) {
       <button type="button" className={demoLink} onClick={() => (window.location.href = '/?kartice')}>
         Za pregled: sve kartice na jednoj stranici
       </button>
+      <DemoLanguage />
     </>
+  );
+}
+
+// For showing the demo in another language: the same choice as in Settings,
+// made before there is an account, so the onboarding is held in it too.
+function DemoLanguage() {
+  const lang = useLang();
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <span>{t('Za demo: jezik')}</span>
+      {LANGUAGES.map((l) => (
+        <button
+          key={l.id}
+          type="button"
+          aria-pressed={l.id === lang}
+          className={l.id === lang ? 'text-xs font-medium text-foreground' : demoLink}
+          onClick={() => setLang(l.id)}
+        >
+          {l.label}
+        </button>
+      ))}
+    </div>
   );
 }
 

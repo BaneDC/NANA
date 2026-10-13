@@ -18,14 +18,8 @@ import { chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/fa
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword, hashBackupCodes } from '../lib/account';
 import { priceLine, renewsOn } from '../data/plans';
+import { LANGUAGES, setLang, useLang } from '../i18n';
 
-// What the account remembers besides the person: kept on the user record, so
-// signing back in finds it as it was left.
-const LANGUAGES = [
-  { id: 'sr', label: 'Srpski' },
-  { id: 'en', label: 'English' },
-  { id: 'fi', label: 'Suomi' },
-];
 
 // A setting that is on or off: the whole row is its label, so a click anywhere
 // on it switches; the name, what it does under it, the switch right.
@@ -142,7 +136,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
 
   const cookies = user?.cookies || COOKIE_DEFAULT;
   const twoFactor = Boolean(user?.twoFactor);
-  const language = user?.language || 'sr';
+  const language = useLang();
 
   const { payment } = care;
   const charging = chargingVisit(care);
@@ -323,16 +317,17 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           </CardHeader>
           <CardDescription>Jezik aplikacije i poruka koje vam šaljemo.</CardDescription>
           {/* one is always chosen: pressing the chosen one again does nothing */}
-          <ToggleGroup type="single" value={language} onValueChange={(id) => id && onSaveUser({ language: id })}>
+          <ToggleGroup type="single" value={language} onValueChange={(id) => {
+              if (!id) return;
+              setLang(id);
+              onSaveUser({ language: id });
+            }}>
             {LANGUAGES.map((l) => (
               <ToggleGroupItem key={l.id} value={l.id}>
                 {l.label}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-          {language !== 'sr' && (
-            <p className="text-small text-muted-foreground">Prevod još nije napravljen - za sada je izbor samo zapamćen.</p>
-          )}
         </Card>
         <Card>
           <CardTitle>Obaveštenja</CardTitle>
