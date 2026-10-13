@@ -171,8 +171,8 @@ Sve je u `src/components/page.jsx`. Stranica se skroluje, najviše je 720 širok
 - **„Pitaj asistenta" je samo na Mojoj nezi** (odlučeno 8. 10.; plan nege od 12. 10. nema svoju stranicu). Medicinski karton ima svoju jednu akciju, „Prijavi promenu", koja otvara istog asistenta (§10a), pa nema i „Pitaj asistenta". Podešavanja, Pronađi negovateljicu i ostale stranice ga nemaju.
 - **Panel asistenta: kako se otvara, zatvara i šta pokazuje** (odlučeno 13. 10.; `reportChange` i `askAssistant` u `App.jsx`, `chatStage` u `KitAssistant.jsx`):
   - **Jedan razgovor.** Panel, sa koje god stranice da se otvori, i stranica Razgovor pokazuju isti, trenutni razgovor. Prazan razgovor pokazuje dobrodošlicu i predloge, a razgovor u kome nešto piše pokazuje svoj naslov.
-  - **Dugme je prekidač.** „Pitaj asistenta" i „Prijavi promenu" otvaraju panel, a ako je već otvoren, zatvaraju ga.
-  - **Panel se vidi samo na Mojoj nezi i u kartonu.** Na drugoj stranici (i u Razgovoru) se sklanja. Kad se porodica vrati na jednu od te dve stranice, opet je otvoren, sa istim razgovorom. Zatvara se samo na X ili ponovnim klikom na dugme.
+  - **Dugme samo otvara, nikad ne zatvara** (odlučeno 13. 10.; isti dan je prvo bio prekidač). „Pitaj asistenta" i „Prijavi promenu" otvaraju panel. Ako je već otvoren, ostaje otvoren, a kursor ode u polje za pisanje (na telefonu ne, da tastatura ne pokrije razgovor). Panel se zatvara samo na X. Zašto: klik na „Pitaj asistenta" koji zatvori asistenta radi suprotno od onoga što piše na dugmetu, a porodica ne zna da je panel otvorilo baš to dugme.
+  - **Panel se vidi samo na Mojoj nezi i u kartonu.** Na drugoj stranici (i u Razgovoru) se sklanja. Kad se porodica vrati na jednu od te dve stranice, opet je otvoren, sa istim razgovorom. Zatvara se samo na X.
   - **„Prijavi promenu" gleda trenutni razgovor:**
     - prazan: u njega se upiše „Nešto se promenilo." i gotovo pitanje;
     - u njemu je samo to gotovo pitanje, bez porodičinog odgovora: panel se samo otvori, ništa se ne dopisuje;

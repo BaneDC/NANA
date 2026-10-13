@@ -276,8 +276,25 @@ export default function App() {
   };
   const goToChat = () => setView('chat');
   // In Razgovor the assistant is the page itself, so it is not opened again beside it.
-  // "Pitaj asistenta" and "Prijavi promenu" open the panel and, pressed again, close it.
-  const askAssistant = () => (view === 'chat' ? null : setRightPanel((p) => (p === 'copilot' ? null : 'copilot')));
+  // "Pitaj asistenta" and "Prijavi promenu" open the panel, and when it is open
+  // already they keep it open and put the cursor where the family writes; only
+  // X closes it (docs/patterns.md §4). Not on a phone: there the panel is the
+  // whole screen and a keyboard coming up would cover what it says.
+  const focusComposer = (after = 50) => {
+    if (window.matchMedia('(max-width: 640px)').matches) return;
+    let tries = 0;
+    const find = () => {
+      const box = document.querySelector('.chat-side [contenteditable=plaintext-only]');
+      if (box) box.focus();
+      else if (tries++ < 20) setTimeout(find, 50);
+    };
+    setTimeout(find, after);
+  };
+  const askAssistant = () => {
+    if (view === 'chat') return;
+    setRightPanel('copilot');
+    focusComposer();
+  };
   // The assistant's conversation: one, wherever it is open. <ChatSource> holds
   // it and is remounted, under a new key, for a new conversation.
   // Every conversation stays: each keeps its own live chat, and the nav lists
@@ -376,14 +393,15 @@ export default function App() {
 
   // "Prijavi promenu" on the medical record: the assistant opens beside it
   // already asking what changed (a fixed opener, sent as the family's own).
-  // Pressed again it closes. An empty conversation gets the opener, one that
+  // An empty conversation gets the opener, one that
   // has only the opener is just shown again, and one where the family has said
   // something is left as it is for a new conversation (docs/patterns.md §10a).
   const reportChange = () => {
-    if (rightPanel === 'copilot') return setRightPanel(null);
     setRightPanel('copilot');
     const chat = chatStore.get(conversation);
     const stage = chatStage(chat);
+    // a new conversation is drawn anew, so the cursor waits for it
+    focusComposer(stage === 'talk' ? 300 : 50);
     if (stage === 'talk') return startConversation(true);
     const draft = chat?.turns[chat.turns.length - 1];
     if (stage === 'empty' && draft && !chat.isStreaming) chat.submit(draft.id, t(CHANGE_OPENER));
