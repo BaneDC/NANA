@@ -1,16 +1,29 @@
+import { msg, t } from '../i18n';
+
 // The Clinical Frailty Scale the client's flow is built around. The questionnaire
 // estimates a level from the answers, the conversation then branches on it, and the
 // recommendation weighs it at 50% (see WEIGHTS below).
+//
+// The words are Serbian and translated when read: `label` and `blurb` are
+// getters, so frailtyOf() and every CFS[level].label give the app's language now.
+const named = (label, blurb) => ({
+  get label() {
+    return t(label);
+  },
+  get blurb() {
+    return t(blurb);
+  },
+});
 export const CFS = {
-  1: { label: 'Veoma vitalna', blurb: 'Aktivna, energična i motivisana. Redovno vežba i među najvitalnijima je za svoje godine.' },
-  2: { label: 'Vitalna', blurb: 'Bez aktivnih simptoma bolesti, ali manje vitalna nego prva kategorija. Aktivna povremeno, npr. sezonski.' },
-  3: { label: 'Dobro se snalazi', blurb: 'Zdravstveni problemi su pod kontrolom. Nije redovno aktivna izvan uobičajenih šetnji.' },
-  4: { label: 'Ranjiva', blurb: 'Nije zavisna od drugih iz dana u dan, ali je simptomi često ograničavaju. Često „usporena" ili umorna tokom dana.' },
-  5: { label: 'Blago krhka', blurb: 'Usporavanje je vidljivije. Treba joj pomoć oko obaveza, kuće, prevoza i težih poslova; često i oko lekova.' },
-  6: { label: 'Umereno krhka', blurb: 'Treba joj pomoć oko svih aktivnosti van kuće i oko domaćinstva. Često ima problem sa stepenicama, kupanjem i oblačenjem.' },
-  7: { label: 'Izrazito krhka', blurb: 'Potpuno zavisna od drugih oko lične nege, iz bilo kog razloga. Stabilna i bez visokog rizika u narednih šest meseci.' },
-  8: { label: 'Veoma izrazito krhka', blurb: 'Potpuno zavisna i pri kraju života. Po pravilu se ne bi oporavila ni od lakše bolesti.' },
-  9: { label: 'Terminalno bolesna', blurb: 'Pri kraju života, sa očekivanim trajanjem ispod šest meseci, bez druge izražene krhkosti.' },
+  1: named(msg('Veoma vitalna'), msg('Aktivna, energična i motivisana. Redovno vežba i među najvitalnijima je za svoje godine.')),
+  2: named(msg('Vitalna'), msg('Bez aktivnih simptoma bolesti, ali manje vitalna nego prva kategorija. Aktivna povremeno, npr. sezonski.')),
+  3: named(msg('Dobro se snalazi'), msg('Zdravstveni problemi su pod kontrolom. Nije redovno aktivna izvan uobičajenih šetnji.')),
+  4: named(msg('Ranjiva'), msg('Nije zavisna od drugih iz dana u dan, ali je simptomi često ograničavaju. Često „usporena" ili umorna tokom dana.')),
+  5: named(msg('Blago krhka'), msg('Usporavanje je vidljivije. Treba joj pomoć oko obaveza, kuće, prevoza i težih poslova; često i oko lekova.')),
+  6: named(msg('Umereno krhka'), msg('Treba joj pomoć oko svih aktivnosti van kuće i oko domaćinstva. Često ima problem sa stepenicama, kupanjem i oblačenjem.')),
+  7: named(msg('Izrazito krhka'), msg('Potpuno zavisna od drugih oko lične nege, iz bilo kog razloga. Stabilna i bez visokog rizika u narednih šest meseci.')),
+  8: named(msg('Veoma izrazito krhka'), msg('Potpuno zavisna i pri kraju života. Po pravilu se ne bi oporavila ni od lakše bolesti.')),
+  9: named(msg('Terminalno bolesna'), msg('Pri kraju života, sa očekivanim trajanjem ispod šest meseci, bez druge izražene krhkosti.')),
 };
 
 // Which branch of the conversation a level opens. Straight from the document.

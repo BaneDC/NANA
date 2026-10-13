@@ -2,11 +2,15 @@
 
 import * as React from "react"
 import { DayPicker } from "react-day-picker"
-import { srLatn } from "react-day-picker/locale"
+import { enGB, fi, srLatn } from "react-day-picker/locale"
+import { getLang } from "@/i18n"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// shadcn's calendar (react-day-picker) as NANA's, in Serbian, weeks from
+// the day picker speaks the app's language
+const LOCALES = { sr: srLatn, en: enGB, fi }
+
+// shadcn's calendar (react-day-picker) as NANA's, in the app's language, weeks from
 // Monday: a month at a time, the month (with a capital) and year in the middle
 // of the top row and the arrows to either side of it. It fills the width it is
 // given (the field's, in a date picker), the seven days sharing it; each day
@@ -21,7 +25,7 @@ function Calendar({
 }) {
   return (
     <DayPicker
-      locale={srLatn}
+      locale={LOCALES[getLang()] || srLatn}
       weekStartsOn={1}
       showOutsideDays={false}
       className={cn("w-full", className)}

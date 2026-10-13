@@ -1,11 +1,12 @@
 import SidePanel from './SidePanel';
 import PlanContents from './PlanContents';
+import { t } from '../i18n';
 
 // The care plan as a side panel, opened from the chat where it is an artifact of
 // the conversation. Opening it from the Care plans page uses the full page instead.
 export default function CaregiverSidebar({ plan, unlocked, onSelectCaregiver, onOpenCaregiver, onUnlock, onClose }) {
   return (
-    <SidePanel eyebrow="Plan nege" title={plan.name} onClose={onClose}>
+    <SidePanel eyebrow={t('Plan nege')} title={plan.name} onClose={onClose}>
       <PlanContents
         plan={plan}
         unlocked={unlocked}

@@ -13,7 +13,7 @@ import FirstTime from '../components/FirstTime';
 import FrailtyScale from '../components/FrailtyScale';
 import ShowMore from '../components/ShowMore';
 import Tags, { Group } from '../components/Tags';
-import { dayLabel, hourText, pl, todayOf } from '../data/familyCare';
+import { dayLabel, hourText, todayOf } from '../data/familyCare';
 import {
   HEALTH,
   HISTORY_KIND,
@@ -24,6 +24,7 @@ import {
   partRows,
   recordHistory,
 } from '../data/record';
+import { t, tn } from '../i18n';
 
 // The medical record of the person being cared for (docs/patterns.md §10a):
 // her page, opened from who is signed in, at the foot of the menu. Two views
@@ -61,10 +62,10 @@ function PartCard({ part, answers }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{part.title}</CardTitle>
+        <CardTitle>{t(part.title)}</CardTitle>
         {missing > 0 && (
           <CardAction>
-            <Badge>Nije upisano: {missing}</Badge>
+            <Badge>{t('Nije upisano: {count}', { count: missing })}</Badge>
           </CardAction>
         )}
       </CardHeader>
@@ -84,7 +85,7 @@ function HealthCard({ list, items }) {
   return (
     <Card className="[&>[data-slot=item-group]]:mt-2">
       <CardHeader>
-        <CardTitle>{list.title}</CardTitle>
+        <CardTitle>{t(list.title)}</CardTitle>
       </CardHeader>
       {items.length > 0 ? (
         <ItemGroup>
@@ -92,7 +93,7 @@ function HealthCard({ list, items }) {
             <Item key={e.id}>
               <ItemContent>
                 <ItemTitle className={entryLine(e) ? 'mb-1' : undefined}>
-                  {e.name}
+                  {t(e.name)}
                 </ItemTitle>
                 {entryLine(e) && <ItemDescription>{entryLine(e)}</ItemDescription>}
               </ItemContent>
@@ -100,7 +101,7 @@ function HealthCard({ list, items }) {
           ))}
         </ItemGroup>
       ) : (
-        <CardDescription>{list.empty}</CardDescription>
+        <CardDescription>{t(list.empty)}</CardDescription>
       )}
     </Card>
   );
@@ -108,38 +109,38 @@ function HealthCard({ list, items }) {
 
 // who wrote it and when, as the line under an entry says
 const byText = (e) =>
-  e.by === 'you' ? (e.via === 'assistant' ? 'vi, preko asistenta' : 'vi') : e.by === 'minna' ? 'Minna' : e.who || 'negovateljica';
-const whenText = (e, today) => (e.day ? e.day.toLowerCase() : `${dayLabel(Math.floor(e.at / 24), today).toLowerCase()} u ${hourText(e.at)}`);
+  e.by === 'you' ? (e.via === 'assistant' ? t('vi, preko asistenta') : t('vi')) : e.by === 'minna' ? 'Minna' : e.who || t('negovateljica');
+const whenText = (e, today) => (e.day ? e.day.toLowerCase() : t('{day} u {time}', { day: dayLabel(Math.floor(e.at / 24), today).toLowerCase(), time: hourText(e.at) }));
 
 function History({ entries, today }) {
   const list = useShowMore(entries);
   return (
     <Card className="[&>[data-slot=item-group]]:mt-2">
       <CardHeader>
-        <CardTitle>Istorija kartona</CardTitle>
+        <CardTitle>{t('Istorija kartona')}</CardTitle>
       </CardHeader>
       <CardDescription>
-        {pl(entries.length, 'stavka', 'stavke', 'stavki')} · najnovije prvo. Ništa se odavde ne briše: izmena se upisuje pored onoga
-        što je bilo.
+        {tn(entries.length, 'stavka', 'stavke', 'stavki')} ·{' '}
+        {t('najnovije prvo. Ništa se odavde ne briše: izmena se upisuje pored onoga što je bilo.')}
       </CardDescription>
       <ItemGroup>
         {list.visible.map((e) => (
           <Item key={e.id}>
             <ItemContent>
               <ItemTitle className="mb-1 flex-wrap">
-                <span className="min-w-0">{e.title}</span>
+                <span className="min-w-0">{t(e.title)}</span>
                 <Badge variant={e.kind === 'state' ? 'default' : 'secondary'} className={overLine}>
-                  {HISTORY_KIND[e.kind]}
+                  {t(HISTORY_KIND[e.kind])}
                 </Badge>
               </ItemTitle>
               <ItemDescription>
                 {byText(e)} · {whenText(e, today)}
               </ItemDescription>
-              {e.lines.map((line) => (
-                <ItemDescription key={line}>{line}</ItemDescription>
+              {e.lines.map((line, i) => (
+                <ItemDescription key={i}>{t(line)}</ItemDescription>
               ))}
-              {e.next?.map((line) => (
-                <ItemDescription key={line}>Šta dalje: {line}</ItemDescription>
+              {e.next?.map((line, i) => (
+                <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
               ))}
             </ItemContent>
           </Item>
@@ -171,18 +172,18 @@ export default function MedicalRecord({
       <Page>
         <PageHeader>
           <PageHeaderText>
-            <PageTitle>Medicinski karton</PageTitle>
-            <PageDescription>Sve o osobi o kojoj brinete, na jednom mestu.</PageDescription>
+            <PageTitle>{t('Medicinski karton')}</PageTitle>
+            <PageDescription>{t('Sve o osobi o kojoj brinete, na jednom mestu.')}</PageDescription>
           </PageHeaderText>
         </PageHeader>
         {/* empty, the next step as on Moja nega (docs/patterns.md §5) */}
-        <Attention title="Kartona još nema">
+        <Attention title={t('Kartona još nema')}>
           <Card>
             <CardDescription>
-              Karton se otvara iz upoznavanja sa Minnom. Čim odgovorite na njena pitanja, ovde je sve o osobi o kojoj brinete.
+              {t('Karton se otvara iz upoznavanja sa Minnom. Čim odgovorite na njena pitanja, ovde je sve o osobi o kojoj brinete.')}
             </CardDescription>
             <CardFooter>
-              <Button onClick={onGoToChat}>Idi na razgovor</Button>
+              <Button onClick={onGoToChat}>{t('Idi na razgovor')}</Button>
             </CardFooter>
           </Card>
         </Attention>
@@ -205,7 +206,7 @@ export default function MedicalRecord({
           <PageHeaderText>
             <PageTitle>{person.name}</PageTitle>
             <PageDescription>
-              {['Medicinski karton', age ? pl(age, 'godina', 'godine', 'godina') : person.age, person.city].filter(Boolean).join(' · ')}
+              {[t('Medicinski karton'), age ? tn(age, 'godina', 'godine', 'godina') : person.age, person.city].filter(Boolean).join(' · ')}
             </PageDescription>
           </PageHeaderText>
         </PagePerson>
@@ -214,38 +215,38 @@ export default function MedicalRecord({
             else can be asked in the same conversation, so there is no second
             button. */}
         <PageActions>
-          <Button onClick={onReportChange}>Prijavi promenu</Button>
+          <Button onClick={onReportChange}>{t('Prijavi promenu')}</Button>
         </PageActions>
       </PageHeader>
 
       {/* Why there is nothing to edit here, until the family has reported a
           first change and so knows (docs/patterns.md §4b). */}
       <FirstTime show={!record.log.some((e) => e.via === 'assistant')}>
-        Karton se ne menja ručno: sve promene i ispravke idu preko „Prijavi promenu".
+        {t('Karton se ne menja ručno: sve promene i ispravke idu preko „Prijavi promenu".')}
       </FirstTime>
 
       {/* a change here rewrote the plan: where to see it, and take it back.
           Not when it left the plan as it was (a corrected age, a phone number):
           the history says so, and the banner would say the opposite. */}
       {planChange && plan && planChange.touched.length > 0 && (
-        <Attention title="Plan nege je izmenjen">
+        <Attention title={t('Plan nege je izmenjen')}>
           <Card>
             <CardDescription>
-              Promenilo se: {planChange.touched.join(', ')}.{' '}
-              Na planu vidite šta je drugačije i možete da poništite izmenu.
+              {t('Promenilo se: {parts}.', { parts: planChange.touched.map((x) => t(x)).join(', ') })}{' '}
+              {t('Na Mojoj nezi vidite šta je drugačije i možete da poništite izmenu.')}
             </CardDescription>
             {/* what to do next, from the last thing written here */}
             {planChange.fromRecord && record.log[0]?.next?.length > 0 && (
-              <Group label="Šta dalje">
+              <Group label={t('Šta dalje')}>
                 <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-body text-foreground">
-                  {record.log[0].next.map((line) => (
-                    <li key={line}>{line}</li>
+                  {record.log[0].next.map((line, i) => (
+                    <li key={i}>{t(line)}</li>
                   ))}
                 </ul>
               </Group>
             )}
             <CardFooter>
-              <Button onClick={onOpenPlan}>Pogledaj plan nege</Button>
+              <Button onClick={onOpenPlan}>{t('Pogledaj izmenu')}</Button>
             </CardFooter>
           </Card>
         </Attention>
@@ -253,17 +254,17 @@ export default function MedicalRecord({
 
       {/* the chart as it stands, and everything written into it: two views of one thing */}
       <Tabs value={side} onValueChange={setSide}>
-        <TabsList aria-label="Šta prikazati">
-          <TabsTrigger value="now">Stanje sada</TabsTrigger>
-          <TabsTrigger value="history">Istorija</TabsTrigger>
+        <TabsList aria-label={t('Šta prikazati')}>
+          <TabsTrigger value="now">{t('Stanje sada')}</TabsTrigger>
+          <TabsTrigger value="history">{t('Istorija')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="now" className="flex flex-col gap-8">
-          <PageSection title="Ukratko">
+          <PageSection title={t('Ukratko')}>
             {alerts.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Na šta paziti</CardTitle>
+                  <CardTitle>{t('Na šta paziti')}</CardTitle>
                 </CardHeader>
                 <Tags items={alerts} />
               </Card>
@@ -271,28 +272,28 @@ export default function MedicalRecord({
             <FrailtyScale answers={answers} />
           </PageSection>
 
-          <PageSection title="Svakodnevica">
+          <PageSection title={t('Svakodnevica')}>
             <PartCard part={RECORD_PARTS.daily} answers={answers} />
             <PartCard part={RECORD_PARTS.support} answers={answers} />
           </PageSection>
 
-          <PageSection title="Zdravlje">
+          <PageSection title={t('Zdravlje')}>
             {HEALTH.map((list) => (
               <HealthCard key={list.id} list={list} items={record.health[list.id]} />
             ))}
             {/* what these lists are, said once under them, where the cards' text starts */}
-            <p className="px-4 text-small text-disabled">{NOTED_ONLY}</p>
+            <p className="px-4 text-small text-disabled">{t(NOTED_ONLY)}</p>
           </PageSection>
 
-          <PageSection title="Osnovno">
+          <PageSection title={t('Osnovno')}>
             <PartCard part={RECORD_PARTS.person} answers={answers} />
             {/* her address is a card of its own: a new one is a move, not a detail */}
             <Card>
               <CardHeader>
-                <CardTitle>Gde živi</CardTitle>
+                <CardTitle>{t('Gde živi')}</CardTitle>
               </CardHeader>
               <Facts>
-                <Fact label="Mesto">{person.city?.trim() || '-'}</Fact>
+                <Fact label={t('Mesto')}>{person.city?.trim() || '-'}</Fact>
               </Facts>
             </Card>
             <PartCard part={RECORD_PARTS.contact} answers={answers} />

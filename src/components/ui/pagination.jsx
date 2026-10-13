@@ -2,6 +2,7 @@ import * as React from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { t } from "@/i18n"
 
 // shadcn's pagination as NANA's pages (Pronađi): the arrows are square
 // secondary buttons, a page number is a 28 chip (44 under a finger), 8 apart,
@@ -15,7 +16,7 @@ function Pagination({
   return (
     <nav
       role="navigation"
-      aria-label="Strane"
+      aria-label={t("Strane")}
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props} />
@@ -63,7 +64,7 @@ function PaginationPrevious({
   ...props
 }) {
   return (
-    <Button variant="secondary" size="icon" aria-label="Prethodna strana" {...props}>
+    <Button variant="secondary" size="icon" aria-label={t("Prethodna strana")} {...props}>
       <ChevronLeftIcon size={14} strokeWidth={2} />
     </Button>
   );
@@ -73,7 +74,7 @@ function PaginationNext({
   ...props
 }) {
   return (
-    <Button variant="secondary" size="icon" aria-label="Sledeća strana" {...props}>
+    <Button variant="secondary" size="icon" aria-label={t("Sledeća strana")} {...props}>
       <ChevronRightIcon size={14} strokeWidth={2} />
     </Button>
   );

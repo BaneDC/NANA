@@ -1,10 +1,11 @@
 import { questionById, steps } from './flow';
 import { srField, srShort } from './flow.sr';
 import { answerText, applyChanges, describeChanges, planDiff, planQuestions } from './planEdits';
-import { buildPlan } from './carePlan';
+import { buildPlan, quoted } from './carePlan';
 import { frailtyOf } from './frailty';
 import { planOverview } from './carePlan.sr';
-import { needFrom } from './familyStart';
+import { needFrom, scheduleText } from './familyStart';
+import { known, localized, msg, t, tn } from '../i18n';
 import { AMOUNT_LABEL, MOOD_LABEL, START_HOUR, allVisits, dayOf, firstName, longDate, todayOf } from './familyCare';
 
 // The medical record: everything about the person being cared for, in one
@@ -33,12 +34,13 @@ import { AMOUNT_LABEL, MOOD_LABEL, START_HOUR, allVisits, dayOf, firstName, long
 const stepIds = (id) => steps.find((s) => s.id === id).questions.map((q) => q.id);
 
 // The parts of the chart read from the answers, in the order the page shows
-// them. `support` holds whichever questions her frailty band asks.
+// them. `support` holds whichever questions her frailty band asks. Titles are
+// Serbian keys (msg), shown through t().
 export const RECORD_PARTS = {
-  daily: { id: 'daily', title: 'Kretanje i samostalnost', questions: stepIds('daily-life') },
-  support: { id: 'support', title: 'Podrška koja joj treba', questions: stepIds('support') },
-  person: { id: 'person', title: 'Lični podaci', questions: ['about-person', 'household', 'home-condition'] },
-  contact: { id: 'contact', title: 'Kontakt osoba', questions: ['about-you'] },
+  daily: { id: 'daily', title: msg('Kretanje i samostalnost'), questions: stepIds('daily-life') },
+  support: { id: 'support', title: msg('Podrška koja joj treba'), questions: stepIds('support') },
+  person: { id: 'person', title: msg('Lični podaci'), questions: ['about-person', 'household', 'home-condition'] },
+  contact: { id: 'contact', title: msg('Kontakt osoba'), questions: ['about-you'] },
 };
 // Why the family called, how it began and whether she was in hospital then are
 // not parts of the chart: they say what brought the family to us, which is the
@@ -65,7 +67,7 @@ export function partRows(part, answers) {
     if (q.type === 'inputs') {
       return q.fields
         .filter((f) => !fieldLocked(q.id, f.id))
-        .map((f) => ({ key: `${q.id}.${f.id}`, label: srField(q, f.id), value: answer?.values?.[f.id]?.trim() || '-' }));
+        .map((f) => ({ key: q.id + '.' + f.id, label: srField(q, f.id), value: known(answer?.values?.[f.id]?.trim() || '-') }));
     }
     return [{ key: q.id, label: srShort(q), value: answer ? answerText(q, answer) : '-' }];
   });
@@ -75,47 +77,53 @@ export function partRows(part, answers) {
 // ── what a conversation does not ask ────────────────────────────────────────
 // Each list says what it holds, what it says when it is empty, and how an
 // entry that no longer holds is said to have ended. Entries are written and
-// closed by the assistant (`healthOps`), never by hand.
+// closed by the assistant (`healthOps`), never by hand. The words are Serbian
+// keys (msg), shown through t().
 
 export const HEALTH = [
   {
     id: 'conditions',
-    title: 'Dijagnoze i stanja',
-    empty: 'Nijedna dijagnoza nije upisana.',
-    end: 'Više ne važi',
+    title: msg('Dijagnoze i stanja'),
+    empty: msg('Nijedna dijagnoza nije upisana.'),
+    end: msg('Više ne važi'),
   },
   {
     id: 'medications',
-    title: 'Lekovi',
+    title: msg('Lekovi'),
     // written as prescribed: this is a note of it, never our word on it
-    empty: 'Nijedan lek nije upisan.',
-    end: 'Više ne uzima',
+    empty: msg('Nijedan lek nije upisan.'),
+    end: msg('Više ne uzima'),
   },
   {
     id: 'allergies',
-    title: 'Alergije',
-    empty: 'Nijedna alergija nije upisana.',
-    end: 'Više ne važi',
+    title: msg('Alergije'),
+    empty: msg('Nijedna alergija nije upisana.'),
+    end: msg('Više ne važi'),
   },
   {
     id: 'aids',
-    title: 'Pomagala',
-    empty: 'Nijedno pomagalo nije upisano.',
-    end: 'Više ne koristi',
+    title: msg('Pomagala'),
+    empty: msg('Nijedno pomagalo nije upisano.'),
+    end: msg('Više ne koristi'),
   },
 ];
 
 export const healthList = (id) => HEALTH.find((h) => h.id === id);
 
-// the line under an entry's name: what was noted, and from when
-export const entryLine = (e) => [e.note, e.since && `od ${longDate(e.since)}`].filter(Boolean).join(' · ');
+// the line under an entry's name: what was noted, and from when. A note the
+// demo wrote is a Serbian key; one the family gave stays as they wrote it.
+export const entryLine = (e) =>
+  [e.note && t(e.note), e.since && t('od {date}', { date: longDate(e.since) })].filter(Boolean).join(' · ');
 
 const OPENED = {
   kind: 'opened',
   by: 'minna',
-  title: 'Karton je otvoren',
-  lines: ['Iz upoznavanja sa Minnom: lični podaci, svakodnevica i podrška.'],
+  title: msg('Karton je otvoren'),
+  lines: [msg('Iz upoznavanja sa Minnom: lični podaci, svakodnevica i podrška.')],
 };
+
+// A history entry's title and lines are written in the language being read;
+// the fixed ones are Serbian keys (msg), so the page reads them through t().
 
 // The record as it starts: opened from the conversation, nothing else in it.
 // The demo's case has been kept for three weeks, so its chart has entries.
@@ -131,15 +139,15 @@ export function startRecord(demo) {
   return {
     health: {
       conditions: [
-        { id: 'h1', name: 'Povišen krvni pritisak', note: 'Pod kontrolom, uz terapiju' },
-        { id: 'h2', name: 'Osteoporoza', note: 'Kontrola jednom godišnje' },
+        { id: 'h1', name: msg('Povišen krvni pritisak'), note: msg('Pod kontrolom, uz terapiju') },
+        { id: 'h2', name: msg('Osteoporoza'), note: msg('Kontrola jednom godišnje') },
       ],
       medications: [
-        { id: 'h3', name: 'Amlodipin 5 mg', note: 'Jednom dnevno, ujutru' },
-        { id: 'h4', name: 'Kalcijum i vitamin D', note: 'Uz doručak' },
+        { id: 'h3', name: 'Amlodipin 5 mg', note: msg('Jednom dnevno, ujutru') },
+        { id: 'h4', name: msg('Kalcijum i vitamin D'), note: msg('Uz doručak') },
       ],
-      allergies: [{ id: 'h5', name: 'Penicilin', note: 'Osip' }],
-      aids: [{ id: 'h6', name: 'Štap', note: 'Napolju i na stepenicama' }],
+      allergies: [{ id: 'h5', name: msg('Penicilin'), note: msg('Osip') }],
+      aids: [{ id: 'h6', name: msg('Štap'), note: msg('Napolju i na stepenicama') }],
     },
     log: [
       {
@@ -147,8 +155,8 @@ export function startRecord(demo) {
         at: opened + 25,
         kind: 'added',
         by: 'you',
-        title: 'Upisano zdravlje',
-        lines: ['Dijagnoze i stanja: 2 · Lekovi: 2 · Alergije: 1 · Pomagala: 1'],
+        title: msg('Upisano zdravlje'),
+        lines: [msg('Dijagnoze i stanja: 2 · Lekovi: 2 · Alergije: 1 · Pomagala: 1')],
       },
       { id: 'k1', at: opened, ...OPENED },
     ],
@@ -214,14 +222,19 @@ export function recordImpact({ answers, notes = [], plan, changes }) {
 // A row of a change, as one line of the history.
 const rowLine = (r) =>
   r.added || r.removed
-    ? `${r.title}: ${[r.removed.length && `više ne: ${r.removed.join(', ')}`, r.added.length && `sada i: ${r.added.join(', ')}`].filter(Boolean).join('; ')}`
+    ? `${r.title}: ${[
+        r.removed.length && t('više ne: {items}', { items: r.removed.join(', ') }),
+        r.added.length && t('sada i: {items}', { items: r.added.join(', ') }),
+      ]
+        .filter(Boolean)
+        .join('; ')}`
     : `${r.title}: ${r.before} → ${r.after}`;
 
 // what a change did to the plan, as one line of the history
 const planLine = (impact) =>
   [
-    impact.frailty && `Nivo krhkosti: ${impact.frailty.before} → ${impact.frailty.after}.`,
-    impact.touched.length ? `U planu nege se promenilo: ${impact.touched.join(', ')}.` : 'Plan nege je ostao isti.',
+    impact.frailty && t('Nivo krhkosti: {before} → {after}.', impact.frailty),
+    impact.touched.length ? t('U planu nege se promenilo: {parts}.', { parts: impact.touched.join(', ') }) : t('Plan nege je ostao isti.'),
   ]
     .filter(Boolean)
     .join(' ');
@@ -235,13 +248,14 @@ export function nextSteps({ impact, care, until }) {
   const working = (care?.arrangements || []).filter((a) => !a.endedOn);
   const names = working.map((a) => firstName(a.caregiver.name)).join(', ');
   return [
-    impact?.band && 'Promenila se vrsta podrške koja joj treba. Pre novog dogovora neka koordinatorka pogleda plan.',
+    impact?.band && t('Promenila se vrsta podrške koja joj treba. Pre novog dogovora neka koordinatorka pogleda plan.'),
     impact?.week &&
       (working.length
-        ? `Plan sada traži „${impact.week.after}", a dogovoreno je drugačije. Zatražite nove uslove (${names}).`
-        : `Plan sada traži „${impact.week.after}". Novi upiti idu sa izmenjenim planom.`),
-    impact?.opened.length > 0 && `Otvorila su se nova pitanja: ${impact.opened.join(', ')}. Asistent može da ih prođe sa vama.`,
-    until && `Privremeno je, do ${longDate(until)}. Tada javite asistentu kako je, da se plan vrati ili ostane.`,
+        ? t('Plan sada traži {week}, a dogovoreno je drugačije. Zatražite nove uslove ({names}).', { week: quoted(scheduleText(impact.week.after)), names })
+        : t('Plan sada traži {week}. Novi upiti idu sa izmenjenim planom.', { week: quoted(scheduleText(impact.week.after)) })),
+    impact?.opened.length > 0 &&
+      t('Otvorila su se nova pitanja: {questions}. Asistent može da ih prođe sa vama.', { questions: impact.opened.join(', ') }),
+    until && t('Privremeno je, do {date}. Tada javite asistentu kako je, da se plan vrati ili ostane.', { date: longDate(until) }),
   ].filter(Boolean);
 }
 
@@ -256,7 +270,7 @@ export function dayFrom(text) {
 // What every list under "Zdravlje" is, said on the page and in each dialog:
 // a note of what the family told us. NANA gives no medical advice, on
 // medicines or anything else (docs/patterns.md §10a, §14).
-export const NOTED_ONLY = 'Ovo su beleške, upisane onako kako ste nam rekli. NANA ne daje medicinske savete: o lekovima, dijagnozama i terapiji odlučuje lekar.';
+export const NOTED_ONLY = msg('Ovo su beleške, upisane onako kako ste nam rekli. NANA ne daje medicinske savete: o lekovima, dijagnozama i terapiji odlučuje lekar.');
 
 // What the assistant proposed for the lists (a medicine added, an aid no
 // longer used), checked against the record: an entry to end has to be there.
@@ -267,7 +281,8 @@ export function healthOps(record, ops = []) {
       const name = String(op.name || '').trim();
       if (!list || !name) return null;
       if (op.action === 'end') {
-        const entry = record.health[list.id].find((e) => e.name.toLowerCase() === name.toLowerCase());
+        // the assistant was told the name in the language being read (recordState)
+        const entry = record.health[list.id].find((e) => [e.name, t(e.name)].some((n) => n.toLowerCase() === name.toLowerCase()));
         return entry ? { list: list.id, action: 'end', id: entry.id, name: entry.name } : null;
       }
       return { list: list.id, action: 'add', name, note: String(op.note || '').trim() };
@@ -279,9 +294,9 @@ export function healthOps(record, ops = []) {
 export const healthRows = (ops) =>
   ops.map((op, i) => ({
     questionId: `health-${i}`,
-    title: healthList(op.list).title,
-    before: op.action === 'end' ? op.name : '-',
-    after: op.action === 'end' ? healthList(op.list).end.toLowerCase() : [op.name, op.note].filter(Boolean).join(' · '),
+    title: t(healthList(op.list).title),
+    before: op.action === 'end' ? t(op.name) : '-',
+    after: op.action === 'end' ? t(healthList(op.list).end).toLowerCase() : [op.name, op.note].filter(Boolean).join(' · '),
   }));
 
 const withHealth = (record, ops, since) => ({
@@ -301,30 +316,43 @@ const withHealth = (record, ops, since) => ({
 // Something that happened, written into the record once the family agreed to
 // what the assistant proposed: what it was and from when, each answer and
 // entry it moved, what it did to the plan, and what to do next.
-export function writeEvent(record, at, { event, impact, health = [], care, correction = false }) {
+export function writeEvent(record, at, { event, impact, impactFor, health = [], care, correction = false }) {
   // a proposal that is not an event (a correction, a plain change of the
   // plan) comes with none: `null`, which a default would not catch
   const what = String(event?.what || '').trim();
   const since = dayFrom(event?.since);
   const until = dayFrom(event?.until);
-  const rows = [...(impact?.rows || []), ...healthRows(health)];
-  const next = nextSteps({ impact, care, until });
+  // A history is read for years, in whatever language is chosen then: the
+  // entry is written in every language (the impact worked out again in each,
+  // `impactFor`, since what it names is in the language it was worked out in).
+  // What the assistant wrote (`what`) stays as it wrote it.
+  const entry = localized(() => {
+    const said = impactFor ? impactFor() : impact;
+    const rows = [...(said?.rows || []), ...healthRows(health)];
+    return {
+      title:
+        what ||
+        (rows.length === 1
+          ? rowLine(rows[0])
+          : `${correction ? t('Ispravka zapisa') : t('Promena stanja')}: ${tn(rows.length, 'izmena', 'izmene', 'izmena')}`),
+      lines: [
+        // one change with no event is its own title: not said twice
+        ...(what || rows.length !== 1 ? rows.map(rowLine) : []),
+        correction ? t('Ispravka zapisa.') : null,
+        [since && t('Od {date}', { date: longDate(since) }), until && t('privremeno, do {date}', { date: longDate(until) })]
+          .filter(Boolean)
+          .join(', ') || null,
+        said ? planLine(said) : t('Plan nege je ostao isti.'),
+      ].filter(Boolean),
+      next: nextSteps({ impact: said, care, until }),
+    };
+  });
   return written(withHealth(record, health, since), at, {
     // nothing happened to her: the record was wrong and is put right
     kind: correction ? 'correction' : 'state',
     by: 'you',
     via: 'assistant',
-    title:
-      what ||
-      (rows.length === 1 ? rowLine(rows[0]) : `${correction ? 'Ispravka zapisa' : 'Promena stanja'}: ${rows.length} izmene`),
-    lines: [
-      // one change with no event is its own title: not said twice
-      ...(what || rows.length !== 1 ? rows.map(rowLine) : []),
-      correction ? 'Ispravka zapisa.' : null,
-      [since && `Od ${longDate(since)}`, until && `privremeno, do ${longDate(until)}`].filter(Boolean).join(', ') || null,
-      impact ? planLine(impact) : 'Plan nege je ostao isti.',
-    ].filter(Boolean),
-    next,
+    ...entry,
   });
 }
 
@@ -334,7 +362,7 @@ export function recordState(record, today) {
   return [
     `Today is ${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.`,
     'Her medical record, the lists the plan is not built from:',
-    JSON.stringify(Object.fromEntries(HEALTH.map((h) => [h.id, record.health[h.id].map((e) => ({ name: e.name, note: e.note || undefined }))]))),
+    JSON.stringify(Object.fromEntries(HEALTH.map((h) => [h.id, record.health[h.id].map((e) => ({ name: t(e.name), note: e.note ? t(e.note) : undefined }))]))),
   ].join('\n');
 }
 
@@ -343,7 +371,7 @@ export function recordState(record, today) {
 // What to watch for, at the top of the chart: the risks the plan names, and
 // every allergy written down.
 export function alertsOf(answers, record) {
-  return [...planOverview(answers).risks, ...record.health.allergies.map((a) => `Alergija: ${a.name}`)];
+  return [...planOverview(answers).risks, ...record.health.allergies.map((a) => t('Alergija: {name}', { name: t(a.name) }))];
 }
 
 // How she was on a visit, as the caregiver wrote it in the work order: the
@@ -361,17 +389,17 @@ function visitNotes(care) {
       by: 'caregiver',
       who: firstName(v.caregiver.name),
       day: v.date,
-      title: 'Zapažanje sa posete',
+      title: msg('Zapažanje sa posete'),
       lines: [
         [
-          v.report.mood && `Raspoloženje: ${MOOD_LABEL[v.report.mood].toLowerCase()}`,
-          v.report.eating && `Ishrana: ${AMOUNT_LABEL[v.report.eating].toLowerCase()}`,
-          v.report.moving && `Kretanje: ${AMOUNT_LABEL[v.report.moving].toLowerCase()}`,
+          v.report.mood && t('Raspoloženje: {how}', { how: t(MOOD_LABEL[v.report.mood]).toLowerCase() }),
+          v.report.eating && t('Ishrana: {how}', { how: t(AMOUNT_LABEL[v.report.eating]).toLowerCase() }),
+          v.report.moving && t('Kretanje: {how}', { how: t(AMOUNT_LABEL[v.report.moving]).toLowerCase() }),
         ]
           .filter(Boolean)
           .join(' · '),
-        v.report.concern,
-        v.report.note,
+        v.report.concern && t(v.report.concern),
+        v.report.note && t(v.report.note),
       ].filter(Boolean),
     }));
 }
@@ -382,12 +410,13 @@ export function recordHistory(record, care) {
   return [...record.log, ...(care ? visitNotes(care) : [])].sort((a, b) => b.at - a.at);
 }
 
+// Serbian keys (msg): shown through t()
 export const HISTORY_KIND = {
-  opened: 'Otvoren',
-  added: 'Upisano',
-  state: 'Promena stanja',
-  correction: 'Ispravka',
-  ended: 'Zaključeno',
-  undo: 'Poništeno',
-  visit: 'Sa posete',
+  opened: msg('Otvoren'),
+  added: msg('Upisano'),
+  state: msg('Promena stanja'),
+  correction: msg('Ispravka'),
+  ended: msg('Zaključeno'),
+  undo: msg('Poništeno'),
+  visit: msg('Sa posete'),
 };

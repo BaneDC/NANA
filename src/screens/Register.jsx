@@ -12,6 +12,7 @@ import { Field, Input, Password, Select } from '../components/TextField';
 import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
+import { LANGUAGES, msg, setLang, t, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -23,48 +24,51 @@ const ROLES = [
   {
     id: 'family',
     letter: 'a',
-    title: 'Treba mi nega za roditelja',
-    description: 'Odgovorite na nekoliko pitanja i naći ćemo nekoga blizu vas',
+    title: msg('Treba mi nega za roditelja'),
+    description: msg('Odgovorite na nekoliko pitanja i naći ćemo nekoga blizu vas'),
   },
   {
     id: 'caregiver',
     letter: 'b',
-    title: 'Ja sam negovateljica',
-    description: 'Primajte upite porodica, dogovorite uslove, budite plaćeni',
+    title: msg('Ja sam negovateljica'),
+    description: msg('Primajte upite porodica, dogovorite uslove, budite plaćeni'),
   },
 ];
 
 const COUNTRIES = [
-  { id: 'FI', name: 'Finska', flag: '🇫🇮', code: '+358' },
-  { id: 'RS', name: 'Srbija', flag: '🇷🇸', code: '+381' },
-  { id: 'HR', name: 'Hrvatska', flag: '🇭🇷', code: '+385' },
-  { id: 'BA', name: 'Bosna i Hercegovina', flag: '🇧🇦', code: '+387' },
-  { id: 'ME', name: 'Crna Gora', flag: '🇲🇪', code: '+382' },
-  { id: 'MK', name: 'Severna Makedonija', flag: '🇲🇰', code: '+389' },
-  { id: 'SI', name: 'Slovenija', flag: '🇸🇮', code: '+386' },
-  { id: 'DE', name: 'Nemačka', flag: '🇩🇪', code: '+49' },
-  { id: 'AT', name: 'Austrija', flag: '🇦🇹', code: '+43' },
-  { id: 'CH', name: 'Švajcarska', flag: '🇨🇭', code: '+41' },
+  { id: 'FI', name: msg('Finska'), flag: '🇫🇮', code: '+358' },
+  { id: 'RS', name: msg('Srbija'), flag: '🇷🇸', code: '+381' },
+  { id: 'HR', name: msg('Hrvatska'), flag: '🇭🇷', code: '+385' },
+  { id: 'BA', name: msg('Bosna i Hercegovina'), flag: '🇧🇦', code: '+387' },
+  { id: 'ME', name: msg('Crna Gora'), flag: '🇲🇪', code: '+382' },
+  { id: 'MK', name: msg('Severna Makedonija'), flag: '🇲🇰', code: '+389' },
+  { id: 'SI', name: msg('Slovenija'), flag: '🇸🇮', code: '+386' },
+  { id: 'DE', name: msg('Nemačka'), flag: '🇩🇪', code: '+49' },
+  { id: 'AT', name: msg('Austrija'), flag: '🇦🇹', code: '+43' },
+  { id: 'CH', name: msg('Švajcarska'), flag: '🇨🇭', code: '+41' },
 ];
 
 const SOURCES = [
-  'Preko prijatelja ili porodice',
-  'Google pretraga',
-  'Društvene mreže',
-  'Lekar ili bolnica',
-  'Oglas',
-  'Drugo',
+  msg('Preko prijatelja ili porodice'),
+  msg('Google pretraga'),
+  msg('Društvene mreže'),
+  msg('Lekar ili bolnica'),
+  msg('Oglas'),
+  msg('Drugo'),
 ];
 
-// the list shows where the code is from; the closed field only needs the code
-const COUNTRY_OPTIONS = COUNTRIES.map((c) => ({
-  value: c.id,
-  label: c.name,
-  icon: c.flag,
-  meta: c.code,
-  display: `${c.flag} ${c.code}`,
-}));
-const SOURCE_OPTIONS = SOURCES.map((s) => ({ value: s, label: s }));
+// the list shows where the code is from; the closed field only needs the code.
+// Built when shown, so the names are in the language of the moment.
+const countryOptions = () =>
+  COUNTRIES.map((c) => ({
+    value: c.id,
+    label: t(c.name),
+    icon: c.flag,
+    meta: c.code,
+    display: c.flag + ' ' + c.code,
+  }));
+// the answer is kept as its Serbian key; only the label is translated
+const sourceOptions = () => SOURCES.map((s) => ({ value: s, label: t(s) }));
 
 const MIN_PASSWORD = 8;
 
@@ -134,20 +138,20 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
 
   return (
     <>
-      <Welcome title="Dobro došli u NANA Prime" sub="Polja označena zvezdicom su obavezna" />
+      <Welcome title={t('Dobro došli u NANA Prime')} sub={t('Polja označena zvezdicom su obavezna')} />
       {/* a real form, so the browser's password manager knows this is a sign-up */}
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
 
         {SHOW_ROLES && (
         <FormCard>
           <div className="flex flex-col gap-2">
-            <Label className="px-3">Ovde sam kao</Label>
+            <Label className="px-3">{t('Ovde sam kao')}</Label>
             {ROLES.map((r) => (
               <SelectCard
                 key={r.id}
                 letter={r.letter}
-                title={r.title}
-                description={r.description}
+                title={t(r.title)}
+                description={t(r.description)}
                 selected={role === r.id}
                 onClick={() => setRole(r.id)}
               />
@@ -158,25 +162,25 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
 
         <FormCard>
           <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
-            <Field label="Ime" required>
+            <Field label={t('Ime')} required>
               <Input value={firstName} onChange={setFirstName} placeholder="Anna" autoComplete="given-name" />
             </Field>
-            <Field label="Prezime" required>
+            <Field label={t('Prezime')} required>
               <Input value={lastName} onChange={setLastName} placeholder="Korhonen" autoComplete="family-name" />
             </Field>
           </div>
-          <Field label="Email" required>
+          <Field label={t('Email')} required>
             <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
-          <Field label="Broj telefona" required as="div" labelId="reg-phone">
+          <Field label={t('Broj telefona')} required as="div" labelId="reg-phone">
             {/* the country's code in front, behind a line, then the number */}
             <InputGroup>
               <Select
                 bare
                 value={country}
                 onChange={setCountry}
-                ariaLabel="Pozivni broj države"
-                options={COUNTRY_OPTIONS}
+                ariaLabel={t('Pozivni broj države')}
+                options={countryOptions()}
               />
               <InputGroupInput
                 type="tel"
@@ -188,51 +192,56 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
               />
             </InputGroup>
           </Field>
-          <Field label="Lozinka" required hint={password && password.length < MIN_PASSWORD ? `Još ${MIN_PASSWORD - password.length} karaktera` : null}>
-            <Password value={password} onChange={setPassword} placeholder="Najmanje 8 karaktera" autoComplete="new-password" />
+          <Field
+            label={t('Lozinka')}
+            required
+            hint={password && password.length < MIN_PASSWORD ? t('Još {n} karaktera', { n: MIN_PASSWORD - password.length }) : null}
+          >
+            <Password value={password} onChange={setPassword} placeholder={t('Najmanje 8 karaktera')} autoComplete="new-password" />
           </Field>
-          <Field label="Kako ste čuli za nas?" required as="div" labelId="reg-source">
-            <Select value={source} onChange={setSource} labelledBy="reg-source" options={SOURCE_OPTIONS} />
+          <Field label={t('Kako ste čuli za nas?')} required as="div" labelId="reg-source">
+            <Select value={source} onChange={setSource} labelledBy="reg-source" options={sourceOptions()} />
           </Field>
 
           <div className="flex flex-col gap-2 px-1">
             <Consent checked={processing} onChange={setProcessing} required>
-              Saglasan/na sam sa obradom podataka
+              {t('Saglasan/na sam sa obradom podataka')}
             </Consent>
             <Consent checked={accuracy} onChange={setAccuracy} required>
-              Potvrđujem da su podaci tačni
+              {t('Potvrđujem da su podaci tačni')}
             </Consent>
             <Consent checked={newsletter} onChange={setNewsletter}>
-              Želim da primam novosti i posebne ponude na email
+              {t('Želim da primam novosti i posebne ponude na email')}
             </Consent>
           </div>
         </FormCard>
 
         <Actions>
           <Button type="submit" size="lg" className="w-full" disabled={!valid || busy}>
-            Napravi nalog
+            {t('Napravi nalog')}
           </Button>
           <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
-            Registracijom prihvatate naše{' '}
+            {t('Registracijom prihvatate naše')}{' '}
             <a href="#uslovi" onClick={(e) => e.preventDefault()}>
-              uslove korišćenja
+              {t('uslove korišćenja')}
             </a>{' '}
-            i{' '}
+            {t('i')}{' '}
             <a href="#privatnost" onClick={(e) => e.preventDefault()}>
-              politiku privatnosti
+              {t('politiku privatnosti')}
             </a>
             .{' '}
             <a href="#kolacici" onClick={(e) => e.preventDefault()}>
-              Podešavanja kolačića
+              {t('Podešavanja kolačića')}
             </a>
           </p>
           <p className="mt-2 flex w-full items-start gap-2 border-t-[0.8px] pt-4 text-small text-muted-foreground">
             <ShieldCheck size={16} strokeWidth={1.75} className="shrink-0 text-primary-600" />
-            NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o
-            zaštiti podataka.
+            {t(
+              'NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o zaštiti podataka.'
+            )}
           </p>
           <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
-            Već imate nalog? Prijavite se
+            {t('Već imate nalog? Prijavite se')}
           </Button>
           <DemoLink onDemo={onDemo} />
         </Actions>
@@ -268,13 +277,36 @@ function DemoLink({ onDemo }) {
   return (
     <>
       <button type="button" className={demoLink} onClick={onDemo}>
-        Za testiranje: otvori demo sa gotovim planom
+        {t('Za testiranje: otvori demo sa gotovim planom')}
       </button>
       {/* every card on one page (/?kartice), for comparing them */}
       <button type="button" className={demoLink} onClick={() => (window.location.href = '/?kartice')}>
-        Za pregled: sve kartice na jednoj stranici
+        {t('Za pregled: sve kartice na jednoj stranici')}
       </button>
+      <DemoLanguage />
     </>
+  );
+}
+
+// For showing the demo in another language: the same choice as in Settings,
+// made before there is an account, so the onboarding is held in it too.
+function DemoLanguage() {
+  const lang = useLang();
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <span>{t('Za demo: jezik')}</span>
+      {LANGUAGES.map((l) => (
+        <button
+          key={l.id}
+          type="button"
+          aria-pressed={l.id === lang}
+          className={l.id === lang ? 'text-xs font-medium text-foreground' : demoLink}
+          onClick={() => setLang(l.id)}
+        >
+          {l.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -299,22 +331,22 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
 
   return (
     <>
-      <Welcome title="Prijavite se" sub="Email adresom i lozinkom kojima ste napravili nalog" />
+      <Welcome title={t('Prijavite se')} sub={t('Email adresom i lozinkom kojima ste napravili nalog')} />
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <FormCard>
-          <Field label="Email" required>
+          <Field label={t('Email')} required>
             <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
-          <Field label="Lozinka" required hint={failed ? 'Email ili lozinka nisu tačni.' : null}>
-            <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder="Vaša lozinka" />
+          <Field label={t('Lozinka')} required hint={failed ? t('Email ili lozinka nisu tačni.') : null}>
+            <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder={t('Vaša lozinka')} />
           </Field>
         </FormCard>
         <Actions>
           <Button type="submit" size="lg" className="w-full" disabled={!valid}>
-            Prijavi se
+            {t('Prijavi se')}
           </Button>
           <Button type="button" variant="ghost" size="lg" onClick={onSignUp}>
-            Nemate nalog? Napravite ga
+            {t('Nemate nalog? Napravite ga')}
           </Button>
           <DemoLink onDemo={onDemo} />
           <button
@@ -327,7 +359,7 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
               setFailed(false);
             }}
           >
-            Za testiranje: nalog sa dvofaktorskom prijavom
+            {t('Za testiranje: nalog sa dvofaktorskom prijavom')}
           </button>
         </Actions>
       </form>
@@ -347,7 +379,10 @@ function TestCodes() {
   }, []);
   return (
     <p className="text-center text-xs leading-body text-muted-foreground">
-      Za testiranje: kod iz aplikacije je {code}. Rezervni kodovi: {demoTwoFactor.backupCodes.join(', ')}.
+      {t('Za testiranje: kod iz aplikacije je {code}. Rezervni kodovi: {codes}.', {
+        code,
+        codes: demoTwoFactor.backupCodes.join(', '),
+      })}
     </p>
   );
 }
@@ -376,8 +411,8 @@ function TwoFactorStep({ user, onContinue, onBack }) {
     if (!backup) setCode('');
     setError(
       backup
-        ? 'Ovaj rezervni kod ne važi ili je već iskorišćen.'
-        : 'Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.'
+        ? t('Ovaj rezervni kod ne važi ili je već iskorišćen.')
+        : t('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.')
     );
   };
 
@@ -389,20 +424,20 @@ function TwoFactorStep({ user, onContinue, onBack }) {
   return (
     <>
       <Welcome
-        title="Dvofaktorska prijava"
-        sub={backup ? 'Unesite jedan od rezervnih kodova koje ste sačuvali' : 'Unesite šestocifreni kod iz aplikacije za kodove'}
+        title={t('Dvofaktorska prijava')}
+        sub={backup ? t('Unesite jedan od rezervnih kodova koje ste sačuvali') : t('Unesite šestocifreni kod iz aplikacije za kodove')}
       />
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <FormCard>
           {backup ? (
-            <Field label="Rezervni kod" required>
+            <Field label={t('Rezervni kod')} required>
               <Input
                 value={typed}
                 onChange={(v) => (setTyped(v), setError(null))}
                 autoFocus
                 autoComplete="one-time-code"
                 spellCheck={false}
-                placeholder="npr. a9883806"
+                placeholder={t('npr. a9883806')}
               />
             </Field>
           ) : (
@@ -416,14 +451,14 @@ function TwoFactorStep({ user, onContinue, onBack }) {
               takes what it needs and "Potvrdi" the rest */}
           <div className="grid w-full grid-cols-2 gap-2 phone:flex phone:*:flex-auto">
             <Button type="button" variant="secondary" size="lg" onClick={() => switchTo(!backup)}>
-              {backup ? 'Koristite kod iz aplikacije' : 'Koristite rezervni kod'}
+              {backup ? t('Koristite kod iz aplikacije') : t('Koristite rezervni kod')}
             </Button>
             <Button type="submit" size="lg" disabled={!ready || checking}>
-              Potvrdi
+              {t('Potvrdi')}
             </Button>
           </div>
           <Button type="button" variant="ghost" size="lg" onClick={onBack}>
-            Nazad na prijavu
+            {t('Nazad na prijavu')}
           </Button>
           {user.email === demoTwoFactor.user.email && <TestCodes />}
         </Actions>

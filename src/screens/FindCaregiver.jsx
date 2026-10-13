@@ -18,6 +18,7 @@ import Rating from '../components/Rating';
 import Tags, { Groups } from '../components/Tags';
 import Standing from '../components/Standing';
 import { CaregiverName } from '../components/CaregiverHead';
+import { t } from '../i18n';
 
 // Browsing for someone, as its own page rather than a button on one screen.
 // The header shortcut on the dashboard opens this; wanting a second pair of
@@ -48,9 +49,9 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
     <Page>
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Pronađi negovateljicu</PageTitle>
+          <PageTitle>{t('Pronađi negovateljicu')}</PageTitle>
           <PageDescription>
-            Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju. {askNote}
+            {t('Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju.')} {askNote}
           </PageDescription>
         </PageHeaderText>
       </PageHeader>
@@ -59,7 +60,7 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
       <div className="flex items-baseline gap-3 pl-4 text-small leading-body text-muted-foreground">
         {/* what this page shows, out of everyone */}
         <span>
-          {shown.length} od {results.length} negovateljica
+          {t('{shown} od {all} negovateljica', { shown: shown.length, all: results.length })}
         </span>
       </div>
 
@@ -84,13 +85,13 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
                   </span>
                 </CaregiverName>
                 <div className="text-small text-muted-foreground">
-                  <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
+                  <Rating caregiver={c} /> · {c.rate} · {t('{area}, do {radius} km', c)}
                 </div>
                 {/* Why she comes up (the platform's reasons) and what she is,
                     each a labelled group of tags, the labels in one column. */}
                 <Groups className="mt-2">
-                  <Tags label="Poklapa se" items={matchReasons(c)} />
-                  <Tags label="Klasifikacije" items={c.classifications} />
+                  <Tags label={t('Poklapa se')} items={matchReasons(c)} />
+                  <Tags label={t('Klasifikacije')} items={c.classifications} />
                 </Groups>
               </div>
               {/* Asking is not hiring. It sends the plan and waits — the terms
@@ -101,7 +102,7 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
                 <Standing standing={standing} className={underText} />
               ) : (
                 <Button className={`phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] ${underText}`} onClick={() => ask(c)}>
-                  Pošalji poruku
+                  {t('Pošalji poruku')}
                 </Button>
               )}
             </Card>
@@ -133,10 +134,10 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
       <Card className="flex-row items-center gap-3 text-muted-foreground">
         <Phone size={16} strokeWidth={1.75} />
         <p className="flex-1 text-xs leading-body">
-          Niste sigurni koju da izaberete? Koordinatorka poznaje svaku od njih i može da vas pozove danas.
+          {t('Niste sigurni koju da izaberete? Koordinatorka poznaje svaku od njih i može da vas pozove danas.')}
         </p>
-        <Button variant="secondary" onClick={() => onFlash('Koordinatorka će vas pozvati danas.')}>
-          Pozovite me
+        <Button variant="secondary" onClick={() => onFlash(t('Koordinatorka će vas pozvati danas.'))}>
+          {t('Pozovite me')}
         </Button>
       </Card>
     </Page>

@@ -2,6 +2,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { cn } from '@/lib/utils';
 import { frailtyOf } from '../data/frailty';
 import { CFS_SR } from '../data/flow.sr';
+import { t } from '../i18n';
 
 // Where she is on the Clinical Frailty Scale, worked out from the answers: the
 // level and its name, the nine steps with hers lit and those she has passed
@@ -17,11 +18,11 @@ export default function FrailtyScale({ answers = {} }) {
     <Card>
       <CardHeader>
         <CardTitle>
-          Klinička skala krhkosti: {level} od 9, {cfs.label.toLowerCase()}
+          {t('Klinička skala krhkosti: {level} od 9, {label}', { level, label: cfs.label.toLowerCase() })}
         </CardTitle>
       </CardHeader>
       {/* the nine steps, hers lit and those she has passed tinted */}
-      <div className="mt-1 grid grid-cols-9 gap-1" role="img" aria-label={`Nivo ${level} od 9`}>
+      <div className="mt-1 grid grid-cols-9 gap-1" role="img" aria-label={t('Nivo {level} od 9', { level })}>
         {Array.from({ length: 9 }, (_, i) => i + 1).map((l) => (
           <span
             key={l}
@@ -39,12 +40,12 @@ export default function FrailtyScale({ answers = {} }) {
         ))}
       </div>
       <p className="flex justify-between gap-3 text-small text-muted-foreground">
-        <span>1 - potpuno samostalna</span>
-        <span className="text-right">9 - na kraju života</span>
+        <span>{t('1 - potpuno samostalna')}</span>
+        <span className="text-right">{t('9 - na kraju života')}</span>
       </p>
       <CardDescription>{cfs.blurb}</CardDescription>
       <p className="text-small text-disabled">
-        Procena je iz vaših odgovora i služi da uskladimo podršku. Nije dijagnoza i ne zamenjuje lekara.
+        {t('Procena je iz vaših odgovora i služi da uskladimo podršku. Nije dijagnoza i ne zamenjuje lekara.')}
       </p>
     </Card>
   );

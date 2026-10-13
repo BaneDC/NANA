@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
+import { emergencyNumber } from '../data/market';
 import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregivers } from '../data/carePlan';
@@ -14,6 +15,7 @@ import HistoryPanel from '../components/immersive/HistoryPanel';
 import UnderstandingPanel from '../components/immersive/UnderstandingPanel';
 import { AMBIENT_AUDIO, createZenAudio } from '../lib/zenAudio';
 import Button from '../components/Button';
+import { t, tn } from '../i18n';
 
 const letterFor = (i) => String.fromCharCode(97 + i);
 
@@ -21,10 +23,10 @@ const letterFor = (i) => String.fromCharCode(97 + i);
 // still goes to the console for whoever is debugging it.
 function errorText(e) {
   console.error(e);
-  if (e?.status === 429) return 'Previše zahteva odjednom, sačekajte par sekundi i pošaljite ponovo.';
-  if (e?.status === 529 || e?.status === 503) return 'Claude je trenutno preopterećen, pokušajte ponovo za minut.';
-  if (e?.name === 'APIConnectionError') return 'Nema veze sa Anthropic-om, proverite internet i pošaljite ponovo.';
-  if (e?.status) return `Poziv nije uspeo (${e.status}): ${e.error?.error?.message || e.message}`;
+  if (e?.status === 429) return t('Previše zahteva odjednom, sačekajte par sekundi i pošaljite ponovo.');
+  if (e?.status === 529 || e?.status === 503) return t('Claude je trenutno preopterećen, pokušajte ponovo za minut.');
+  if (e?.name === 'APIConnectionError') return t('Nema veze sa Anthropic-om, proverite internet i pošaljite ponovo.');
+  if (e?.status) return t('Poziv nije uspeo ({status}): {message}', { status: e.status, message: e.error?.error?.message || e.message });
   return e?.message || String(e);
 }
 
@@ -216,7 +218,7 @@ function Composer({ placeholder, autoFocus, suggestions = [], onSend, value: out
           />
         </span>
         {withSend && value.trim() && (
-          <Button variant="primary" iconOnly className="imm-send" onClick={send} aria-label="Pošalji">
+          <Button variant="primary" iconOnly className="imm-send" onClick={send} aria-label={t('Pošalji')}>
             <ArrowUp size={16} strokeWidth={2} />
           </Button>
         )}
@@ -230,7 +232,8 @@ function Cards({ question, onPick, onSend, sr }) {
   const [one, setOne] = useState(null);
   const [typed, setTyped] = useState('');
 
-  const label = (o) => sr.options?.[o.id] || o.title;
+  const label = (o) => t(sr.options?.[o.id] || o.title);
+  const none = sr.empty ? t(sr.empty) : t('Ništa od toga');
 
   // An `inputs` question has no cards at all — three stacked field cards were
   // the last piece of questionnaire left in here, and the person now answers in
@@ -239,7 +242,7 @@ function Cards({ question, onPick, onSend, sr }) {
   if (question.type === 'inputs') {
     return (
       <motion.div className="imm-composer-slot" variants={piece}>
-        <Composer autoFocus placeholder="Odgovorite svojim rečima…" onSend={onSend} />
+        <Composer autoFocus placeholder={t('Odgovorite svojim rečima…')} onSend={onSend} />
       </motion.div>
     );
   }
@@ -248,7 +251,7 @@ function Cards({ question, onPick, onSend, sr }) {
   // whether a card stays lit when you press it.
   const hint = (
     <motion.p className="imm-pick-hint" variants={piece}>
-      {question.type === 'single' ? 'Izaberite jedan odgovor' : 'Možete izabrati više odgovora'}
+      {question.type === 'single' ? t('Izaberite jedan odgovor') : t('Možete izabrati više odgovora')}
     </motion.p>
   );
 
@@ -275,7 +278,7 @@ function Cards({ question, onPick, onSend, sr }) {
             </motion.button>
           ))}
           <motion.div className="imm-composer-slot" variants={piece}>
-            <Composer placeholder="ili odgovorite svojim rečima…" onSend={onSend} />
+            <Composer placeholder={t('ili odgovorite svojim rečima…')} onSend={onSend} />
           </motion.div>
         </motion.div>
         {/* Chosen, then sent: a card that answered on the first touch gave no
@@ -287,7 +290,7 @@ function Cards({ question, onPick, onSend, sr }) {
             disabled={!chosen}
             onClick={() => chosen && onPick({ optionId: chosen.id }, label(chosen))}
           >
-            Dalje
+            {t('Dalje')}
           </Button>
         </motion.div>
       </>
@@ -305,7 +308,7 @@ function Cards({ question, onPick, onSend, sr }) {
         // words still reach Minna in the message, and she keeps them as a note
         ...(text && question.allowOther ? { other: text } : {}),
       },
-      [...picked, text].filter(Boolean).join(', ') || sr.empty || 'Ništa od toga'
+      [...picked, text].filter(Boolean).join(', ') || none
     );
 
   return (
@@ -331,7 +334,7 @@ function Cards({ question, onPick, onSend, sr }) {
             answer as the ticked cards, and the one below sends both. */}
         <motion.div className="imm-composer-slot" variants={piece}>
           <Composer
-            placeholder="dopišite svojim rečima…"
+            placeholder={t('dopišite svojim rečima…')}
             value={typed}
             onValue={setTyped}
             withSend={false}
@@ -343,7 +346,7 @@ function Cards({ question, onPick, onSend, sr }) {
           typed row included, so it cannot come before it */}
       <motion.div className="imm-actions" variants={piece}>
         <Button variant="primary" size="lg" disabled={!question.allowEmpty && empty} onClick={submit}>
-          {question.allowEmpty && empty ? sr.empty || 'Ništa od toga' : 'Dalje'}
+          {question.allowEmpty && empty ? none : t('Dalje')}
         </Button>
       </motion.div>
     </>
@@ -385,7 +388,7 @@ export default function ImmersiveConversation({
   const [log, setLog] = useState([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   // the question that is on screen right now, so the answer can be filed under it
-  const onScreen = useRef('Recite mi svojim rečima šta se dešava.');
+  const onScreen = useRef(t('Recite mi svojim rečima šta se dešava.'));
   // how long the last turn took, for "Razmišljala sam N s" above the question
   const [thoughtFor, setThoughtFor] = useState(0);
   const turnStarted = useRef(0);
@@ -443,11 +446,11 @@ export default function ImmersiveConversation({
     ? ''
     : said ||
       (asking
-        ? Q[asking.id]?.title || asking.title
+        ? t(Q[asking.id]?.title || asking.title)
         : // a follow-up asked without a sentence is the same blank screen as
           // no question at all, just with a composer waiting under nothing
           stalled || followUp
-          ? 'Recite mi još nešto o njoj.'
+          ? t('Recite mi još nešto o njoj.')
           : '');
   const typed = useTypewriter(line);
   // the gate everything below the line waits on
@@ -497,8 +500,10 @@ export default function ImmersiveConversation({
     async (text, seed, seedNotes) => {
       history.current.push({ role: 'user', content: text });
       // What was on screen is the question this answer belongs to; the opening
-      // screen's own prompt is the first one.
-      setLog((l) => [...l, { question: onScreen.current, answer: text.replace(/^\(izabrano\) /, '') }]);
+      // screen's own prompt is the first one. A picked card is sent with its
+      // marker in front, which the history leaves out.
+      const picked = `${t('(izabrano)')} `;
+      setLog((l) => [...l, { question: onScreen.current, answer: text.startsWith(picked) ? text.slice(picked.length) : text }]);
       setAsked(null);
       setFollowUp(null);
       setWhy(null);
@@ -578,7 +583,7 @@ export default function ImmersiveConversation({
   const pick = (answer, label) => {
     if (!asked) return;
     onAnswer(asked, answer);
-    turn(`(izabrano) ${label}`, { ...answers, [asked]: answer }, notes);
+    turn(`${t('(izabrano)')} ${label}`, { ...answers, [asked]: answer }, notes);
   };
 
   const question = asking;
@@ -622,7 +627,7 @@ export default function ImmersiveConversation({
                 setMuted(next);
                 audioRef.current?.setMuted(next);
               }}
-              aria-label={muted ? 'Uključi zvuk' : 'Isključi zvuk'}
+              aria-label={muted ? t('Uključi zvuk') : t('Isključi zvuk')}
             >
               {muted ? <VolumeX size={15} strokeWidth={1.75} /> : <Volume2 size={15} strokeWidth={1.75} />}
             </button>
@@ -636,7 +641,7 @@ export default function ImmersiveConversation({
             aria-expanded={historyOpen}
           >
             <History size={15} strokeWidth={1.75} />
-            <span>Istorija razgovora</span>
+            <span>{t('Istorija razgovora')}</span>
             {/* turns over with the panel; the label keeps its own colour */}
             <ChevronDown size={14} strokeWidth={1.75} className="imm-ctl-chevron" aria-hidden="true" />
           </button>
@@ -654,17 +659,16 @@ export default function ImmersiveConversation({
                 NANA Prime
               </motion.p>
               <motion.h1 className="imm-title" variants={piece}>
-                Recite mi svojim rečima šta se dešava.
+                {t('Recite mi svojim rečima šta se dešava.')}
               </motion.h1>
               <motion.p className="imm-subtitle" variants={piece}>
-                O kome se radi, šta vas brine, šta ste već probali, kako god vam je lakše.
-                Ostalo ću pitati usput.
+                {t('O kome se radi, šta vas brine, šta ste već probali, kako god vam je lakše. Ostalo ću pitati usput.')}
               </motion.p>
               <motion.div className="imm-write" variants={piece}>
                 <textarea
                   rows={5}
                   value={draft}
-                  placeholder="Majka ima 84 godine i živi sama u Helsinkiju. Pala je dvaput ove godine…"
+                  placeholder={t('Majka ima 84 godine i živi sama u Helsinkiju. Pala je dvaput ove godine…')}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -680,13 +684,13 @@ export default function ImmersiveConversation({
                     disabled={!draft.trim()}
                     onClick={() => turn(draft.trim(), answers, notes)}
                   >
-                    Pošalji
+                    {t('Pošalji')}
                   </Button>
                 </div>
               </motion.div>
 
               <motion.p className="imm-starters-label" variants={piece}>
-                Ili krenite od nekog od ovih
+                {t('Ili krenite od nekog od ovih')}
               </motion.p>
               <motion.div className="imm-starters" variants={list}>
                 {STARTERS.map((s) => (
@@ -696,11 +700,11 @@ export default function ImmersiveConversation({
                     className="imm-starter"
                     variants={piece}
                     whileHover={{ y: -1 }}
-                    onClick={() => turn(s.title, answers, notes)}
+                    onClick={() => turn(t(s.title), answers, notes)}
                   >
                     <span className="imm-starter-text">
-                      <span className="imm-starter-title">{s.title}</span>
-                      <span className="imm-starter-sub">{s.sub}</span>
+                      <span className="imm-starter-title">{t(s.title)}</span>
+                      <span className="imm-starter-sub">{t(s.sub)}</span>
                     </span>
                     <ArrowRight size={16} strokeWidth={1.75} className="imm-starter-arrow" />
                   </motion.button>
@@ -710,8 +714,9 @@ export default function ImmersiveConversation({
               {/* A chat is the wrong channel for an emergency, and saying so is
                   cheap. Better here than discovered at the wrong moment. */}
               <motion.p className="imm-urgent" variants={piece}>
-                Ako je hitno (pala je, ne može da diše, ne prepoznaje vas), nemojte pisati meni.
-                Zovite <strong>194</strong>.
+                {t('Ako je hitno (pala je, ne može da diše, ne prepoznaje vas), nemojte pisati meni.')}{' '}
+                {/* the number of the family's country, the one the prompt gives too */}
+                {t('Zovite')} <strong>{emergencyNumber()}</strong>.
               </motion.p>
             </motion.div>
           )}
@@ -723,7 +728,7 @@ export default function ImmersiveConversation({
           {stage === 'talking' && (
             <motion.div key="conversation" className="imm-screen is-conversation" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                {SECTION[remaining[0]?.sekcija] || 'Skoro gotovo'}
+                {SECTION[remaining[0]?.sekcija] ? t(SECTION[remaining[0].sekcija]) : t('Skoro gotovo')}
               </motion.p>
 
               {/* How she got to this question. Open while she works, with a
@@ -742,7 +747,7 @@ export default function ImmersiveConversation({
                     >
                       {waiting && <span className="imm-cot-spinner" aria-hidden="true" />}
                       <span className={waiting ? 'imm-shimmer' : undefined}>
-                        {waiting ? `Razmišljam… ${thoughtFor} s` : `Razmišljala sam ${thoughtFor} s`}
+                        {waiting ? t('Razmišljam… {n} s', { n: thoughtFor }) : t('Razmišljala sam {n} s', { n: thoughtFor })}
                       </span>
                       {!waiting && <ChevronDown size={12} strokeWidth={1.75} />}
                     </button>
@@ -759,7 +764,7 @@ export default function ImmersiveConversation({
                             <p>{thought.text}</p>
                             {thought.missing.length > 0 && (
                               <p className="imm-cot-missing">
-                                <strong>Još mi fali:</strong> {thought.missing.join(' · ')}
+                                <strong>{t('Još mi fali:')}</strong> {thought.missing.join(' · ')}
                               </p>
                             )}
                           </div>
@@ -822,7 +827,7 @@ export default function ImmersiveConversation({
                         <Composer
                           autoFocus
                           suggestions={followUp || []}
-                          placeholder="Odgovorite svojim rečima…"
+                          placeholder={t('Odgovorite svojim rečima…')}
                           onSend={(t) => turn(t, answers, notes)}
                         />
                       </motion.div>
@@ -838,7 +843,7 @@ export default function ImmersiveConversation({
           {stage === 'plan' && overview && (
             <motion.div key="plan" className="imm-screen is-wide is-plan" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                Vaš plan nege
+                {t('Vaš plan nege')}
               </motion.p>
               {/* Minna's closing sentence, revealed in place like every other
                   line of hers; this was the last one still grown a character
@@ -851,7 +856,7 @@ export default function ImmersiveConversation({
                     <Line full={line} shown={doneTyping ? line.length + TAIL : typed.length} />
                   </span>
                 ) : (
-                  'Plan nege je spreman.'
+                  t('Plan nege je spreman.')
                 )}
               </motion.h1>
 
@@ -871,7 +876,7 @@ export default function ImmersiveConversation({
                   {srFrailty && (
                     <motion.div className="imm-scale" variants={piece}>
                       <motion.p className="imm-scale-name" variants={piece}>
-                        Klinička skala krhkosti, nivo {srFrailty.level} od 9:{' '}
+                        {t('Klinička skala krhkosti, nivo {level} od 9:', { level: srFrailty.level })}{' '}
                         <strong>{srFrailty.label}</strong>
                       </motion.p>
                       <motion.div className="imm-cfs" variants={list}>
@@ -888,22 +893,21 @@ export default function ImmersiveConversation({
                         ))}
                       </motion.div>
                       <motion.p className="imm-scale-ends" variants={piece}>
-                        <span>1 - potpuno samostalna</span>
-                        <span>9 - na kraju života</span>
+                        <span>{t('1 - potpuno samostalna')}</span>
+                        <span>{t('9 - na kraju života')}</span>
                       </motion.p>
                       <motion.p className="imm-scale-blurb" variants={piece}>
                         {srFrailty.blurb}
                       </motion.p>
                       <motion.p className="imm-scale-note" variants={piece}>
-                        Procena je iz vaših odgovora i služi da uskladimo podršku. Nije
-                        dijagnoza i ne zamenjuje lekara.
+                        {t('Procena je iz vaših odgovora i služi da uskladimo podršku. Nije dijagnoza i ne zamenjuje lekara.')}
                       </motion.p>
                     </motion.div>
                   )}
 
                   {overview.story.length > 0 && (
                     <motion.section className="imm-plan-section" variants={piece}>
-                      <h2 className="imm-plan-label">Šta se dešava</h2>
+                      <h2 className="imm-plan-label">{t('Šta se dešava')}</h2>
                       {overview.story.map((p) => (
                         <p className="imm-plan-text" key={p}>
                           {p}
@@ -914,7 +918,7 @@ export default function ImmersiveConversation({
 
                   {overview.risks.length > 0 && (
                     <motion.section className="imm-plan-section" variants={piece}>
-                      <h2 className="imm-plan-label">Na šta najviše treba paziti</h2>
+                      <h2 className="imm-plan-label">{t('Na šta najviše treba paziti')}</h2>
                       <ul className="imm-plan-risks">
                         {overview.risks.map((r) => (
                           <li key={r}>{r}</li>
@@ -927,13 +931,13 @@ export default function ImmersiveConversation({
                   {overview.goal && (
                     <motion.section className="imm-plan-section imm-plan-quotes" variants={piece}>
                       <figure className="imm-plan-quote">
-                        <figcaption className="imm-plan-label">Najvažnije vam je</figcaption>
-                        <blockquote>„{overview.goal}“</blockquote>
+                        <figcaption className="imm-plan-label">{t('Najvažnije vam je')}</figcaption>
+                        <blockquote>{t('„{text}“', { text: overview.goal })}</blockquote>
                       </figure>
                       {overview.worry && (
                         <figure className="imm-plan-quote is-worry">
-                          <figcaption className="imm-plan-label">Najviše vas brine</figcaption>
-                          <blockquote>„{overview.worry}“</blockquote>
+                          <figcaption className="imm-plan-label">{t('Najviše vas brine')}</figcaption>
+                          <blockquote>{t('„{text}“', { text: overview.worry })}</blockquote>
                         </figure>
                       )}
                     </motion.section>
@@ -941,7 +945,7 @@ export default function ImmersiveConversation({
 
                   {overview.notes.length > 0 && (
                     <motion.section className="imm-plan-section" variants={piece}>
-                      <h2 className="imm-plan-label">Usput ste rekli</h2>
+                      <h2 className="imm-plan-label">{t('Usput ste rekli')}</h2>
                       <ul className="imm-plan-notes">
                         {overview.notes.map((n) => (
                           <li key={n}>{n}</li>
@@ -953,13 +957,13 @@ export default function ImmersiveConversation({
                   {/* what all of the above adds up to, set apart as the one thing
                       to act on — which is why the button lives inside it */}
                   <motion.div className="imm-plan-reco" variants={piece}>
-                    <p className="imm-plan-label">Naša preporuka</p>
+                    <p className="imm-plan-label">{t('Naša preporuka')}</p>
                     <p className="imm-plan-reco-title">{overview.role}</p>
                     <p className="imm-plan-text">{overview.recommendation}</p>
                     <div className="imm-plan-reco-foot">
-                      <span className="imm-plan-count">{caregivers.length} negovateljica odgovara ovoj slici</span>
+                      <span className="imm-plan-count">{tn(caregivers.length, 'negovateljica odgovara ovoj slici', 'negovateljice odgovaraju ovoj slici', 'negovateljica odgovara ovoj slici')}</span>
                       <Button variant="primary" size="lg" onClick={onFinish}>
-                        Pogledaj ceo plan <ArrowUpRight size={14} strokeWidth={2} />
+                        {t('Pogledaj ceo plan')} <ArrowUpRight size={14} strokeWidth={2} />
                       </Button>
                     </div>
                   </motion.div>

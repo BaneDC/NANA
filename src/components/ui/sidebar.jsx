@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { focusPane } from "@/lib/sheet"
+import { t } from "@/i18n"
 
 // shadcn's sidebar as NANA's menu (docs/patterns.md §4). With a mouse it is a
 // column beside the page, 232 wide, straight on the warm ground; it can be
@@ -124,7 +125,7 @@ const sidebarInner = "flex min-h-full w-full flex-col gap-4 px-3 py-4 text-sideb
 function Sidebar({
   className,
   children,
-  label = "Meni",
+  label = t("Meni"),
   ...props
 }) {
   const { isMobile, openMobile, setOpenMobile } = useSidebar()
@@ -205,7 +206,7 @@ function SidebarTrigger({
       {...props}
     >
       <MenuIcon size={18} strokeWidth={1.75} />
-      <span className="sr-only">Otvori meni</span>
+      <span className="sr-only">{t("Otvori meni")}</span>
     </Button>
   )
 }
@@ -215,7 +216,7 @@ function SidebarTrigger({
 function SidebarFold({ className, ...props }) {
   const { isMobile, collapsed, toggleSidebar } = useSidebar()
   if (isMobile) return null
-  const label = collapsed ? "Proširi meni" : "Skupi meni"
+  const label = collapsed ? t("Proširi meni") : t("Skupi meni")
   const Icon = collapsed ? PanelLeftOpen : PanelLeftClose
 
   return (

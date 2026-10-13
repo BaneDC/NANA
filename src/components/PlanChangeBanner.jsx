@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardFooter } from '@/components/ui/card';
 import Attention, { AttentionDescription, AttentionHead, AttentionTitle } from './Attention';
 import ChangeRows from './ChangeRows';
+import { msg, t } from '../i18n';
 
 // What just changed in the plan, said at the top of it. A plan that silently
 // redraws itself asks the family to spot the difference; this names it — which
@@ -12,7 +13,10 @@ import ChangeRows from './ChangeRows';
 // `change` is App's record of the last edit: the answer rows from
 // describeChanges, the recommendations that came out different, and where the
 // edit came from. It arrives from a little above, on the dialog's spring.
-export default function PlanChangeBanner({ change, onUndo, onDismiss }) {
+//
+// `marked` is off where the plan is not on the page under it (the home once
+// someone comes): there is nothing marked to point at.
+export default function PlanChangeBanner({ change, marked = true, onUndo, onDismiss }) {
   const Icon = change.source === 'manual' ? PenLine : Sparkles;
   return (
     <Attention
@@ -23,9 +27,10 @@ export default function PlanChangeBanner({ change, onUndo, onDismiss }) {
             <Icon size={14} strokeWidth={1.75} />
           </span>
           <div>
-            <AttentionTitle>Plan je izmenjen</AttentionTitle>
+            <AttentionTitle>{t('Plan je izmenjen')}</AttentionTitle>
             <AttentionDescription>
-              {{ assistant: 'Preko asistenta', manual: 'Ručno', both: 'Ručno i preko asistenta' }[change.source]} · izmenjeni delovi plana su označeni
+              {t({ assistant: msg('Preko asistenta'), manual: msg('Ručno'), both: msg('Ručno i preko asistenta') }[change.source])}
+              {marked && ` · ${t('izmenjeni delovi plana su označeni')}`}
             </AttentionDescription>
           </div>
         </AttentionHead>
@@ -37,21 +42,21 @@ export default function PlanChangeBanner({ change, onUndo, onDismiss }) {
         {change.frailty && (
           <p className="flex items-center gap-2 text-xs font-medium text-warning">
             <AlertTriangle size={12} strokeWidth={2} />
-            Nivo krhkosti: {change.frailty.before} → {change.frailty.after}
+            {t('Nivo krhkosti: {before} → {after}', change.frailty)}
           </p>
         )}
 
         {change.touched.length > 0 && (
-          <p className="text-xs text-muted-foreground">Zbog toga se promenilo: {change.touched.join(', ')}.</p>
+          <p className="text-xs text-muted-foreground">{t('Zbog toga se promenilo: {parts}.', { parts: change.touched.map((x) => t(x)).join(', ') })}</p>
         )}
 
         <CardFooter>
           <Button variant="secondary" onClick={onDismiss}>
-            U redu
+            {t('U redu')}
           </Button>
           <Button variant="ghost" onClick={onUndo}>
             <RotateCcw size={14} strokeWidth={1.75} />
-            Poništi izmene
+            {t('Poništi izmene')}
           </Button>
         </CardFooter>
       </Card>

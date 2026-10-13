@@ -1,5 +1,5 @@
 import { agreeTerms, allVisits, askCaregiver, confirmPlan, confirmVisit, linkCard, seeAnswers } from './familyCare';
-import { requestMessage, startCare } from './familyStart';
+import { requestSaid, startCare } from './familyStart';
 import { answerRequest, passTime, planVisit, sendTerms, sendWorkOrder } from './sim';
 
 // The demo, filled in one go (the button in the simulation panel, and
@@ -16,7 +16,7 @@ import { answerRequest, passTime, planVisit, sendTerms, sendWorkOrder } from './
 
 // she was asked, said yes, sent her terms, and they were agreed
 const begins = (id) => (c) => {
-  let next = askCaregiver(id, requestMessage(c))(c);
+  let next = askCaregiver(id, requestSaid(c))(c);
   next = answerRequest(id, true)(next);
   next = sendTerms(id)(next);
   return agreeTerms(id)(next);
@@ -50,7 +50,7 @@ export function fillCare(care) {
     planVisit('paivi'),
     seeAnswers,
     // asked, not answered yet
-    (x) => askCaregiver('liisa', requestMessage(x))(x),
+    (x) => askCaregiver('liisa', requestSaid(x))(x),
   ];
   for (const step of steps) c = step(c);
   return c;

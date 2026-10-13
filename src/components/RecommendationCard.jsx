@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { caregiversFor } from '../data/carePlan';
 import { PARTNERS, discounted, price } from '../data/partners';
 import CaregiverRow from './CaregiverRow';
+import { t } from '../i18n';
 
 // One recommendation, in the shape the client's document sketched: what we suggest,
 // *why we suggest it for this person*, and who would do it. Where a partner does
@@ -42,12 +43,12 @@ export default function RecommendationCard({
         <CardTitle>{rec.title}</CardTitle>
         {changed && (
           <CardAction>
-            <Badge>Izmenjeno</Badge>
+            <Badge>{t('Izmenjeno')}</Badge>
           </CardAction>
         )}
       </CardHeader>
 
-      <p className="text-small font-medium text-muted-foreground">Zašto ovo preporučujemo</p>
+      <p className="text-small font-medium text-muted-foreground">{t('Zašto ovo preporučujemo')}</p>
       <CardDescription>{rec.why}</CardDescription>
 
       {rec.kind === 'caregivers' && (
@@ -62,7 +63,7 @@ export default function RecommendationCard({
           {onFindCaregivers && (
             <CardFooter className="-mt-2">
               <Button variant="secondary" onClick={onFindCaregivers}>
-                Pogledajte još negovateljica
+                {t('Pogledajte još negovateljica')}
                 <ArrowRight size={14} strokeWidth={1.75} />
               </Button>
             </CardFooter>
@@ -92,8 +93,9 @@ export default function RecommendationCard({
 
 // A partner's price list. Every row shows what the partner charges and what the
 // family pays through Minna, so the saving is read row by row, not worked out
-// (docs/patterns.md §8: the one exception to label and value).
-function Offer({ rec, bookable }) {
+// (docs/patterns.md §8: the one exception to label and value). The home's
+// drawer of one offer draws the same (docs/patterns.md §4a).
+export function Offer({ rec, bookable }) {
   const partner = PARTNERS[rec.partner];
   const [sent, setSent] = useState(false);
   const ordering = rec.id === 'aids';
@@ -107,9 +109,9 @@ function Offer({ rec, bookable }) {
         ) : (
           <span className="text-sm leading-5 font-medium text-foreground">{partner.name}</span>
         )}
-        {partner.what && <span className="min-w-0 truncate text-xs text-muted-foreground">{partner.what}</span>}
+        {partner.what && <span className="min-w-0 truncate text-xs text-muted-foreground">{t(partner.what)}</span>}
         <Badge variant="success" className="ml-auto">
-          −{partner.discount}% preko Minne
+          {t('−{discount}% preko Minne', { discount: partner.discount })}
         </Badge>
       </div>
 
@@ -121,7 +123,7 @@ function Offer({ rec, bookable }) {
               {item.who && <span className="text-muted-foreground">{item.who}</span>}
             </span>
             <span className="flex shrink-0 flex-col items-end text-xs leading-body font-medium whitespace-nowrap text-foreground">
-              <s className="font-normal text-disabled" aria-label={`Redovna cena ${price(item.price)}`}>
+              <s className="font-normal text-disabled" aria-label={t('Redovna cena {price}', { price: price(item.price) })}>
                 {price(item.price)}
               </s>
               <span>{price(discounted(item.price, partner.discount))}</span>
@@ -134,13 +136,15 @@ function Offer({ rec, bookable }) {
         (sent ? (
           <p className="flex items-start gap-2 text-xs leading-body text-success" role="status">
             <Check size={14} strokeWidth={2} className="h-[1lh] shrink-0" />
-            Minna je dobila zahtev i javiće vam se danas {ordering ? 'sa danom isporuke' : 'sa terminom'}.
+            {ordering
+              ? t('Minna je dobila zahtev i javiće vam se danas sa danom isporuke.')
+              : t('Minna je dobila zahtev i javiće vam se danas sa terminom.')}
           </p>
         ) : (
           <CardFooter className="mt-1">
             <Button onClick={() => setSent(true)}>
               <Icon size={14} strokeWidth={1.75} />
-              Neka Minna {ordering ? 'naruči' : 'zakaže'}
+              {ordering ? t('Neka Minna naruči') : t('Neka Minna zakaže')}
             </Button>
           </CardFooter>
         ))}

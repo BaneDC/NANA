@@ -8,7 +8,8 @@ import { SideFrame } from './SidePanel';
 import { describeChanges } from '../data/planEdits';
 import { healthRows } from '../data/record';
 import { caregivers } from '../data/carePlan';
-import { chatLabelsSr } from '../data/chatLabels.sr';
+import { chatLabels } from '../data/chatLabels.sr';
+import { getLang, msg, t } from '../i18n';
 import { Button } from '@/components/ui/button';
 import { paneFor, previewFor } from './ChatPanes';
 import { dropKeyboardAfterSend } from '../lib/keyboardViewport';
@@ -52,23 +53,44 @@ export const chatStore = createChatStore();
 // What "Prijavi promenu" on the medical record says for the family, and
 // what the assistant asks back. Both are fixed, so the way in is instant and
 // costs no request; the model takes over from the family's answer.
-export const CHANGE_OPENER = 'Nešto se promenilo.';
-const CHANGE_REPLY =
-  'Šta se promenilo, ili šta treba ispraviti? Recite svojim rečima, na primer „pala je i slomila nogu", „dobila je novi lek" ili „pogrešno je upisan broj telefona". Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.';
+// The opener is sent as the family's own message, so it is sent in the app's
+// language: t(CHANGE_OPENER). Either spelling is recognised here.
+export const CHANGE_OPENER = msg('Nešto se promenilo.');
+const CHANGE_REPLY = msg(
+  'Šta se promenilo, ili šta treba ispraviti? Recite svojim rečima, na primer „pala je i slomila nogu“, „dobila je novi lek“ ili „pogrešno je upisan broj telefona“. Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.'
+);
 
-export function ChatSource({ id, ctx, onTitle }) {
+export const isOpener = (text) => text === CHANGE_OPENER || text === t(CHANGE_OPENER);
+
+// How far a conversation has got, for "Prijavi promenu" (docs/patterns.md §10a):
+// 'empty' nothing said yet, 'opener' only the fixed opener (however many times),
+// 'talk' the family has said something of their own.
+export function chatStage(chat) {
+  const said = (chat?.turns || []).map((x) => x.user.trim()).filter(Boolean);
+  if (!said.length) return 'empty';
+  return said.every(isOpener) ? 'opener' : 'talk';
+}
+
+// `opener`: the conversation starts with the fixed opener, sent once the chat exists.
+export function ChatSource({ id, ctx, onTitle, opener }) {
   const history = useRef([]);
 
   const send = useCallback(async function* (message, { turnId }) {
     dropKeyboardAfterSend();
     const { plan, answers, care, record, today, apiKey, onAddNotes } = ctx.current;
-    if (!plan || !apiKey) {
-      yield 'Asistent radi kad plan nege postoji. Završite razgovor sa Minnom, pa se vratite ovde.';
+    if (!plan) {
+      yield t('Asistent radi kad plan nege postoji. Završite razgovor sa Minnom, pa se vratite ovde.');
       return;
     }
-    if (message === CHANGE_OPENER) {
-      history.current = [...history.current, { role: 'user', content: message }, { role: 'assistant', content: CHANGE_REPLY }];
-      yield CHANGE_REPLY;
+    // fixed, so it needs no key
+    if (isOpener(message)) {
+      const reply = t(CHANGE_REPLY);
+      history.current = [...history.current, { role: 'user', content: message }, { role: 'assistant', content: reply }];
+      yield reply;
+      return;
+    }
+    if (!apiKey) {
+      yield t('Asistent odgovara preko Claude-a, a ključ za Claude još nije unet. Unesite ga kad pokrenete razgovor sa Minnom (AI), pa se vratite ovde.');
       return;
     }
     // Her words are handed to the kit as they are written, not once the whole
@@ -175,11 +197,22 @@ export function ChatSource({ id, ctx, onTitle }) {
   const chat = useChatTurns({
     onSend: send,
     nextTurn: 'at-send',
-    announcements: { responding: 'Stiže odgovor' },
+    announcements: { responding: t('Stiže odgovor') },
   });
   const { turns, isStreaming } = chat;
   // What the conversation is called in the nav: the first thing asked in it.
-  const first = turns.find((t) => t.user.trim())?.user.trim() || '';
+  // The fixed opener is not something the family typed, so a conversation with
+  // only that in it has no name and is not listed.
+  const first = turns.map((x) => x.user.trim()).find((u) => u && !isOpener(u)) || '';
+  const opened = useRef(false);
+  useEffect(() => {
+    const draft = turns[turns.length - 1];
+    if (!opener || opened.current || !draft || isStreaming) return;
+    opened.current = true;
+    // after the kit has finished setting itself up
+    setTimeout(() => chat.submit(draft.id, t(CHANGE_OPENER)), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opener, turns, isStreaming]);
   useEffect(() => {
     onTitle?.(id, first);
   }, [id, first, onTitle]);
@@ -223,16 +256,16 @@ function PlanDiffCard({ data, onDecide }) {
   const title =
     status === 'applied' ? (
       <>
-        <Check size={14} strokeWidth={2} /> {toRecord ? 'Upisano u karton' : 'Primenjeno na plan'}
+        <Check size={14} strokeWidth={2} /> {toRecord ? t('Upisano u karton') : t('Primenjeno na plan')}
       </>
     ) : status === 'dismissed' ? (
-      toRecord ? 'Nije upisano' : 'Nije primenjeno'
+      toRecord ? t('Nije upisano') : t('Nije primenjeno')
     ) : data.event?.what ? (
-      `Predlažem da upišemo: ${data.event.what}`
+      t('Predlažem da upišemo: {what}', { what: data.event.what })
     ) : data.correction ? (
-      'Predlažem ovu ispravku'
+      t('Predlažem ovu ispravku')
     ) : (
-      'Predlažem ove izmene'
+      t('Predlažem ove izmene')
     );
   return (
     <KitCard
@@ -242,11 +275,11 @@ function PlanDiffCard({ data, onDecide }) {
         status === 'proposed' && (
           <>
             <Button variant="secondary" onClick={() => onDecide(false)}>
-              Ne sada
+              {t('Ne sada')}
             </Button>
             <Button onClick={() => onDecide(true)}>
               <Check size={14} strokeWidth={2} />
-              {toRecord ? 'Upiši u karton' : 'Primeni na plan'}
+              {toRecord ? t('Upiši u karton') : t('Primeni na plan')}
             </Button>
           </>
         )
@@ -257,10 +290,10 @@ function PlanDiffCard({ data, onDecide }) {
             {desc.frailty && (
               <>
                 <AlertTriangle size={12} strokeWidth={2} />
-                Nivo krhkosti: {desc.frailty.before} → {desc.frailty.after}.{' '}
+                {t('Nivo krhkosti: {before} → {after}.', { before: desc.frailty.before, after: desc.frailty.after })}{' '}
               </>
             )}
-            {status === 'proposed' && (toRecord ? 'Ništa se ne upisuje dok ne potvrdite.' : 'Ništa se ne menja dok ne primenite.')}
+            {status === 'proposed' && (toRecord ? t('Ništa se ne upisuje dok ne potvrdite.') : t('Ništa se ne menja dok ne primenite.'))}
           </>
         )
       }
@@ -271,8 +304,8 @@ function PlanDiffCard({ data, onDecide }) {
             <span className="kc-row-label">{r.title}</span>
             {r.added || r.removed ? (
               <span className="kc-chips">
-                {r.removed.length > 0 && <span className="kc-chip is-removed">Više ne: {r.removed.join(', ')}</span>}
-                {r.added.length > 0 && <span className="kc-chip is-added">Sada i: {r.added.join(', ')}</span>}
+                {r.removed.length > 0 && <span className="kc-chip is-removed">{t('Više ne: {list}', { list: r.removed.join(', ') })}</span>}
+                {r.added.length > 0 && <span className="kc-chip is-added">{t('Sada i: {list}', { list: r.added.join(', ') })}</span>}
               </span>
             ) : (
               <span className="kc-change">
@@ -295,11 +328,11 @@ function PlanDiffCard({ data, onDecide }) {
 function NoteCard({ data }) {
   const danger = data.tone === 'danger';
   return (
-    <KitCard title={danger ? 'Nešto nije uspelo' : 'Sačuvano u planu'} status={danger ? 'danger' : 'note'}>
+    <KitCard title={danger ? t('Nešto nije uspelo') : t('Sačuvano u planu')} status={danger ? 'danger' : 'note'}>
       <ul className="kc-rows">
-        {data.items.map((t) => (
-          <li key={t} className="kc-row">
-            <span className="kc-now">{t}</span>
+        {data.items.map((item) => (
+          <li key={item} className="kc-row">
+            <span className="kc-now">{item}</span>
           </li>
         ))}
       </ul>
@@ -309,7 +342,7 @@ function NoteCard({ data }) {
 
 function SendRequestCard({ data, foot, onSend, onOpen }) {
   return (
-    <KitCard title="Upit sa planom nege" foot={foot}>
+    <KitCard title={t('Upit sa planom nege')} foot={foot}>
       <ul className="kc-rows">
         {data.ids.map((id) => {
           const c = caregivers.find((x) => x.id === id);
@@ -333,12 +366,12 @@ function SendRequestCard({ data, foot, onSend, onOpen }) {
               {sent ? (
                 <span className="kc-chip is-added">
                   <Check size={12} strokeWidth={2} />
-                  Poslato
+                  {t('Poslato')}
                 </span>
               ) : (
                 <Button onClick={() => onSend(id)}>
                   <Send size={14} strokeWidth={1.75} />
-                  Pošalji upit
+                  {t('Pošalji upit')}
                 </Button>
               )}
             </li>
@@ -352,9 +385,11 @@ function SendRequestCard({ data, foot, onSend, onOpen }) {
 function OpenPageButtons({ data, onOpen }) {
   return (
     <div className="kc-pages">
-      {data.pages.map((pg) => (
+      {/* a page that is gone (the care plan's, in an older conversation) has
+          no button */}
+      {data.pages.filter((pg) => PAGES[pg]).map((pg) => (
         <Button key={pg} variant="secondary" onClick={() => onOpen(pg)}>
-          {PAGES[pg]}
+          {t(PAGES[pg])}
           <ArrowRight size={14} strokeWidth={1.75} />
         </Button>
       ))}
@@ -374,9 +409,9 @@ export function ChatPane({ openId, ctx, onClose }) {
         title={pane.title}
         meta={pane.meta}
         onClose={onClose}
-        closeLabel={chatLabelsSr.pane.close}
-        expandLabel={chatLabelsSr.pane.expand}
-        collapseLabel={chatLabelsSr.pane.collapse}
+        closeLabel={chatLabels().pane.close}
+        expandLabel={chatLabels().pane.expand}
+        collapseLabel={chatLabels().pane.collapse}
       >
         {pane.children}
       </ArtifactPane>
@@ -460,19 +495,19 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
   const first = Boolean(plan && firstChat);
   const empty = useMemo(
     () => ({
-      title: first ? 'Vaš asistent za negu' : 'Kako mogu da pomognem?',
+      title: first ? t('Vaš asistent za negu') : t('Kako mogu da pomognem?'),
       description: !plan
-        ? 'Asistent radi kad plan nege postoji.'
+        ? t('Asistent radi kad plan nege postoji.')
         : first
-          ? 'Pitajte svojim rečima ili recite šta se promenilo. Asistent zna vaš plan nege, negovateljice i posete, pa može da objasni kako šta ide i da predloži izmenu plana ili upit negovateljici. Ništa se ne menja dok vi ne potvrdite. Medicinske savete ne daje.'
-          : 'Mogu da izmenim plan, predložim negovateljice i pošaljem im upit, ili objasnim kako šta ide.',
+          ? t('Pitajte svojim rečima ili recite šta se promenilo. Asistent zna vaš plan nege, negovateljice i posete, pa može da objasni kako šta ide i da predloži izmenu plana ili upit negovateljici. Ništa se ne menja dok vi ne potvrdite. Medicinske savete ne daje.')
+          : t('Mogu da izmenim plan, predložim negovateljice i pošaljem im upit, ili objasnim kako šta ide.'),
       suggestions: care?.requests.length
-        ? ['Šta sada čeka na mene?', 'Sada hoda uz hodalicu', 'Kako se plaća poseta?']
-        : ['Koja negovateljica joj najviše odgovara?', 'Sada hoda uz hodalicu', 'Kako ide dogovor sa negovateljicom?'],
+        ? [t('Šta sada čeka na mene?'), t('Sada hoda uz hodalicu'), t('Kako se plaća poseta?')]
+        : [t('Koja negovateljica joj najviše odgovara?'), t('Sada hoda uz hodalicu'), t('Kako ide dogovor sa negovateljicom?')],
     }),
     // the openers only show before the first message
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [Boolean(plan), first, Boolean(care?.requests.length)]
+    [Boolean(plan), first, Boolean(care?.requests.length), getLang()]
   );
 
   return (
@@ -480,7 +515,7 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
       <ChatExperience
         chat={chat}
         renderPart={renderPart}
-        labels={chatLabelsSr}
+        labels={chatLabels()}
         headerActions={false}
         composerMenu={false}
         cursor={false}
@@ -494,7 +529,7 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
         theme="light"
         title={title}
         actions={actions}
-        placeholder={chatLabelsSr.input.placeholder}
+        placeholder={chatLabels().input.placeholder}
         artifact={hostPane ? undefined : artifact}
         pane={hostPane ? 'none' : 'inline'}
         openArtifactId={hostPane ? openPane : undefined}

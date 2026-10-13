@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import { Field, Input } from './TextField';
+import { t } from '../i18n';
+
+// The names of files and settings stay code in any language: a translated
+// sentence keeps them as they are, and they are set as code where they appear.
+const withCode = (text) =>
+  text.split(/(\.env\.local|localStorage|ANTHROPIC_API_KEY=…)/).map((part, i) => (i % 2 ? <code key={i}>{part}</code> : part));
 
 // a warning on the waiting tint
 const warning = 'rounded-lg bg-warning-muted p-3 text-xs leading-body text-warning';
@@ -20,21 +26,19 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
     <Page>
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>AI razgovor</PageTitle>
-          <PageDescription>Ova varijanta priča sa Claude-om uživo, pa joj treba tvoj ključ.</PageDescription>
+          <PageTitle>{t('AI razgovor')}</PageTitle>
+          <PageDescription>{t('Ova varijanta priča sa Claude-om uživo, pa joj treba tvoj ključ.')}</PageDescription>
         </PageHeaderText>
       </PageHeader>
 
       <Card>
         <CardHeader>
-          <CardTitle>Anthropic API ključ</CardTitle>
+          <CardTitle>{t('Anthropic API ključ')}</CardTitle>
         </CardHeader>
 
         {rejected && (
           <p className={warning} role="alert">
-            Anthropic nije prihvatio ključ koji je bio sačuvan (401) - obrisan je, istekao ili je
-            pogrešno kopiran. Upiši ključ koji radi; ako je stari u <code>.env.local</code>, zameni
-            ga i tamo.
+            {withCode(t('Anthropic nije prihvatio ključ koji je bio sačuvan (401) - obrisan je, istekao ili je pogrešno kopiran. Upiši ključ koji radi; ako je stari u .env.local, zameni ga i tamo.'))}
           </p>
         )}
 
@@ -47,33 +51,31 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
             placeholder="sk-ant-..."
             autoComplete="off"
             spellCheck={false}
-            aria-label="Anthropic API ključ"
+            aria-label={t('Anthropic API ključ')}
             onChange={setValue}
             onEnter={() => valid && onSave(value.trim())}
           />
         </Field>
 
         <CardDescription>
-          Ostaje u <code>localStorage</code> ovog browsera i ne odlazi nigde osim ka Anthropic-u.
-          Nije u repozitorijumu - svako ko povuče kod upisuje svoj.
+          {withCode(t('Ostaje u localStorage ovog browsera i ne odlazi nigde osim ka Anthropic-u. Nije u repozitorijumu - svako ko povuče kod upisuje svoj.'))}
         </CardDescription>
         <CardDescription>
-          Browser ga pamti samo za ovu adresu, pa ga posle promene porta traži ponovo. Da ga ne
-          upisuješ svaki put, stavi ga u <code>.env.local</code> u korenu projekta kao{' '}
-          <code>ANTHROPIC_API_KEY=…</code> i restartuj server.
+          {withCode(
+            t('Browser ga pamti samo za ovu adresu, pa ga posle promene porta traži ponovo. Da ga ne upisuješ svaki put, stavi ga u .env.local u korenu projekta kao ANTHROPIC_API_KEY=… i restartuj server.')
+          )}
         </CardDescription>
         <p className={warning}>
-          Ovako se radi samo lokalni demo. Ključ u browseru može da pročita bilo koja skripta na
-          stranici, pa ovo ne sme da ide u produkciju - tamo poziv ide preko servera.
+          {t('Ovako se radi samo lokalni demo. Ključ u browseru može da pročita bilo koja skripta na stranici, pa ovo ne sme da ide u produkciju - tamo poziv ide preko servera.')}
         </p>
 
         <CardFooter>
           <Button disabled={!valid} onClick={() => onSave(value.trim())}>
-            Sačuvaj i počni
+            {t('Sačuvaj i počni')}
           </Button>
           {onCancel && (
             <Button variant="secondary" onClick={onCancel}>
-              Nazad
+              {t('Nazad')}
             </Button>
           )}
         </CardFooter>

@@ -1,18 +1,21 @@
 import { applicableQuestions, flowContext, questionById, steps } from './flow';
 import { frailtyOf } from './frailty';
+import { quoted } from './carePlan';
 import { CFS_SR, srField, srOptionTitles, srShort } from './flow.sr';
 import { reconcile } from './dependencies';
+import { msg, t } from '../i18n';
 
 // Changing a care plan after the fact. The plan is not a document anyone types:
 // it is built from the answers the family gave, so changing the plan means
 // changing an answer and building it again. The manual editor and the assistant
 // both go through here, so they can never disagree about what a change does.
 
+// Serbian keys (msg): shown through t()
 export const STEP_TITLE = {
-  'getting-to-know': 'Upoznavanje',
-  'daily-life': 'Svakodnevica',
-  support: 'Podrška',
-  reason: 'Zašto sada',
+  'getting-to-know': msg('Upoznavanje'),
+  'daily-life': msg('Svakodnevica'),
+  support: msg('Podrška'),
+  reason: msg('Zašto sada'),
 };
 
 // Every question that applies to this person now, section by section, with its
@@ -23,7 +26,7 @@ export function planQuestions(answers) {
   return steps
     .map((step) => ({
       id: step.id,
-      title: STEP_TITLE[step.id] || step.id,
+      title: STEP_TITLE[step.id] ? t(STEP_TITLE[step.id]) : step.id,
       questions: applicableQuestions(step, ctx).map((q) => ({ q, answer: answers[q.id] || null })),
     }))
     .filter((s) => s.questions.length);
@@ -31,16 +34,16 @@ export function planQuestions(answers) {
 
 // An answer as a line of text, the way the plan page reads it.
 export function answerText(q, answer) {
-  if (!answer) return 'Nije odgovoreno';
+  if (!answer) return t('Nije odgovoreno');
   if (q.type === 'inputs') {
     return q.fields
       .map((f) => answer.values?.[f.id])
       .filter(Boolean)
-      .join(' · ') || 'Nije odgovoreno';
+      .join(' · ') || t('Nije odgovoreno');
   }
   const titles = srOptionTitles(q, answer);
-  if (q.type === 'multi' && !titles.length) return 'Ništa od ovoga';
-  return titles.join(', ') || 'Nije odgovoreno';
+  if (q.type === 'multi' && !titles.length) return t('Ništa od ovoga');
+  return titles.join(', ') || t('Nije odgovoreno');
 }
 
 export { srField };
@@ -60,7 +63,7 @@ export function applyChanges(answers, changes) {
   return { answers: next, dropped: [...new Set(dropped)] };
 }
 
-const levelLabel = (level) => (level ? `${level} · ${CFS_SR[level]?.label || ''}`.trim() : 'još nije poznat');
+const levelLabel = (level) => (level ? `${level} · ${CFS_SR[level]?.label || ''}`.trim() : t('još nije poznat'));
 
 // What a set of changes would do, before anyone agrees to it: each answer as it
 // is and as it would be, and the frailty level when it moves — the one change
@@ -103,8 +106,8 @@ export function planDiff(before, after) {
   const recs = after.recommendations.filter((r) => !same(byId[r.id], r)).map((r) => r.id);
   const letter = JSON.stringify(before.letter.paragraphs) !== JSON.stringify(after.letter.paragraphs);
   const touched = [
-    ...(letter ? ['Minnino pismo'] : []),
-    ...after.recommendations.filter((r) => recs.includes(r.id)).map((r) => `„${r.title}“`),
+    ...(letter ? [t('Minnino pismo')] : []),
+    ...after.recommendations.filter((r) => recs.includes(r.id)).map((r) => quoted(r.title)),
   ];
   return { recs, letter, touched };
 }

@@ -7,6 +7,16 @@ import { srField, srOption, srTitle } from '../data/flow.sr';
 import { caregivers, daysText, slotsText } from '../data/carePlan';
 import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/familyCare';
 import { HEALTH, healthOps, recordState } from '../data/record';
+import { emergencyNumber } from '../data/market';
+import { scheduleText } from '../data/familyStart';
+import { getLang, msg, t } from '../i18n';
+
+// The language her words to the family are in: the one the app is set to, so
+// the catalog's words, translated with it, and her reply never mix.
+const inTheirLanguage = () =>
+  getLang() === 'sr' ? 'in Serbian (Latin script, ekavian; you are a woman, so feminine forms for yourself)' : getLang() === 'fi' ? 'in Finnish' : 'in English';
+const exampleEvent = () =>
+  getLang() === 'sr' ? '"Pala je i slomila nogu"' : getLang() === 'fi' ? '"Kaatui ja mursi jalkansa"' : '"She fell and broke her leg"';
 
 // The assistant beside a finished care plan, able to change it. The plan is
 // built from the family's answers, so the assistant changes it the only way
@@ -14,7 +24,7 @@ import { HEALTH, healthOps, recordState } from '../data/record';
 // shows what would change and the family decides. One request per message; the
 // proposal ends the turn and waits for them.
 
-const PROPOSE = {
+const proposeTool = () => ({
   name: 'propose_changes',
   description:
     'Propose changes to the answers the care plan is built from. The family sees the proposal - each answer as it is and as it would be - and applies it or not; nothing changes until they do. Use only question ids and option ids from the catalog in the latest system message. One entry per question.',
@@ -24,7 +34,7 @@ const PROPOSE = {
       note: {
         type: 'string',
         description:
-          'One short sentence to the family, shown above the proposal: what you are proposing and why, in plain words, in the language they wrote in. It describes exactly the changes in this call - nothing more, nothing left out.',
+          `One short sentence to the family, shown above the proposal: what you are proposing and why, in plain words, ${inTheirLanguage()}. It describes exactly the changes in this call - nothing more, nothing left out.`,
       },
       changes: {
         type: 'array',
@@ -55,7 +65,7 @@ const PROPOSE = {
         description:
           'Only when the family told you something happened or changed about her (a fall, a hospital stay, a diagnosis, she manages less than before). Leave it out for a plain correction.',
         properties: {
-          what: { type: 'string', description: 'What happened, as a short title in the language they wrote in, e.g. "Pala je i slomila nogu".' },
+          what: { type: 'string', description: `What happened, as a short title ${inTheirLanguage()}, e.g. ${exampleEvent()}.` },
           since: { type: 'string', description: 'The day it happened or began, YYYY-MM-DD, worked out from today\'s date in the system message.' },
           until: { type: 'string', description: 'Only when it is temporary (a cast, a recovery): the day it is expected to end, YYYY-MM-DD.' },
         },
@@ -86,22 +96,22 @@ const PROPOSE = {
     },
     required: ['note', 'changes'],
   },
-};
+});
 
 // What matters but is not a question the plan asks — a habit, a preference, a
 // name. It is kept with the plan's notes, which the coordinator reads.
-const NOTE = {
+const noteTool = () => ({
   name: 'add_note',
   description:
     'Keep something the family said that no question covers (a habit, a preference, a diagnosis, a person) with the care plan, where the coordinator reads it. It is saved straight away.',
   input_schema: {
     type: 'object',
     properties: {
-      text: { type: 'string', description: 'The note, short, in the language the family wrote in.' },
+      text: { type: 'string', description: `The note, short, ${getLang() === 'sr' ? 'in the language the family wrote in' : inTheirLanguage()}.` },
     },
     required: ['text'],
   },
-};
+});
 
 // Sending a caregiver the request, which is the family's to do: proposed here,
 // sent when they press the button.
@@ -121,13 +131,13 @@ const REQUEST = {
 // A way to the page something is on, when the family wants to look at it.
 // Said as what the button does, not as the page's name: a lone "Upiti" under
 // an answer does not say it takes you anywhere.
+// The words are Serbian and translated where the button is drawn: t(PAGES[page]).
 export const PAGES = {
-  plan: 'Otvori plan nege',
-  'my-care': 'Idi na Moju negu',
-  'find-caregiver': 'Pronađi negovateljicu',
-  visits: 'Pogledaj sve posete',
-  requests: 'Pogledaj upite',
-  settings: 'Otvori podešavanja',
+  'my-care': msg('Idi na Moju negu'),
+  'find-caregiver': msg('Pronađi negovateljicu'),
+  visits: msg('Pogledaj sve posete'),
+  requests: msg('Pogledaj upite'),
+  settings: msg('Otvori podešavanja'),
 };
 const SHOW = {
   name: 'show_page',
@@ -152,8 +162,12 @@ const system = (name) =>
     'When she has moved or is about to, propose the new place in the `city` field of `about-person` with `event` (what, since when), and say in your sentence that the coordinator will call about which caregivers can still come. When she is only staying somewhere else for a while (hospital, rehabilitation, with family) her address does not change: keep it with `add_note`, with until when, and say the coordinator will call about the visits in between.',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
     // The one thing the assistant never does, whatever it is asked.
-    'You never give medical advice. Not about medicines (whether to take, stop, change or combine one, a dose, a side effect, an interaction), not about a diagnosis, a symptom, a treatment, a test result or what a doctor said. You do not say what something might be, whether it is serious, or what to do about it medically, and you do not comment on whether what was prescribed is right - not even in general terms, not even when asked directly or told it is urgent. What the family tells you about her health you only write down, in their words, exactly as said: never name a diagnosis they did not name, never add or correct a medicine or a dose. When they ask a medical question, say in one sentence that you cannot advise on that and that her doctor or the pharmacist is who to ask, then offer what you can do: note it in her record, or adjust the care around it. If it sounds like an emergency (she cannot be woken, cannot breathe, chest pain, a fall with a head injury, a suspected stroke), say to call 112 now and nothing else.',
-    'Keep replies to one to three short sentences. Reply in the language they write in.',
+    'You never give medical advice. Not about medicines (whether to take, stop, change or combine one, a dose, a side effect, an interaction), not about a diagnosis, a symptom, a treatment, a test result or what a doctor said. You do not say what something might be, whether it is serious, or what to do about it medically, and you do not comment on whether what was prescribed is right - not even in general terms, not even when asked directly or told it is urgent. What the family tells you about her health you only write down, in their words, exactly as said: never name a diagnosis they did not name, never add or correct a medicine or a dose. When they ask a medical question, say in one sentence that you cannot advise on that and that her doctor or the pharmacist is who to ask, then offer what you can do: note it in her record, or adjust the care around it. If it sounds like an emergency (she cannot be woken, cannot breathe, chest pain, a fall with a head injury, a suspected stroke), say to call ' + emergencyNumber() + ' now and nothing else.',
+    getLang() === 'sr'
+      ? 'Keep replies to one to three short sentences. Reply in the language they write in.'
+      : getLang() === 'fi'
+        ? 'Keep replies to one to three short sentences. Reply in natural, idiomatic Finnish, addressing them politely with "te", whatever language they or this prompt use: every word the family reads, your replies, the `note` of a proposal, an event\'s title and the notes you keep, is Finnish. The catalog\'s questions and options are already in Finnish.'
+        : 'Keep replies to one to three short sentences. Reply in English, whatever language they write in: every word the family reads, your replies, the `note` of a proposal, an event\'s title and the notes you keep, is English.',
   ].join('\n\n');
 
 // Every question that applies now, with its options and current answer, as the
@@ -201,12 +215,12 @@ function situation(care) {
     languages: c.languages,
     days: daysText(c.days),
     partsOfDay: slotsText(c.slots),
-    request: asked[c.id] ? { status: asked[c.id].status, detail: asked[c.id].detail } : 'not asked',
+    request: asked[c.id] ? { status: asked[c.id].status, detail: t(asked[c.id].detail) } : 'not asked',
   }));
   const arrangements = care.arrangements.map((a) => ({
     caregiver: a.caregiver.name,
-    agreed: activeVersion(a) ? { rate: activeVersion(a).rate, hoursPerWeek: activeVersion(a).hours, schedule: activeVersion(a).schedule } : null,
-    termsWaitingForFamily: pendingVersion(a) ? { rate: pendingVersion(a).rate, hoursPerWeek: pendingVersion(a).hours, schedule: pendingVersion(a).schedule } : null,
+    agreed: activeVersion(a) ? { rate: activeVersion(a).rate, hoursPerWeek: activeVersion(a).hours, schedule: scheduleText(activeVersion(a).schedule) } : null,
+    termsWaitingForFamily: pendingVersion(a) ? { rate: pendingVersion(a).rate, hoursPerWeek: pendingVersion(a).hours, schedule: scheduleText(pendingVersion(a).schedule) } : null,
     ended: a.endedOn || null,
   }));
   const visits = allVisits(care).map((v) => ({ caregiver: v.caregiver.name, date: v.date, time: v.time, status: v.status }));
@@ -264,7 +278,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
     system: SYSTEM_TURNS()
       ? system(name)
       : [{ type: 'text', text: system(name) }, { type: 'text', text: state }],
-    tools: [PROPOSE, NOTE, REQUEST, SHOW],
+    tools: [proposeTool(), noteTool(), REQUEST, SHOW],
     messages: SYSTEM_TURNS() ? [...messages, { role: 'system', content: state }] : messages,
   });
 
@@ -284,7 +298,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
 
   if (response.stop_reason === 'refusal') {
     console.error('Refusal', response.stop_details);
-    throw new Error('Asistent nije mogao da odgovori na to. Probajte da kažete drugačije.');
+    throw new Error(t('Asistent nije mogao da odgovori na to. Probajte da kažete drugačije.'));
   }
 
   const said = response.content

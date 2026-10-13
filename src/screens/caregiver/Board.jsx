@@ -4,6 +4,7 @@ import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/
 import { cn } from '@/lib/utils';
 import BoardCard from '../../components/caregiver/BoardCard';
 import { STAGES, boardSummary, money } from '../../data/caregiverBoard';
+import { msg, t } from '../../i18n';
 
 // The caregiver's home screen. Four columns, left to right in the order the
 // work actually happens, and a card only ever sits in the column that names
@@ -14,10 +15,10 @@ import { STAGES, boardSummary, money } from '../../data/caregiverBoard';
 // and decline, have no direction to drag in anyway.
 
 const EMPTY_COPY = {
-  request: 'Trenutno nema novih upita.',
-  agreement: 'Nema ugovora koje treba postaviti.',
-  active: 'Još nema saradnji u toku.',
-  'work-order': 'Nema šta da se fakturiše. Sve posete su izmirene.',
+  request: msg('Trenutno nema novih upita.'),
+  agreement: msg('Nema ugovora koje treba postaviti.'),
+  active: msg('Još nema saradnji u toku.'),
+  'work-order': msg('Nema šta da se fakturiše. Sve posete su izmirene.'),
 };
 
 // Forwards a ref for the same reason the cards do — it shares their
@@ -31,7 +32,7 @@ const Empty = forwardRef(function Empty({ stage }, ref) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.12 } }}
     >
-      {EMPTY_COPY[stage]}
+      {t(EMPTY_COPY[stage])}
     </motion.p>
   );
 });
@@ -42,12 +43,12 @@ function Column({ stage, cards, children }) {
     <section className="flex min-h-0 min-w-[320px] flex-[1_1_0] flex-col rounded-3xl bg-muted p-3">
       <header className="shrink-0 px-1 pb-3">
         <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-          {stage.title}
+          {t(stage.title)}
           <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-sm bg-elevated-4 px-2 text-small text-muted-foreground">
             {cards.length}
           </span>
         </p>
-        <p className="mt-1 text-small text-disabled">{stage.note}</p>
+        <p className="mt-1 text-small text-disabled">{t(stage.note)}</p>
       </header>
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border-0 [&.is-scrolling::-webkit-scrollbar-thumb]:bg-black/20">
         <AnimatePresence mode="popLayout" initial={false}>
@@ -81,10 +82,10 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
 
   const waitNote =
     s.requests === 0
-      ? 'Ništa ne čeka'
+      ? t('Ništa ne čeka')
       : s.oldestRequest >= 24
-        ? `Najstariji: ${Math.floor(s.oldestRequest / 24)} d`
-        : `Najstariji: ${s.oldestRequest} h`;
+        ? t('Najstariji: {n} d', { n: Math.floor(s.oldestRequest / 24) })
+        : t('Najstariji: {n} h', { n: s.oldestRequest });
 
   return (
     // the board takes the whole width and does not scroll as a page: its
@@ -92,10 +93,11 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
     <Page className="overflow-hidden pb-4 *:max-w-none phone:pb-4">
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Vaša tabla</PageTitle>
+          <PageTitle>{t('Vaša tabla')}</PageTitle>
           <PageDescription>
-            {user.name ? `${user.name.split(' ')[0]}, sve` : 'Sve'} što čeka na vas, sleva nadesno, redom
-            kojim se dešava.
+            {user.name
+              ? t('{name}, sve što čeka na vas, sleva nadesno, redom kojim se dešava.', { name: user.name.split(' ')[0] })
+              : t('Sve što čeka na vas, sleva nadesno, redom kojim se dešava.')}
           </PageDescription>
         </PageHeaderText>
       </PageHeader>
@@ -103,31 +105,31 @@ export default function CaregiverBoard({ user, clients, paid, actions }) {
       <div className="grid grid-cols-4 gap-2">
         <Stat
           value={s.requests}
-          label="Za odgovor"
+          label={t('Za odgovor')}
           note={waitNote}
           tone={s.oldestRequest >= 24 ? 'warn' : null}
         />
         <Stat
           value={s.toSend}
-          label="Ugovori za slanje"
-          note={s.toSend ? 'Blokira svaku posetu' : 'Sve poslato'}
+          label={t('Ugovori za slanje')}
+          note={s.toSend ? t('Blokira svaku posetu') : t('Sve poslato')}
           tone={s.toSend ? 'warn' : null}
         />
         {/* Not sent is money she has done the work for and not asked for; it is
             the only one of the three she can do anything about. */}
         <Stat
           value={s.workOrders}
-          label="Neposlati radni nalozi"
-          note={s.workOrders ? `${money(s.unbilled)} nefakturisano` : 'Sve poslato'}
+          label={t('Neposlati radni nalozi')}
+          note={s.workOrders ? t('{amount} nefakturisano', { amount: money(s.unbilled) }) : t('Sve poslato')}
           tone={s.workOrders ? 'urgent' : null}
         />
         <Stat
           value={money(paid)}
-          label="Isplaćeno vam u avgustu"
+          label={t('Isplaćeno vam u avgustu')}
           note={
             s.awaiting > 0
-              ? `${money(s.awaiting)} u obradi`
-              : `Saradnji u toku: ${s.active}`
+              ? t('{amount} u obradi', { amount: money(s.awaiting) })
+              : t('Saradnji u toku: {n}', { n: s.active })
           }
         />
       </div>

@@ -6,6 +6,7 @@ import { Fact, Facts } from '@/components/data-list';
 import { useKept } from '@/hooks/use-kept';
 import Dialog from './Dialog';
 import { Field, Input } from './TextField';
+import { msg, t } from '../i18n';
 
 // Who is signed in: their name, e-mail and phone, first in Settings. This was
 // the Profile page; once everything about the person they care for moved to
@@ -13,29 +14,29 @@ import { Field, Input } from './TextField';
 // held, so it is a card here. Changed in a dialog, as the password is; in
 // Settings a button with a label has no icon (§11).
 const FIELDS = [
-  { id: 'name', label: 'Ime i prezime' },
-  { id: 'email', label: 'Email', type: 'email' },
-  { id: 'phone', label: 'Telefon' },
+  { id: 'name', label: msg('Ime i prezime') },
+  { id: 'email', label: msg('Email'), type: 'email' },
+  { id: 'phone', label: msg('Telefon') },
 ];
 
 function AccountDialog({ open, user, onSave, onClose }) {
   const [values, setValues] = useState(() => Object.fromEntries(FIELDS.map((f) => [f.id, user[f.id] || ''])));
   const complete = FIELDS.every((f) => values[f.id].trim());
   return (
-    <Dialog eyebrow="Nalog" title="Vaši podaci" open={open} onClose={onClose}>
+    <Dialog eyebrow={t('Nalog')} title={t('Vaši podaci')} open={open} onClose={onClose}>
       <div className="flex flex-col gap-3">
         {FIELDS.map((f) => (
-          <Field key={f.id} label={f.label}>
+          <Field key={f.id} label={t(f.label)}>
             <Input type={f.type || 'text'} value={values[f.id]} onChange={(value) => setValues((v) => ({ ...v, [f.id]: value }))} />
           </Field>
         ))}
       </div>
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
-          Otkaži
+          {t('Otkaži')}
         </Button>
         <Button disabled={!complete} onClick={() => onSave(values)}>
-          Sačuvaj
+          {t('Sačuvaj')}
         </Button>
       </DialogFooter>
     </Dialog>
@@ -49,11 +50,11 @@ export default function AccountCard({ user, onSave }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Vaši podaci</CardTitle>
+        <CardTitle>{t('Vaši podaci')}</CardTitle>
       </CardHeader>
       <Facts>
         {FIELDS.map((f) => (
-          <Fact key={f.id} label={f.label}>
+          <Fact key={f.id} label={t(f.label)}>
             {user?.[f.id] || '-'}
           </Fact>
         ))}
@@ -61,7 +62,7 @@ export default function AccountCard({ user, onSave }) {
       {onSave && (
         <CardFooter>
           <Button variant="secondary" onClick={() => setEditing(true)}>
-            Izmenite podatke
+            {t('Izmenite podatke')}
           </Button>
         </CardFooter>
       )}

@@ -7,6 +7,7 @@ import { DataRow } from '@/components/data-list';
 import { PaneHint, PaneLabel, Total } from '@/components/pane';
 import { Field, Input, TextArea } from '../TextField';
 import { money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
+import { msg, t } from '../../i18n';
 
 // The work order is the visit's report and its invoice in one, because they are
 // the same event: what was done decides what is charged. It prices itself
@@ -20,15 +21,15 @@ import { money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 // nobody planned.
 
 const MOODS = [
-  { id: 'low', label: 'Loše' },
-  { id: 'usual', label: 'Kao i obično' },
-  { id: 'good', label: 'Dobro' },
+  { id: 'low', label: msg('Loše') },
+  { id: 'usual', label: msg('Kao i obično') },
+  { id: 'good', label: msg('Dobro') },
 ];
 
 const AMOUNTS = [
-  { id: 'less', label: 'Manje nego obično' },
-  { id: 'usual', label: 'Kao i obično' },
-  { id: 'more', label: 'Više nego obično' },
+  { id: 'less', label: msg('Manje nego obično') },
+  { id: 'usual', label: msg('Kao i obično') },
+  { id: 'more', label: msg('Više nego obično') },
 ];
 
 // one of a few, always one chosen
@@ -37,7 +38,7 @@ function Choice({ options, value, onChange, name }) {
     <ToggleGroup type="single" size="sm" value={value} onValueChange={(v) => v && onChange(v)} aria-label={name}>
       {options.map((o) => (
         <ToggleGroupItem key={o.id} value={o.id}>
-          {o.label}
+          {t(o.label)}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
@@ -62,52 +63,57 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
   return (
     <>
       <DialogDescription>
-        {visit.date} · {visit.time} - planirano {visit.hours} h, po dogovorenih {money(client.rate)}/h.
+        {t('{date} · {time} - planirano {hours} h, po dogovorenih {rate}/h.', {
+          date: t(visit.date),
+          time: visit.time,
+          hours: visit.hours,
+          rate: money(client.rate),
+        })}
       </DialogDescription>
       {visit.planNotes && (
         <p className="flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-small text-muted-foreground">
           <ClipboardList size={13} strokeWidth={1.75} />
-          Planirano: {visit.planNotes}
+          {t('Planirano: {notes}', { notes: t(visit.planNotes) })}
         </p>
       )}
 
       <div className="flex flex-wrap gap-3">
-        <Field label="Odrađeni sati" className="w-auto min-w-0 self-start">
+        <Field label={t('Odrađeni sati')} className="w-auto min-w-0 self-start">
           <Input type="number" inputMode="decimal" step="0.5" value={hours} onChange={setHours} suffix="h" className="w-40!" />
         </Field>
-        <Field label="Šta ste radili" className="w-auto min-w-0 flex-1">
-          <Input type="text" value={note} placeholder="Jutarnja rutina, doručak, kratka šetnja." onChange={setNote} />
+        <Field label={t('Šta ste radili')} className="w-auto min-w-0 flex-1">
+          <Input type="text" value={note} placeholder={t('Jutarnja rutina, doručak, kratka šetnja.')} onChange={setNote} />
         </Field>
       </div>
       {overtime && (
         <PaneHint>
           {worked > visit.hours
-            ? `Više od ${visit.hours} h rezervisanih na kartici porodice. Razlika se naplaćuje kad potvrde.`
-            : `Manje od ${visit.hours} h rezervisanih - razlika se vraća porodici.`}
+            ? t('Više od {hours} h rezervisanih na kartici porodice. Razlika se naplaćuje kad potvrde.', { hours: visit.hours })
+            : t('Manje od {hours} h rezervisanih - razlika se vraća porodici.', { hours: visit.hours })}
         </PaneHint>
       )}
 
-      <PaneLabel>Kakva je bila danas?</PaneLabel>
-      <Choice options={MOODS} value={mood} onChange={setMood} name="Raspoloženje" />
+      <PaneLabel>{t('Kakva je bila danas?')}</PaneLabel>
+      <Choice options={MOODS} value={mood} onChange={setMood} name={t('Raspoloženje')} />
 
       <div className="flex flex-wrap gap-3">
         <div className="flex min-w-0 flex-col gap-2">
           <PaneLabel className="mt-0 inline-flex items-center gap-1">
-            <Utensils size={13} strokeWidth={1.75} /> Ishrana
+            <Utensils size={13} strokeWidth={1.75} /> {t('Ishrana')}
           </PaneLabel>
-          <Choice options={AMOUNTS} value={eating} onChange={setEating} name="Ishrana" />
+          <Choice options={AMOUNTS} value={eating} onChange={setEating} name={t('Ishrana')} />
         </div>
         <div className="flex min-w-0 flex-col gap-2">
           <PaneLabel className="mt-0 inline-flex items-center gap-1">
-            <Footprints size={13} strokeWidth={1.75} /> Kretanje
+            <Footprints size={13} strokeWidth={1.75} /> {t('Kretanje')}
           </PaneLabel>
-          <Choice options={AMOUNTS} value={moving} onChange={setMoving} name="Kretanje" />
+          <Choice options={AMOUNTS} value={moving} onChange={setMoving} name={t('Kretanje')} />
         </div>
       </div>
 
-      <PaneLabel>Šta ste stigli</PaneLabel>
-      <PaneHint>Označeno prema planu posete - skinite ono što se nije desilo, označite ono što je iskrslo.</PaneHint>
-      <ToggleGroup type="multiple" value={services} onValueChange={setServices} aria-label="Šta ste stigli">
+      <PaneLabel>{t('Šta ste stigli')}</PaneLabel>
+      <PaneHint>{t('Označeno prema planu posete - skinite ono što se nije desilo, označite ono što je iskrslo.')}</PaneHint>
+      <ToggleGroup type="multiple" value={services} onValueChange={setServices} aria-label={t('Šta ste stigli')}>
         {client.services.map((id) => (
           <ToggleGroupItem key={id} value={id}>
             {services.includes(id) && <Check size={13} strokeWidth={2.5} />}
@@ -121,13 +127,13 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       {concernOpen ? (
         <div className="mt-1 flex flex-col gap-2 rounded-2xl bg-destructive-muted p-3">
           <PaneLabel className="mt-0 inline-flex items-center gap-1 text-destructive">
-            <AlertTriangle size={13} strokeWidth={1.75} /> Nešto me je danas zabrinulo
+            <AlertTriangle size={13} strokeWidth={1.75} /> {t('Nešto me je danas zabrinulo')}
           </PaneLabel>
           <TextArea
             rows={2}
             value={concern}
-            placeholder="Šta ste primetili, svojim rečima. Porodica vidi ovo."
-            aria-label="Nešto me je danas zabrinulo"
+            placeholder={t('Šta ste primetili, svojim rečima. Porodica vidi ovo.')}
+            aria-label={t('Nešto me je danas zabrinulo')}
             onChange={setConcern}
           />
         </div>
@@ -138,26 +144,27 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           onClick={() => setConcernOpen(true)}
         >
           <AlertTriangle size={13} strokeWidth={1.75} />
-          Nešto me je danas zabrinulo
+          {t('Nešto me je danas zabrinulo')}
         </button>
       )}
 
       <PaneHint>
-        Slanjem počinje 24 sata za porodicu. Od njih se ništa ne traži - naplata se izvrši sama kad
-        rok istekne, osim ako u tom roku nešto prijave.
+        {t(
+          'Slanjem počinje 24 sata za porodicu. Od njih se ništa ne traži - naplata se izvrši sama kad rok istekne, osim ako u tom roku nešto prijave.'
+        )}
       </PaneHint>
 
       <Total className="mt-2">
-        <DataRow label={`Naplaćuje se · ${valid ? worked : 0} h`}>{money(totals.charged)}</DataRow>
-        <DataRow label="Provizija (10%)">−{money(totals.fee)}</DataRow>
-        <DataRow total label="Vi dobijate">
+        <DataRow label={t('Naplaćuje se · {hours} h', { hours: valid ? worked : 0 })}>{money(totals.charged)}</DataRow>
+        <DataRow label={t('Provizija (10%)')}>−{money(totals.fee)}</DataRow>
+        <DataRow total label={t('Vi dobijate')}>
           {money(totals.net)}
         </DataRow>
       </Total>
 
       <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
-          Otkaži
+          {t('Otkaži')}
         </Button>
         <Button
           disabled={!valid}
@@ -174,7 +181,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           }
         >
           <Send size={14} strokeWidth={1.75} />
-          Pošalji radni nalog
+          {t('Pošalji radni nalog')}
         </Button>
       </DialogFooter>
     </>

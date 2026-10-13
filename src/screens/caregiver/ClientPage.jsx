@@ -45,11 +45,13 @@ import {
   dueVisit,
   heldFor,
   frailtyLabel,
+  km,
   money,
   serviceShort,
   serviceTitle,
   totalsFor,
 } from '../../data/caregiverBoard';
+import { msg, t } from '../../i18n';
 
 // Everything the caregiver knows about one family, on one page: the terms she
 // works under, the visits those terms have produced, and the story of the
@@ -63,9 +65,9 @@ import {
 // the overview under an empty form.
 
 const MOOD = {
-  low: { icon: Frown, label: 'Loše' },
-  usual: { icon: Meh, label: 'Kao i obično' },
-  good: { icon: Smile, label: 'Dobro' },
+  low: { icon: Frown, label: msg('Loše') },
+  usual: { icon: Meh, label: msg('Kao i obično') },
+  good: { icon: Smile, label: msg('Dobro') },
 };
 
 const ACTIVITY_ICON = {
@@ -101,18 +103,18 @@ function Section({ title, badge, children }) {
 function AgreedTerms({ client }) {
   return (
     <>
-      <PaneLabel>Usluge iz ovog ugovora</PaneLabel>
+      <PaneLabel>{t('Usluge iz ovog ugovora')}</PaneLabel>
       <Tags items={client.services.map(serviceTitle)} />
       <DataList className="mt-2">
-        <DataRow label="Cena po satu">{money(client.rate)} / h</DataRow>
-        <DataRow label="Dogovoreni sati">{client.hours} h nedeljno</DataRow>
-        <DataRow label="Raspored">{client.schedule}</DataRow>
+        <DataRow label={t('Cena po satu')}>{money(client.rate)} / h</DataRow>
+        <DataRow label={t('Dogovoreni sati')}>{t('{hours} h nedeljno', { hours: client.hours })}</DataRow>
+        <DataRow label={t('Raspored')}>{t(client.schedule)}</DataRow>
       </DataList>
     </>
   );
 }
 
-const AMOUNT_WORD = { less: 'manje nego obično', usual: 'kao i obično', more: 'više nego obično' };
+const AMOUNT_WORD = { less: msg('manje nego obično'), usual: msg('kao i obično'), more: msg('više nego obično') };
 
 function Visits({ client }) {
   // The visit still waiting on its work order is not in here — it is the form
@@ -124,7 +126,7 @@ function Visits({ client }) {
   if (!visits.length) {
     return (
       <p className="rounded-2xl border border-dashed px-3 py-4 text-center text-xs leading-body text-disabled">
-        Još nema izmirenih poseta. Počinju kad porodica potpiše ugovor.
+        {t('Još nema izmirenih poseta. Počinju kad porodica potpiše ugovor.')}
       </p>
     );
   }
@@ -136,8 +138,8 @@ function Visits({ client }) {
   return (
     <>
       <PaneHint>
-        Plaćeno: {settled.length} · {hours} h · {money(earned)} vama
-        {pending > 0 && ` · ${money(pending)} u obradi`}
+        {t('Plaćeno: {n} · {hours} h · {amount} vama', { n: settled.length, hours, amount: money(earned) })}
+        {pending > 0 && ' · ' + t('{amount} u obradi', { amount: money(pending) })}
       </PaneHint>
       {/* each visit a row (docs/patterns.md §6): what she wrote, and what it paid */}
       <ItemGroup>
@@ -148,36 +150,36 @@ function Visits({ client }) {
             <Item key={`${v.date}-${i}`} role="listitem" className="flex-col gap-1">
               <div className="flex items-center gap-2">
                 <p className="min-w-0 flex-1 text-xs font-medium text-foreground">
-                  {v.date} · {v.time}
+                  {t(v.date)} · {v.time}
                 </p>
                 {v.status === 'awaiting' ? (
                   <Badge variant="warning">
                     <Clock size={12} strokeWidth={2} />
-                    Naplata za {v.confirmsInHours} h
+                    {t('Naplata za {hours} h', { hours: v.confirmsInHours })}
                   </Badge>
                 ) : (
-                  <Badge variant="success">Plaćeno</Badge>
+                  <Badge variant="success">{t('Plaćeno')}</Badge>
                 )}
               </div>
-              <p className="text-xs leading-body text-muted-foreground">{v.note}</p>
+              <p className="text-xs leading-body text-muted-foreground">{t(v.note)}</p>
               {v.services?.length > 0 && (
                 <p className="text-small text-disabled">{v.services.map(serviceShort).join(' · ')}</p>
               )}
               {v.concern && (
                 <Concern>
                   <AlertTriangle size={12} strokeWidth={2} />
-                  {v.concern}
+                  {t(v.concern)}
                 </Concern>
               )}
               <div className="flex items-center gap-3 text-small text-disabled">
                 {Mood && (
                   <span className="inline-flex items-center gap-1">
                     <Mood size={13} strokeWidth={1.75} />
-                    {MOOD[v.mood].label}
+                    {t(MOOD[v.mood].label)}
                   </span>
                 )}
-                {v.eating && <span className="inline-flex items-center gap-1">ishrana: {AMOUNT_WORD[v.eating]}</span>}
-                {v.moving && <span className="inline-flex items-center gap-1">kretanje: {AMOUNT_WORD[v.moving]}</span>}
+                {v.eating && <span className="inline-flex items-center gap-1">{t('ishrana: {amount}', { amount: t(AMOUNT_WORD[v.eating]) })}</span>}
+                {v.moving && <span className="inline-flex items-center gap-1">{t('kretanje: {amount}', { amount: t(AMOUNT_WORD[v.moving]) })}</span>}
                 <span className="ml-auto">
                   {v.hours} h · {money(totals.net)}
                 </span>
@@ -211,8 +213,8 @@ function Activity({ client }) {
                 <Icon size={13} strokeWidth={1.75} />
               </span>
               <div className="min-w-0 flex-1 pt-1">
-                <p className="text-xs leading-body text-foreground">{e.text}</p>
-                <p className="text-small text-disabled">{e.when}</p>
+                <p className="text-xs leading-body text-foreground">{t(e.text, e.vars)}</p>
+                <p className="text-small text-disabled">{t(e.when)}</p>
               </div>
             </li>
           );
@@ -248,29 +250,37 @@ export default function ClientPage({
   const summary = (() => {
     switch (state) {
       case 'none':
-        return `Traženo: ${client.hours} h nedeljno · ${client.schedule}`;
+        return t('Traženo: {hours} h nedeljno · {schedule}', { hours: client.hours, schedule: t(client.schedule) });
       case 'draft':
-        return `Još nije postavljen - traženo ${client.hours} h nedeljno`;
+        return t('Još nije postavljen - traženo {hours} h nedeljno', { hours: client.hours });
       case 'sent':
-        return `Usluga: ${client.services.length} · ${money(client.rate)}/h · poslato ${client.sentOn}`;
+        return t('Usluga: {n} · {rate}/h · poslato {when}', {
+          n: client.services.length,
+          rate: money(client.rate),
+          when: t(client.sentOn),
+        });
       default:
-        return `Usluga: ${client.services.length} · ${money(client.rate)}/h · ${client.hours} h nedeljno`;
+        return t('Usluga: {n} · {rate}/h · {hours} h nedeljno', {
+          n: client.services.length,
+          rate: money(client.rate),
+          hours: client.hours,
+        });
     }
   })();
 
   const badge = {
-    none: <Badge variant="secondary">Nije prihvaćeno</Badge>,
-    draft: <Badge variant="warning">Nacrt</Badge>,
+    none: <Badge variant="secondary">{t('Nije prihvaćeno')}</Badge>,
+    draft: <Badge variant="warning">{t('Nacrt')}</Badge>,
     sent: (
       <Badge variant="warning">
         <Clock size={12} strokeWidth={2} />
-        Čeka potpis
+        {t('Čeka potpis')}
       </Badge>
     ),
     active: (
       <Badge variant="success">
         <Check size={12} strokeWidth={2} />
-        Aktivno od {client.since}
+        {t('Aktivno od {date}', { date: t(client.since) })}
       </Badge>
     ),
   }[state];
@@ -278,7 +288,7 @@ export default function ClientPage({
   return (
     // the page comes up from a little below
     <Page className="animate-in fade-in-0 slide-in-from-bottom-2 duration-250 ease-out">
-      <BackButton label="Tabla" onClick={onBack} />
+      <BackButton label={t('Tabla')} onClick={onBack} />
 
       <PageHeader className="mb-0">
         <PagePerson className="flex-initial">
@@ -288,21 +298,21 @@ export default function ClientPage({
           <PageHeaderText className="flex-initial">
             <PageTitle>{client.elder}</PageTitle>
             <PageDescription>
-              {client.age} · {client.area} · {client.distance} · krhkost {client.frailty},{' '}
-              {frailtyLabel(client.frailty)}
+              {client.age} · {client.area} · {km(client.distance)} ·{' '}
+              {t('krhkost {level}', { level: client.frailty })}, {frailtyLabel(client.frailty)}
             </PageDescription>
           </PageHeaderText>
         </PagePerson>
       </PageHeader>
 
       <DataList className="rounded-2xl bg-muted px-4 py-3">
-        <DataRow label="Kontakt porodice">
-          {client.family} · {client.relation}
+        <DataRow label={t('Kontakt porodice')}>
+          {client.family} · {t(client.relation)}
         </DataRow>
         <DataRow
           label={
             <span className="inline-flex items-center gap-1">
-              <Phone size={12} strokeWidth={1.75} /> Telefon
+              <Phone size={12} strokeWidth={1.75} /> {t('Telefon')}
             </span>
           }
         >
@@ -314,26 +324,35 @@ export default function ClientPage({
           page with a deadline. The agreement below it changes once. */}
       {due && (
         <Section
-          title="Radni nalog čeka"
+          title={t('Radni nalog čeka')}
           badge={
             <Badge variant="warning">
               <AlertTriangle size={12} strokeWidth={2} />
-              Nije poslato
+              {t('Nije poslato')}
             </Badge>
           }
         >
           <CardDescription>
-            {due.date} · {due.time} - {due.hours} h po dogovorenih {money(client.rate)}/h, završeno{' '}
-            {client.sinceVisit}. Slanjem počinje 24 sata za porodicu: ili potvrde, ili se naplata izvrši
-            sama kad rok istekne.
+            {t(
+              '{date} · {time} - {hours} h po dogovorenih {rate}/h, završeno {when}. Slanjem počinje 24 sata za porodicu: ili potvrde, ili se naplata izvrši sama kad rok istekne.',
+              {
+                date: t(due.date),
+                time: due.time,
+                hours: due.hours,
+                rate: money(client.rate),
+                when: t(client.sinceVisit),
+              }
+            )}
           </CardDescription>
           <DataList className="mt-2">
-            <DataRow label="Ako se pošalje kako je rađeno">{money(totalsFor(due.hours, client.rate).net)} vama</DataRow>
+            <DataRow label={t('Ako se pošalje kako je rađeno')}>
+              {t('{amount} vama', { amount: money(totalsFor(due.hours, client.rate).net) })}
+            </DataRow>
           </DataList>
           <CardActionsEnd>
             <Button onClick={() => setModal('work-order')}>
               <FileText size={14} strokeWidth={1.75} />
-              Popuni radni nalog
+              {t('Popuni radni nalog')}
             </Button>
           </CardActionsEnd>
         </Section>
@@ -343,12 +362,12 @@ export default function ClientPage({
           later filled in against. Only an active arrangement can have one. */}
       {state === 'active' && !due && (
         <Section
-          title="Sledeća poseta"
+          title={t('Sledeća poseta')}
           badge={
             client.plan ? (
               <Badge variant="success">
                 <Check size={12} strokeWidth={2} />
-                {money(heldFor(client))} rezervisano
+                {t('{amount} rezervisano', { amount: money(heldFor(client)) })}
               </Badge>
             ) : null
           }
@@ -356,36 +375,43 @@ export default function ClientPage({
           {client.plan ? (
             <>
               <CardDescription>
-                {client.plan.date} · {client.plan.time} - {client.plan.hours} h po{' '}
-                {money(client.rate)}/h. Poslato porodici {client.plan.sentOn};{' '}
-                {money(heldFor(client))} je rezervisano na njihovoj kartici, a{' '}
-                {money(totalsFor(client.plan.hours, client.rate).net)} od toga stiže vama ako poseta
-                prođe po planu.
+                {t(
+                  '{date} · {time} - {hours} h po {rate}/h. Poslato porodici {when}; {held} je rezervisano na njihovoj kartici, a {net} od toga stiže vama ako poseta prođe po planu.',
+                  {
+                    date: t(client.plan.date),
+                    time: client.plan.time,
+                    hours: client.plan.hours,
+                    rate: money(client.rate),
+                    when: t(client.plan.sentOn),
+                    held: money(heldFor(client)),
+                    net: money(totalsFor(client.plan.hours, client.rate).net),
+                  }
+                )}
               </CardDescription>
-              <PaneLabel>Planirano</PaneLabel>
+              <PaneLabel>{t('Planirano')}</PaneLabel>
               <Tags items={client.plan.services.map(serviceTitle)} />
-              {client.plan.notes && <p className="text-xs leading-body text-muted-foreground">{client.plan.notes}</p>}
+              {client.plan.notes && <p className="text-xs leading-body text-muted-foreground">{t(client.plan.notes)}</p>}
               <CardActionsEnd>
                 <Button variant="secondary" onClick={() => setModal('plan')}>
-                  Promeni plan
+                  {t('Promeni plan')}
                 </Button>
                 <Button onClick={() => onVisitDone(client.id)}>
                   <CheckCheck size={14} strokeWidth={1.75} />
-                  Poseta obavljena
+                  {t('Poseta obavljena')}
                 </Button>
               </CardActionsEnd>
             </>
           ) : (
             <>
               <CardDescription>
-                Još ništa nije planirano. Plan posete kaže zašto dolazite, a kad ga pošaljete porodici,
-                novac se rezerviše pre nego što krenete - pa radni nalog posle samo potvrđuje ono što je
-                već pokriveno.
+                {t(
+                  'Još ništa nije planirano. Plan posete kaže zašto dolazite, a kad ga pošaljete porodici, novac se rezerviše pre nego što krenete - pa radni nalog posle samo potvrđuje ono što je već pokriveno.'
+                )}
               </CardDescription>
               <CardActionsEnd>
                 <Button onClick={() => setModal('plan')}>
                   <CalendarPlus size={14} strokeWidth={1.75} />
-                  Isplaniraj posetu
+                  {t('Isplaniraj posetu')}
                 </Button>
               </CardActionsEnd>
             </>
@@ -402,7 +428,7 @@ export default function ClientPage({
           <div className="flex items-center gap-3">
             <CollapsibleTrigger className="group/terms flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-1 text-left [font:inherit]">
               <span className="flex items-center gap-2 text-sm font-medium text-foreground group-hover/terms:text-primary-600">
-                Ugovor o nezi
+                {t('Ugovor o nezi')}
                 <ChevronDown
                   size={14}
                   strokeWidth={2}
@@ -415,13 +441,13 @@ export default function ClientPage({
             {state === 'draft' && (
               <Button onClick={() => setModal('agreement')}>
                 <FileText size={14} strokeWidth={1.75} />
-                Postavi ugovor
+                {t('Postavi ugovor')}
               </Button>
             )}
             {state === 'sent' && (
               <Button variant="secondary" onClick={() => onRemind(client.id)}>
                 <Send size={14} strokeWidth={1.75} />
-                Pošalji podsetnik
+                {t('Pošalji podsetnik')}
               </Button>
             )}
           </div>
@@ -430,11 +456,11 @@ export default function ClientPage({
             <div className="flex flex-col gap-2 pt-3">
               {state === 'none' || state === 'draft' ? (
                 <>
-                  <PaneLabel>Šta je porodica tražila</PaneLabel>
+                  <PaneLabel>{t('Šta je porodica tražila')}</PaneLabel>
                   <Tags items={client.needs.map(serviceTitle)} />
                   <DataList className="mt-2">
-                    <DataRow label="Sati">{client.hours} h nedeljno</DataRow>
-                    <DataRow label="Raspored">{client.schedule}</DataRow>
+                    <DataRow label={t('Sati')}>{t('{hours} h nedeljno', { hours: client.hours })}</DataRow>
+                    <DataRow label={t('Raspored')}>{t(client.schedule)}</DataRow>
                   </DataList>
                 </>
               ) : (
@@ -445,17 +471,17 @@ export default function ClientPage({
         </Card>
       </Collapsible>
 
-      <Section title="Posete">
+      <Section title={t('Posete')}>
         <Visits client={client} />
       </Section>
 
-      <Section title="Aktivnost">
+      <Section title={t('Aktivnost')}>
         <Activity client={client} />
       </Section>
 
       {/* The forms, each in a dialog, kept while it closes (useKept). */}
       {shownModal === 'agreement' && (
-        <Dialog eyebrow={client.elder} title="Ugovor o nezi" wide open={modal === 'agreement'} onClose={() => setModal(null)}>
+        <Dialog eyebrow={client.elder} title={t('Ugovor o nezi')} wide open={modal === 'agreement'} onClose={() => setModal(null)}>
           <AgreementForm
             client={client}
             onSend={(id, terms) => {
@@ -470,7 +496,7 @@ export default function ClientPage({
       {shownModal === 'plan' && (
         <Dialog
           eyebrow={client.elder}
-          title={client.plan ? 'Promeni posetu' : 'Isplaniraj posetu'}
+          title={client.plan ? t('Promeni posetu') : t('Isplaniraj posetu')}
           wide
           open={modal === 'plan'}
           onClose={() => setModal(null)}
@@ -488,7 +514,7 @@ export default function ClientPage({
       )}
 
       {shownModal === 'work-order' && due && (
-        <Dialog eyebrow={client.elder} title="Radni nalog" wide open={modal === 'work-order'} onClose={() => setModal(null)}>
+        <Dialog eyebrow={client.elder} title={t('Radni nalog')} wide open={modal === 'work-order'} onClose={() => setModal(null)}>
           <WorkOrderForm
             client={client}
             visit={due}

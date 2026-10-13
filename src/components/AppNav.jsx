@@ -3,7 +3,6 @@ import { useShowMore } from '@/hooks/use-show-more';
 import {
   ChevronDown,
   CircleHelp,
-  FileText,
   LayoutDashboard,
   MessageSquare,
   Plus,
@@ -32,6 +31,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { msg, t } from '@/i18n';
 
 // The pages that open from the family's home stay under it in the nav: her page
 // and every visit are parts of the dashboard, not places of their own. The
@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils';
 const HOME_VIEWS = ['dashboard', 'caregiver', 'visits'];
 
 // the account is in Settings (the Profile page went on 10 October)
-const FOOTER_ITEMS = [{ id: 'settings', label: 'Podešavanja', icon: Settings }];
+const FOOTER_ITEMS = [{ id: 'settings', label: msg('Podešavanja'), icon: Settings }];
 // "Pomoć" stands over them and is not a page: it opens the coordinator's
 // contact in a dialog (HelpDialog), so it is never the selected item
 
@@ -115,7 +115,7 @@ function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, chi
             </SidebarMenuButton>
             <SidebarMenuAction
               onClick={() => onToggle(!open)}
-              aria-label={open ? `Skupi: ${label}` : `Proširi: ${label}`}
+              aria-label={open ? t('Skupi: {label}', { label }) : t('Proširi: {label}', { label })}
               aria-expanded={open}
             >
               <Chevron open={open} />
@@ -206,13 +206,13 @@ export default function AppNav({
             button of its own above the list of them, not a "+" folded into the
             row beside a chevron. */}
         {collapsed ? (
-          <Button variant="secondary" size="icon-lg" aria-label="Novi razgovor" title="Novi razgovor" onClick={go(onNewChat)}>
+          <Button variant="secondary" size="icon-lg" aria-label={t('Novi razgovor')} title={t('Novi razgovor')} onClick={go(onNewChat)}>
             <Plus size={14} strokeWidth={1.75} />
           </Button>
         ) : (
           <Button variant="secondary" className="w-full shrink-0" onClick={go(onNewChat)}>
             <Plus size={14} strokeWidth={1.75} />
-            Novi razgovor
+            {t('Novi razgovor')}
           </Button>
         )}
       </SidebarHeader>
@@ -222,29 +222,29 @@ export default function AppNav({
           {/* Earlier conversations, folded: the row opens the list and goes
               nowhere. A new one starts from "Novi razgovor" above. */}
           <Section
-            label="Istorija razgovora"
+            label={t('Istorija razgovora')}
             icon={MessageSquare}
             open={chatListOpen}
             onToggle={onToggleChatList}
-            empty="Još nema razgovora."
+            empty={t('Još nema razgovora.')}
           >
             {/* the open one is always in the list */}
             {threads
-              .filter((t) => chats.visible.includes(t) || (view === 'chat' && activeThread === t.id))
-              .map((t) => (
+              .filter((th) => chats.visible.includes(th) || (view === 'chat' && activeThread === th.id))
+              .map((th) => (
                 <SubItem
-                  key={t.id}
-                  active={view === 'chat' && activeThread === t.id}
-                  title={t.title}
-                  note={t.date}
-                  onClick={go(() => onSelectThread(t.id))}
+                  key={th.id}
+                  active={view === 'chat' && activeThread === th.id}
+                  title={th.title}
+                  note={th.date}
+                  onClick={go(() => onSelectThread(th.id))}
                 />
               ))}
             {chats.rest > 0 && (
               <SidebarMenuSubItem>
                 <SidebarMenuSubButton asChild>
                   <button type="button" onClick={chats.more}>
-                    <span className="text-small text-(--nav-text-muted)">Prikaži još {Math.min(chats.step, chats.rest)}</span>
+                    <span className="text-small text-(--nav-text-muted)">{t('Prikaži još {count}', { count: Math.min(chats.step, chats.rest) })}</span>
                   </button>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>
@@ -253,40 +253,36 @@ export default function AppNav({
 
           <Place
             icon={LayoutDashboard}
-            label="Moja nega"
+            label={t('Moja nega')}
             active={HOME_VIEWS.includes(view)}
             count={careBadge}
             onClick={go(() => onView('dashboard'))}
           />
           <Place
             icon={Search}
-            label="Pronađi negovateljicu"
+            label={t('Pronađi negovateljicu')}
             active={view === 'find-caregiver'}
             onClick={go(() => onView('find-caregiver'))}
           />
           <Place
             icon={Send}
-            label="Moji upiti"
+            label={t('Moji upiti')}
             active={view === 'requests'}
             count={requestsBadge}
             onClick={go(() => onView('requests'))}
           />
 
-          {/* one plan per person (docs/plan-nege.md): the plan itself, no list */}
-          <Place
-            icon={FileText}
-            label="Plan nege"
-            active={view === 'plan-detail'}
-            onClick={go(() => onView('plan-detail'))}
-          />
+          {/* The care plan has no place here: before anyone comes it is
+              "Moja nega" itself, and after that what is left of it is on that
+              page too (docs/patterns.md §4a). */}
         </SidebarMenu>
       </SidebarContent>
 
       <SidebarFooter>
         <SidebarMenu className="gap-2">
-          <Place icon={CircleHelp} label="Pomoć" onClick={go(() => onHelp())} />
+          <Place icon={CircleHelp} label={t('Pomoć')} onClick={go(() => onHelp())} />
           {FOOTER_ITEMS.map(({ id, label, icon }) => (
-            <Place key={id} icon={icon} label={label} active={view === id} onClick={go(() => onView(id))} />
+            <Place key={id} icon={icon} label={t(label)} active={view === id} onClick={go(() => onView(id))} />
           ))}
         </SidebarMenu>
         {/* who is signed in: a white card, the avatar as tall as the name and
@@ -297,8 +293,8 @@ export default function AppNav({
           type="button"
           onClick={go(() => onView('record'))}
           aria-current={view === 'record' ? 'page' : undefined}
-          aria-label={`Medicinski karton${recordOf ? `: ${recordOf}` : ''}`}
-          title="Medicinski karton"
+          aria-label={recordOf ? t('Medicinski karton: {name}', { name: recordOf }) : t('Medicinski karton')}
+          title={t('Medicinski karton')}
           className="flex cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:justify-center menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:p-0 transition-shadow duration-150 outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
         >
           <Avatar>
@@ -306,7 +302,7 @@ export default function AppNav({
           </Avatar>
           {!collapsed && (
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-xs font-medium text-foreground">{user.name || 'Gost'}</span>
+              <span className="truncate text-xs font-medium text-foreground">{user.name || t('Gost')}</span>
               <span className="truncate text-small text-muted-foreground">{user.email}</span>
             </span>
           )}

@@ -1,5 +1,6 @@
 import { caregivers } from './carePlan';
 import { SERVICE_FEE, money, serviceTitle, totalsFor } from './caregiverBoard';
+import { getLang, known, locale, msg, registerFormat, say, t, tn } from '../i18n';
 
 // The family's side of NANA Prime: everyone who has cared for their mother, the
 // terms each of them works under, and every visit and what it cost. It starts
@@ -32,16 +33,17 @@ export const chargedFor = (hours, rate) => totalsFor(hours, rate).charged;
 // a receipt does.
 export const VAT = 0.255;
 export const vatIn = (gross) => Math.round((gross - gross / (1 + VAT)) * 100) / 100;
-export const vatText = `${(VAT * 100).toLocaleString('sr-RS')}%`;
+export const vatText = () => `${(VAT * 100).toLocaleString(locale())}%`;
 // the agreed rate, wherever the terms are shown: the VAT is in it
-export const rateText = (rate) => `${money(rate)} / h, PDV uključen`;
+export const rateText = (rate) => t('{rate} / h, PDV uključen', { rate: money(rate) });
 
 // Inside this, calling a visit off costs the whole visit: she has kept the time
 // and can no longer fill it.
 export const LATE_HOURS = 1;
 
-export const MOOD_LABEL = { low: 'Loše', usual: 'Kao i obično', good: 'Dobro' };
-export const AMOUNT_LABEL = { less: 'Manje nego obično', usual: 'Kao i obično', more: 'Više nego obično' };
+// Serbian keys: shown through t()
+export const MOOD_LABEL = { low: msg('Loše'), usual: msg('Kao i obično'), good: msg('Dobro') };
+export const AMOUNT_LABEL = { less: msg('Manje nego obično'), usual: msg('Kao i obično'), more: msg('Više nego obično') };
 
 // ── time ────────────────────────────────────────────────────────────────────
 // The care state keeps its own clock, `now`: hours from midnight on the demo's
@@ -54,47 +56,113 @@ const EPOCH = new Date(2026, 7, 11);
 const MONTHS = ['januar', 'februar', 'mart', 'april', 'maj', 'jun', 'jul', 'avgust', 'septembar', 'oktobar', 'novembar', 'decembar'];
 // "10. avgusta": the genitive, as a date is said
 const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
+// The same in English and Finnish ("10 August", "10. elokuuta"), so a date written
+// in any of the three languages can be read back (`dayOf`).
+const MONTHS_IN = {
+  en: ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
+  fi: ['tammikuuta', 'helmikuuta', 'maaliskuuta', 'huhtikuuta', 'toukokuuta', 'kesäkuuta', 'heinäkuuta', 'elokuuta', 'syyskuuta', 'lokakuuta', 'marraskuuta', 'joulukuuta'],
+};
+const EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// the words for days near today, in every language, read back as a shift
+const SHIFT = {
+  danas: 0, sutra: 1, juče: -1, upravo: 0,
+  today: 0, tomorrow: 1, yesterday: -1, 'just now': 0,
+  'tänään': 0, huomenna: 1, eilen: -1, 'juuri nyt': 0,
+};
 
 const nowOf = (c) => c?.now ?? START_HOUR;
 export const todayOf = (c) => Math.floor(nowOf(c) / 24);
 const dateOfDay = (day) => new Date(EPOCH.getFullYear(), EPOCH.getMonth(), EPOCH.getDate() + day);
 // the calendar date of a prototype day, and today's (for a date picker)
 export const dateOfToday = (c) => dateOfDay(todayOf(c));
-// a picked date, as it is said with its year: "1. novembra 2026" (no closing
-// dot, so it can end a sentence)
-export const longDate = (d) => `${d.getDate()}. ${GENITIVE[d.getMonth()]} ${d.getFullYear()}`;
-export const dateText = (day) => {
-  const d = dateOfDay(day);
+// day and month, as a date is said in the language of the moment
+const dayMonth = (d) => {
+  const lang = getLang();
+  if (lang === 'en') return `${d.getDate()} ${EN_MONTHS[d.getMonth()]}`;
+  if (lang === 'fi') return `${d.getDate()}. ${MONTHS_IN.fi[d.getMonth()]}`;
   return `${d.getDate()}. ${GENITIVE[d.getMonth()]}`;
 };
+// a picked date, as it is said with its year: "1. novembra 2026" (no closing
+// dot, so it can end a sentence)
+export const longDate = (d) => `${dayMonth(d)} ${d.getFullYear()}`;
+export const dateText = (day) => dayMonth(dateOfDay(day));
 export function dayLabel(day, today) {
   const diff = day - today;
-  if (diff === 0) return 'Danas';
-  if (diff === 1) return 'Sutra';
-  if (diff === -1) return 'Juče';
+  if (diff === 0) return t('Danas');
+  if (diff === 1) return t('Sutra');
+  if (diff === -1) return t('Juče');
   return dateText(day);
 }
+// A date said inside a sentence: "danas", but "10 August" keeps its capital.
+export const lowerDate = (text) => (/^\d/.test(String(text)) ? String(text) : String(text).toLowerCase());
 export const hourText = (h) => {
-  const t = ((h % 24) + 24) % 24;
-  return `${String(Math.floor(t)).padStart(2, '0')}:${t % 1 ? '30' : '00'}`;
+  const x = ((h % 24) + 24) % 24;
+  return `${String(Math.floor(x)).padStart(2, '0')}:${x % 1 ? '30' : '00'}`;
 };
 // when something happened, as the activity list says it: "danas u 08:00"
-export const whenText = (at, now) => `${dayLabel(Math.floor(at / 24), Math.floor(now / 24)).toLowerCase()} u ${hourText(at % 24)}`;
+export const whenText = (at, now) =>
+  t('{day} u {time}', { day: lowerDate(dayLabel(Math.floor(at / 24), Math.floor(now / 24))), time: hourText(at % 24) });
 
 // A date as written on a visit, read back into a day so visits can be ordered
-// and grouped. `today` is the care state's day (`todayOf`).
+// and grouped. `today` is the care state's day (`todayOf`). It reads the date in
+// any of the languages, since one written before a switch is still in its own.
 export function dayOf(text, today = 0) {
-  const t = String(text).trim().toLowerCase();
-  const shift = { danas: 0, sutra: 1, juče: -1, upravo: 0 }[t];
+  const s = String(text).trim().toLowerCase();
+  const shift = SHIFT[s];
   if (shift !== undefined) return dateOfDay(today + shift);
-  const [d, m, y] = t.split(' ');
-  const mi = GENITIVE.indexOf(m);
+  const [d, m, y] = s.replace(/\./g, '').split(/\s+/);
+  let mi = GENITIVE.indexOf(m);
+  if (mi === -1) mi = MONTHS_IN.en.indexOf(m);
+  if (mi === -1) mi = MONTHS_IN.fi.indexOf(m);
   return mi === -1 ? new Date(0) : new Date(y ? Number(y) : EPOCH.getFullYear(), mi, parseInt(d, 10));
 }
 export const monthOf = (text, today = 0) => {
   const d = dayOf(text, today);
-  return Math.abs(d - dateOfDay(today)) <= 86400000 ? 'Ove nedelje' : `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  if (Math.abs(d - dateOfDay(today)) <= 86400000) return t('Ove nedelje');
+  if (getLang() === 'sr') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return d.toLocaleDateString(locale(), { month: 'long', year: 'numeric' });
 };
+// A date written as text, said again in the language of the moment (after a
+// switch); text that is not a date stays as it is.
+const DAY_MS = 86400000;
+export const redate = (text) => {
+  if (!text || typeof text !== 'string') return text;
+  const d = dayOf(text);
+  if (d.getTime() === 0) return text;
+  const day = Math.round((d - dateOfDay(0)) / DAY_MS);
+  return /\d{4}$/.test(text.trim()) ? longDate(d) : dateText(day);
+};
+
+// ── dates and counts inside a stored sentence ──────────────────────────────
+// A log entry or a message keeps its sentence as a key and its values (say), so
+// it is read in the language of the moment. A date in it is kept as the day it
+// was (or, for a visit with no day of its own, the date as written), said when
+// it is read; so are the counted nouns.
+const RELATIVE = { 0: msg('Danas'), 1: msg('Sutra'), [-1]: msg('Juče') };
+// a date written as text, in the language of the moment: "Sutra" is still
+// "Tomorrow", not the day it was when it was written
+const retext = (text) => {
+  const shift = SHIFT[String(text || '').trim().toLowerCase()];
+  if (shift !== undefined && RELATIVE[shift]) return t(RELATIVE[shift]);
+  const d = redate(text);
+  // not a date: a key the gallery wrote ("juče u 13:10"), or text as it is
+  return d === text ? known(text) : d || '';
+};
+registerFormat('date', ({ day, today, text, lower } = {}) => {
+  const out = day != null ? (today == null ? dateText(day) : dayLabel(day, today)) : retext(text);
+  return lower ? lowerDate(out) : out;
+});
+registerFormat('hours', (n) => tn(n, 'sat', 'sata', 'sati'));
+registerFormat('services', (n) => tn(n, 'usluga', 'usluge', 'usluga'));
+// a key said in lower case inside a sentence: "otkazala: bila sam bolesna"
+registerFormat('lower', (key) => t(key).toLowerCase());
+
+// A visit's date as a stored sentence keeps it: its day, said as it was on the
+// day it was written ("Sutra"), or its written date.
+export const dateSaid = (v, today, lower = false) =>
+  v.day != null ? { $fmt: 'date', value: { day: v.day, today, lower } } : { $fmt: 'date', value: { text: v.date, lower } };
+export const hoursSaid = (n) => ({ $fmt: 'hours', value: n });
+export const servicesSaid = (n) => ({ $fmt: 'services', value: n });
 
 // ── reading it ──────────────────────────────────────────────────────────────
 
@@ -102,15 +170,10 @@ export const firstName = (name) => name.split(' ')[0];
 export const nameOf = (c, caregiverId) =>
   arrangementOf(c, caregiverId)?.caregiver.name || caregivers.find((x) => x.id === caregiverId)?.name || '';
 
-// A count with its noun in the right form: 1 usluga, 3 usluge, 5 usluga.
-export function pl(n, one, few, many) {
-  const d = n % 10;
-  const h = n % 100;
-  if (d === 1 && h !== 11) return `${n} ${one}`;
-  if (d >= 2 && d <= 4 && (h < 12 || h > 14)) return `${n} ${few}`;
-  return `${n} ${many}`;
-}
-export const services = (n) => pl(n, 'usluga', 'usluge', 'usluga');
+// A count with its noun in the right form: 1 usluga, 3 usluge, 5 usluga. The
+// same as `tn`, which says it in the language of the moment.
+export const pl = (n, one, few, many) => tn(n, one, few, many);
+export const services = (n) => tn(n, 'usluga', 'usluge', 'usluga');
 
 export const activeVersion = (a) => a.versions.find((v) => v.status === 'active') || null;
 export const pendingVersion = (a) => a.versions.find((v) => v.status === 'sent') || null;
@@ -208,16 +271,16 @@ export function standingWith(c, caregiverId) {
   const a = arrangementOf(c, caregiverId);
   const r = latestRequest(c, caregiverId);
   if (a && !(a.endedOn && r?.again && r.status !== 'accepted')) {
-    if (pendingVersion(a)) return { text: 'Ugovor čeka vas', pill: 'is-pending' };
-    if (a.endedOn) return { text: 'Dolazila ranije', pill: 'is-muted' };
-    if (activeVersion(a)) return { text: 'Već dolazi', pill: 'is-accepted' };
-    if (lastVersion(a)?.status === 'declined') return { text: 'Uslovi odbijeni', pill: 'is-declined' };
-    return { text: 'Prihvatila', pill: 'is-accepted' };
+    if (pendingVersion(a)) return { text: t('Ugovor čeka vas'), pill: 'is-pending' };
+    if (a.endedOn) return { text: t('Dolazila ranije'), pill: 'is-muted' };
+    if (activeVersion(a)) return { text: t('Već dolazi'), pill: 'is-accepted' };
+    if (lastVersion(a)?.status === 'declined') return { text: t('Uslovi odbijeni'), pill: 'is-declined' };
+    return { text: t('Prihvatila'), pill: 'is-accepted' };
   }
   if (!r) return null;
-  if (r.status === 'accepted') return { text: 'Prihvatila', pill: 'is-accepted' };
-  if (r.status === 'declined') return { text: 'Odbila', pill: 'is-declined' };
-  return { text: `Upit poslat ${r.requested}`, pill: 'is-pending' };
+  if (r.status === 'accepted') return { text: t('Prihvatila'), pill: 'is-accepted' };
+  if (r.status === 'declined') return { text: t('Odbila'), pill: 'is-declined' };
+  return { text: t('Upit poslat {when}', { when: lowerDate(r.requested) }), pill: 'is-pending' };
 }
 
 // Why an arrangement cannot be ended right now: a visit she has already made
@@ -234,10 +297,10 @@ export const unsettled = (a) =>
 // who it is about stands beside it.
 
 export const LOG_KINDS = [
-  { id: 'request', label: 'Upiti' },
-  { id: 'agreement', label: 'Ugovor' },
-  { id: 'visit', label: 'Posete' },
-  { id: 'money', label: 'Novac' },
+  { id: 'request', label: msg('Upiti') },
+  { id: 'agreement', label: msg('Ugovor') },
+  { id: 'visit', label: msg('Posete') },
+  { id: 'money', label: msg('Novac') },
 ];
 
 export function logged(c, ...entries) {
@@ -278,22 +341,22 @@ export const askCaregiver = (caregiverId, message) => (c) => {
           caregiverId,
           status: 'pending',
           requestedDay: today,
-          requested: dayLabel(today, today).toLowerCase(),
-          detail: 'Još nije odgovorila. Javićemo vam u svakom slučaju.',
-          message: message || 'Da li biste mogli da dolazite?',
+          requested: lowerDate(dayLabel(today, today)),
+          detail: msg('Još nije odgovorila. Javićemo vam u svakom slučaju.'),
+          message: message || msg('Da li biste mogli da dolazite?'),
           again,
         },
         ...c.requests,
       ],
     },
-    { kind: 'request', caregiverId, by: 'you', title: again ? 'Ponovo ste joj pisali' : 'Poslali ste upit', detail: message }
+    { kind: 'request', caregiverId, by: 'you', title: again ? msg('Ponovo ste joj pisali') : msg('Poslali ste upit'), detail: message }
   );
 };
 
 export const linkCard = (c) =>
   logged(
     { ...c, payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: dateText(todayOf(c)) } },
-    { kind: 'money', by: 'you', title: 'Kartica je dodata', detail: 'Visa ···· 4242. Posete sada mogu da se rezervišu.' }
+    { kind: 'money', by: 'you', title: msg('Kartica je dodata'), detail: msg('Visa ···· 4242. Posete sada mogu da se rezervišu.') }
   );
 
 // The proposed version takes over; the one it replaces is kept, marked replaced.
@@ -323,8 +386,8 @@ export const agreeTerms = (caregiverId) => (c) => {
       kind: 'agreement',
       caregiverId,
       by: 'you',
-      title: `Prihvatili ste uslove, verzija ${pen.version}`,
-      detail: restart ? 'Saradnja počinje ponovo.' : `${money(pen.rate)} na sat, ${services(pen.services.length)}.`,
+      title: say('Prihvatili ste uslove, verzija {version}', { version: pen.version }),
+      detail: restart ? msg('Saradnja počinje ponovo.') : say('{rate} na sat, {services}.', { rate: { $eur: pen.rate }, services: servicesSaid(pen.services.length) }),
     }
   );
 };
@@ -337,7 +400,7 @@ export const declineTerms = (caregiverId) => (c) => {
       ...a,
       versions: a.versions.map((v) => (v.status === 'sent' ? { ...v, status: 'declined', declinedOn: dateText(todayOf(c)) } : v)),
     })),
-    { kind: 'agreement', caregiverId, by: 'you', title: `Odbili ste uslove, verzija ${pen.version}`, detail: 'Koordinatorka će vas pozvati.' }
+    { kind: 'agreement', caregiverId, by: 'you', title: say('Odbili ste uslove, verzija {version}', { version: pen.version }), detail: msg('Koordinatorka će vas pozvati.') }
   );
 };
 
@@ -354,8 +417,8 @@ export const confirmPlan = (visitId) => (c) => {
     kind: 'visit',
     caregiverId: v.caregiver.id,
     by: 'you',
-    title: 'Videli ste plan posete',
-    detail: `${v.date} · ${v.time}.`,
+    title: msg('Videli ste plan posete'),
+    detail: say('{date} · {time}.', { date: dateSaid(v, todayOf(c)), time: v.time }),
   });
 };
 
@@ -368,8 +431,8 @@ export const confirmVisit = (visitId) => (c) => {
     kind: 'money',
     caregiverId: v.caregiver.id,
     by: 'you',
-    title: `Plaćeno ${money(visitCharge(v))}`,
-    detail: `Radni nalog za ${v.date.toLowerCase()} je potvrđen.`,
+    title: say('Plaćeno {amount}', { amount: { $eur: visitCharge(v) } }),
+    detail: say('Radni nalog za {date} je potvrđen.', { date: dateSaid(v, todayOf(c), true) }),
   });
 };
 
@@ -383,7 +446,7 @@ export const queryVisit = (visitId, reason) => (c) => {
       kind: 'visit',
       caregiverId: v.caregiver.id,
       by: 'you',
-      title: v.status === 'planned' ? 'Prijavili ste problem sa planom posete' : 'Prijavili ste problem sa radnim nalogom',
+      title: v.status === 'planned' ? msg('Prijavili ste problem sa planom posete') : msg('Prijavili ste problem sa radnim nalogom'),
       detail: reason,
     }
   );
@@ -406,8 +469,14 @@ export const callOffVisit = (visitId, reason) => (c) => {
       chargedOn: late ? dateText(todayOf(c)) : undefined,
     })),
     late
-      ? { kind: 'money', caregiverId: v.caregiver.id, by: 'you', title: `Otkazano u poslednjem satu, naplaćeno ${money(held)}`, detail: reason }
-      : { kind: 'visit', caregiverId: v.caregiver.id, by: 'you', title: `Otkazali ste posetu, ${money(held)} vraćeno`, detail: `${v.date} · ${v.time}. ${reason}.` }
+      ? { kind: 'money', caregiverId: v.caregiver.id, by: 'you', title: say('Otkazano u poslednjem satu, naplaćeno {amount}', { amount: { $eur: held } }), detail: reason }
+      : {
+          kind: 'visit',
+          caregiverId: v.caregiver.id,
+          by: 'you',
+          title: say('Otkazali ste posetu, {amount} vraćeno', { amount: { $eur: held } }),
+          detail: say('{date} · {time}. {reason}.', { date: dateSaid(v, todayOf(c)), time: v.time, reason: { $t: reason } }),
+        }
   );
 };
 
@@ -422,8 +491,8 @@ export const answerExtra = (visitId, approve) => (c) => {
       kind: 'money',
       caregiverId: v.caregiver.id,
       by: 'you',
-      title: approve ? `Odobrili ste dodatne sate, ${money(amount)}` : 'Odbili ste dodatne sate',
-      detail: `${pl(v.extra.hours, 'sat', 'sata', 'sati')} preko rezervisanog, ${v.date.toLowerCase()}.`,
+      title: approve ? say('Odobrili ste dodatne sate, {amount}', { amount: { $eur: amount } }) : msg('Odbili ste dodatne sate'),
+      detail: say('{hours} preko rezervisanog, {date}.', { hours: hoursSaid(v.extra.hours), date: dateSaid(v, todayOf(c), true) }),
     }
   );
 };
@@ -440,10 +509,10 @@ export const endArrangement = (caregiverId, by = 'you') => (c) =>
         v.status === 'active' ? { ...v, status: 'ended' } : v.status === 'sent' ? { ...v, status: 'withdrawn' } : v
       ),
       visits: a.visits.map((v) =>
-        v.status === 'planned' ? { ...v, status: 'cancelled', cancelledBy: by, cancelReason: 'Saradnja je završena' } : v
+        v.status === 'planned' ? { ...v, status: 'cancelled', cancelledBy: by, cancelReason: msg('Saradnja je završena') } : v
       ),
     })),
-    { kind: 'agreement', caregiverId, by, title: 'Saradnja je završena', detail: 'Sve što je izmireno ostaje u evidenciji.' }
+    { kind: 'agreement', caregiverId, by, title: msg('Saradnja je završena'), detail: msg('Sve što je izmireno ostaje u evidenciji.') }
   );
 
 // ── the clock ───────────────────────────────────────────────────────────────
@@ -455,7 +524,7 @@ export function relabel(c) {
   const today = todayOf(c);
   return {
     ...c,
-    requests: c.requests.map((r) => (r.requestedDay == null ? r : { ...r, requested: dayLabel(r.requestedDay, today).toLowerCase() })),
+    requests: c.requests.map((r) => (r.requestedDay == null ? r : { ...r, requested: lowerDate(dayLabel(r.requestedDay, today)) })),
     arrangements: c.arrangements.map((a) => ({
       ...a,
       versions: a.versions.map((v) => (v.sentAt == null ? v : { ...v, sentOn: whenText(v.sentAt, now) })),
@@ -467,6 +536,40 @@ export function relabel(c) {
         if (v.status === 'charging' && v.reportAt != null) next.chargesInHours = Math.max(0, v.reportAt + 24 - now);
         return next;
       }),
+    })),
+  };
+}
+
+// After a language switch: every date written relative to today is said again,
+// and so is every fixed date ("10. avgusta") kept on the care.
+export function relanguage(c) {
+  if (!c) return c;
+  const next = relabel(c);
+  const r = redate;
+  return {
+    ...next,
+    // a request with no day of its own (the gallery's) keeps its date as text
+    requests: next.requests.map((q) => (q.requestedDay == null && q.requested ? { ...q, requested: lowerDate(retext(q.requested)) } : q)),
+    payment: next.payment?.connectedOn ? { ...next.payment, connectedOn: r(next.payment.connectedOn) } : next.payment,
+    arrangements: next.arrangements.map((a) => ({
+      ...a,
+      since: r(a.since),
+      endedOn: r(a.endedOn),
+      periods: a.periods?.map((p) => ({ ...p, since: r(p.since), endedOn: r(p.endedOn) })),
+      versions: a.versions.map((v) => ({
+        ...v,
+        agreedOn: r(v.agreedOn),
+        declinedOn: r(v.declinedOn),
+        sentOn: v.sentAt == null && v.sentOn ? lowerDate(retext(v.sentOn)) : v.sentOn,
+      })),
+      visits: a.visits.map((v) => ({
+        ...v,
+        date: v.day == null ? retext(v.date) : v.date,
+        sentOn: v.sentAt == null && v.sentOn ? lowerDate(retext(v.sentOn)) : v.sentOn,
+        chargedOn: r(v.chargedOn),
+        extra: v.extra ? { ...v.extra, answeredOn: r(v.extra.answeredOn) } : v.extra,
+        resolution: v.resolution ? { ...v.resolution, on: r(v.resolution.on) } : v.resolution,
+      })),
     })),
   };
 }

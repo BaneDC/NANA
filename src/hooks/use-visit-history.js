@@ -1,3 +1,4 @@
+import { msg } from '../i18n';
 import { useState } from 'react';
 import { useShowMore } from '@/hooks/use-show-more';
 import { allVisits, dayOf, monthOf, todayOf } from '../data/familyCare';
@@ -21,7 +22,7 @@ export function useVisitHistory(care) {
   const tomorrow = dayOf('sutra', today);
   const groups = [];
   for (const v of list.visible) {
-    const month = dayOf(v.date, today) > tomorrow ? 'Zakazano' : monthOf(v.date, today);
+    const month = dayOf(v.date, today) > tomorrow ? msg('Zakazano') : monthOf(v.date, today);
     const last = groups[groups.length - 1];
     if (last && last.month === month) last.visits.push(v);
     else groups.push({ month, visits: [v] });

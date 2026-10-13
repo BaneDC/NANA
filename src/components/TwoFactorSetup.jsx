@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import Dialog from './Dialog';
 import { newBackupCodes, newSecret, otpauthUrl, verifyCode } from '../lib/totp';
+import { msg, t } from '../i18n';
 
 // Turning on the second factor, in the three steps the standard has: scan,
 // verify, then the backup codes.
@@ -19,9 +20,9 @@ import { newBackupCodes, newSecret, otpauthUrl, verifyCode } from '../lib/totp';
 // back in when the phone is gone.
 
 const STEPS = [
-  { id: 'scan', label: 'Skeniraj' },
-  { id: 'verify', label: 'Potvrdi' },
-  { id: 'backup', label: 'Rezervni kodovi' },
+  { id: 'scan', label: msg('Skeniraj') },
+  { id: 'verify', label: msg('Potvrdi') },
+  { id: 'backup', label: msg('Rezervni kodovi') },
 ];
 
 function Stepper({ at }) {
@@ -46,7 +47,7 @@ function Stepper({ at }) {
             >
               {done ? <Check size={12} strokeWidth={3} /> : i + 1}
             </span>
-            <span>{s.label}</span>
+            <span>{t(s.label)}</span>
           </li>
         );
       })}
@@ -63,7 +64,7 @@ export function CodeInput({ value, onChange, onComplete }) {
   const id = useId();
   return (
     <div className="flex flex-col items-center gap-2">
-      <Label htmlFor={id}>Kod iz aplikacije</Label>
+      <Label htmlFor={id}>{t('Kod iz aplikacije')}</Label>
       <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange} onComplete={onComplete}>
         <InputOTPGroup>
           <InputOTPSlot index={0} />
@@ -96,14 +97,15 @@ export function TwoFactorDisable({ open = true, secret, onDone, onClose }) {
     const ok = !secret || (await verifyCode(secret, code));
     setChecking(false);
     if (ok) return onDone();
-    setError('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.');
+    setError(t('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.'));
   };
 
   return (
-    <Dialog eyebrow="Bezbednost" title="Isključite dvofaktorsku prijavu" open={open} onClose={onClose}>
+    <Dialog eyebrow={t('Bezbednost')} title={t('Isključite dvofaktorsku prijavu')} open={open} onClose={onClose}>
       <DialogDescription>
-        Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za
-        prijavu dovoljna lozinka, pa je nalog manje zaštićen.
+        {t(
+          'Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za prijavu dovoljna lozinka, pa je nalog manje zaštićen.'
+        )}
       </DialogDescription>
 
       <CodeInput
@@ -118,10 +120,10 @@ export function TwoFactorDisable({ open = true, secret, onDone, onClose }) {
 
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
-          Otkaži
+          {t('Otkaži')}
         </Button>
         <Button disabled={code.length !== 6 || checking} onClick={confirm}>
-          Isključi
+          {t('Isključi')}
         </Button>
       </DialogFooter>
     </Dialog>
@@ -167,17 +169,17 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
       setStep(2);
       return;
     }
-    setError('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.');
+    setError(t('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.'));
   };
 
   const download = () => {
     const blob = new Blob(
-      [`NANA Prime - rezervni kodovi za ${email}\n\n${codes.join('\n')}\n`],
+      [t('NANA Prime - rezervni kodovi za {email}', { email }) + '\n\n' + codes.join('\n') + '\n'],
       { type: 'text/plain' }
     );
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'nana-prime-rezervni-kodovi.txt';
+    a.download = t('nana-prime-rezervni-kodovi.txt');
     a.click();
     URL.revokeObjectURL(a.href);
   };
@@ -186,10 +188,11 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
   // click past the pane would lose them.
   if (step === 2) {
     return (
-      <Dialog eyebrow="Bezbednost" title="Rezervni kodovi" dismissible={false} open={open} onClose={onClose}>
+      <Dialog eyebrow={t('Bezbednost')} title={t('Rezervni kodovi')} dismissible={false} open={open} onClose={onClose}>
         <DialogDescription>
-          Sačuvajte ove kodove na sigurnom mestu. Svaki se koristi jednom, za prijavu ako izgubite
-          pristup aplikaciji sa kodovima. Prikazujemo ih samo sada.
+          {t(
+            'Sačuvajte ove kodove na sigurnom mestu. Svaki se koristi jednom, za prijavu ako izgubite pristup aplikaciji sa kodovima. Prikazujemo ih samo sada.'
+          )}
         </DialogDescription>
 
         <ul className="grid list-none grid-cols-2 gap-x-4 gap-y-2 rounded-2xl bg-muted p-4 text-center font-mono text-sm text-foreground">
@@ -202,31 +205,31 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
         <DialogFooter>
           <div className="mr-auto flex gap-2">
             <Button variant="secondary" onClick={() => copy(codes.join('\n'), 'codes')}>
-              {copied === 'codes' ? 'Kopirano' : 'Kopiraj'}
+              {copied === 'codes' ? t('Kopirano') : t('Kopiraj')}
             </Button>
             <Button variant="secondary" onClick={download}>
-              Preuzmi
+              {t('Preuzmi')}
             </Button>
           </div>
-          <Button onClick={() => onDone(codes, secret)}>Sačuvano</Button>
+          <Button onClick={() => onDone(codes, secret)}>{t('Sačuvano')}</Button>
         </DialogFooter>
       </Dialog>
     );
   }
 
   return (
-    <Dialog eyebrow="Bezbednost" title="Uključite dvofaktorsku prijavu" open={open} onClose={onClose}>
+    <Dialog eyebrow={t('Bezbednost')} title={t('Uključite dvofaktorsku prijavu')} open={open} onClose={onClose}>
       <Stepper at={step} />
 
       {step === 0 ? (
         <>
           <DialogDescription>
-            Skenirajte ovaj kod aplikacijom za kodove (Google Authenticator, Authy, 1Password…).
+            {t('Skenirajte ovaj kod aplikacijom za kodove (Google Authenticator, Authy, 1Password…).')}
           </DialogDescription>
 
           <div className="flex justify-center rounded-2xl bg-muted p-4">
             {qr ? (
-              <img className="size-48 rounded-lg bg-card" src={qr} alt="QR kod za aplikaciju sa kodovima" />
+              <img className="size-48 rounded-lg bg-card" src={qr} alt={t('QR kod za aplikaciju sa kodovima')} />
             ) : (
               <div className="flex size-48 items-center justify-center rounded-lg border border-dashed bg-card text-disabled">
                 <Shield size={28} strokeWidth={1.5} />
@@ -240,7 +243,7 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
             aria-expanded={manual}
             onClick={() => setManual((v) => !v)}
           >
-            <span>Ne možete da skenirate? Unesite ključ ručno</span>
+            <span>{t('Ne možete da skenirate? Unesite ključ ručno')}</span>
             <ChevronDown
               size={14}
               strokeWidth={2}
@@ -256,8 +259,8 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
               <Button
                 variant="secondary"
                 size="icon"
-                aria-label="Kopiraj ključ"
-                title="Kopiraj ključ"
+                aria-label={t('Kopiraj ključ')}
+                title={t('Kopiraj ključ')}
                 onClick={() => copy(secret, 'secret')}
               >
                 {copied === 'secret' ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={1.75} />}
@@ -267,17 +270,17 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
 
           <DialogFooter>
             <Button variant="secondary" onClick={onClose}>
-              Otkaži
+              {t('Otkaži')}
             </Button>
             <Button onClick={() => setStep(1)}>
-              Dalje
+              {t('Dalje')}
             </Button>
           </DialogFooter>
         </>
       ) : (
         <>
           <DialogDescription>
-            Unesite šestocifreni kod iz aplikacije da potvrdimo da je podešavanje prošlo.
+            {t('Unesite šestocifreni kod iz aplikacije da potvrdimo da je podešavanje prošlo.')}
           </DialogDescription>
 
           <CodeInput value={code} onChange={setCode} />
@@ -286,13 +289,13 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
 
           <DialogFooter>
             <Button variant="ghost" onClick={onClose}>
-              Otkaži
+              {t('Otkaži')}
             </Button>
             <Button variant="secondary" onClick={() => setStep(0)}>
-              Nazad
+              {t('Nazad')}
             </Button>
             <Button disabled={code.length !== 6 || checking} onClick={confirm}>
-              Potvrdi
+              {t('Potvrdi')}
             </Button>
           </DialogFooter>
         </>

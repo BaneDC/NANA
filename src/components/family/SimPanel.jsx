@@ -13,7 +13,9 @@ import {
   todayOf,
   dateText,
   unsettled,
+  lowerDate,
 } from '../../data/familyCare';
+import { msg, t } from '@/i18n';
 import {
   DECLINE_REASONS,
   RESOLUTIONS,
@@ -46,48 +48,47 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
   const live = care.arrangements.filter((a) => !a.endedOn || canSendTerms(care, a.caregiver.id) || pendingVersion(a));
 
   return (
-    <Modal eyebrow="Samo za demo · Ctrl+H" title="Simulacija" wide open={open} onClose={onClose}>
+    <Modal eyebrow={t('Samo za demo · Ctrl+H')} title={t('Simulacija')} wide open={open} onClose={onClose}>
       <SheetDescription>
-        Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.
+        {t('Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.')}
       </SheetDescription>
 
       {/* the whole example at once, for when clicking through it is not the point */}
       {onFill && (
         <>
-          <PaneLabel>Primer</PaneLabel>
+          <PaneLabel>{t('Primer')}</PaneLabel>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={onFill}>
-              Popuni primer nege
+              {t('Popuni primer nege')}
             </Button>
           </div>
           <PaneHint>
-            Nedelju dana nege u jednom kliku: dve negovateljice, plaćene posete, radni nalog i plan posete koji čekaju na vas.
-            Briše ono što je do sada kliknuto. Isto otvara i adresa /?demo&puno.
+            {t('Nedelju dana nege u jednom kliku: dve negovateljice, plaćene posete, radni nalog i plan posete koji čekaju na vas. Briše ono što je do sada kliknuto. Isto otvara i adresa /?demo&puno.')}
           </PaneHint>
         </>
       )}
 
-      <PaneLabel>Vreme</PaneLabel>
+      <PaneLabel>{t('Vreme')}</PaneLabel>
       <SheetDescription>
-        Sada je {dateText(todayOf(care))}, {hourText(now % 24)}.
+        {t('Sada je {date}, {time}.', { date: dateText(todayOf(care)), time: hourText(now % 24) })}
       </SheetDescription>
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => run(passTime(1), 'Prošao je sat.')}>
-          Prođe sat
+        <Button variant="secondary" onClick={() => run(passTime(1), t('Prošao je sat.'))}>
+          {t('Prođe sat')}
         </Button>
-        <Button variant="secondary" onClick={() => run(passTime(24), 'Prošao je dan.')}>
-          Prođe dan
+        <Button variant="secondary" onClick={() => run(passTime(24), t('Prošao je dan.'))}>
+          {t('Prođe dan')}
         </Button>
       </div>
 
       {pending.length > 0 && (
         <>
-          <PaneLabel>Upiti koji čekaju</PaneLabel>
-          <PaneHint>Razlog ako odbije:</PaneHint>
-          <ToggleGroup type="single" size="sm" value={reason} onValueChange={(v) => v && setReason(v)} aria-label="Razlog ako odbije">
+          <PaneLabel>{t('Upiti koji čekaju')}</PaneLabel>
+          <PaneHint>{t('Razlog ako odbije:')}</PaneHint>
+          <ToggleGroup type="single" size="sm" value={reason} onValueChange={(v) => v && setReason(v)} aria-label={t('Razlog ako odbije')}>
             {DECLINE_REASONS.map((r) => (
               <ToggleGroupItem key={r} value={r}>
-                {r}
+                {t(r)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -95,11 +96,11 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
             const first = firstName(nameOf(care, r.caregiverId));
             return (
               <div key={r.id || r.caregiverId} className="flex flex-wrap gap-2">
-                <Button variant="secondary" onClick={() => run(answerRequest(r.caregiverId, true), `${first} je prihvatila upit.`)}>
-                  {first}: prihvati
+                <Button variant="secondary" onClick={() => run(answerRequest(r.caregiverId, true), t('{name} je prihvatila upit.', { name: first }))}>
+                  {t('{name}: prihvati', { name: first })}
                 </Button>
-                <Button variant="secondary" onClick={() => run(answerRequest(r.caregiverId, false, reason), `${first} ne može da preuzme.`)}>
-                  {first}: odbij
+                <Button variant="secondary" onClick={() => run(answerRequest(r.caregiverId, false, reason), t('{name} ne može da preuzme.', { name: first }))}>
+                  {t('{name}: odbij', { name: first })}
                 </Button>
               </div>
             );
@@ -121,48 +122,48 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
             <PaneLabel>{a.caregiver.name}</PaneLabel>
             <div className="flex flex-wrap gap-2">
               {canSendTerms(care, id) && (
-                <Button variant="secondary" onClick={() => run(sendTerms(id), `${first} je poslala ${act ? 'nove uslove' : 'ugovor o nezi'}.`)}>
-                  {act ? 'Pošalji nove uslove' : a.versions.length ? 'Pošalji nove uslove' : 'Pošalji ugovor'}
+                <Button variant="secondary" onClick={() => run(sendTerms(id), act ? t('{name} je poslala nove uslove.', { name: first }) : t('{name} je poslala ugovor o nezi.', { name: first }))}>
+                  {act || a.versions.length ? t('Pošalji nove uslove') : t('Pošalji ugovor')}
                 </Button>
               )}
               {pen && (
-                <Button variant="secondary" onClick={() => run(withdrawTerms(id), `${first} je povukla predlog.`)}>
-                  Povuci predlog
+                <Button variant="secondary" onClick={() => run(withdrawTerms(id), t('{name} je povukla predlog.', { name: first }))}>
+                  {t('Povuci predlog')}
                 </Button>
               )}
               {act && (
                 <>
-                  <Button variant="secondary" disabled={Boolean(noPlan)} onClick={() => run(planVisit(id), `${first} je poslala plan posete za sutra.`)}>
-                    Plan posete za sutra
+                  <Button variant="secondary" disabled={Boolean(noPlan)} onClick={() => run(planVisit(id), t('{name} je poslala plan posete za sutra.', { name: first }))}>
+                    {t('Plan posete za sutra')}
                   </Button>
-                  <Button variant="secondary" disabled={Boolean(noPlan)} onClick={() => run(planVisit(id, true), `${first} dolazi za pola sata.`)}>
-                    Plan posete za pola sata
+                  <Button variant="secondary" disabled={Boolean(noPlan)} onClick={() => run(planVisit(id, true), t('{name} dolazi za pola sata.', { name: first }))}>
+                    {t('Plan posete za pola sata')}
                   </Button>
                 </>
               )}
               {act && !a.endedOn && !unsettled(a).length && (
-                <Button variant="secondary" onClick={() => run(caregiverEnds(id), `${first} je završila saradnju.`)}>
-                  Završi saradnju
+                <Button variant="secondary" onClick={() => run(caregiverEnds(id), t('{name} je završila saradnju.', { name: first }))}>
+                  {t('Završi saradnju')}
                 </Button>
               )}
             </div>
-            {act && noPlan && <PaneHint>Plan posete ne može: {noPlan.toLowerCase()}</PaneHint>}
+            {act && noPlan && <PaneHint>{t('Plan posete ne može: {reason}', { reason: noPlan.toLowerCase() })}</PaneHint>}
 
             {awaiting.map((v) => (
               <Fragment key={v.id}>
-                <PaneHint>Poseta {v.date.toLowerCase()} {v.time} je prošla, radni nalog:</PaneHint>
+                <PaneHint>{t('Poseta {date} {time} je prošla, radni nalog:', { date: lowerDate(v.date), time: v.time })}</PaneHint>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" onClick={() => run(sendWorkOrder(v.id), `${first} je poslala radni nalog.`)}>
-                    Kako je planirano
+                  <Button variant="secondary" onClick={() => run(sendWorkOrder(v.id), t('{name} je poslala radni nalog.', { name: first }))}>
+                    {t('Kako je planirano')}
                   </Button>
-                  <Button variant="secondary" onClick={() => run(sendWorkOrder(v.id, 'less'), `${first} je poslala radni nalog.`)}>
-                    Sat manje
+                  <Button variant="secondary" onClick={() => run(sendWorkOrder(v.id, 'less'), t('{name} je poslala radni nalog.', { name: first }))}>
+                    {t('Sat manje')}
                   </Button>
-                  <Button variant="secondary" onClick={() => run(sendWorkOrder(v.id, 'more'), `${first} je poslala radni nalog sa dodatnim satom.`)}>
-                    Sat više
+                  <Button variant="secondary" onClick={() => run(sendWorkOrder(v.id, 'more'), t('{name} je poslala radni nalog sa dodatnim satom.', { name: first }))}>
+                    {t('Sat više')}
                   </Button>
-                  <Button variant="secondary" onClick={() => run(visitNotHappened(v.id), 'Poseta se nije desila.')}>
-                    Poseta se nije desila
+                  <Button variant="secondary" onClick={() => run(visitNotHappened(v.id), t('Poseta se nije desila.'))}>
+                    {t('Poseta se nije desila')}
                   </Button>
                 </div>
               </Fragment>
@@ -170,10 +171,10 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
 
             {planned.map((v) => (
               <Fragment key={v.id}>
-                <PaneHint>Plan posete {v.date.toLowerCase()} {v.time}:</PaneHint>
+                <PaneHint>{t('Plan posete {date} {time}:', { date: lowerDate(v.date), time: v.time })}</PaneHint>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" onClick={() => run(visitNotHappened(v.id, 'Bila sam bolesna'), `${first} je otkazala posetu.`)}>
-                    Negovateljica otkazuje
+                  <Button variant="secondary" onClick={() => run(visitNotHappened(v.id, msg('Bila sam bolesna')), t('{name} je otkazala posetu.', { name: first }))}>
+                    {t('Negovateljica otkazuje')}
                   </Button>
                 </div>
               </Fragment>
@@ -181,11 +182,11 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
 
             {disputed.map((v) => (
               <Fragment key={v.id}>
-                <PaneHint>Koordinatorka, prijava za {v.date.toLowerCase()}:</PaneHint>
+                <PaneHint>{t('Koordinatorka, prijava za {date}:', { date: lowerDate(v.date) })}</PaneHint>
                 <div className="flex flex-wrap gap-2">
                   {RESOLUTIONS[v.queriedFrom === 'planned' ? 'planned' : 'charging'].map((r) => (
-                    <Button key={r.id} variant="secondary" onClick={() => run(resolveQuery(v.id, r.id), 'Prijava je rešena.')}>
-                      {r.label}
+                    <Button key={r.id} variant="secondary" onClick={() => run(resolveQuery(v.id, r.id), t('Prijava je rešena.'))}>
+                      {t(r.label)}
                     </Button>
                   ))}
                 </div>
@@ -196,7 +197,7 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
       })}
 
       {!pending.length && !live.length && (
-        <PaneHint>Još nema ničega za simulaciju. Pošaljite upit nekoj negovateljici.</PaneHint>
+        <PaneHint>{t('Još nema ničega za simulaciju. Pošaljite upit nekoj negovateljici.')}</PaneHint>
       )}
     </Modal>
   );

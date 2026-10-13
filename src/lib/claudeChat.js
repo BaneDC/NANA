@@ -4,13 +4,14 @@ import {
   MODEL,
   SYSTEM_TURNS,
   TUNING,
-  TOOLS,
+  tools,
   remainingQuestions,
   stateMessage,
   toAnswer,
   withoutLongDashes,
 } from '../data/conversation';
 import { frailtyOf } from '../data/frailty';
+import { inEnglish, t } from '../i18n';
 
 const KEY_STORAGE = 'nana.anthropic-key';
 
@@ -45,16 +46,18 @@ export function createClient(apiKey) {
 // The tools are the same every turn and the prompt above them is long, so both
 // are cached: what changes each turn is the state message under the
 // conversation, which sits after the cached prefix.
-const cachedTools = TOOLS.map((tool, i) =>
-  i === TOOLS.length - 1 ? { ...tool, cache_control: { type: 'ephemeral' } } : tool
-);
+//
+// Built per turn rather than once at import: the tools' descriptions are in the
+// conversation's language, which is the app's language when the turn is sent.
+const cachedTools = () =>
+  tools().map((tool, i, all) => (i === all.length - 1 ? { ...tool, cache_control: { type: 'ephemeral' } } : tool));
 
-const REQUEST = {
+const request = () => ({
   model: MODEL,
   max_tokens: 8000,
   ...TUNING(),
-  tools: cachedTools,
-};
+  tools: cachedTools(),
+});
 
 // `obrazlozenje` is optional by design — most questions come without one — so
 // anything that is not a non-empty string counts as none, and can never draw an
@@ -103,7 +106,7 @@ export async function runTurn({
 
   for (let hop = 0; hop < 8; hop += 1) {
     const stream = client.beta.messages.stream({
-      ...REQUEST,
+      ...request(),
       // Claude Opus 5's classifiers can decline a request; this re-runs it on
       // Anthropic's recommended fallback rather than handing us a dead turn.
       betas: ['server-side-fallback-2026-07-01'],
@@ -149,7 +152,7 @@ export async function runTurn({
       const details = message.stop_details;
       console.error('Refusal', { details, model: message.model, usage: message.usage });
       const why = [details?.category, details?.explanation].filter(Boolean).join(' - ');
-      throw new Error(`Model je odbio da odgovori na ovu poruku.${why ? ` (${why})` : ''}`);
+      throw new Error(`${t('Model je odbio da odgovori na ovu poruku.')}${why ? ` (${why})` : ''}`);
     }
 
     history.push({ role: 'assistant', content: message.content });
@@ -193,7 +196,7 @@ export async function runTurn({
           collected.push(text);
           onNote?.(text);
         }
-        results.push({ type: 'tool_result', tool_use_id: call.id, content: 'Zabeleženo.' });
+        results.push({ type: 'tool_result', tool_use_id: call.id, content: inEnglish('Zabeleženo.') });
       } else if (call.name === 'assess') {
         // Clamped here rather than trusted: the panel maps this straight onto a
         // ring's fill, and a model that answers 120 would draw past the circle.
@@ -211,8 +214,8 @@ export async function runTurn({
           type: 'tool_result',
           tool_use_id: call.id,
           content: asksToo
-            ? 'Zabeleženo.'
-            : 'Zabeleženo. Sada napiši rečenicu korisniku i pozovi `ask` ili `follow_up`.',
+            ? inEnglish('Zabeleženo.')
+            : inEnglish('Zabeleženo. Sada napiši rečenicu korisniku i pozovi `ask` ili `follow_up`.'),
         });
       } else if (call.name === 'ask') {
         const id = call.input.questionId;
@@ -220,7 +223,7 @@ export async function runTurn({
           results.push({
             type: 'tool_result',
             tool_use_id: call.id,
-            content: `Nema pitanja sa id "${id}" među preostalima - ili je već odgovoreno. Izaberi id iz liste, ili postavi svoje potpitanje preko \`follow_up\`.`,
+            content: inEnglish('Nema pitanja sa id "{id}" među preostalima - ili je već odgovoreno. Izaberi id iz liste, ili postavi svoje potpitanje preko `follow_up`.', { id }),
             is_error: true,
           });
         } else {
@@ -229,7 +232,7 @@ export async function runTurn({
           results.push({
             type: 'tool_result',
             tool_use_id: call.id,
-            content: 'Kartice su prikazane korisniku. Sačekaj njegov odgovor - ne pitaj ništa više.',
+            content: inEnglish('Kartice su prikazane korisniku. Sačekaj njegov odgovor - ne pitaj ništa više.'),
           });
         }
       } else if (call.name === 'follow_up') {
@@ -238,13 +241,13 @@ export async function runTurn({
         results.push({
           type: 'tool_result',
           tool_use_id: call.id,
-          content: 'Polje za pisanje je prikazano. Sačekaj odgovor - ne pitaj ništa više.',
+          content: inEnglish('Polje za pisanje je prikazano. Sačekaj odgovor - ne pitaj ništa više.'),
         });
       } else {
         results.push({
           type: 'tool_result',
           tool_use_id: call.id,
-          content: `Nepoznat alat: ${call.name}`,
+          content: inEnglish('Nepoznat alat: {name}', { name: call.name }),
           is_error: true,
         });
       }

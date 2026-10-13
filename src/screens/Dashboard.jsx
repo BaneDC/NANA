@@ -1,4 +1,5 @@
-import { Clock, Search, Send } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, Clock, Search, Send } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import {
   activeVersion,
@@ -10,8 +11,8 @@ import {
   hasBeen,
   heldNow,
   lastVisit,
+  lowerDate,
   money,
-  pl,
   plansToConfirm,
   services,
   visitCharge,
@@ -20,7 +21,9 @@ import {
 import { coordinator } from '../data/carePlan';
 import { USUAL_ANSWER, waitingOnHer } from '../data/firstSteps';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Card,
   CardAction,
@@ -47,8 +50,10 @@ import {
 } from '../components/family/HomeRows';
 import VisitReport from '../components/family/VisitReport';
 import { amountOf } from '../components/family/VisitRow';
+import PlanChangeBanner from '../components/PlanChangeBanner';
 import PlanContents from '../components/PlanContents';
 import { CoordinatorContact } from '../components/PlanFooterBlocks';
+import { getLang, t, tn } from '../i18n';
 
 // The family's home, and the one page they should rarely need to leave
 // (docs/patterns.md §4a). What it shows follows where they are:
@@ -84,6 +89,61 @@ function Section({ title, action, sub, children }) {
       </CardHeader>
       {sub && <CardDescription>{sub}</CardDescription>}
       {children}
+    </Card>
+  );
+}
+
+// What the coordinator wrote with the plan, kept once the plan is no longer
+// this page (docs/patterns.md §4a). A card like the others here, not the
+// tinted tray the letter has at the start: the tint is for what asks for
+// something, and this has been read. Its title says whose it is. Folded, it
+// is the letter's first line, cut off where the card ends; the button in its
+// head opens it, and the line becomes the greeting with the letter under it.
+function Letter({ letter, changed, changeKey }) {
+  const { greeting, paragraphs, from } = letter;
+  const [open, setOpen] = useState(false);
+  // "koordinatorke Minne": her first name in the genitive
+  const first = from.name.split(' ')[0];
+  const whose = first.endsWith('a') ? `${first.slice(0, -1)}e` : first;
+  return (
+    <Card
+      key={changed ? changeKey : 'letter'}
+      className={cn(changed && 'animate-plan-changed shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]')}
+    >
+      {/* `contents`, so what it holds is laid out by the card, as in every
+          other card; the card itself stays a card (its `data-slot`) */}
+      <Collapsible open={open} onOpenChange={setOpen} className="contents">
+        <CardHeader>
+          <CardTitle>{t('Poruka koordinatorke {name}', { name: getLang() === 'sr' ? whose : first })}</CardTitle>
+          <CardAction>
+            {changed && <Badge>{t('Izmenjeno')}</Badge>}
+            <CollapsibleTrigger asChild>
+              {/* on a phone the title takes the line, so the button is its
+                  arrow alone; the word stays for a screen reader */}
+              <Button variant="secondary" className="phone:aspect-square phone:px-0">
+                <span className="phone:sr-only">{open ? t('Sakrij') : t('Pročitaj')}</span>
+                <ChevronDown size={14} strokeWidth={1.75} className={cn('transition-transform duration-200', open && 'rotate-180')} />
+              </Button>
+            </CollapsibleTrigger>
+          </CardAction>
+        </CardHeader>
+        {/* under a head with a button, 8 lower (§7) */}
+        <p className={cn('mt-2 text-xs leading-body', open ? 'font-medium text-foreground' : 'truncate text-muted-foreground')}>
+          {open ? greeting : `${greeting} ${paragraphs[0]}`}
+        </p>
+        {/* the 8 over the letter is the letter's own, so it folds away with it
+            and not in a step once the letter has */}
+        <CollapsibleContent className="-mt-2 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+          <div className="flex flex-col gap-2 pt-2">
+            {paragraphs.map((p, i) => (
+              <p className={rowBody} key={i}>
+                {p}
+              </p>
+            ))}
+            <p className="mt-1 text-small text-muted-foreground">- {first}</p>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }
@@ -155,7 +215,8 @@ export default function Dashboard({
   onOpenCaregiver,
   onUnlock,
   standingOf,
-  onOpenPlan,
+  onUndoChange,
+  onDismissChange,
 }) {
   const waiting = waitingOnYou(care);
   // a plan just sent is booked, so it is one of the visits that are coming;
@@ -242,21 +303,21 @@ export default function Dashboard({
   const waitNote =
     !waiting.length
       ? toConfirm.length === 1
-        ? `${firstName(toConfirm[0].caregiver.name)} je zakazala posetu. Ako nešto ne odgovara, otvorite plan i javite.`
-        : 'Posete su zakazane. Ako nešto ne odgovara, otvorite plan i javite.'
+        ? t('{name} je zakazala posetu. Ako nešto ne odgovara, otvorite plan i javite.', { name: firstName(toConfirm[0].caregiver.name) })
+        : t('Posete su zakazane. Ako nešto ne odgovara, otvorite plan i javite.')
       : hasTerms && hasOrder
-      ? 'Uslovi moraju biti prihvaćeni pre nego što išta novo počne. Radni nalog je obrnuto - prolazi sam, osim ako vi nešto ne kažete.'
+      ? t('Uslovi moraju biti prihvaćeni pre nego što išta novo počne. Radni nalog je obrnuto - prolazi sam, osim ako vi nešto ne kažete.')
       : hasTerms
-        ? 'Ništa novo ne počinje i ništa se ne naplaćuje dok ne odgovorite.'
-        : 'Naplaćuje se automatski, osim ako kažete da nešto nije u redu.';
+        ? t('Ništa novo ne počinje i ništa se ne naplaćuje dok ne odgovorite.')
+        : t('Naplaćuje se automatski, osim ako kažete da nešto nije u redu.');
 
   return (
     <Page>
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Zdravo, {firstName(user?.name || care.family.name)}</PageTitle>
+          <PageTitle>{t('Zdravo, {name}', { name: firstName(user?.name || care.family.name) })}</PageTitle>
           <PageDescription>
-            {[care.elder.name && `Nega · ${care.elder.name}`, care.elder.area, care.payment.connected ? 'kartica je sačuvana' : 'kartica još nije dodata']
+            {[care.elder.name && t('Nega · {name}', { name: care.elder.name }), care.elder.area, care.payment.connected ? t('kartica je sačuvana') : t('kartica još nije dodata')]
               .filter(Boolean)
               .join(' · ')}
           </PageDescription>
@@ -271,15 +332,15 @@ export default function Dashboard({
 
       {/* before the plan exists there is only the way to it */}
       {fresh && !plan && (
-        <Attention title="Sledeći korak">
+        <Attention title={t('Sledeći korak')}>
           <Card>
             <CardDescription>
-              Kad završite razgovor sa Minnom, ovde će biti plan nege i negovateljice koje mu odgovaraju.
+              {t('Kad završite razgovor sa Minnom, ovde će biti plan nege i negovateljice koje mu odgovaraju.')}
             </CardDescription>
             <CardFooter>
               <Button onClick={onFindCaregiver} disabled>
                 <Search size={14} strokeWidth={1.75} />
-                Pronađi negovateljicu
+                {t('Pronađi negovateljicu')}
               </Button>
             </CardFooter>
           </Card>
@@ -294,40 +355,54 @@ export default function Dashboard({
           their rows have none and the first is two screens down; wider, they
           are right under the letter, each with its own "Pošalji poruku". */}
       {fresh && plan && (
-        <Attention title="Sledeći korak">
+        <Attention title={t('Sledeći korak')}>
           <Card>
             <CardDescription>
-              Kad budete spremni, pišite negovateljici koja vam odgovara. Upit nikoga ne obavezuje.
+              {t('Kad budete spremni, pišite negovateljici koja vam odgovara. Upit nikoga ne obavezuje.')}
             </CardDescription>
             <CardFooter className="hidden phone:flex">
-              <Button onClick={toCaregivers}>Pogledaj negovateljice</Button>
+              <Button onClick={toCaregivers}>{t('Pogledaj negovateljice')}</Button>
             </CardFooter>
           </Card>
         </Attention>
       )}
 
       {asked && (
-        <Attention title={pendingNames.length ? 'Čeka se odgovor' : 'Stigli su odgovori'}>
+        <Attention title={pendingNames.length ? t('Čeka se odgovor') : t('Stigli su odgovori')}>
           <Card>
             <CardDescription>
               {pendingNames.length === 1
-                ? `${pendingNames[0]} još nije odgovorila na vaš upit. ${USUAL_ANSWER} Javićemo vam čim odgovori, a upit i odgovor su na stranici „Moji upiti".`
+                ? t('{name} još nije odgovorila na vaš upit. {usual} Javićemo vam čim odgovori, a upit i odgovor su na stranici „Moji upiti".', { name: pendingNames[0], usual: t(USUAL_ANSWER) })
                 : pendingNames.length > 1
-                  ? `Čeka se odgovor od ${pl(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica')}. ${USUAL_ANSWER} Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Moji upiti".`
+                  ? t('Čeka se odgovor od {count}. {usual} Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Moji upiti".', { count: tn(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica'), usual: t(USUAL_ANSWER) })
                   : latest.length === 1
-                    ? `${caregivers.find((c) => c.id === latest[0].caregiverId)?.name || 'Negovateljica'} ne može da preuzme. Na stranici „Moji upiti" piše zašto.`
-                    : 'Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Moji upiti" piše zašto.'}
+                    ? t('{name} ne može da preuzme. Na stranici „Moji upiti" piše zašto.', { name: caregivers.find((c) => c.id === latest[0].caregiverId)?.name || t('Negovateljica') })
+                    : t('Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Moji upiti" piše zašto.')}
             </CardDescription>
             <CardFooter>
               {/* once a request is out, finding someone is in the menu; the one
                   step here is where the requests are */}
               <Button onClick={() => onView('requests')}>
                 <Send size={14} strokeWidth={1.75} />
-                Pogledaj upite
+                {t('Pogledaj upite')}
               </Button>
             </CardFooter>
           </Card>
         </Attention>
+      )}
+
+      {/* What the assistant just changed in the plan, and the way back. The
+          plan has no page of its own, so this is where it is said: over the
+          plan while the plan is the page, alone once someone comes
+          (docs/patterns.md §4a). */}
+      {plan && planChange && (
+        <PlanChangeBanner
+          key={planChange.at}
+          change={planChange}
+          marked={!running}
+          onUndo={onUndoChange}
+          onDismiss={onDismissChange}
+        />
       )}
 
       {/* nobody comes yet: the plan itself, with its next step in it */}
@@ -342,22 +417,26 @@ export default function Dashboard({
       )}
 
       {(waiting.length > 0 || toConfirm.length > 0) && (
-        <Attention title="Čeka na vas" sub={waitNote}>
+        <Attention title={t('Čeka na vas')} sub={waitNote}>
           {waiting.map((w) =>
             w.kind === 'terms' ? (
               <OpenCard
                 key={`terms-${w.arrangement.caregiver.id}`}
                 initials={w.arrangement.caregiver.initials}
-                title={`${firstName(w.arrangement.caregiver.name)} je poslala ${activeVersion(w.arrangement) ? 'nove uslove' : 'ugovor o nezi'}`}
+                title={
+                  activeVersion(w.arrangement)
+                    ? t('{name} je poslala nove uslove', { name: firstName(w.arrangement.caregiver.name) })
+                    : t('{name} je poslala ugovor o nezi', { name: firstName(w.arrangement.caregiver.name) })
+                }
                 body={
                   <p className={rowBody}>
-                    {services(w.version.services.length)} po {money(w.version.rate)} na sat.{' '}
+                    {t('{services} po {rate} na sat.', { services: services(w.version.services.length), rate: money(w.version.rate) })}{' '}
                     {activeVersion(w.arrangement)
-                      ? `Verzija ${activeVersion(w.arrangement).version} važi dok ne odgovorite.`
-                      : 'Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.'}
+                      ? t('Verzija {version} važi dok ne odgovorite.', { version: activeVersion(w.arrangement).version })
+                      : t('Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.')}
                   </p>
                 }
-                action="Pogledaj uslove"
+                action={t('Pogledaj uslove')}
                 variant="default"
                 onOpen={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}
               />
@@ -365,30 +444,30 @@ export default function Dashboard({
               <OpenCard
                 key={`extra-${w.visit.id}`}
                 initials={w.visit.caregiver.initials}
-                title={`${firstName(w.visit.caregiver.name)} traži dodatne sate za ${w.visit.date.toLowerCase()}`}
+                title={t('{name} traži dodatne sate za {date}', { name: firstName(w.visit.caregiver.name), date: lowerDate(w.visit.date) })}
                 body={
                   <p className={rowBody}>
-                    Radila je {w.visit.extra.hours} h duže nego što je rezervisano. Naplaćuje se samo ako odobrite.
+                    {t('Radila je {hours} h duže nego što je rezervisano. Naplaćuje se samo ako odobrite.', { hours: w.visit.extra.hours })}
                   </p>
                 }
-                action="Pogledaj radni nalog"
+                action={t('Pogledaj radni nalog')}
                 onOpen={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}
               />
             ) : (
               <OpenCard
                 key={`wo-${w.visit.id}`}
                 initials={w.visit.caregiver.initials}
-                title={`${firstName(w.visit.caregiver.name)} je poslala radni nalog za ${w.visit.date.toLowerCase()}`}
+                title={t('{name} je poslala radni nalog za {date}', { name: firstName(w.visit.caregiver.name), date: lowerDate(w.visit.date) })}
                 body={
                   <>
-                    <p className={rowBody}>Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.</p>
+                    <p className={rowBody}>{t('Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.')}</p>
                     <p className="mt-1 inline-flex items-center gap-1 text-small font-medium text-primary-700">
                       <Clock size={12} strokeWidth={2} />
-                      {money(visitCharge(w.visit))} se naplaćuje za {w.visit.chargesInHours} h
+                      {t('{amount} se naplaćuje za {hours} h', { amount: money(visitCharge(w.visit)), hours: w.visit.chargesInHours })}
                     </p>
                   </>
                 }
-                action="Pogledaj radni nalog"
+                action={t('Pogledaj radni nalog')}
                 onOpen={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}
               />
             )
@@ -400,16 +479,16 @@ export default function Dashboard({
             <OpenCard
               key={`plan-${v.id}`}
               initials={v.caregiver.initials}
-              title={`${firstName(v.caregiver.name)} je poslala plan posete za ${v.date.toLowerCase()}`}
+              title={t('{name} je poslala plan posete za {date}', { name: firstName(v.caregiver.name), date: lowerDate(v.date) })}
               body={
                 <p className={rowBody}>
-                  {v.time} · {v.hours} h. {money(chargedFor(v.hours, v.rate))} je rezervisano, a naplaćuje se tek posle posete.
+                  {v.time} · {v.hours} h. {t('{amount} je rezervisano, a naplaćuje se tek posle posete.', { amount: money(chargedFor(v.hours, v.rate)) })}
                 </p>
               }
-              action="Pogledaj plan"
+              action={t('Pogledaj plan')}
               variant="default"
               onOpen={() => onDrawer({ kind: 'plan', visitId: v.id })}
-              aside={{ label: 'U redu', onClick: () => onCare(confirmPlan(v.id)) }}
+              aside={{ label: t('U redu'), onClick: () => onCare(confirmPlan(v.id)) }}
             />
           ))}
         </Attention>
@@ -423,21 +502,21 @@ export default function Dashboard({
           <div className="grid grid-cols-2 gap-3 @lg:grid-cols-3">
             <StatCard
               value={done}
-              label={`${pl(done, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '')} do sada`}
-              note={since ? `od ${since}` : 'još nije bilo posete'}
+              label={t('{noun} do sada', { noun: tn(done, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '') })}
+              note={since ? t('od {date}', { date: since }) : t('još nije bilo posete')}
               onOpen={done ? () => onDrawer({ kind: 'visits' }) : null}
             />
             <StatCard
               value={next ? next.date : '-'}
-              label="sledeća poseta"
-              note={next ? `${next.time} · ${firstName(next.caregiver.name)}` : 'nijedna nije zakazana'}
+              label={t('sledeća poseta')}
+              note={next ? `${next.time} · ${firstName(next.caregiver.name)}` : t('nijedna nije zakazana')}
               onOpen={next ? () => onDrawer({ kind: 'plan', visitId: next.id }) : null}
             />
             <StatCard
               className="col-span-2 @lg:col-span-1"
               value={money(held)}
-              label="rezervisano"
-              note={charging ? `naplaćuje se sada: ${money(visitCharge(charging))}` : 'za zakazane posete'}
+              label={t('rezervisano')}
+              note={charging ? t('naplaćuje se sada: {amount}', { amount: money(visitCharge(charging)) }) : t('za zakazane posete')}
             />
           </div>
 
@@ -446,7 +525,7 @@ export default function Dashboard({
             {/* The visits: what is booked, and how the last one went. A row
                 is a visit, said by its day and hours, so it has no avatar;
                 who came is in the line under it. */}
-            <Section title="Predstoji" action={allOf(coming, 'coming', 'Sve zakazane')}>
+            <Section title={t('Predstoji')} action={allOf(coming, 'coming', t('Sve zakazane'))}>
               {coming.length > 0 ? (
                 <ItemGroup>
                   {coming.slice(0, HOME_ROWS).map((v) => (
@@ -458,14 +537,14 @@ export default function Dashboard({
                           </ItemLink>
                         </p>
                         <p className={rowBody}>
-                          {v.caregiver.name} · {v.hours} h · {money(chargedFor(v.hours, v.rate))} rezervisano
+                          {v.caregiver.name} · {v.hours} h · {t('{amount} rezervisano', { amount: money(chargedFor(v.hours, v.rate)) })}
                         </p>
                       </ItemContent>
                     </Item>
                   ))}
                 </ItemGroup>
               ) : (
-                <CardDescription>Nijedna poseta nije zakazana.</CardDescription>
+                <CardDescription>{t('Nijedna poseta nije zakazana.')}</CardDescription>
               )}
             </Section>
 
@@ -473,11 +552,11 @@ export default function Dashboard({
                 for them; only once one has been, like the number above: before
                 that the list holds only what "Predstoji" already shows */}
             <Section
-              title="Poslednja poseta"
+              title={t('Poslednja poseta')}
               action={
                 done > 0 && (
                   <Button variant="secondary" onClick={() => onDrawer({ kind: 'visits' })}>
-                    Sve posete
+                    {t('Sve posete')}
                   </Button>
                 )
               }
@@ -505,14 +584,14 @@ export default function Dashboard({
                   </Item>
                 </ItemGroup>
               ) : (
-                <CardDescription>Još nije bilo posete.</CardDescription>
+                <CardDescription>{t('Još nije bilo posete.')}</CardDescription>
               )}
             </Section>
 
             {/* who cares for her: lower, as it is not what is looked at every day */}
             <Section
-              title={care.arrangements.length === 1 ? 'Vaša negovateljica' : 'Vaše negovateljice'}
-              action={allOf(carers, 'caregivers', 'Sve negovateljice')}
+              title={care.arrangements.length === 1 ? t('Vaša negovateljica') : t('Vaše negovateljice')}
+              action={allOf(carers, 'caregivers', t('Sve negovateljice'))}
             >
               <ItemGroup>
                 {carers.slice(0, HOME_ROWS).map((a) => (
@@ -521,30 +600,36 @@ export default function Dashboard({
               </ItemGroup>
             </Section>
 
-            {/* what our partners offer, from the plan; a row opens the plan */}
+            {/* what our partners offer, from the plan; a row opens the offer */}
             {plan && (
-              <Section title="Ponude partnera" action={unlocked && allOf(offers, 'offers', 'Sve ponude')}>
+              <Section title={t('Ponude partnera')} action={unlocked && allOf(offers, 'offers', t('Sve ponude'))}>
                 {unlocked ? (
                   <ItemGroup>
                     {offers.slice(0, HOME_ROWS).map((rec) => (
-                      <OfferRow key={rec.id} rec={rec} onOpen={onOpenPlan} />
+                      <OfferRow key={rec.id} rec={rec} onOpen={() => onDrawer({ kind: 'offer', recId: rec.id })} />
                     ))}
                   </ItemGroup>
                 ) : (
                   <CardFooter>
-                    <Button onClick={onUnlock}>Otključajte ceo plan nege</Button>
+                    <Button onClick={onUnlock}>{t('Otključajte ceo plan nege')}</Button>
                   </CardFooter>
                 )}
                 {/* what these are, last in the card and pushed to its foot */}
                 <p className="mt-auto pt-2 text-small text-muted-foreground">
-                  Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.
+                  {t('Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.')}
                 </p>
               </Section>
             )}
 
-            {/* who to call when something is not right */}
-            <CoordinatorContact coordinator={plan?.coordinator || coordinator} />
           </div>
+
+          {/* What the coordinator wrote with the plan, kept now that the plan
+              is no longer this page; then who to call when something is not
+              right. Both the page's whole width (docs/patterns.md §4a). */}
+          {plan?.letter && (
+            <Letter letter={plan.letter} changed={Boolean(planChange?.letter)} changeKey={planChange?.at} />
+          )}
+          <CoordinatorContact coordinator={plan?.coordinator || coordinator} />
         </div>
       )}
     </Page>

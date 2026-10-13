@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { longDate } from '../data/familyCare';
+import { t } from '../i18n';
 
 // The one text field (docs/patterns.md §10), built from shadcn's Field, Input,
 // InputGroup, Textarea and Select. Every form in the app uses it — settings,
@@ -86,7 +87,7 @@ export function Password({ value, onChange, onEnter, autoComplete = 'current-pas
         <InputGroupButton
           size="icon-xs"
           onClick={() => setShown((s) => !s)}
-          aria-label={shown ? 'Sakrij lozinku' : 'Prikaži lozinku'}
+          aria-label={shown ? t('Sakrij lozinku') : t('Prikaži lozinku')}
         >
           {shown ? <EyeOff size={14} strokeWidth={1.75} /> : <Eye size={14} strokeWidth={1.75} />}
         </InputGroupButton>
@@ -117,7 +118,7 @@ export function TextArea({ value, onChange, rows = 3, className, ...rest }) {
 // closed field shows when it should be shorter than the row (a country's code).
 // `bare` draws the trigger without the field's box, for a Select inside
 // another field (the country code in front of a phone number), behind a line.
-export function Select({ value, onChange, options, placeholder = 'Izaberite', labelledBy, ariaLabel, bare, className }) {
+export function Select({ value, onChange, options, placeholder = t('Izaberite'), labelledBy, ariaLabel, bare, className }) {
   const id = useContext(FieldId);
   const chosen = options.find((o) => o.value === value);
   return (
@@ -148,7 +149,7 @@ export function Select({ value, onChange, options, placeholder = 'Izaberite', la
 // chosen or the first that can be. `from` and `to` are the first and last days that can be chosen (Dates); `today` is the day marked as
 // today (the prototype's own, which is not the clock's), `from` if not given.
 // Picking a day closes it.
-export function DateInput({ value, onChange, from, to, today = from, placeholder = 'Izaberite datum', ariaLabel, autoFocus, className }) {
+export function DateInput({ value, onChange, from, to, today = from, placeholder = t('Izaberite datum'), ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const [open, setOpen] = useState(false);
   return (

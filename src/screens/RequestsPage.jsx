@@ -11,6 +11,7 @@ import { Group, Groups } from '../components/Tags';
 import { caregivers } from '../data/carePlan';
 import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../data/familyCare';
 import { USUAL_ANSWER } from '../data/firstSteps';
+import { msg, t } from '../i18n';
 
 // Everyone the family has asked about care, and where each one stands. A "yes"
 // that became an arrangement links to her page; a "no" always says why, so
@@ -22,7 +23,7 @@ import { USUAL_ANSWER } from '../data/firstSteps';
 // request they sent themselves). Being on this page is seeing them, including
 // one that arrives while it is open.
 
-const LABEL = { pending: 'Čeka odgovor', accepted: 'Prihvaćeno', declined: 'Odbijeno' };
+const LABEL = { pending: msg('Čeka odgovor'), accepted: msg('Prihvaćeno'), declined: msg('Odbijeno') };
 const BADGE = { pending: 'warning', accepted: 'success', declined: 'destructive' };
 const ICON = { pending: Clock, accepted: CheckCircle2, declined: XCircle };
 const TABS = ['all', 'pending', 'accepted', 'declined'];
@@ -39,21 +40,21 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
     <Page>
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Moji upiti</PageTitle>
-          <PageDescription>Sve negovateljice kojima ste poslali upit, i gde je svaki od njih.</PageDescription>
+          <PageTitle>{t('Moji upiti')}</PageTitle>
+          <PageDescription>{t('Sve negovateljice kojima ste poslali upit, i gde je svaki od njih.')}</PageDescription>
         </PageHeaderText>
       </PageHeader>
 
       {/* empty, it says what to do as Moja nega does (docs/patterns.md §5):
           the tint, and the next step in a white card */}
       {!mine.length && (
-        <Attention title="Još niste poslali nijedan upit">
+        <Attention title={t('Još niste poslali nijedan upit')}>
           <Card>
             <CardDescription>{askNote}</CardDescription>
             <CardFooter>
               <Button onClick={onFind}>
                 <Search size={14} strokeWidth={1.75} />
-                Pronađi negovateljicu
+                {t('Pronađi negovateljicu')}
               </Button>
             </CardFooter>
           </Card>
@@ -65,12 +66,12 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
           {/* One is always chosen: pressing the chosen one again does nothing.
               16 in, on the line the title's text and the cards' avatars keep
               (docs/patterns.md §4). */}
-          <ToggleGroup type="single" size="sm" className="pl-4" value={tab} onValueChange={(t) => t && setTab(t)} aria-label="Upiti po odgovoru">
-            {TABS.map((t) => (
-              <ToggleGroupItem key={t} value={t}>
-                {t === 'all' ? 'Svi' : LABEL[t]}
+          <ToggleGroup type="single" size="sm" className="pl-4" value={tab} onValueChange={(id) => id && setTab(id)} aria-label={t('Upiti po odgovoru')}>
+            {TABS.map((id) => (
+              <ToggleGroupItem key={id} value={id}>
+                {id === 'all' ? t('Svi') : t(LABEL[id])}
                 <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">
-                  {t === 'all' ? mine.length : mine.filter((r) => r.status === t).length}
+                  {id === 'all' ? mine.length : mine.filter((r) => r.status === id).length}
                 </span>
               </ToggleGroupItem>
             ))}
@@ -103,26 +104,26 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
                         <CardLink onClick={() => (linked ? onCaregiver(r.caregiverId) : onProfile?.(cg))}>{cg.name}</CardLink>
                         <Badge variant={BADGE[r.status]} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
                           <Icon size={12} strokeWidth={2} />
-                          {LABEL[r.status]}
+                          {t(LABEL[r.status])}
                         </Badge>
                       </p>
                       <p className="text-xs leading-body text-muted-foreground">
-                        {cg.area} · {cg.rate} · {r.again ? 'ponovni upit' : 'upit'} poslat {r.requested}
+                        {cg.area} · {cg.rate} · {r.again ? t('ponovni upit poslat {when}', { when: r.requested }) : t('upit poslat {when}', { when: r.requested })}
                       </p>
                       <Groups className="mt-2">
-                        <Group label="Vaša poruka" text={r.message} />
+                        <Group label={t('Vaša poruka')} text={t(r.message)} />
                         <p className="text-xs leading-body text-muted-foreground">
                           {r.status === 'declined' ? (
                             <>
-                              <strong>Razlog: </strong>
-                              {r.detail}
+                              <strong>{t('Razlog:')} </strong>
+                              {t(r.detail)}
                             </>
                           ) : r.status === 'pending' ? (
-                            `${firstName(cg.name)} još nije odgovorila. ${USUAL_ANSWER} Javićemo vam u svakom slučaju.`
+                            t('{name} još nije odgovorila. {usual} Javićemo vam u svakom slučaju.', { name: firstName(cg.name), usual: t(USUAL_ANSWER) })
                           ) : linked ? (
-                            `${firstName(cg.name)} je prihvatila. Ugovor i posete su na njenoj stranici.`
+                            t('{name} je prihvatila. Ugovor i posete su na njenoj stranici.', { name: firstName(cg.name) })
                           ) : (
-                            `${firstName(cg.name)} je prihvatila. ${r.detail}`
+                            `${t('{name} je prihvatila.', { name: firstName(cg.name) })} ${t(r.detail)}`
                           )}
                         </p>
                       </Groups>
@@ -131,7 +132,7 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
                         phone under what the card says, in its column */}
                     {askAgain && (
                       <div className="flex shrink-0 gap-2 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
-                        <Button onClick={() => onContact?.(cg)}>Pitaj ponovo</Button>
+                        <Button onClick={() => onContact?.(cg)}>{t('Pitaj ponovo')}</Button>
                       </div>
                     )}
                   </div>
@@ -140,7 +141,7 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
             })}
             {!picked.length && (
               <Card>
-                <p className="text-xs leading-body text-muted-foreground">Ovde nema ničega.</p>
+                <p className="text-xs leading-body text-muted-foreground">{t('Ovde nema ničega.')}</p>
               </Card>
             )}
           </div>

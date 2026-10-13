@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { perMonth, planPrice, planSaving, plansFor } from '../data/plans';
 import Dialog from './Dialog';
 import { Field, TextArea } from './TextField';
+import { t } from '../i18n';
 
 // One plan, as the live platform's plan picker shows it: what it is called, what
 // it costs, what it saves, who it is for, everything it includes, and its own
@@ -26,7 +27,7 @@ function PlanCard({ plan, plans, onChoose }) {
         <CardTitle>{plan.name}</CardTitle>
         {plan.recommended && (
           <CardAction>
-            <Badge>Najpopularniji</Badge>
+            <Badge>{t('Najpopularniji')}</Badge>
           </CardAction>
         )}
       </CardHeader>
@@ -34,24 +35,24 @@ function PlanCard({ plan, plans, onChoose }) {
       <div className="flex flex-col gap-1">
         <p className="flex items-center gap-2 text-[24px] leading-8 font-medium text-foreground">
           {planPrice(plan)}
-          {saving && <Badge variant="success">{saving}% uštede</Badge>}
+          {saving && <Badge variant="success">{t('{percent}% uštede', { percent: saving })}</Badge>}
         </p>
         <p className="text-small text-muted-foreground">
           {plan.months === 1
-            ? 'mesečno, otkazujete kad god želite'
-            : `za ${plan.months} meseca · ${perMonth(plan)} mesečno, naplaćuje se odjednom`}
+            ? t('mesečno, otkazujete kad god želite')
+            : t('za {n} meseca · {price} mesečno, naplaćuje se odjednom', { n: plan.months, price: perMonth(plan) })}
         </p>
       </div>
 
-      <CardDescription>{plan.description}</CardDescription>
+      <CardDescription>{t(plan.description)}</CardDescription>
 
       <div className="flex flex-col gap-2">
-        {plan.lead && <p className="text-xs font-medium text-foreground">{plan.lead}</p>}
+        {plan.lead && <p className="text-xs font-medium text-foreground">{t(plan.lead)}</p>}
         <CheckList className="gap-2 [&>li]:items-start [&>li]:leading-body [&_svg]:h-[18px]">
           {plan.benefits.map((b) => (
             <li key={b}>
               <Check size={12} strokeWidth={2.5} />
-              <span>{b}</span>
+              <span>{t(b)}</span>
             </li>
           ))}
         </CheckList>
@@ -63,7 +64,7 @@ function PlanCard({ plan, plans, onChoose }) {
           className="w-full"
           onClick={() => onChoose(plan)}
         >
-          Izaberite {plan.name}
+          {t('Izaberite {plan}', { plan: plan.name })}
         </Button>
       </CardFooter>
     </Card>
@@ -101,13 +102,13 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         closeClassName="top-4"
         header={(Title) => (
           <div className="flex flex-col gap-1 pr-8 phone:pt-2 phone:pr-12">
-            <Title className="text-base">Izaberite pretplatu</Title>
+            <Title className="text-base">{t('Izaberite pretplatu')}</Title>
             <p className="text-xs leading-body text-muted-foreground">
               {/* no name in these: Serbian would have to decline it ("za Vesnu"),
                   and a template cannot */}
               {caregiver
-                ? 'Vaša poruka ide čim se pretplatite, zajedno sa planom nege.'
-                : 'Pretplata otključava ceo plan nege i kontakte negovateljica.'}
+                ? t('Vaša poruka ide čim se pretplatite, zajedno sa planom nege.')
+                : t('Pretplata otključava ceo plan nege i kontakte negovateljica.')}
             </p>
           </div>
         )}
@@ -119,14 +120,14 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         </div>
 
         <div className="flex flex-col gap-1 text-center text-small text-muted-foreground">
-          <p>Pretplata se obnavlja automatski, a možete da je otkažete u svakom trenutku.</p>
-          <p>Cene su izražene u evrima.</p>
+          <p>{t('Pretplata se obnavlja automatski, a možete da je otkažete u svakom trenutku.')}</p>
+          <p>{t('Cene su izražene u evrima.')}</p>
         </div>
 
         {caregiver && (
           <DialogFooter>
             <Button variant="secondary" onClick={() => setStep('message')}>
-              Nazad na poruku
+              {t('Nazad na poruku')}
             </Button>
           </DialogFooter>
         )}
@@ -145,7 +146,7 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
             <AvatarFallback>{caregiver?.initials}</AvatarFallback>
           </Avatar>
           <div>
-            <DialogEyebrow>Poruka sa planom nege</DialogEyebrow>
+            <DialogEyebrow>{t('Poruka sa planom nege')}</DialogEyebrow>
             <Title>{caregiver?.name}</Title>
           </div>
         </div>
@@ -153,13 +154,13 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
     >
       {alreadyAsked ? (
         <DialogDescription>
-          Već ste poslali upit. {first} odgovara sa svoje table, a mi vam javljamo čim odgovori.
+          {t('Već ste poslali upit. {name} odgovara sa svoje table, a mi vam javljamo čim odgovori.', { name: first })}
         </DialogDescription>
       ) : (
         <>
           <DialogDescription>
-            Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.
-            {!unlocked && ' Poruka se šalje čim se pretplatite.'}
+            {t('Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.')}
+            {!unlocked && ' ' + t('Poruka se šalje čim se pretplatite.')}
           </DialogDescription>
           {/* no label: the sentence above says what goes in it, and the
               placeholder says it again inside. It takes the focus as the
@@ -170,8 +171,8 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
               value={message}
               rows={5}
               onChange={setMessage}
-              aria-label="Poruka za negovateljicu"
-              placeholder="Recite joj ukratko šta vam treba i kada."
+              aria-label={t('Poruka za negovateljicu')}
+              placeholder={t('Recite joj ukratko šta vam treba i kada.')}
             />
           </Field>
         </>
@@ -179,15 +180,15 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
 
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
-          {alreadyAsked ? 'Zatvori' : 'Možda kasnije'}
+          {alreadyAsked ? t('Zatvori') : t('Možda kasnije')}
         </Button>
         {!alreadyAsked &&
           (unlocked ? (
             <Button disabled={!message.trim()} onClick={() => onSend(message.trim())}>
-              Pošalji poruku
+              {t('Pošalji poruku')}
             </Button>
           ) : (
-            <Button onClick={() => setStep('plans')}>Dalje: izaberite pretplatu</Button>
+            <Button onClick={() => setStep('plans')}>{t('Dalje: izaberite pretplatu')}</Button>
           ))}
       </DialogFooter>
     </Dialog>

@@ -43,3 +43,15 @@ Kit crta svoja dugmad (`Button` iz kita: `primary` je staklo, `secondary` je pro
 **Predlog:** tokeni po varijanti (`--ick-btn-primary-bg`, `-border`, `-ink`, `-shadow`, `-radius`, `-height`, `-font-size`…) ili `components={{ Button }}` prop koji kit koristi za sva svoja dugmad, sa `role` (`send`, `stop`, `suggestion`, `header-action`, `answer-action`) da host može da bira varijantu po ulozi. I `Pošalji` / `Zaustavi` kao dve uloge, ne jedna.
 
 **Kod nas:** blok „The chat kit's buttons, drawn as ours" u `app.css` prepisuje varijante po klasama (`[class*='ick-primary-']`…) i po položaju (dugme u `ick-surface-*` je „Pošalji"). „Zaustavi" se prepoznaje po `aria-label` iz `src/data/chatLabels.sr.js`, pa se menja ako se promeni taj tekst. Širinu dugmeta „Pošalji" kit zadaje inline (28px), pa ono ostaje 28 i na dodir.
+
+## Kratka poruka izmerena kao dugačka: bledi tekst i „Prikaži više" (0.59.0, i dalje u 0.59.2)
+
+**Šta:** poslata poruka „Nešto se promenilo." (posle „Prijavi promenu" na kartonu) ima izbledeo tekst u narandžastom bubble-u, a na hover se pojavi „Prikaži više", iako je poruka jedan red. Samo na desktopu, u panelu sa strane; na telefonu ne.
+
+**Gde:** kad se stanje promeni iz `responding` u `resting`, kit u sledećem frame-u izmeri visinu poruke i, ako je veća od 241, proglasi je dugačkom: maska `data-fade="bottom"` na `editorClip` (providno u donjih 48px, pa ceo red od 28px izbledi) i dugme „Prikaži više" (`showReadMore`). Merenje ne čeka da se bubble razvije iz composera.
+
+**Merenje** (desktop 1440, panel sa strane): u trenutku kad odgovor stigne bubble je širok 29px, pa je ista poruka visoka 308; posle 100 ms je 151 × 28, a maska ostaje. Na 375 maske nema. Odgovor modela stiže posle više sekundi, pa se tada ne vidi; vidi se kad je odgovor gotov odmah (naši fiksni odgovori).
+
+**Predlog:** meriti posle animacije bubble-a (`onAnimationComplete` ili `ResizeObserver` na `editorWrap`), ili ponovo izmeriti kad se širina promeni i skinuti masku i „Prikaži više" ako poruka više nije dugačka.
+
+**Kod nas:** ništa, čeka se popravka u kitu. Zaobilaženje je moguće (fiksni odgovori u `src/components/KitAssistant.jsx` da čekaju 400 ms pre nego što se vrate, dok se bubble ne razvije); provereno je da radi, ali je namerno vraćeno.

@@ -8,6 +8,7 @@ import CardGallery from './screens/CardGallery';
 import { showScrollbarsWhileScrolling } from './lib/scrollbars';
 import { closeKitMenusOnOutsidePress } from './lib/kitMenus';
 import { preventFocusZoomOnIOS } from './lib/iosZoom';
+import { useLang } from './i18n';
 import { keyboardDebug, keyboardOnlyForFingers, moveOnlyTheComposer } from './lib/keyboardViewport';
 
 showScrollbarsWhileScrolling();
@@ -17,9 +18,14 @@ moveOnlyTheComposer();
 keyboardOnlyForFingers();
 keyboardDebug();
 
+// The gallery holds nothing worth keeping, so a switch of language draws it anew.
+function Gallery() {
+  return <CardGallery key={useLang()} />;
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {/* /?kartice: every card on one page, for comparing them */}
-    {new URLSearchParams(window.location.search).has('kartice') ? <CardGallery /> : <App />}
+    {new URLSearchParams(window.location.search).has('kartice') ? <Gallery /> : <App />}
   </React.StrictMode>
 );

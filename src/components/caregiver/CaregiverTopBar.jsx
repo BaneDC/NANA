@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Logo from '../Logo';
+import { t } from '../../i18n';
 
 // The caregiver has no sidebar. A board wants every pixel of width it can get,
 // and a nav with one working item in it looks like a nav that is broken rather
@@ -18,7 +19,7 @@ export default function CaregiverTopBar({ user }) {
   return (
     <div className="flex shrink-0 items-center gap-3 border-b px-4 py-3">
       <Logo width={92} />
-      <span className="flex-1 text-small text-muted-foreground">Negovateljica</span>
+      <span className="flex-1 text-small text-muted-foreground">{t('Negovateljica')}</span>
 
       {/* who is signed in: the avatar as tall as the name and the e-mail */}
       <div className="flex items-start gap-3 [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]">
@@ -26,7 +27,7 @@ export default function CaregiverTopBar({ user }) {
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-xs font-medium text-foreground">{user.name || 'Gost'}</span>
+          <span className="truncate text-xs font-medium text-foreground">{user.name || t('Gost')}</span>
           <span className="truncate text-small text-muted-foreground">{user.email}</span>
         </span>
       </div>

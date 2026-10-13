@@ -3,269 +3,262 @@
 // Kept as an overlay rather than folded into flow.js: the classic and immersive
 // variants stay English to match the Figma file, and the question ids — which the
 // frailty scoring, the branching and the care plan all read — must not move. Only
-// the words change here.
+// the words change here. Every line is Serbian, marked with msg() and translated
+// where it is shown (t() from src/i18n).
+import { msg, t } from '../i18n';
 
 export const Q = {
   'about-person': {
-    title: 'O kome se brinemo?',
-    short: 'O njoj/njemu',
-    fields: { name: 'Ime i prezime', age: 'Godine', city: 'Gde živi' },
+    title: msg('O kome se brinemo?'),
+    short: msg('O njoj/njemu'),
+    fields: { name: msg('Ime i prezime'), age: msg('Godine'), city: msg('Gde živi') },
   },
   'about-you': {
-    title: 'A sa kim ja razgovaram?',
-    short: 'O vama',
-    fields: { 'your-name': 'Vaše ime', relation: 'Šta ste joj/mu', 'your-phone': 'Vaš telefon' },
+    title: msg('A sa kim ja razgovaram?'),
+    short: msg('O vama'),
+    fields: { 'your-name': msg('Vaše ime'), relation: msg('Šta ste joj/mu'), 'your-phone': msg('Vaš telefon') },
   },
   household: {
-    title: 'Ko još živi u domaćinstvu?',
-    short: 'Domaćinstvo',
+    title: msg('Ko još živi u domaćinstvu?'),
+    short: msg('Domaćinstvo'),
     options: {
-      alone: 'Živi sama',
-      partner: 'Sa partnerom',
-      family: 'Sa porodicom',
-      crowded: 'Troje ili više njih',
+      alone: msg('Živi sama'),
+      partner: msg('Sa partnerom'),
+      family: msg('Sa porodicom'),
+      crowded: msg('Troje ili više njih'),
     },
   },
   'home-condition': {
-    title: 'Kako biste opisali stanje stana?',
-    short: 'Stanje stana',
+    title: msg('Kako biste opisali stanje stana?'),
+    short: msg('Stanje stana'),
     options: {
-      'well-kept': 'Uredan',
-      'mostly-fine': 'Uglavnom u redu',
-      'needs-help': 'Treba pomoć',
-      neglected: 'Zapušten',
+      'well-kept': msg('Uredan'),
+      'mostly-fine': msg('Uglavnom u redu'),
+      'needs-help': msg('Treba pomoć'),
+      neglected: msg('Zapušten'),
     },
   },
 
   mobility: {
-    title: 'Kako se trenutno kreće?',
-    short: 'Kretanje',
+    title: msg('Kako se trenutno kreće?'),
+    short: msg('Kretanje'),
     options: {
-      independent: 'Potpuno sama',
-      stick: 'Uz štap',
-      walker: 'Uz hodalicu',
-      wheelchair: 'U kolicima',
-      bed: 'Uglavnom leži',
+      independent: msg('Potpuno sama'),
+      stick: msg('Uz štap'),
+      walker: msg('Uz hodalicu'),
+      wheelchair: msg('U kolicima'),
+      bed: msg('Uglavnom leži'),
     },
   },
   'going-out': {
-    title: 'Može li sama da izađe iz stana?',
-    short: 'Izlazak iz stana',
+    title: msg('Može li sama da izađe iz stana?'),
+    short: msg('Izlazak iz stana'),
     options: {
-      easily: 'Bez problema',
-      'little-help': 'Uz malu pomoć',
-      accompanied: 'Samo u pratnji',
-      'never-out': 'Ne izlazi',
+      easily: msg('Bez problema'),
+      'little-help': msg('Uz malu pomoć'),
+      accompanied: msg('Samo u pratnji'),
+      'never-out': msg('Ne izlazi'),
     },
   },
   'daily-help': {
-    title: 'Koliko joj pomoći treba tokom dana?',
-    short: 'Pomoć tokom dana',
+    title: msg('Koliko joj pomoći treba tokom dana?'),
+    short: msg('Pomoć tokom dana'),
     options: {
-      none: 'Nimalo',
-      occasional: 'Povremeno',
-      'several-times': 'Više puta dnevno',
-      'almost-constant': 'Skoro stalno',
-      dependent: 'Potpuno zavisi od nekoga',
+      none: msg('Nimalo'),
+      occasional: msg('Povremeno'),
+      'several-times': msg('Više puta dnevno'),
+      'almost-constant': msg('Skoro stalno'),
+      dependent: msg('Potpuno zavisi od nekoga'),
     },
   },
   'self-care': {
-    title: 'Šta od ovoga još može sama?',
-    short: 'Radi sama',
+    title: msg('Šta od ovoga još može sama?'),
+    short: msg('Radi sama'),
     options: {
-      dressing: 'Da se obuče',
-      bathing: 'Da se okupa',
-      toilet: 'Da ode do toaleta',
-      meals: 'Da spremi obrok',
-      medication: 'Da uzme lekove',
+      dressing: msg('Da se obuče'),
+      bathing: msg('Da se okupa'),
+      toilet: msg('Da ode do toaleta'),
+      meals: msg('Da spremi obrok'),
+      medication: msg('Da uzme lekove'),
     },
-    empty: 'Ništa od ovoga',
+    empty: msg('Ništa od ovoga'),
   },
   falls: {
-    title: 'Da li je padala u poslednjih godinu dana?',
-    short: 'Padovi',
-    options: { none: 'Nijednom', once: 'Jednom', 'more-than-once': 'Više puta' },
+    title: msg('Da li je padala u poslednjih godinu dana?'),
+    short: msg('Padovi'),
+    options: { none: msg('Nijednom'), once: msg('Jednom'), 'more-than-once': msg('Više puta') },
   },
   outdoors: {
-    title: 'Koliko često izađe napolje?',
-    short: 'Izlasci',
-    options: { daily: 'Skoro svaki dan', weekly: 'Nekoliko puta nedeljno', rarely: 'Retko', never: 'Nikad' },
+    title: msg('Koliko često izađe napolje?'),
+    short: msg('Izlasci'),
+    options: { daily: msg('Skoro svaki dan'), weekly: msg('Nekoliko puta nedeljno'), rarely: msg('Retko'), never: msg('Nikad') },
   },
   slowing: {
-    title: 'Da li je primetno usporila poslednjih meseci?',
-    short: 'Usporavanje',
-    options: { no: 'Ne baš', little: 'Malo', lot: 'Prilično' },
+    title: msg('Da li je primetno usporila poslednjih meseci?'),
+    short: msg('Usporavanje'),
+    options: { no: msg('Ne baš'), little: msg('Malo'), lot: msg('Prilično') },
   },
   overall: {
-    title: 'Kako biste je opisali uopšteno?',
-    short: 'Opšte stanje',
+    title: msg('Kako biste je opisali uopšteno?'),
+    short: msg('Opšte stanje'),
     options: {
-      active: 'Potpuno aktivna',
-      independent: 'Uglavnom samostalna',
-      'house-help': 'Treba joj pomoć oko kuće',
-      'most-help': 'Treba joj pomoć oko većine stvari',
-      dependent: 'Zavisi od drugih skoro u svemu',
+      active: msg('Potpuno aktivna'),
+      independent: msg('Uglavnom samostalna'),
+      'house-help': msg('Treba joj pomoć oko kuće'),
+      'most-help': msg('Treba joj pomoć oko većine stvari'),
+      dependent: msg('Zavisi od drugih skoro u svemu'),
     },
   },
 
   lifestyle: {
-    title: 'Šta bi joj sada najviše značilo?',
-    short: 'Šta bi pomoglo',
+    title: msg('Šta bi joj sada najviše značilo?'),
+    short: msg('Šta bi pomoglo'),
     options: {
-      company: 'Društvo i razgovor',
-      activities: 'Odlasci na društvene aktivnosti',
-      transport: 'Prevoz do lekara',
-      exercise: 'Da ostane fizički aktivna',
-      prevention: 'Redovne kontrole i prevencija',
-      wellness: 'Wellness - masaža, fizioterapija',
+      company: msg('Društvo i razgovor'),
+      activities: msg('Odlasci na društvene aktivnosti'),
+      transport: msg('Prevoz do lekara'),
+      exercise: msg('Da ostane fizički aktivna'),
+      prevention: msg('Redovne kontrole i prevencija'),
+      wellness: msg('Wellness - masaža, fizioterapija'),
     },
-    other: 'Nešto drugo što bi pomoglo',
+    other: msg('Nešto drugo što bi pomoglo'),
   },
   'household-tasks': {
-    title: 'Rekli ste da joj treba pomoć oko kuće. Oko čega?',
-    short: 'Oko kuće',
+    title: msg('Rekli ste da joj treba pomoć oko kuće. Oko čega?'),
+    short: msg('Oko kuće'),
     options: {
-      cooking: 'Kuvanje',
-      laundry: 'Veš',
-      shopping: 'Nabavka',
-      cleaning: 'Čišćenje i pospremanje',
-      'meds-admin': 'Vođenje računa o lekovima',
+      cooking: msg('Kuvanje'),
+      laundry: msg('Veš'),
+      shopping: msg('Nabavka'),
+      cleaning: msg('Čišćenje i pospremanje'),
+      'meds-admin': msg('Vođenje računa o lekovima'),
     },
-    other: 'Nešto drugo što joj je postalo teško',
+    other: msg('Nešto drugo što joj je postalo teško'),
   },
   'who-helps-now': {
-    title: 'Ko to sada radi?',
-    short: 'Ko sad pomaže',
+    title: msg('Ko to sada radi?'),
+    short: msg('Ko sad pomaže'),
     options: {
-      family: 'Porodica, kad stigne',
-      neighbour: 'Komšinica ili prijateljica',
-      paid: 'Neko plaćen privatno',
-      nobody: 'Niko - ne radi se',
+      family: msg('Porodica, kad stigne'),
+      neighbour: msg('Komšinica ili prijateljica'),
+      paid: msg('Neko plaćen privatno'),
+      nobody: msg('Niko - ne radi se'),
     },
   },
   'personal-care': {
-    title: 'Oko čega joj treba pomoć rukama?',
-    short: 'Lična nega',
+    title: msg('Oko čega joj treba pomoć rukama?'),
+    short: msg('Lična nega'),
     options: {
-      bathing: 'Kupanje',
-      dressing: 'Oblačenje',
-      transfer: 'Ustajanje iz kreveta ili stolice',
-      stairs: 'Stepenice',
-      incontinence: 'Inkontinencija',
-      'night-toilet': 'Odlazak do toaleta noću',
+      bathing: msg('Kupanje'),
+      dressing: msg('Oblačenje'),
+      transfer: msg('Ustajanje iz kreveta ili stolice'),
+      stairs: msg('Stepenice'),
+      incontinence: msg('Inkontinencija'),
+      'night-toilet': msg('Odlazak do toaleta noću'),
     },
-    other: 'Nešto drugo oko čega joj treba pomoć',
+    other: msg('Nešto drugo oko čega joj treba pomoć'),
   },
   'fall-risk': {
-    title: 'Koliko strahujete od pada?',
-    short: 'Rizik od pada',
+    title: msg('Koliko strahujete od pada?'),
+    short: msg('Rizik od pada'),
     options: {
-      low: 'Ne naročito',
-      medium: 'Razmišljam o tome',
-      high: 'Mnogo - deluje kao pitanje dana',
+      low: msg('Ne naročito'),
+      medium: msg('Razmišljam o tome'),
+      high: msg('Mnogo - deluje kao pitanje dana'),
     },
   },
   'bed-mobility': {
-    title: 'Može li sama da se okrene u krevetu?',
-    short: 'Pokretljivost u krevetu',
-    options: { yes: 'Da, sama', 'some-help': 'Uz malu pomoć', 'full-help': 'Mora da se okreće' },
+    title: msg('Može li sama da se okrene u krevetu?'),
+    short: msg('Pokretljivost u krevetu'),
+    options: { yes: msg('Da, sama'), 'some-help': msg('Uz malu pomoć'), 'full-help': msg('Mora da se okreće') },
   },
   eating: {
-    title: 'Kako se snalazi sa hranom?',
-    short: 'Ishrana',
+    title: msg('Kako se snalazi sa hranom?'),
+    short: msg('Ishrana'),
     options: {
-      alone: 'Jede sama',
-      help: 'Treba joj pomoć oko obroka',
-      fed: 'Mora da se hrani',
-      swallowing: 'Ima problem sa gutanjem',
+      alone: msg('Jede sama'),
+      help: msg('Treba joj pomoć oko obroka'),
+      fed: msg('Mora da se hrani'),
+      swallowing: msg('Ima problem sa gutanjem'),
     },
   },
   'pressure-sores': {
-    title: 'Ima li dekubitusa?',
-    short: 'Dekubitusi',
+    title: msg('Ima li dekubitusa?'),
+    short: msg('Dekubitusi'),
     options: {
-      none: 'Nema',
-      early: 'Crvenilo ili plitka rana',
-      deep: 'Duboka ili otvorena rana',
-      unsure: 'Nisam siguran',
+      none: msg('Nema'),
+      early: msg('Crvenilo ili plitka rana'),
+      deep: msg('Duboka ili otvorena rana'),
+      unsure: msg('Nisam siguran'),
     },
   },
   respiratory: {
-    title: 'Ima li kod kuće podršku za disanje?',
-    short: 'Podrška za disanje',
-    options: { oxygen: 'Kiseonik', cpap: 'CPAP', suction: 'Aspirator', none: 'Ništa od toga' },
+    title: msg('Ima li kod kuće podršku za disanje?'),
+    short: msg('Podrška za disanje'),
+    options: { oxygen: msg('Kiseonik'), cpap: 'CPAP', suction: msg('Aspirator'), none: msg('Ništa od toga') },
   },
   'palliative-needs': {
-    title: 'Šta bi porodici sada najviše pomoglo?',
-    short: 'Potrebna podrška',
+    title: msg('Šta bi porodici sada najviše pomoglo?'),
+    short: msg('Potrebna podrška'),
     options: {
-      nursing: 'Medicinska sestra koja redovno dolazi',
-      'round-clock': 'Nega 24 sata kod kuće',
-      medication: 'Dostava lekova na kućnu adresu',
-      equipment: 'Pomagala i potrošni materijal',
-      spiritual: 'Duhovna podrška',
-      family: 'Podrška za porodicu',
+      nursing: msg('Medicinska sestra koja redovno dolazi'),
+      'round-clock': msg('Nega 24 sata kod kuće'),
+      medication: msg('Dostava lekova na kućnu adresu'),
+      equipment: msg('Pomagala i potrošni materijal'),
+      spiritual: msg('Duhovna podrška'),
+      family: msg('Podrška za porodicu'),
     },
-    other: 'Nešto drugo što bi pomoglo',
+    other: msg('Nešto drugo što bi pomoglo'),
   },
 
   'reason-for-contact': {
-    title: 'Šta vas je dovelo do nas?',
-    short: 'Razlog poziva',
+    title: msg('Šta vas je dovelo do nas?'),
+    short: msg('Razlog poziva'),
     options: {
-      fall: 'Pala je',
-      memory: 'Pamćenje joj se menja',
-      discharge: 'Vraća se kući iz bolnice',
-      loneliness: 'Previše je sama',
-      medication: 'Lekovi su postali teški za praćenje',
-      diagnosis: 'Dijagnoza - šlog, Parkinson, kancer',
-      'home-help': 'Kuća joj je postala prevelika',
-      respite: 'Porodici treba predah',
-      'daily-living': 'Svakodnevni život traži podršku',
+      fall: msg('Pala je'),
+      memory: msg('Pamćenje joj se menja'),
+      discharge: msg('Vraća se kući iz bolnice'),
+      loneliness: msg('Previše je sama'),
+      medication: msg('Lekovi su postali teški za praćenje'),
+      diagnosis: msg('Dijagnoza - šlog, Parkinson, kancer'),
+      'home-help': msg('Kuća joj je postala prevelika'),
+      respite: msg('Porodici treba predah'),
+      'daily-living': msg('Svakodnevni život traži podršku'),
     },
   },
   onset: {
-    title: 'Da li se to desilo naglo ili postepeno?',
-    short: 'Kako je počelo',
+    title: msg('Da li se to desilo naglo ili postepeno?'),
+    short: msg('Kako je počelo'),
     options: {
-      sudden: 'Naglo, u poslednjih par nedelja',
-      gradual: 'Postepeno, mesecima',
-      'long-standing': 'Tako je već dugo',
+      sudden: msg('Naglo, u poslednjih par nedelja'),
+      gradual: msg('Postepeno, mesecima'),
+      'long-standing': msg('Tako je već dugo'),
     },
   },
   hospitalisation: {
-    title: 'Da li je bila u bolnici?',
-    short: 'Boravak u bolnici',
-    options: { recent: 'Da, u poslednjih mesec dana', older: 'Da, ali odavno', none: 'Ne' },
+    title: msg('Da li je bila u bolnici?'),
+    short: msg('Boravak u bolnici'),
+    options: { recent: msg('Da, u poslednjih mesec dana'), older: msg('Da, ali odavno'), none: msg('Ne') },
   },
   'family-goal': {
-    title: 'Šta bi za vas bio dobar ishod?',
-    short: 'Vaš cilj',
-    fields: { goal: 'Čemu se nadate', worry: 'Šta vas najviše brine' },
+    title: msg('Šta bi za vas bio dobar ishod?'),
+    short: msg('Vaš cilj'),
+    fields: { goal: msg('Čemu se nadate'), worry: msg('Šta vas najviše brine') },
   },
 };
 
 // Section lead-ins, for the model to draw on rather than invent from nothing.
 export const STEP_INTRO = {
   'getting-to-know':
-    'Dobro došli u NANA Prime. Ja sam Minna, vaš koordinator nege. Pre nego što vam preporučim bilo kakvu podršku, volela bih da upoznam vas i osobu o kojoj brinete.',
+    msg('Dobro došli u NANA Prime. Ja sam Minna, vaš koordinator nege. Pre nego što vam preporučim bilo kakvu podršku, volela bih da upoznam vas i osobu o kojoj brinete.'),
   'daily-life':
-    'Hvala. Sada kada smo se upoznali, volela bih da razumem kako izgleda njihov svakodnevni dan.',
-  support: 'Sad mi je slika jasna. Još par pitanja i preporuka će biti precizna.',
-  reason: 'Još jedna stvar, i ona je najvažnija: zašto ste nam se javili baš sada?',
+    msg('Hvala. Sada kada smo se upoznali, volela bih da razumem kako izgleda njihov svakodnevni dan.'),
+  support: msg('Sad mi je slika jasna. Još par pitanja i preporuka će biti precizna.'),
+  reason: msg('Još jedna stvar, i ona je najvažnija: zašto ste nam se javili baš sada?'),
 };
 
-export const CFS_SR = {
-  1: { label: 'Veoma vitalna', blurb: 'Aktivna, energična i motivisana. Redovno vežba i među najvitalnijima je za svoje godine.' },
-  2: { label: 'Vitalna', blurb: 'Bez aktivnih simptoma bolesti, ali manje vitalna nego prva kategorija. Aktivna povremeno, npr. sezonski.' },
-  3: { label: 'Dobro se snalazi', blurb: 'Zdravstveni problemi su pod kontrolom. Nije redovno aktivna izvan uobičajenih šetnji.' },
-  4: { label: 'Ranjiva', blurb: 'Nije zavisna od drugih iz dana u dan, ali je simptomi često ograničavaju. Često „usporena" ili umorna tokom dana.' },
-  5: { label: 'Blago krhka', blurb: 'Usporavanje je vidljivije. Treba joj pomoć oko obaveza, kuće, prevoza i težih poslova; često i oko lekova.' },
-  6: { label: 'Umereno krhka', blurb: 'Treba joj pomoć oko svih aktivnosti van kuće i oko domaćinstva. Često ima problem sa stepenicama, kupanjem i oblačenjem.' },
-  7: { label: 'Izrazito krhka', blurb: 'Potpuno zavisna od drugih oko lične nege, iz bilo kog razloga. Stabilna i bez visokog rizika u narednih šest meseci.' },
-  8: { label: 'Veoma izrazito krhka', blurb: 'Potpuno zavisna i pri kraju života. Po pravilu se ne bi oporavila ni od lakše bolesti.' },
-  9: { label: 'Terminalno bolesna', blurb: 'Pri kraju života, sa očekivanim trajanjem ispod šest meseci, bez druge izražene krhkosti.' },
-};
+// The scale's names, in the language the app is in (see frailty.js).
+export { CFS as CFS_SR } from './frailty';
 
 // Openers for the blank first screen. The empty page is right for someone who
 // knows what to say; these are for everyone staring at it not knowing where to
@@ -274,23 +267,23 @@ export const CFS_SR = {
 export const STARTERS = [
   {
     id: 'plan',
-    title: 'Želim plan za svoju majku',
-    sub: 'Krenemo od njenih podataka, pa razgovaramo',
+    title: msg('Želim plan za svoju majku'),
+    sub: msg('Krenemo od njenih podataka, pa razgovaramo'),
   },
   {
     id: 'changed',
-    title: 'Nešto se promenilo i zabrinut sam',
-    sub: 'Pad, zbunjenost, loša nedelja: recite mi šta se desilo',
+    title: msg('Nešto se promenilo i zabrinut sam'),
+    sub: msg('Pad, zbunjenost, loša nedelja: recite mi šta se desilo'),
   },
   {
     id: 'help',
-    title: 'Treba mi neko u stanu nekoliko puta nedeljno',
-    sub: 'Negovateljice u njenom kraju i koliko koštaju',
+    title: msg('Treba mi neko u stanu nekoliko puta nedeljno'),
+    sub: msg('Negovateljice u njenom kraju i koliko koštaju'),
   },
   {
     id: 'abroad',
-    title: 'Živim u inostranstvu i ne znam odakle da počnem',
-    sub: 'Videćemo šta može da se organizuje i bez vas tamo',
+    title: msg('Živim u inostranstvu i ne znam odakle da počnem'),
+    sub: msg('Videćemo šta može da se organizuje i bez vas tamo'),
   },
 ];
 
@@ -298,10 +291,10 @@ export const STARTERS = [
 // the flow cannot keep: `follow_up` screens are not in the question list, so the
 // number froze while screens went by.
 export const SECTION = {
-  'getting-to-know': 'Upoznavanje',
-  'daily-life': 'Svakodnevni život',
-  support: 'Kakva podrška',
-  reason: 'Zašto ste se javili',
+  'getting-to-know': msg('Upoznavanje'),
+  'daily-life': msg('Svakodnevni život'),
+  support: msg('Kakva podrška'),
+  reason: msg('Zašto ste se javili'),
 };
 
 // Why we ask — for the questions a family might reasonably wonder about. These
@@ -311,29 +304,29 @@ export const SECTION = {
 // gets around explain themselves and have none on purpose; a reason under every
 // question is a reason nobody reads.
 export const WHY = {
-  'about-you': 'Da bi vas negovateljica mogla odmah dobiti ako se tokom posete nešto desi.',
+  'about-you': msg('Da bi vas negovateljica mogla odmah dobiti ako se tokom posete nešto desi.'),
   household:
-    'Ako živi sama, negovateljica je često prva koja primeti promenu; ako živi sa nekim, sa njim dogovaramo ko šta preuzima.',
-  'home-condition': 'Da znamo da li negovateljica prvo treba da sredi stan, pa tek onda da uđe u svakodnevnu rutinu.',
-  'daily-help': 'Po ovome procenjujemo koliko je poseta nedeljno stvarno potrebno, ni previše, ni premalo.',
-  'self-care': 'Ono što još može sama ne preuzimamo od nje, da to ne izgubi. Pomažemo samo tamo gde treba.',
+    msg('Ako živi sama, negovateljica je često prva koja primeti promenu; ako živi sa nekim, sa njim dogovaramo ko šta preuzima.'),
+  'home-condition': msg('Da znamo da li negovateljica prvo treba da sredi stan, pa tek onda da uđe u svakodnevnu rutinu.'),
+  'daily-help': msg('Po ovome procenjujemo koliko je poseta nedeljno stvarno potrebno, ni previše, ni premalo.'),
+  'self-care': msg('Ono što još može sama ne preuzimamo od nje, da to ne izgubi. Pomažemo samo tamo gde treba.'),
   falls:
-    'Posle jednog pada raste rizik od sledećeg; ako je padala, prvo proveravamo stan i kretanje, pa tek onda krećemo sa negom.',
+    msg('Posle jednog pada raste rizik od sledećeg; ako je padala, prvo proveravamo stan i kretanje, pa tek onda krećemo sa negom.'),
   outdoors:
-    'Da znamo da li je usamljenost deo slike, jer tada negovateljica nije samo pomoć u kući, nego i društvo i razlog da izađe.',
-  slowing: 'Da znamo da li se stanje menja, i da li plan pravimo za danas ili za narednih nekoliko meseci.',
-  'who-helps-now': 'Da znamo koga rasterećujemo, i šta ne sme da stane dok ne krenemo.',
+    msg('Da znamo da li je usamljenost deo slike, jer tada negovateljica nije samo pomoć u kući, nego i društvo i razlog da izađe.'),
+  slowing: msg('Da znamo da li se stanje menja, i da li plan pravimo za danas ili za narednih nekoliko meseci.'),
+  'who-helps-now': msg('Da znamo koga rasterećujemo, i šta ne sme da stane dok ne krenemo.'),
   'personal-care':
-    'Za kupanje, premeštanje i inkontinenciju biramo negovateljicu koja je to već radila, jer se to ne uči na licu mesta.',
-  'fall-risk': 'Vaš osećaj je često tačniji od svakog upitnika; ako strahujete od pada, prevenciju stavljamo na prvo mesto.',
+    msg('Za kupanje, premeštanje i inkontinenciju biramo negovateljicu koja je to već radila, jer se to ne uči na licu mesta.'),
+  'fall-risk': msg('Vaš osećaj je često tačniji od svakog upitnika; ako strahujete od pada, prevenciju stavljamo na prvo mesto.'),
   'bed-mobility':
-    'Ko ne može sam da se okrene, mora redovno da se okreće i noću, a to menja koliko često neko mora da bude uz nju.',
-  eating: 'Ako ima problem sa gutanjem, hrana se priprema drugačije i obrok traži nekoga ko zna kako.',
-  'pressure-sores': 'Od ovoga zavisi da li je dovoljna negovateljica, ili treba da dolazi i medicinska sestra.',
-  respiratory: 'Kiseonik i aparati za disanje traže nekoga ko je obučen da radi sa njima.',
-  onset: 'Nagla promena traži brzu reakciju i često lekara, a postepena dugoročan plan.',
+    msg('Ko ne može sam da se okrene, mora redovno da se okreće i noću, a to menja koliko često neko mora da bude uz nju.'),
+  eating: msg('Ako ima problem sa gutanjem, hrana se priprema drugačije i obrok traži nekoga ko zna kako.'),
+  'pressure-sores': msg('Od ovoga zavisi da li je dovoljna negovateljica, ili treba da dolazi i medicinska sestra.'),
+  respiratory: msg('Kiseonik i aparati za disanje traže nekoga ko je obučen da radi sa njima.'),
+  onset: msg('Nagla promena traži brzu reakciju i često lekara, a postepena dugoročan plan.'),
   hospitalisation:
-    'Prve nedelje posle bolnice su najosetljivije, pa tada prvo usklađujemo lekove i negu sa otpusnom listom.',
+    msg('Prve nedelje posle bolnice su najosetljivije, pa tada prvo usklađujemo lekove i negu sa otpusnom listom.'),
 };
 
 // Follow-ups are where a reason matters most: the question was on no list, the
@@ -342,38 +335,41 @@ export const WHY = {
 // word bar the diacritics.
 export const WHY_FOLLOW_UPS = [
   {
-    kad: 'porodica pomene demenciju',
-    pitanje: 'Da li je demencija u epizodama ili u kontinuitetu?',
+    kad: msg('porodica pomene demenciju'),
+    pitanje: msg('Da li je demencija u epizodama ili u kontinuitetu?'),
     obrazlozenje:
-      'Ovo nam je potrebno da znamo da li sa bakom treba da se rade mentalne vežbe, ili se sa porodicom dogovaraju priče koje se konstantno ponavljaju baki.',
+      msg('Ovo nam je potrebno da znamo da li sa bakom treba da se rade mentalne vežbe, ili se sa porodicom dogovaraju priče koje se konstantno ponavljaju baki.'),
   },
   {
-    kad: 'pomene Parkinsonovu bolest',
-    pitanje: 'Da li su joj simptomi jači u neko određeno doba dana?',
-    obrazlozenje: 'Da posete zakažemo onda kada joj je najteže, a ne kada je nama zgodno.',
+    kad: msg('pomene Parkinsonovu bolest'),
+    pitanje: msg('Da li su joj simptomi jači u neko određeno doba dana?'),
+    obrazlozenje: msg('Da posete zakažemo onda kada joj je najteže, a ne kada je nama zgodno.'),
   },
   {
-    kad: 'niko od porodice ne živi blizu',
-    pitanje: 'Ima li neko ko može da stigne do nje za pola sata ako zatreba?',
-    obrazlozenje: 'Ako niko nije blizu, sa negovateljicom unapred dogovaramo koga zove i šta sme sama da odluči.',
+    kad: msg('niko od porodice ne živi blizu'),
+    pitanje: msg('Ima li neko ko može da stigne do nje za pola sata ako zatreba?'),
+    obrazlozenje: msg('Ako niko nije blizu, sa negovateljicom unapred dogovaramo koga zove i šta sme sama da odluči.'),
   },
   {
-    kad: 'pomene dijabetes',
-    pitanje: 'Da li sama meri šećer i daje sebi insulin?',
-    obrazlozenje: 'Od ovoga zavisi da li je dovoljna negovateljica, ili nam za insulin treba i medicinska sestra.',
+    kad: msg('pomene dijabetes'),
+    pitanje: msg('Da li sama meri šećer i daje sebi insulin?'),
+    obrazlozenje: msg('Od ovoga zavisi da li je dovoljna negovateljica, ili nam za insulin treba i medicinska sestra.'),
   },
 ];
 
-// ── the words of an answer, in Serbian ──────────────────────────────────────
-// The rest of the app reads the flow's English option titles; everything the
-// family sees now reads these instead. Anything without a Serbian line falls
-// back to the English one rather than to nothing.
+// ── the words of an answer, in the app's language ───────────────────────────
+// Written here in Serbian and translated as they are read, so everything that
+// calls these (the plan, the record, the edits) gets the language the app is in
+// now. Anything without a line here falls back to the flow's own words.
 
-export const srTitle = (q) => Q[q.id]?.title || q.title;
-export const srShort = (q) => Q[q.id]?.short || q.shortTitle || srTitle(q);
+const shown = (text, fallback) => (text ? t(text) : fallback);
+const rawTitle = (q) => Q[q.id]?.title || q.title;
+export const srTitle = (q) => shown(rawTitle(q), '');
+export const srShort = (q) => shown(Q[q.id]?.short || q.shortTitle || rawTitle(q), '');
 export const srOption = (q, optionId) =>
-  Q[q.id]?.options?.[optionId] || q.options?.find((o) => o.id === optionId)?.title || optionId;
-export const srField = (q, fieldId) => Q[q.id]?.fields?.[fieldId] || q.fields?.find((f) => f.id === fieldId)?.label || fieldId;
+  shown(Q[q.id]?.options?.[optionId] || q.options?.find((o) => o.id === optionId)?.title, optionId);
+export const srField = (q, fieldId) =>
+  shown(Q[q.id]?.fields?.[fieldId] || q.fields?.find((f) => f.id === fieldId)?.label, fieldId);
 
 // the picked option(s) of an answer, as the family would read them
 export function srOptionTitles(q, answer) {

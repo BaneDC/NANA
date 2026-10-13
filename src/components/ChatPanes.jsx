@@ -14,6 +14,7 @@ import VisitRow from './family/VisitRow';
 import CaregiverHead from './CaregiverHead';
 import Rating from './Rating';
 import Tags from './Tags';
+import { msg, t } from '../i18n';
 
 // What opens beside the conversation when the family presses a card in the
 // chat. The kit draws the pane and decides where it goes; these are what is in
@@ -24,7 +25,7 @@ import Tags from './Tags';
 // part; `paneFor` turns an open id into the pane's title and contents, and
 // `previewFor` into the few lines the card in the answer shows.
 
-const STATUS = { pending: 'Čeka odgovor', accepted: 'Prihvatila', declined: 'Ne može' };
+const STATUS = { pending: msg('Čeka odgovor'), accepted: msg('Prihvatila'), declined: msg('Ne može') };
 const BADGE = { pending: 'warning', accepted: 'success', declined: 'destructive' };
 
 function Empty({ children }) {
@@ -58,14 +59,14 @@ const body = 'text-xs leading-body text-muted-foreground';
 const groupTitle = 'text-small font-medium text-muted-foreground';
 
 function RequestsPane({ care }) {
-  if (!care.requests.length) return <Empty>Još niste pisali nijednoj negovateljici.</Empty>;
+  if (!care.requests.length) return <Empty>{t('Još niste pisali nijednoj negovateljici.')}</Empty>;
   return (
     <ItemGroup>
       {care.requests.map((r) => {
         const c = caregivers.find((x) => x.id === r.caregiverId);
         return (
-          <Row key={r.caregiverId} initials={c?.initials} title={c?.name} end={<Badge variant={BADGE[r.status]}>{STATUS[r.status]}</Badge>}>
-            <p className={body}>{r.detail}</p>
+          <Row key={r.caregiverId} initials={c?.initials} title={c?.name} end={<Badge variant={BADGE[r.status]}>{t(STATUS[r.status])}</Badge>}>
+            <p className={body}>{t(r.detail)}</p>
           </Row>
         );
       })}
@@ -77,43 +78,43 @@ function CarePane({ care, onDrawer }) {
   const waiting = waitingOnYou(care);
   const coming = allVisits(care).filter((v) => v.status === 'planned');
   if (!waiting.length && !coming.length && !care.arrangements.length) {
-    return <Empty>Još ništa nije dogovoreno. Kad negovateljica odgovori na poruku, ovde se vidi šta je sledeće.</Empty>;
+    return <Empty>{t('Još ništa nije dogovoreno. Kad negovateljica odgovori na poruku, ovde se vidi šta je sledeće.')}</Empty>;
   }
   return (
     <>
-      {waiting.length > 0 && <p className={groupTitle}>Čeka na vas</p>}
+      {waiting.length > 0 && <p className={groupTitle}>{t('Čeka na vas')}</p>}
       <ItemGroup>
         {waiting.map((w) =>
           w.kind === 'terms' ? (
             <Row
               key={`t-${w.arrangement.caregiver.id}`}
               initials={w.arrangement.caregiver.initials}
-              title={`${firstName(w.arrangement.caregiver.name)} je poslala uslove`}
+              title={t('{name} je poslala uslove', { name: firstName(w.arrangement.caregiver.name) })}
               end={
                 <Button className="phone:w-full" onClick={() => onDrawer({ kind: 'terms', caregiverId: w.arrangement.caregiver.id })}>
-                  Pogledaj
+                  {t('Pogledaj')}
                 </Button>
               }
             >
               <p className={body}>
-                {services(w.version.services.length)} po {money(w.version.rate)} na sat
+                {t('{services} po {rate} na sat', { services: services(w.version.services.length), rate: money(w.version.rate) })}
               </p>
             </Row>
           ) : (
             <Row
               key={`w-${w.visit.id}`}
               initials={w.visit.caregiver.initials}
-              title={`Radni nalog za ${w.visit.date}`}
+              title={t('Radni nalog za {date}', { date: w.visit.date })}
               end={
                 <Button variant="secondary" className="phone:w-full" onClick={() => onDrawer({ kind: 'work-order', visitId: w.visit.id })}>
-                  Pogledaj
+                  {t('Pogledaj')}
                 </Button>
               }
             />
           )
         )}
       </ItemGroup>
-      {coming.length > 0 && <p className={groupTitle}>Predstoji</p>}
+      {coming.length > 0 && <p className={groupTitle}>{t('Predstoji')}</p>}
       <ItemGroup>
         {coming.map((v) => (
           <VisitRow key={v.id} visit={v} showWho onDrawer={onDrawer} />
@@ -125,7 +126,7 @@ function CarePane({ care, onDrawer }) {
 
 function VisitsPane({ care, onDrawer }) {
   const visits = allVisits(care);
-  if (!visits.length) return <Empty>Još nema nijedne posete.</Empty>;
+  if (!visits.length) return <Empty>{t('Još nema nijedne posete.')}</Empty>;
   return (
     <ItemGroup>
       {visits.map((v) => (
@@ -150,18 +151,18 @@ function CaregiversPane({ care, onContact }) {
               asked ? (
                 <Badge variant="success">
                   <Check size={12} strokeWidth={2} />
-                  Poslato
+                  {t('Poslato')}
                 </Badge>
               ) : (
                 <Button className="phone:w-full" onClick={() => onContact(c)}>
                   <Send size={14} strokeWidth={1.75} />
-                  Poruka
+                  {t('Poruka')}
                 </Button>
               )
             }
           >
             <p className={body}>
-              <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
+              <Rating caregiver={c} /> · {c.rate} · {t('{area}, do {km} km', { area: c.area, km: c.radius })}
             </p>
           </Row>
         );
@@ -173,13 +174,13 @@ function CaregiversPane({ care, onContact }) {
 function SettingsPane({ care, unlocked, country, onUnlock }) {
   return (
     <DataList className="mt-2">
-      <DataRow label="Pretplata">{unlocked ? `Aktivna · ${priceLine(country)}` : 'Nije aktivna'}</DataRow>
-      <DataRow label="Kartica">
-        {care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodata'}
+      <DataRow label={t('Pretplata')}>{unlocked ? `${t('Aktivna')} · ${priceLine(country)}` : t('Nije aktivna')}</DataRow>
+      <DataRow label={t('Kartica')}>
+        {care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : t('Još nije dodata')}
       </DataRow>
       {!unlocked && (
         <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
-          <Button onClick={onUnlock}>Pretplati se</Button>
+          <Button onClick={onUnlock}>{t('Pretplati se')}</Button>
         </div>
       )}
     </DataList>
@@ -194,8 +195,8 @@ export function paneFor(openId, ctx) {
     case 'plan':
       return plan
         ? {
-            title: `Plan nege · ${plan.name}`,
-            meta: 'Aktivan',
+            title: `${t('Plan nege')} · ${plan.name}`,
+            meta: t('Aktivan'),
             children: (
               <Pane plan>
                 <PlanContents
@@ -211,41 +212,41 @@ export function paneFor(openId, ctx) {
           }
         : null;
     case 'my-care':
-      return { title: 'Moja nega', children: <Pane><CarePane care={care} onDrawer={onDrawer} /></Pane> };
+      return { title: t('Moja nega'), children: <Pane><CarePane care={care} onDrawer={onDrawer} /></Pane> };
     case 'requests':
-      return { title: 'Moji upiti', meta: `${care.requests.length}`, children: <Pane><RequestsPane care={care} /></Pane> };
+      return { title: t('Moji upiti'), meta: `${care.requests.length}`, children: <Pane><RequestsPane care={care} /></Pane> };
     case 'visits':
-      return { title: 'Posete', children: <Pane><VisitsPane care={care} onDrawer={onDrawer} /></Pane> };
+      return { title: t('Posete'), children: <Pane><VisitsPane care={care} onDrawer={onDrawer} /></Pane> };
     case 'find-caregiver':
-      return { title: 'Negovateljice za vas', meta: `${caregivers.length}`, children: <Pane><CaregiversPane care={care} onContact={onContact} /></Pane> };
+      return { title: t('Negovateljice za vas'), meta: `${caregivers.length}`, children: <Pane><CaregiversPane care={care} onContact={onContact} /></Pane> };
     case 'settings':
-      return { title: 'Pretplata i plaćanje', children: <Pane><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></Pane> };
+      return { title: t('Pretplata i plaćanje'), children: <Pane><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></Pane> };
     case 'caregiver': {
       const c = caregivers.find((x) => x.id === id);
       if (!c) return null;
       const asked = care.requests.find((r) => r.caregiverId === c.id);
       return {
-        title: 'Informacije o negovateljici',
+        title: t('Informacije o negovateljici'),
         children: (
           <Pane>
             <CaregiverHead caregiver={c} standing={standingWith(care, c.id)} />
-            <PaneLabel>O sebi</PaneLabel>
-            <SheetDescription>{c.bio}</SheetDescription>
-            <PaneLabel>Klasifikacije</PaneLabel>
+            <PaneLabel>{t('O sebi')}</PaneLabel>
+            <SheetDescription>{t(c.bio)}</SheetDescription>
+            <PaneLabel>{t('Klasifikacije')}</PaneLabel>
             <Tags items={c.classifications} />
             <DataList className="mt-2">
-              <DataRow label="Dolazi">
+              <DataRow label={t('Dolazi')}>
                 {daysText(c.days)} · {slotsText(c.slots)}
               </DataRow>
-              <DataRow label="Jezici">{c.languages.join(', ')}</DataRow>
+              <DataRow label={t('Jezici')}>{c.languages.map((l) => t(l)).join(', ')}</DataRow>
             </DataList>
             {asked ? (
-              <p className={body}>{asked.detail}</p>
+              <p className={body}>{t(asked.detail)}</p>
             ) : (
               <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
                 <Button onClick={() => onContact(c)}>
                   <Send size={14} strokeWidth={1.75} />
-                  Pošalji poruku
+                  {t('Pošalji poruku')}
                 </Button>
               </div>
             )}
@@ -262,39 +263,39 @@ export function paneFor(openId, ctx) {
 export function previewFor(kind, { plan, care }) {
   switch (kind) {
     case 'plan':
-      return { title: `Plan nege · ${plan?.name || ''}`, meta: 'Aktivan', content: (plan?.recommendations || []).map((r) => r.title).join('\n') };
+      return { title: `${t('Plan nege')} · ${plan?.name || ''}`, meta: t('Aktivan'), content: (plan?.recommendations || []).map((r) => r.title).join('\n') };
     case 'my-care': {
       const waiting = waitingOnYou(care);
       const coming = allVisits(care).filter((v) => v.status === 'planned');
       return {
-        title: 'Moja nega',
+        title: t('Moja nega'),
         content: [
-          waiting.length ? `Čeka na vas: ${waiting.length}` : 'Ništa ne čeka na vas',
+          waiting.length ? t('Čeka na vas: {count}', { count: waiting.length }) : t('Ništa ne čeka na vas'),
           ...coming.map((v) => `${v.date} · ${v.time} · ${v.caregiver.name}`),
-          ...care.arrangements.filter((a) => pendingVersion(a)).map((a) => `${a.caregiver.name} je poslala uslove`),
+          ...care.arrangements.filter((a) => pendingVersion(a)).map((a) => t('{name} je poslala uslove', { name: a.caregiver.name })),
         ].join('\n'),
       };
     }
     case 'requests':
       return {
-        title: 'Moji upiti',
+        title: t('Moji upiti'),
         meta: `${care.requests.length}`,
         content: care.requests.length
-          ? care.requests.map((r) => `${caregivers.find((c) => c.id === r.caregiverId)?.name} · ${STATUS[r.status]}`).join('\n')
-          : 'Još nijedan upit',
+          ? care.requests.map((r) => `${caregivers.find((c) => c.id === r.caregiverId)?.name} · ${t(STATUS[r.status])}`).join('\n')
+          : t('Još nijedan upit'),
       };
     case 'visits': {
       const visits = allVisits(care);
-      return { title: 'Posete', content: visits.length ? visits.map((v) => `${v.date} · ${v.caregiver.name}`).join('\n') : 'Još nema poseta' };
+      return { title: t('Posete'), content: visits.length ? visits.map((v) => `${v.date} · ${v.caregiver.name}`).join('\n') : t('Još nema poseta') };
     }
     case 'find-caregiver':
       return {
-        title: 'Negovateljice za vas',
+        title: t('Negovateljice za vas'),
         meta: `${caregivers.length}`,
         content: [...caregivers].sort((a, b) => b.match - a.match).map((c) => `${c.name} · ${c.match}% · ${c.rate}`).join('\n'),
       };
     case 'settings':
-      return { title: 'Pretplata i plaćanje', content: care.payment.connected ? 'Kartica je sačuvana' : 'Kartica još nije dodata' };
+      return { title: t('Pretplata i plaćanje'), content: care.payment.connected ? t('Kartica je sačuvana') : t('Kartica još nije dodata') };
     default:
       return null;
   }

@@ -4,6 +4,7 @@ import { Sheet, SheetBody, SheetContent, SheetEyebrow, SheetHeader, SheetTitle }
 import { Drawer, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
 import { useIsPhone } from '@/hooks/use-phone';
 import { cn } from '@/lib/utils';
+import { t } from '@/i18n';
 import { focusPane, useCloseThreshold } from '../lib/sheet';
 
 // A card's details, opened as a pane beside the page (docs/patterns.md §7):
@@ -29,7 +30,7 @@ export default function Modal({ title, eyebrow, wide, dismissible = true, open =
     </div>
   );
   const close = dismissible && (
-    <button type="button" className={cn(paneCloseClass, 'relative z-3 ml-auto')} onClick={onClose} aria-label="Zatvori panel">
+    <button type="button" className={cn(paneCloseClass, 'relative z-3 ml-auto')} onClick={onClose} aria-label={t('Zatvori panel')}>
       <X className="size-4" strokeWidth={1.75} />
     </button>
   );

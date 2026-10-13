@@ -1,6 +1,7 @@
 import { serviceTitle } from './caregiverBoard';
 import { servicesForNeed } from './serviceCatalog';
 import { START_HOUR } from './familyCare';
+import { localized, msg, t } from '../i18n';
 
 // The family's side as it really starts: nobody asked yet, nobody coming, no
 // card. Everything on it from here is something the family did, or a
@@ -45,13 +46,15 @@ export function needFrom(answers) {
   const often = answers['daily-help']?.optionId;
   const week =
     often === 'several-times'
-      ? { days: 'pon – pet', time: '09:00–13:00', perVisit: 4, visits: 5 }
+      ? { days: msg('pon – pet'), time: '09:00–13:00', perVisit: 4, visits: 5 }
       : often === 'almost-constant' || often === 'dependent'
-        ? { days: 'pon – pet', time: '08:00–16:00', perVisit: 8, visits: 5 }
+        ? { days: msg('pon – pet'), time: '08:00–16:00', perVisit: 8, visits: 5 }
         : often === 'none'
-          ? { days: 'uto, čet', time: '10:00–13:00', perVisit: 3, visits: 2 }
-          : { days: 'pon, sre, pet', time: '09:00–12:00', perVisit: 3, visits: 3 };
+          ? { days: msg('uto, čet'), time: '10:00–13:00', perVisit: 3, visits: 2 }
+          : { days: msg('pon, sre, pet'), time: '09:00–12:00', perVisit: 3, visits: 3 };
 
+  // `schedule` is kept in Serbian, its days a key ("pon – pet · 09:00–13:00"),
+  // so terms that carry it read in any language: shown with scheduleText.
   return {
     // in the catalog's terms, as a caregiver's agreement would list them
     services: servicesForNeed([...out]),
@@ -61,6 +64,13 @@ export function needFrom(answers) {
     schedule: `${week.days} · ${week.time}`,
   };
 }
+
+// A schedule kept as "pon – pet · 09:00–13:00", in the language being read.
+export const scheduleText = (schedule) => {
+  if (!schedule) return schedule;
+  const [days, time] = String(schedule).split(' · ');
+  return time ? `${t(days)} · ${time}` : t(schedule);
+};
 
 // The part of the care state that follows the answers: who she is, where, and
 // what is needed. Kept current as the plan changes.
@@ -79,12 +89,16 @@ export function withAnswers(care, answers, user) {
 export function requestMessage(care) {
   const what = (care.need?.services || []).map((s) => serviceTitle(s).toLowerCase()).join(', ');
   return [
-    'Tražimo negovateljicu, plan nege je u prilogu.',
-    what && `Potrebno je: ${what}.`,
-    care.need && `Otprilike ${care.need.schedule}.`,
-    'Da li biste mogli da dolazite?',
+    t('Tražimo negovateljicu, plan nege je u prilogu.'),
+    what && t('Potrebno je: {what}.', { what }),
+    care.need && t('Otprilike {schedule}.', { schedule: scheduleText(care.need.schedule) }),
+    t('Da li biste mogli da dolazite?'),
   ]
     .filter(Boolean)
     .join(' ');
 }
 
+// The same, kept on a request the app sent on its own (the demo, the
+// assistant): in every language, so it reads in the one chosen later. What the
+// family typed themselves is kept as they typed it.
+export const requestSaid = (care) => localized(() => requestMessage(care));

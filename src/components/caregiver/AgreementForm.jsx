@@ -8,6 +8,7 @@ import { Group } from '../Tags';
 import { Field, Input } from '../TextField';
 import { DEFAULT_RATE, money, totalsFor } from '../../data/caregiverBoard';
 import { SERVICE_GROUPS } from '../../data/serviceCatalog';
+import { t } from '../../i18n';
 
 // The agreement, the first and only time it is built: which services, and one
 // shared hourly rate. Both are pre-filled from what the family actually asked
@@ -24,14 +25,15 @@ export default function AgreementForm({ client, onSend, onCancel }) {
   return (
     <>
       <DialogDescription>
-        Ovde postavljate koje usluge pružate i jednu zajedničku cenu po satu. Sve posle toga -
-        posete, radni nalozi, uplate - računa se iz ovoga.
+        {t(
+          'Ovde postavljate koje usluge pružate i jednu zajedničku cenu po satu. Sve posle toga - posete, radni nalozi, uplate - računa se iz ovoga.'
+        )}
       </DialogDescription>
 
-      <PaneLabel>Usluge iz ovog ugovora</PaneLabel>
+      <PaneLabel>{t('Usluge iz ovog ugovora')}</PaneLabel>
       {/* the catalog's four groups, each under its name; any number chosen */}
       {SERVICE_GROUPS.map((g) => (
-        <Group key={g.id} label={g.title}>
+        <Group key={g.id} label={t(g.title)}>
           <ToggleGroup
             type="multiple"
             value={services.filter((id) => g.items.some(([i]) => i === id))}
@@ -42,39 +44,42 @@ export default function AgreementForm({ client, onSend, onCancel }) {
                 ...picked.filter((id) => !s.includes(id)),
               ])
             }
-            aria-label={g.title}
+            aria-label={t(g.title)}
           >
             {g.items.map(([id, title]) => (
               <ToggleGroupItem key={id} value={id}>
                 {services.includes(id) && <Check size={13} strokeWidth={2.5} />}
-                {title}
+                {t(title)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
         </Group>
       ))}
-      <PaneHint>Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.</PaneHint>
+      <PaneHint>{t('Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.')}</PaneHint>
 
-      <Field label="Cena po satu" className="w-auto self-start">
+      <Field label={t('Cena po satu')} className="w-auto self-start">
         <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="€ / h" className="w-40!" />
       </Field>
       {valid && (
         <PaneHint>
-          Za {client.hours} h nedeljno to je {money(weekly)} nedeljno,{' '}
-          {money(totalsFor(client.hours, rateNumber).net)} vama posle provizije od 10%.
+          {t('Za {hours} h nedeljno to je {weekly} nedeljno, {net} vama posle provizije od 10%.', {
+            hours: client.hours,
+            weekly: money(weekly),
+            net: money(totalsFor(client.hours, rateNumber).net),
+          })}
         </PaneHint>
       )}
 
       <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
-          Otkaži
+          {t('Otkaži')}
         </Button>
         <Button
           disabled={!valid}
           onClick={() => onSend(client.id, { services, rate: rateNumber })}
         >
           <Send size={14} strokeWidth={1.75} />
-          Pošalji porodici
+          {t('Pošalji porodici')}
         </Button>
       </DialogFooter>
     </>
