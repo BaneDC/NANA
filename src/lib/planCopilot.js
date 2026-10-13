@@ -7,14 +7,14 @@ import { srField, srOption, srTitle } from '../data/flow.sr';
 import { caregivers, daysText, slotsText } from '../data/carePlan';
 import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/familyCare';
 import { HEALTH, healthOps, recordState } from '../data/record';
+import { emergencyNumber } from '../data/market';
+import { scheduleText } from '../data/familyStart';
 import { getLang, msg, t } from '../i18n';
 
-// The language her words to the family are in. In Serbian the assistant answers
-// in whatever language the family writes in, as it always has; in English and
-// Finnish it answers in the language the app is set to, so the catalog's words,
-// translated with it, and her reply never mix.
+// The language her words to the family are in: the one the app is set to, so
+// the catalog's words, translated with it, and her reply never mix.
 const inTheirLanguage = () =>
-  getLang() === 'sr' ? 'in the language they wrote in' : getLang() === 'fi' ? 'in Finnish' : 'in English';
+  getLang() === 'sr' ? 'in Serbian (Latin script, ekavian; you are a woman, so feminine forms for yourself)' : getLang() === 'fi' ? 'in Finnish' : 'in English';
 const exampleEvent = () =>
   getLang() === 'sr' ? '"Pala je i slomila nogu"' : getLang() === 'fi' ? '"Kaatui ja mursi jalkansa"' : '"She fell and broke her leg"';
 
@@ -163,7 +163,7 @@ const system = (name) =>
     'When she has moved or is about to, propose the new place in the `city` field of `about-person` with `event` (what, since when), and say in your sentence that the coordinator will call about which caregivers can still come. When she is only staying somewhere else for a while (hospital, rehabilitation, with family) her address does not change: keep it with `add_note`, with until when, and say the coordinator will call about the visits in between.',
     'If what they tell you changes nothing in the answers, say so plainly and do not propose anything. If it matters but no question covers it (a habit, a preference, a diagnosis, a person), keep it with `add_note` and tell them it is saved with the plan for the coordinator.',
     // The one thing the assistant never does, whatever it is asked.
-    'You never give medical advice. Not about medicines (whether to take, stop, change or combine one, a dose, a side effect, an interaction), not about a diagnosis, a symptom, a treatment, a test result or what a doctor said. You do not say what something might be, whether it is serious, or what to do about it medically, and you do not comment on whether what was prescribed is right - not even in general terms, not even when asked directly or told it is urgent. What the family tells you about her health you only write down, in their words, exactly as said: never name a diagnosis they did not name, never add or correct a medicine or a dose. When they ask a medical question, say in one sentence that you cannot advise on that and that her doctor or the pharmacist is who to ask, then offer what you can do: note it in her record, or adjust the care around it. If it sounds like an emergency (she cannot be woken, cannot breathe, chest pain, a fall with a head injury, a suspected stroke), say to call 112 now and nothing else.',
+    'You never give medical advice. Not about medicines (whether to take, stop, change or combine one, a dose, a side effect, an interaction), not about a diagnosis, a symptom, a treatment, a test result or what a doctor said. You do not say what something might be, whether it is serious, or what to do about it medically, and you do not comment on whether what was prescribed is right - not even in general terms, not even when asked directly or told it is urgent. What the family tells you about her health you only write down, in their words, exactly as said: never name a diagnosis they did not name, never add or correct a medicine or a dose. When they ask a medical question, say in one sentence that you cannot advise on that and that her doctor or the pharmacist is who to ask, then offer what you can do: note it in her record, or adjust the care around it. If it sounds like an emergency (she cannot be woken, cannot breathe, chest pain, a fall with a head injury, a suspected stroke), say to call ' + emergencyNumber() + ' now and nothing else.',
     getLang() === 'sr'
       ? 'Keep replies to one to three short sentences. Reply in the language they write in.'
       : getLang() === 'fi'
@@ -216,12 +216,12 @@ function situation(care) {
     languages: c.languages,
     days: daysText(c.days),
     partsOfDay: slotsText(c.slots),
-    request: asked[c.id] ? { status: asked[c.id].status, detail: asked[c.id].detail } : 'not asked',
+    request: asked[c.id] ? { status: asked[c.id].status, detail: t(asked[c.id].detail) } : 'not asked',
   }));
   const arrangements = care.arrangements.map((a) => ({
     caregiver: a.caregiver.name,
-    agreed: activeVersion(a) ? { rate: activeVersion(a).rate, hoursPerWeek: activeVersion(a).hours, schedule: activeVersion(a).schedule } : null,
-    termsWaitingForFamily: pendingVersion(a) ? { rate: pendingVersion(a).rate, hoursPerWeek: pendingVersion(a).hours, schedule: pendingVersion(a).schedule } : null,
+    agreed: activeVersion(a) ? { rate: activeVersion(a).rate, hoursPerWeek: activeVersion(a).hours, schedule: scheduleText(activeVersion(a).schedule) } : null,
+    termsWaitingForFamily: pendingVersion(a) ? { rate: pendingVersion(a).rate, hoursPerWeek: pendingVersion(a).hours, schedule: scheduleText(pendingVersion(a).schedule) } : null,
     ended: a.endedOn || null,
   }));
   const visits = allVisits(care).map((v) => ({ caregiver: v.caregiver.name, date: v.date, time: v.time, status: v.status }));

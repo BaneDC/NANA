@@ -66,7 +66,7 @@ function RequestsPane({ care }) {
         const c = caregivers.find((x) => x.id === r.caregiverId);
         return (
           <Row key={r.caregiverId} initials={c?.initials} title={c?.name} end={<Badge variant={BADGE[r.status]}>{t(STATUS[r.status])}</Badge>}>
-            <p className={body}>{r.detail}</p>
+            <p className={body}>{t(r.detail)}</p>
           </Row>
         );
       })}
@@ -241,7 +241,7 @@ export function paneFor(openId, ctx) {
               <DataRow label={t('Jezici')}>{c.languages.map((l) => t(l)).join(', ')}</DataRow>
             </DataList>
             {asked ? (
-              <p className={body}>{asked.detail}</p>
+              <p className={body}>{t(asked.detail)}</p>
             ) : (
               <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
                 <Button onClick={() => onContact(c)}>

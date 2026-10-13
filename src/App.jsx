@@ -34,7 +34,7 @@ import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { askCaregiver, canAsk, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
-import { requestMessage, startCare, withAnswers } from './data/familyStart';
+import { requestSaid, startCare, withAnswers } from './data/familyStart';
 import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
@@ -45,7 +45,8 @@ import { requestFoot, requestNote } from './data/firstSteps';
 import { planEntries } from './data/threads';
 import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
-import { locale, setLang, t, useLang } from './i18n';
+import { localized, locale, msg, setLang, t, useLang } from './i18n';
+import { setMarket } from './data/market';
 
 const formatDate = (at) => new Date(at).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
 const formatToday = () => formatDate(Date.now());
@@ -77,6 +78,8 @@ export default function App() {
   const [user, setUser] = useState(
     DEMO ? { ...demoUser, country: demoCountry() } : { name: '', email: '', role: 'family' }
   );
+  // The facts of the place (the emergency number) follow the country registered with.
+  setMarket(user.country);
   // An account that chose a language in Settings opens in it.
   useEffect(() => {
     if (user.language) setLang(user.language);
@@ -207,13 +210,15 @@ export default function App() {
     // the history gets a line only when the plan reads differently afterwards
     const entry = nextPlan && changeEntry({ before: { answers, notes, plan }, after: { answers: nextAnswers, notes: nextNotes, plan: nextPlan }, source });
     const nextLog = entry ? [entry, ...planLog] : planLog;
-    const desc = describeChanges(
-      prev.answers,
-      Object.keys({ ...prev.answers, ...nextAnswers })
-        .filter((id) => JSON.stringify(prev.answers[id]) !== JSON.stringify(nextAnswers[id]) && nextAnswers[id])
-        .map((id) => ({ questionId: id, answer: nextAnswers[id] }))
-    );
-    const diff = planDiff(prev.plan, nextPlan);
+    const changed = Object.keys({ ...prev.answers, ...nextAnswers })
+      .filter((id) => JSON.stringify(prev.answers[id]) !== JSON.stringify(nextAnswers[id]) && nextAnswers[id])
+      .map((id) => ({ questionId: id, answer: nextAnswers[id] }));
+    // kept until "U redu", so said in every language: the plans are built again
+    // in each, since what they name is in the language they were built in
+    const { desc, diff } = localized(() => ({
+      desc: describeChanges(prev.answers, changed),
+      diff: planDiff(prev.plan && buildPlan(prev.answers, prev.notes), nextPlan && buildPlan(nextAnswers, nextNotes)),
+    }));
     setPlanChange({
       source: planChange && planChange.source !== source ? 'both' : source,
       rows: desc.rows,
@@ -241,7 +246,9 @@ export default function App() {
     if (changes.length) {
       changePlan({ nextAnswers: applyChanges(answers, changes).answers, nextNotes: notes, source: 'assistant', fromRecord: true });
     }
-    setRecord((r) => writeEvent(r, care.now, { event, impact, health, care, correction }));
+    // the record's entry works the impact out again in each language it is kept in
+    const impactFor = () => (changes.length ? recordImpact({ answers, notes, plan: plan && buildPlan(answers, notes), changes }) : null);
+    setRecord((r) => writeEvent(r, care.now, { event, impactFor, health, care, correction }));
     say(impact?.touched.length ? t('Upisano u karton. Plan nege je izmenjen.') : t('Upisano u karton.'));
   };
 
@@ -260,8 +267,8 @@ export default function App() {
         written(r, care.now, {
           kind: 'undo',
           by: 'you',
-          title: t('Izmene su poništene'),
-          lines: [t('Vraćeno kako je bilo: {what}.', { what: planChange.rows.map((row) => row.title).join(', ') })],
+          title: msg('Izmene su poništene'),
+          lines: [localized(() => t('Vraćeno kako je bilo: {what}.', { what: planChange.rows.map((row) => t(row.title)).join(', ') }))],
         })
       );
     }
@@ -310,7 +317,7 @@ export default function App() {
       contactCaregiver(c);
       return false;
     }
-    setCare(askCaregiver(id, requestMessage(care)));
+    setCare(askCaregiver(id, requestSaid(care)));
     say(t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(c.name) }));
     return true;
   };

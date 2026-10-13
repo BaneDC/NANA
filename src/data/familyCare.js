@@ -1,6 +1,6 @@
 import { caregivers } from './carePlan';
 import { SERVICE_FEE, money, serviceTitle, totalsFor } from './caregiverBoard';
-import { getLang, locale, msg, t, tn } from '../i18n';
+import { getLang, known, locale, msg, registerFormat, say, t, tn } from '../i18n';
 
 // The family's side of NANA Prime: everyone who has cared for their mother, the
 // terms each of them works under, and every visit and what it cost. It starts
@@ -132,6 +132,37 @@ export const redate = (text) => {
   const day = Math.round((d - dateOfDay(0)) / DAY_MS);
   return /\d{4}$/.test(text.trim()) ? longDate(d) : dateText(day);
 };
+
+// ── dates and counts inside a stored sentence ──────────────────────────────
+// A log entry or a message keeps its sentence as a key and its values (say), so
+// it is read in the language of the moment. A date in it is kept as the day it
+// was (or, for a visit with no day of its own, the date as written), said when
+// it is read; so are the counted nouns.
+const RELATIVE = { 0: msg('Danas'), 1: msg('Sutra'), [-1]: msg('Juče') };
+// a date written as text, in the language of the moment: "Sutra" is still
+// "Tomorrow", not the day it was when it was written
+const retext = (text) => {
+  const shift = SHIFT[String(text || '').trim().toLowerCase()];
+  if (shift !== undefined && RELATIVE[shift]) return t(RELATIVE[shift]);
+  const d = redate(text);
+  // not a date: a key the gallery wrote ("juče u 13:10"), or text as it is
+  return d === text ? known(text) : d || '';
+};
+registerFormat('date', ({ day, today, text, lower } = {}) => {
+  const out = day != null ? (today == null ? dateText(day) : dayLabel(day, today)) : retext(text);
+  return lower ? lowerDate(out) : out;
+});
+registerFormat('hours', (n) => tn(n, 'sat', 'sata', 'sati'));
+registerFormat('services', (n) => tn(n, 'usluga', 'usluge', 'usluga'));
+// a key said in lower case inside a sentence: "otkazala: bila sam bolesna"
+registerFormat('lower', (key) => t(key).toLowerCase());
+
+// A visit's date as a stored sentence keeps it: its day, said as it was on the
+// day it was written ("Sutra"), or its written date.
+export const dateSaid = (v, today, lower = false) =>
+  v.day != null ? { $fmt: 'date', value: { day: v.day, today, lower } } : { $fmt: 'date', value: { text: v.date, lower } };
+export const hoursSaid = (n) => ({ $fmt: 'hours', value: n });
+export const servicesSaid = (n) => ({ $fmt: 'services', value: n });
 
 // ── reading it ──────────────────────────────────────────────────────────────
 
@@ -311,21 +342,21 @@ export const askCaregiver = (caregiverId, message) => (c) => {
           status: 'pending',
           requestedDay: today,
           requested: lowerDate(dayLabel(today, today)),
-          detail: t('Još nije odgovorila. Javićemo vam u svakom slučaju.'),
-          message: message || t('Da li biste mogli da dolazite?'),
+          detail: msg('Još nije odgovorila. Javićemo vam u svakom slučaju.'),
+          message: message || msg('Da li biste mogli da dolazite?'),
           again,
         },
         ...c.requests,
       ],
     },
-    { kind: 'request', caregiverId, by: 'you', title: again ? t('Ponovo ste joj pisali') : t('Poslali ste upit'), detail: message }
+    { kind: 'request', caregiverId, by: 'you', title: again ? msg('Ponovo ste joj pisali') : msg('Poslali ste upit'), detail: message }
   );
 };
 
 export const linkCard = (c) =>
   logged(
     { ...c, payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: dateText(todayOf(c)) } },
-    { kind: 'money', by: 'you', title: t('Kartica je dodata'), detail: t('Visa ···· 4242. Posete sada mogu da se rezervišu.') }
+    { kind: 'money', by: 'you', title: msg('Kartica je dodata'), detail: msg('Visa ···· 4242. Posete sada mogu da se rezervišu.') }
   );
 
 // The proposed version takes over; the one it replaces is kept, marked replaced.
@@ -355,8 +386,8 @@ export const agreeTerms = (caregiverId) => (c) => {
       kind: 'agreement',
       caregiverId,
       by: 'you',
-      title: t('Prihvatili ste uslove, verzija {version}', { version: pen.version }),
-      detail: restart ? t('Saradnja počinje ponovo.') : t('{rate} na sat, {services}.', { rate: money(pen.rate), services: services(pen.services.length) }),
+      title: say('Prihvatili ste uslove, verzija {version}', { version: pen.version }),
+      detail: restart ? msg('Saradnja počinje ponovo.') : say('{rate} na sat, {services}.', { rate: { $eur: pen.rate }, services: servicesSaid(pen.services.length) }),
     }
   );
 };
@@ -369,7 +400,7 @@ export const declineTerms = (caregiverId) => (c) => {
       ...a,
       versions: a.versions.map((v) => (v.status === 'sent' ? { ...v, status: 'declined', declinedOn: dateText(todayOf(c)) } : v)),
     })),
-    { kind: 'agreement', caregiverId, by: 'you', title: t('Odbili ste uslove, verzija {version}', { version: pen.version }), detail: t('Koordinatorka će vas pozvati.') }
+    { kind: 'agreement', caregiverId, by: 'you', title: say('Odbili ste uslove, verzija {version}', { version: pen.version }), detail: msg('Koordinatorka će vas pozvati.') }
   );
 };
 
@@ -386,8 +417,8 @@ export const confirmPlan = (visitId) => (c) => {
     kind: 'visit',
     caregiverId: v.caregiver.id,
     by: 'you',
-    title: t('Videli ste plan posete'),
-    detail: `${v.date} · ${v.time}.`,
+    title: msg('Videli ste plan posete'),
+    detail: say('{date} · {time}.', { date: dateSaid(v, todayOf(c)), time: v.time }),
   });
 };
 
@@ -400,8 +431,8 @@ export const confirmVisit = (visitId) => (c) => {
     kind: 'money',
     caregiverId: v.caregiver.id,
     by: 'you',
-    title: t('Plaćeno {amount}', { amount: money(visitCharge(v)) }),
-    detail: t('Radni nalog za {date} je potvrđen.', { date: lowerDate(v.date) }),
+    title: say('Plaćeno {amount}', { amount: { $eur: visitCharge(v) } }),
+    detail: say('Radni nalog za {date} je potvrđen.', { date: dateSaid(v, todayOf(c), true) }),
   });
 };
 
@@ -415,7 +446,7 @@ export const queryVisit = (visitId, reason) => (c) => {
       kind: 'visit',
       caregiverId: v.caregiver.id,
       by: 'you',
-      title: v.status === 'planned' ? t('Prijavili ste problem sa planom posete') : t('Prijavili ste problem sa radnim nalogom'),
+      title: v.status === 'planned' ? msg('Prijavili ste problem sa planom posete') : msg('Prijavili ste problem sa radnim nalogom'),
       detail: reason,
     }
   );
@@ -438,8 +469,14 @@ export const callOffVisit = (visitId, reason) => (c) => {
       chargedOn: late ? dateText(todayOf(c)) : undefined,
     })),
     late
-      ? { kind: 'money', caregiverId: v.caregiver.id, by: 'you', title: t('Otkazano u poslednjem satu, naplaćeno {amount}', { amount: money(held) }), detail: reason }
-      : { kind: 'visit', caregiverId: v.caregiver.id, by: 'you', title: t('Otkazali ste posetu, {amount} vraćeno', { amount: money(held) }), detail: `${v.date} · ${v.time}. ${reason}.` }
+      ? { kind: 'money', caregiverId: v.caregiver.id, by: 'you', title: say('Otkazano u poslednjem satu, naplaćeno {amount}', { amount: { $eur: held } }), detail: reason }
+      : {
+          kind: 'visit',
+          caregiverId: v.caregiver.id,
+          by: 'you',
+          title: say('Otkazali ste posetu, {amount} vraćeno', { amount: { $eur: held } }),
+          detail: say('{date} · {time}. {reason}.', { date: dateSaid(v, todayOf(c)), time: v.time, reason: { $t: reason } }),
+        }
   );
 };
 
@@ -454,8 +491,8 @@ export const answerExtra = (visitId, approve) => (c) => {
       kind: 'money',
       caregiverId: v.caregiver.id,
       by: 'you',
-      title: approve ? t('Odobrili ste dodatne sate, {amount}', { amount: money(amount) }) : t('Odbili ste dodatne sate'),
-      detail: t('{hours} preko rezervisanog, {date}.', { hours: tn(v.extra.hours, 'sat', 'sata', 'sati'), date: lowerDate(v.date) }),
+      title: approve ? say('Odobrili ste dodatne sate, {amount}', { amount: { $eur: amount } }) : msg('Odbili ste dodatne sate'),
+      detail: say('{hours} preko rezervisanog, {date}.', { hours: hoursSaid(v.extra.hours), date: dateSaid(v, todayOf(c), true) }),
     }
   );
 };
@@ -472,10 +509,10 @@ export const endArrangement = (caregiverId, by = 'you') => (c) =>
         v.status === 'active' ? { ...v, status: 'ended' } : v.status === 'sent' ? { ...v, status: 'withdrawn' } : v
       ),
       visits: a.visits.map((v) =>
-        v.status === 'planned' ? { ...v, status: 'cancelled', cancelledBy: by, cancelReason: t('Saradnja je završena') } : v
+        v.status === 'planned' ? { ...v, status: 'cancelled', cancelledBy: by, cancelReason: msg('Saradnja je završena') } : v
       ),
     })),
-    { kind: 'agreement', caregiverId, by, title: t('Saradnja je završena'), detail: t('Sve što je izmireno ostaje u evidenciji.') }
+    { kind: 'agreement', caregiverId, by, title: msg('Saradnja je završena'), detail: msg('Sve što je izmireno ostaje u evidenciji.') }
   );
 
 // ── the clock ───────────────────────────────────────────────────────────────
@@ -511,16 +548,24 @@ export function relanguage(c) {
   const r = redate;
   return {
     ...next,
+    // a request with no day of its own (the gallery's) keeps its date as text
+    requests: next.requests.map((q) => (q.requestedDay == null && q.requested ? { ...q, requested: lowerDate(retext(q.requested)) } : q)),
     payment: next.payment?.connectedOn ? { ...next.payment, connectedOn: r(next.payment.connectedOn) } : next.payment,
     arrangements: next.arrangements.map((a) => ({
       ...a,
       since: r(a.since),
       endedOn: r(a.endedOn),
       periods: a.periods?.map((p) => ({ ...p, since: r(p.since), endedOn: r(p.endedOn) })),
-      versions: a.versions.map((v) => ({ ...v, agreedOn: r(v.agreedOn), declinedOn: r(v.declinedOn) })),
+      versions: a.versions.map((v) => ({
+        ...v,
+        agreedOn: r(v.agreedOn),
+        declinedOn: r(v.declinedOn),
+        sentOn: v.sentAt == null && v.sentOn ? lowerDate(retext(v.sentOn)) : v.sentOn,
+      })),
       visits: a.visits.map((v) => ({
         ...v,
-        date: v.day == null ? r(v.date) : v.date,
+        date: v.day == null ? retext(v.date) : v.date,
+        sentOn: v.sentAt == null && v.sentOn ? lowerDate(retext(v.sentOn)) : v.sentOn,
         chargedOn: r(v.chargedOn),
         extra: v.extra ? { ...v.extra, answeredOn: r(v.extra.answeredOn) } : v.extra,
         resolution: v.resolution ? { ...v.resolution, on: r(v.resolution.on) } : v.resolution,

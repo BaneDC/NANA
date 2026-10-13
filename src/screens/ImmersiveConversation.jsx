@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, PenLine, Volume2, VolumeX } from 'lucide-react';
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
+import { emergencyNumber } from '../data/market';
 import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregivers } from '../data/carePlan';
@@ -14,7 +15,7 @@ import HistoryPanel from '../components/immersive/HistoryPanel';
 import UnderstandingPanel from '../components/immersive/UnderstandingPanel';
 import { AMBIENT_AUDIO, createZenAudio } from '../lib/zenAudio';
 import Button from '../components/Button';
-import { getLang, t, tn } from '../i18n';
+import { t, tn } from '../i18n';
 
 const letterFor = (i) => String.fromCharCode(97 + i);
 
@@ -714,8 +715,8 @@ export default function ImmersiveConversation({
                   cheap. Better here than discovered at the wrong moment. */}
               <motion.p className="imm-urgent" variants={piece}>
                 {t('Ako je hitno (pala je, ne može da diše, ne prepoznaje vas), nemojte pisati meni.')}{' '}
-                {/* Finland has one emergency number, the one the prompt gives too */}
-                {t('Zovite')} <strong>{getLang() === 'sr' ? '194' : '112'}</strong>.
+                {/* the number of the family's country, the one the prompt gives too */}
+                {t('Zovite')} <strong>{emergencyNumber()}</strong>.
               </motion.p>
             </motion.div>
           )}

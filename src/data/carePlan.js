@@ -257,7 +257,10 @@ const CAREGIVERS = [
 //
 // `bio`, `education` and each of `languages` are Serbian keys (msg): whoever
 // shows them reads them through t(), or `languagesText` for the languages.
-export const caregivers = CAREGIVERS.map((c) => ({ ...c, rate: eurRange(c.rateMin, c.rateMax, '/h') }));
+// `rate` is read when shown, so it is written the way the current language writes money.
+export const caregivers = CAREGIVERS.map((c) =>
+  Object.defineProperty({ ...c }, 'rate', { get: () => eurRange(c.rateMin, c.rateMax, '/h'), enumerable: true })
+);
 
 // her languages as one line, in the language being read: "finski, engleski"
 export const languagesText = (c) => c.languages.map((l) => t(l)).join(', ');

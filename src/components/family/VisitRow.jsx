@@ -131,7 +131,7 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
       )}
       {v.status === 'disputed' && v.queryReason && (
         <Groups>
-          <Group label={t('Vi ste napisali')} text={v.queryReason} />
+          <Group label={t('Vi ste napisali')} text={t(v.queryReason)} />
         </Groups>
       )}
 

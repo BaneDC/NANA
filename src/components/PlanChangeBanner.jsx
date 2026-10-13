@@ -44,7 +44,7 @@ export default function PlanChangeBanner({ change, onUndo, onDismiss }) {
         )}
 
         {change.touched.length > 0 && (
-          <p className="text-xs text-muted-foreground">{t('Zbog toga se promenilo: {parts}.', { parts: change.touched.join(', ') })}</p>
+          <p className="text-xs text-muted-foreground">{t('Zbog toga se promenilo: {parts}.', { parts: change.touched.map((x) => t(x)).join(', ') })}</p>
         )}
 
         <CardFooter>

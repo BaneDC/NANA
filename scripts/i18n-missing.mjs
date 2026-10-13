@@ -1,4 +1,4 @@
-// Lists what the dictionaries lack: every t('…'), tn(…) and msg('…') key in src/
+// Lists what the dictionaries lack: every t('…'), tn(…), msg('…') and say('…') key in src/
 // with no English or Finnish entry, and Serbian text left outside them.
 //   node scripts/i18n-missing.mjs            missing keys and unwrapped text
 //   node scripts/i18n-missing.mjs --unused   also entries no code uses any more
@@ -30,7 +30,7 @@ for (const file of files) {
   const code = readFileSync(file, 'utf8');
   const rel = relative(root, file);
   const spans = [];
-  for (const m of code.matchAll(new RegExp(String.raw`\b(?:t|msg)\(\s*` + STR, 'g'))) {
+  for (const m of code.matchAll(new RegExp(String.raw`\b(?:t|msg|say|inEnglish)\(\s*` + STR, 'g'))) {
     const key = unquote(m[1]);
     if (!used.has(key)) used.set(key, rel);
     spans.push([m.index, m.index + m[0].length]);
@@ -42,14 +42,17 @@ for (const file of files) {
   }
   // Serbian outside any of them: string literals and JSX text, comments skipped
   const bare = code.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' ')).replace(/(^|[^:'"`])\/\/[^\n]*/g, (c, p) => p + ' '.repeat(c.length - p.length));
+  const codeLines = code.split('\n');
   const inside = (i) => spans.some(([a, b]) => i >= a && i < b);
   // whole template literals first, so one with ${} inside is skipped as a unit
   const ANY = String.raw`('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|\`(?:[^\`\\]|\\.)*\`)`;
   for (const m of bare.matchAll(new RegExp(ANY + String.raw`|>([^<>{}]+)<`, 'g'))) {
     if (m[1]?.[0] === '`' && m[1].includes('${')) continue;
     const text = m[1] ? unquote(m[1]) : m[2];
+    const line = bare.slice(0, m.index).split('\n').length;
+    // a line marked `// i18n-ignore` (on it or just above) is Serbian on purpose
+    if (/i18n-ignore/.test(codeLines[line - 1] + codeLines[line - 2])) continue;
     if (SERBIAN.test(text) && !inside(m.index)) {
-      const line = bare.slice(0, m.index).split('\n').length;
       unwrapped.push(`${rel}:${line}  ${text.trim().slice(0, 80)}`);
     }
   }

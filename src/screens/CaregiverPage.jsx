@@ -40,6 +40,7 @@ import {
   shownVersion,
   workedHours,
 } from '../data/familyCare';
+import { scheduleText } from '../data/familyStart';
 import { t } from '../i18n';
 
 // One caregiver, from the family's side: what is next with her, the terms she
@@ -72,7 +73,7 @@ function nextStep(care, a) {
           }
         : {
             eyebrow: t('Odbila je'),
-            copy: t('{name} sada ne može: {why}. Možete da je pitate ponovo kasnije.', { name: first, why: again.detail.toLowerCase() }),
+            copy: t('{name} sada ne može: {why}. Možete da je pitate ponovo kasnije.', { name: first, why: t(again.detail).toLowerCase() }),
             label: t('Pitaj ponovo'),
             contact: true,
           };
@@ -291,11 +292,11 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
               <Line label={terms.status === 'sent' ? t('Poslato') : terms.agreedOn ? t('Prihvaćeno') : t('Poslato')} value={terms.status === 'sent' || !terms.agreedOn ? terms.sentOn : terms.agreedOn} />
               <Line label={t('Cena po satu')} value={rateText(terms.rate)} />
               <Line label={t('Dogovoreni sati')} value={t('{hours} h nedeljno', { hours: terms.hours })} />
-              <Line label={t('Raspored')} value={terms.schedule} />
+              <Line label={t('Raspored')} value={scheduleText(terms.schedule)} />
             </DataList>
             {terms.terms && (
               <Groups>
-                <Group label={t('Dodatni uslovi')} text={terms.terms} />
+                <Group label={t('Dodatni uslovi')} text={t(terms.terms)} />
               </Groups>
             )}
             {a.versions.length > 1 && (

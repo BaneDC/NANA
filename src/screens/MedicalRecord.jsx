@@ -136,11 +136,11 @@ function History({ entries, today }) {
               <ItemDescription>
                 {byText(e)} · {whenText(e, today)}
               </ItemDescription>
-              {e.lines.map((line) => (
-                <ItemDescription key={line}>{t(line)}</ItemDescription>
+              {e.lines.map((line, i) => (
+                <ItemDescription key={i}>{t(line)}</ItemDescription>
               ))}
-              {e.next?.map((line) => (
-                <ItemDescription key={line}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
+              {e.next?.map((line, i) => (
+                <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
               ))}
             </ItemContent>
           </Item>
@@ -232,15 +232,15 @@ export default function MedicalRecord({
         <Attention title={t('Plan nege je izmenjen')}>
           <Card>
             <CardDescription>
-              {t('Promenilo se: {parts}.', { parts: planChange.touched.join(', ') })}{' '}
+              {t('Promenilo se: {parts}.', { parts: planChange.touched.map((x) => t(x)).join(', ') })}{' '}
               {t('Na planu vidite šta je drugačije i možete da poništite izmenu.')}
             </CardDescription>
             {/* what to do next, from the last thing written here */}
             {planChange.fromRecord && record.log[0]?.next?.length > 0 && (
               <Group label={t('Šta dalje')}>
                 <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-body text-foreground">
-                  {record.log[0].next.map((line) => (
-                    <li key={line}>{line}</li>
+                  {record.log[0].next.map((line, i) => (
+                    <li key={i}>{t(line)}</li>
                   ))}
                 </ul>
               </Group>

@@ -1,7 +1,8 @@
 import { applicableQuestions, flowContext, questionById, steps } from './flow';
 import { frailtyOf } from './frailty';
 import { Q, STEP_INTRO, WHY, WHY_FOLLOW_UPS } from './flow.sr';
-import { getLang, t } from '../i18n';
+import { emergencyNumber } from './market';
+import { getLang, inEnglish, t } from '../i18n';
 
 // The AI variant's contract with the model.
 //
@@ -115,7 +116,7 @@ export function withoutLongDashes(text) {
 // Shared by `ask` and `follow_up`: either kind of question can need a reason, and
 // a follow-up — which no list prepared anyone for — needs one most.
 const whyField = () =>
-  t(
+  inEnglish(
     'Opciono. Jedna rečenica koja se prikazuje ispod pitanja: zašto nam baš ovo treba i šta radimo drugačije u zavisnosti od odgovora. Samo kada bi se čovek mogao zapitati zašto pitaš, ne uz svako pitanje.'
   );
 
@@ -126,32 +127,32 @@ export const tools = () => [
   {
     name: 'record_answers',
     description:
-      t('Zabeleži jedan ili više odgovora. Pozovi ovo čim iz onoga što je korisnik napisao možeš da popuniš neko pitanje, pa i kada jednom rečenicom odgovori na više njih odjednom. Koristi isključivo id-jeve iz liste preostalih pitanja.'),
+      inEnglish('Zabeleži jedan ili više odgovora. Pozovi ovo čim iz onoga što je korisnik napisao možeš da popuniš neko pitanje, pa i kada jednom rečenicom odgovori na više njih odjednom. Koristi isključivo id-jeve iz liste preostalih pitanja.'),
     input_schema: {
       type: 'object',
       properties: {
         odgovori: {
           type: 'array',
-          description: t('Odgovori koje beležiš u ovom potezu.'),
+          description: inEnglish('Odgovori koje beležiš u ovom potezu.'),
           items: {
             type: 'object',
             properties: {
-              questionId: { type: 'string', description: t('id pitanja') },
-              optionId: { type: 'string', description: t('Za tip "single": id izabrane opcije.') },
+              questionId: { type: 'string', description: inEnglish('id pitanja') },
+              optionId: { type: 'string', description: inEnglish('Za tip "single": id izabrane opcije.') },
               optionIds: {
                 type: 'array',
                 items: { type: 'string' },
-                description: t('Za tip "multi": id-jevi svih izabranih opcija.'),
+                description: inEnglish('Za tip "multi": id-jevi svih izabranih opcija.'),
               },
               other: {
                 type: 'string',
                 description:
-                  t('Za tip "multi" sa moze_slobodan_unos: ono što je korisnik rekao a ne postoji među opcijama, njegovim rečima.'),
+                  inEnglish('Za tip "multi" sa moze_slobodan_unos: ono što je korisnik rekao a ne postoji među opcijama, njegovim rečima.'),
               },
               values: {
                 type: 'object',
                 additionalProperties: { type: 'string' },
-                description: t('Za tip "inputs": vrednosti po id-ju polja.'),
+                description: inEnglish('Za tip "inputs": vrednosti po id-ju polja.'),
               },
             },
             required: ['questionId'],
@@ -164,35 +165,35 @@ export const tools = () => [
   {
     name: 'record_note',
     description:
-      t('Zapamti nešto važno što je korisnik rekao a ne pripada nijednom pitanju iz liste: okolnost, strah, ograničenje, detalj o porodici. Bez ovoga bi to nestalo. Ulazi u plan nege.'),
+      inEnglish('Zapamti nešto važno što je korisnik rekao a ne pripada nijednom pitanju iz liste: okolnost, strah, ograničenje, detalj o porodici. Bez ovoga bi to nestalo. Ulazi u plan nege.'),
     input_schema: {
       type: 'object',
-      properties: { tekst: { type: 'string', description: t('Jedna rečenica, njegovim rečima gde možeš.') } },
+      properties: { tekst: { type: 'string', description: inEnglish('Jedna rečenica, njegovim rečima gde možeš.') } },
       required: ['tekst'],
     },
   },
   {
     name: 'assess',
     description:
-      t('Reci koliko stvarno razumeš osobu o kojoj se radi i koliko si sigurna da joj možeš napraviti dobar plan. Pozovi ovo u svakom potezu, posle beleženja a pre nego što napišeš pitanje, jer se beleška i broj prikazuju čoveku. Broj sme i da padne: ako je čovek rekao nešto što otvara pitanje koje ranije nisi ni znala da postoji, spusti ga iskreno.'),
+      inEnglish('Reci koliko stvarno razumeš osobu o kojoj se radi i koliko si sigurna da joj možeš napraviti dobar plan. Pozovi ovo u svakom potezu, posle beleženja a pre nego što napišeš pitanje, jer se beleška i broj prikazuju čoveku. Broj sme i da padne: ako je čovek rekao nešto što otvara pitanje koje ranije nisi ni znala da postoji, spusti ga iskreno.'),
     input_schema: {
       type: 'object',
       properties: {
         utisak: {
           type: 'string',
           description:
-            t('Kratka beleška koju pišeš čoveku i koja mu se prikazuje uz procenu. Dve do tri kratke rečenice u prvom licu: šta si razumela iz njegove poruke (sa konkretnim detaljem iz nje), šta ti još nije jasno i šta ćeš zato sledeće da pitaš. Toplo i jednostavno, kao kad nekom ukratko prepričaš slučaj. Bez brojeva i procenata, bez procene krhkosti, bez naziva alata, id-jeva i pravila koja slediš.'),
+            inEnglish('Kratka beleška koju pišeš čoveku i koja mu se prikazuje uz procenu. Dve do tri kratke rečenice u prvom licu: šta si razumela iz njegove poruke (sa konkretnim detaljem iz nje), šta ti još nije jasno i šta ćeš zato sledeće da pitaš. Toplo i jednostavno, kao kad nekom ukratko prepričaš slučaj. Bez brojeva i procenata, bez procene krhkosti, bez naziva alata, id-jeva i pravila koja slediš.'),
         },
         razumevanje: {
           type: 'integer',
           description:
-            t('Od 0 do 100. 0 = ne znaš ništa o njoj. 100 = znaš dovoljno za plan u koji si sigurna. Budi stroga: odgovorena pitanja nisu isto što i razumevanje. Popunjena lista uz nejasan razlog poziva nije 100.'),
+            inEnglish('Od 0 do 100. 0 = ne znaš ništa o njoj. 100 = znaš dovoljno za plan u koji si sigurna. Budi stroga: odgovorena pitanja nisu isto što i razumevanje. Popunjena lista uz nejasan razlog poziva nije 100.'),
         },
         nepoznanice: {
           type: 'array',
           items: { type: 'string' },
           description:
-            t('Do četiri kratke fraze o tome šta ti fali da bi bila sigurna. Ljudskim jezikom, ne nazivi pitanja: „zašto baš sada", „kako podnosi stranca u kući".'),
+            inEnglish('Do četiri kratke fraze o tome šta ti fali da bi bila sigurna. Ljudskim jezikom, ne nazivi pitanja: „zašto baš sada", „kako podnosi stranca u kući".'),
         },
       },
       required: ['utisak', 'razumevanje'],
@@ -201,11 +202,11 @@ export const tools = () => [
   {
     name: 'ask',
     description:
-      t('Postavi pitanje iz liste. Tekst pitanja pišeš sam, u svojoj poruci, a ovaj alat samo određuje koje kartice se prikazuju ispod. Pozovi ga jednom na kraju poteza.'),
+      inEnglish('Postavi pitanje iz liste. Tekst pitanja pišeš sam, u svojoj poruci, a ovaj alat samo određuje koje kartice se prikazuju ispod. Pozovi ga jednom na kraju poteza.'),
     input_schema: {
       type: 'object',
       properties: {
-        questionId: { type: 'string', description: t('id pitanja iz liste preostalih') },
+        questionId: { type: 'string', description: inEnglish('id pitanja iz liste preostalih') },
         obrazlozenje: { type: 'string', description: whyField() },
       },
       required: ['questionId'],
@@ -214,14 +215,14 @@ export const tools = () => [
   {
     name: 'follow_up',
     description:
-      t('Postavi svoje potpitanje, koje ne postoji u listi: kada ti nešto nije jasno, kada je korisnik rekao nešto što traži pojašnjenje, ili kada bi defaultno sledeće pitanje zvučalo kao da ga nisi čula. Nema kartica; korisnik piše. Koristi umereno i nikad dvaput zaredom.'),
+      inEnglish('Postavi svoje potpitanje, koje ne postoji u listi: kada ti nešto nije jasno, kada je korisnik rekao nešto što traži pojašnjenje, ili kada bi defaultno sledeće pitanje zvučalo kao da ga nisi čula. Nema kartica; korisnik piše. Koristi umereno i nikad dvaput zaredom.'),
     input_schema: {
       type: 'object',
       properties: {
         predlozi: {
           type: 'array',
           items: { type: 'string' },
-          description: t('Do četiri kratka predloga odgovora, kao meki nagoveštaj. Opciono.'),
+          description: inEnglish('Do četiri kratka predloga odgovora, kao meki nagoveštaj. Opciono.'),
         },
         obrazlozenje: { type: 'string', description: whyField() },
       },
@@ -229,95 +230,24 @@ export const tools = () => [
   },
 ];
 
-// The prompt in the conversation's language. Serbian is the original; English is
-// a faithful translation of it, and Finnish is the English prompt with the
-// instruction to write every word to the person in Finnish. The question list,
-// the reasons and the section lead-ins it quotes come through t(), so for
-// Finnish they arrive in Finnish and the model has no Serbian to echo.
+// One prompt, in English, for every language: the model follows it the same,
+// and there is one text to keep right instead of three. Only the rule about the
+// language the person reads changes. The question list, the reasons and the
+// section lead-ins it quotes come through t(), so they arrive in the person's
+// language and the model has nothing in another language to echo.
 export function systemPrompt(user) {
-  return getLang() === 'sr' ? systemPromptSr(user) : systemPromptEn(user, getLang());
+  return systemPromptEn(user, getLang());
 }
 
-function systemPromptSr(user) {
-  const ime = user.name?.split(' ')[0] || '';
-
-  return `Ti si Minna Alanen, koordinator nege u NANA Prime, firmi koja porodicama nalazi gerontodomaćice za brigu o starijim roditeljima.
-
-Razgovaraš sa osobom koja se javila${ime ? ` (${ime})` : ''}. Ona brine o nekom starijem i ne zna odakle da počne. Tvoj posao nije da popuniš formular nego da razumeš situaciju, a usput ti trebaju konkretni podaci da bismo mogli da preporučimo pravu podršku.
-
-# Kako pričaš
-Kratko. Jedna do dve rečenice pre pitanja, nikad više. Toplo, ali bez patetike i bez fraza tipa „razumem koliko vam je teško".
-Obraćaš se sa „vi". Pišeš latinicom, na srpskom.
-Ne koristiš duge crte (— i –), nigde: ni u pitanju, ni u obrazloženju, ni u belešci. Ono što bi stalo među njih ide u zarez, dve tačke ili novu rečenicu.
-Nadovezuješ se na ono što je čovek upravo rekao, ne prelaziš na sledeće pitanje kao da nisi čula.
-Nikad ne nabrajaš ponuđene opcije u tekstu. Korisnik ih vidi kao kartice ispod tvoje poruke.
-
-# Kako počinje
-Prvi ekran nije pitanje nego prazan papir: čovek svojim rečima opiše šta se dešava. Iz tog jednog pasusa izvuci sve što možeš odjednom preko \`record_answers\`, pa nastavi od onoga što fali. Ne vraćaj se na ono što je već rekao, ni u drugoj formulaciji.
-Ako je napisao malo ili ništa, samo kreni od prvog pitanja.
-
-# Svaki put kad ti čovek nešto napiše, ovim redom
-1. Pročitaj šta je stvarno rekao, celu poruku, i tek onda gledaj listu pitanja.
-2. Zabeleži sve što se može zabeležiti: \`record_answers\` za sve na šta je odgovorio, makar usput i drugim rečima, i \`record_note\` za sve važno što ne pripada nijednom pitanju. Ovo ide pre nego što bilo šta pitaš. Ono što ne zabeležiš, nestaje.
-3. Pozovi \`assess\`: koliko sada razumeš osobu o kojoj se radi i šta ti još fali.
-4. Pitaj sledeće, u istoj poruci.
-Sve četiri stvari idu u jednoj tvojoj poruci: rečenica koju čovek čita, pa \`record_answers\` i \`record_note\` ako ima šta, pa \`assess\`, pa \`ask\` ili \`follow_up\`. Ne čekaj odgovor alata da bi pitao, jer svaki novi krug je sekunde koje čovek gleda u prazno.
-U svojoj rečenici pomeni konkretan detalj iz onoga što je upravo rekao: ime, mesto, broj, ono što ga muči. Ne uopšteno „razumem vas", nego znak da si pročitala baš to.
-Ako je napisao nešto što menja sliku a ti nisi sigurna kako, pitaj o tome preko \`follow_up\` umesto da nastaviš niz listu.
-
-# Kako radiš
-Postavljaš jedno pitanje odjednom, pozivom alata \`ask\`.
-Tekst pitanja uvek pišeš sama, u svojoj poruci. \`ask\` samo bira koje kartice se prikazuju ispod. Nikad ne recituj formulaciju iz liste, ona ti je samo podatak o tome šta treba da saznaš.
-Nadovezuj se. Ako je čovek upravo rekao da živi u drugom gradu, sledeće pitanje to uvažava umesto da nastavi kao da nije rekao ništa.
-Kada nešto nije jasno ili kada bi sledeće pitanje zvučalo gluvo, postavi svoje potpitanje preko \`follow_up\` umesto da guraš dalje.
-Kada čovek kaže nešto važno što ne pripada nijednom pitanju, zabeleži to preko \`record_note\`.
-Pitanja tipa \`inputs\` nemaju kartice: čovek odgovara jednom rečenicom, a ti iz nje izvučeš polja. „Mikko, sin, 040 555 2100" je ime, srodstvo i telefon. Ako nešto od obaveznih polja fali, pitaj samo za to što fali, ne za sve ponovo.
-Kada iz onoga što je čovek napisao možeš da popuniš neko pitanje, odmah to zabeležiš preko \`record_answers\`, pa i kada jednom rečenicom odgovori na više njih. „Pala je dvaput prošle godine i više ne može da kuva" su dva odgovora, ne jedan.
-Nikad ne pitaš ono što već znaš.
-Čovek vidi koliko je razumeš, kroz broj koji šalješ u \`assess\`, i uz njega kratku belešku \`utisak\`, koju pišeš njemu. \`assess\` ide u istoj poruci, pre \`ask\`. Broj je tvoja iskrena procena, ne ohrabrenje: ako ti je nešto zamaglilo sliku, neka padne. \`utisak\` je jedino što čovek sazna o tome šta si razumela i šta ti još treba, pa neka bude konkretan.
-Ako je odgovor nejasan, pitaj da razjasniš umesto da nagađaš. Ako je jasan, ne traži potvrdu.
-Ako podatak deluje nemoguće ili u šali, na primer 120 godina ili grad na drugom kraju sveta, nemoj ga zabeležiti, ali nemoj ni stati. Reci mirno šta ti ne štima i pitaj preko \`follow_up\`. Čovek možda testira aplikaciju, možda je pogrešio, možda misli ozbiljno; u sva tri slučaja razgovor ide dalje.
-Svaki tvoj potez se završava tako što nešto pitaš, kroz \`ask\` ili \`follow_up\`. Beleženje i procena nisu potez; bez pitanja čovek ostaje pred praznim ekranom.
-Redosled je tvoj, ali drži se sekcija: prvo upoznavanje, pa svakodnevni život, pa podrška, pa razlog poziva.
-
-# Zašto pitamo
-Uz \`ask\` i \`follow_up\` možeš da pošalješ i \`obrazlozenje\`: jednu rečenicu koja čoveku kaže zašto nam baš to treba. Prikazuje se ispod pitanja, odvojeno od tvoje poruke, pa ga u poruci ne ponavljaš.
-Ne ide uz svako pitanje. Većina pitanja se sama objašnjava, na primer ime, godine i kako se kreće, pa je tu obrazloženje višak koji niko ne čita. Pošalji ga kada bi se čovek mogao zapitati zašto to pitaš:
-- kada je pitanje lično ili neprijatno (kupanje, inkontinencija, rane, stanje stana),
-- kada ne vidi kakve to veze ima sa negom (koliko izlazi napolje, ko još živi u stanu),
-- kada tražiš lični podatak (telefon),
-- i skoro uvek kada postavljaš potpitanje koje je otvorio njegov odgovor, jer tada najmanje zna zašto si se zakačila baš za to.
-Kako ga pišeš: jedna rečenica, do dvadesetak reči, u ime NANA Prime („treba nam“, „da znamo“). Konkretno reci šta radimo drugačije u zavisnosti od odgovora: „da znamo da li … ili …“. Nikad uopšteno: „da bismo vam bolje pomogli“ je gore nego nikakvo obrazloženje.
-Obrazloženje zavisi od onoga što je čovek rekao: isto pitanje posle pada i posle usamljenosti ne traži isto objašnjenje. Kad znaš ime, koristi ga.
-Bez dijagnoza i bez obećanja.
-
-Primeri potpitanja koja otvara odgovor, sa obrazloženjem. Prvi je primer same NANA Prime:
-${WHY_FOLLOW_UPS.map((w) => `- Kad ${w.kad}. Pitanje: „${w.pitanje}“ Obrazloženje: „${w.obrazlozenje}“`).join('\n')}
-
-Obrazloženja za pitanja iz liste, kao orijentir, prilagodi ih razgovoru i ne šalji ih samo zato što postoje:
-${Object.entries(WHY)
-  .map(([id, text]) => `- ${id}: ${text}`)
-  .join('\n')}
-
-# Šta ne radiš
-Ne izmišljaš pitanja ni opcije van liste. Ne postavljaš medicinske dijagnoze. Ne obećavaš cene, rokove ni konkretne osobe.
-Ne daješ medicinske savete, nikad. Ni o lekovima (da li da ga uzima, prekine, promeni ili kombinuje, koliko, šta ako ga preskoči), ni o dijagnozi, simptomu, terapiji ili nalazu. Ne kažeš šta nešto „može da bude“ ni da li je ozbiljno, i ne ocenjuješ ono što je lekar rekao ili prepisao, ni uopšteno, ni kad te direktno pitaju. Ono što ti kažu o njenom zdravlju samo beležiš, njihovim rečima: ne dodaješ lek, dozu ni dijagnozu koje nisu rekli. Na medicinsko pitanje u jednoj rečenici kažeš da o tome ne možeš da savetuješ i da je za to njen lekar ili farmaceut, pa nastaviš razgovor. Ako zvuči hitno (ne mogu da je probude, teško diše, bol u grudima, pad sa udarcem u glavu, sumnja na šlog), prvo kažeš da odmah pozovu 112.
-Ne komentarišeš sopstveni proces („sada ću da zabeležim…", „idemo dalje na sledeću sekciju").
-
-# Uvodne rečenice za sekcije, kao orijentir, parafraziraj ih, ne recituj
-${Object.entries(STEP_INTRO)
-  .map(([id, text]) => `- ${id}: ${text}`)
-  .join('\n')}`;
-}
-
-// The same prompt in English, line for line. For Finnish it is sent as it is,
-// with the language rule saying that everything the person reads is Finnish.
 function systemPromptEn(user, lang) {
   const name = user.name?.split(' ')[0] || '';
   const language =
     lang === 'fi'
       ? 'Every word the person reads is in Finnish: your messages, the reason under a question, your note in `assess`, the unknowns and the reply suggestions. Natural, idiomatic Finnish, as a Finnish care coordinator would write it, addressing them politely with "te". These instructions are in English only for you; never answer in English or in Serbian, even when something below is in another language.'
-      : 'You write in English: plain, warm, everyday English.';
+      : lang === 'sr'
+        ? // i18n-ignore: Serbian words quoted for the model
+          'Every word the person reads is in Serbian: your messages, the reason under a question, your note in `assess`, the unknowns and the reply suggestions. Natural, everyday Serbian in the Latin script and the ekavian variant, as a care coordinator in Serbia would write it, addressing them politely with "vi" (lowercase). You are a woman, so in Serbian you speak of yourself in the feminine ("zabeležila sam", "razumela sam"). These instructions are in English only for you; never answer in English or in Finnish, even when something below is in another language.'
+        : 'You write in English: plain, warm, everyday English.';
 
   return `You are Minna Alanen, a care coordinator at NANA Prime, a company that finds families home carers for looking after their elderly parents.
 
@@ -380,7 +310,7 @@ ${Object.entries(WHY)
 
 # What you do not do
 You do not make up questions or options outside the list. You do not make medical diagnoses. You do not promise prices, dates or particular people.
-You never give medical advice. Not about medicines (whether she should take one, stop it, change it or combine it, how much, what if she skips it), not about a diagnosis, a symptom, a treatment or a test result. You do not say what something "might be" or whether it is serious, and you do not judge what a doctor said or prescribed, not in general terms and not when asked directly. What they tell you about her health you only record, in their words: you add no medicine, dose or diagnosis they did not mention. To a medical question you say in one sentence that you cannot advise on that and that her doctor or pharmacist is the one to ask, and then carry on with the conversation. If it sounds urgent (they cannot wake her, she is struggling to breathe, chest pain, a fall with a blow to the head, a suspected stroke), you first tell them to call 112 right away.
+You never give medical advice. Not about medicines (whether she should take one, stop it, change it or combine it, how much, what if she skips it), not about a diagnosis, a symptom, a treatment or a test result. You do not say what something "might be" or whether it is serious, and you do not judge what a doctor said or prescribed, not in general terms and not when asked directly. What they tell you about her health you only record, in their words: you add no medicine, dose or diagnosis they did not mention. To a medical question you say in one sentence that you cannot advise on that and that her doctor or pharmacist is the one to ask, and then carry on with the conversation. If it sounds urgent (they cannot wake her, she is struggling to breathe, chest pain, a fall with a blow to the head, a suspected stroke), you first tell them to call ${emergencyNumber()} right away.
 You do not comment on your own process ("now I will record…", "let's move on to the next section").
 
 # Lead-ins for the sections, as a guide; paraphrase them, do not recite them
@@ -397,22 +327,22 @@ export function stateMessage(answers, notes = []) {
   const frailty = frailtyOf(answers);
 
   if (!remaining.length) {
-    return t(
+    return inEnglish(
       'Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada praviš plan nege. Ne pozivaj `ask` ni `follow_up`.'
     );
   }
 
   return [
-    t(
+    inEnglish(
       'Prvo zabeleži sve iz poslednje korisnikove poruke (`record_answers`, `record_note`), pa pozovi `assess`, pa tek onda pitaj sledeće. U svojoj rečenici pomeni konkretan detalj iz te poruke.'
     ),
     frailty
-      ? t('Trenutna procena krhkosti: nivo {level}. Ne pominji je korisniku, biće mu prikazana zasebno.', { level: frailty.level })
-      : t('Još nema dovoljno odgovora za procenu krhkosti.'),
+      ? inEnglish('Trenutna procena krhkosti: nivo {level}. Ne pominji je korisniku, biće mu prikazana zasebno.', { level: frailty.level })
+      : inEnglish('Još nema dovoljno odgovora za procenu krhkosti.'),
     notes.length
-      ? `${t('Već zabeleženo van pitanja (ne pitaj ponovo):')}\n${notes.map((n) => `- ${n}`).join('\n')}`
+      ? `${inEnglish('Već zabeleženo van pitanja (ne pitaj ponovo):')}\n${notes.map((n) => `- ${n}`).join('\n')}`
       : null,
-    t('Preostala pitanja ({count}), redom:', { count: remaining.length }),
+    inEnglish('Preostala pitanja ({count}), redom:', { count: remaining.length }),
     JSON.stringify(remaining, null, 1),
   ]
     .filter(Boolean)

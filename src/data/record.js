@@ -4,8 +4,8 @@ import { answerText, applyChanges, describeChanges, planDiff, planQuestions } fr
 import { buildPlan, quoted } from './carePlan';
 import { frailtyOf } from './frailty';
 import { planOverview } from './carePlan.sr';
-import { needFrom } from './familyStart';
-import { msg, t, tn } from '../i18n';
+import { needFrom, scheduleText } from './familyStart';
+import { known, localized, msg, t, tn } from '../i18n';
 import { AMOUNT_LABEL, MOOD_LABEL, START_HOUR, allVisits, dayOf, firstName, longDate, todayOf } from './familyCare';
 
 // The medical record: everything about the person being cared for, in one
@@ -67,7 +67,7 @@ export function partRows(part, answers) {
     if (q.type === 'inputs') {
       return q.fields
         .filter((f) => !fieldLocked(q.id, f.id))
-        .map((f) => ({ key: q.id + '.' + f.id, label: srField(q, f.id), value: answer?.values?.[f.id]?.trim() || '-' }));
+        .map((f) => ({ key: q.id + '.' + f.id, label: srField(q, f.id), value: known(answer?.values?.[f.id]?.trim() || '-') }));
     }
     return [{ key: q.id, label: srShort(q), value: answer ? answerText(q, answer) : '-' }];
   });
@@ -251,8 +251,8 @@ export function nextSteps({ impact, care, until }) {
     impact?.band && t('Promenila se vrsta podrške koja joj treba. Pre novog dogovora neka koordinatorka pogleda plan.'),
     impact?.week &&
       (working.length
-        ? t('Plan sada traži {week}, a dogovoreno je drugačije. Zatražite nove uslove ({names}).', { week: quoted(impact.week.after), names })
-        : t('Plan sada traži {week}. Novi upiti idu sa izmenjenim planom.', { week: quoted(impact.week.after) })),
+        ? t('Plan sada traži {week}, a dogovoreno je drugačije. Zatražite nove uslove ({names}).', { week: quoted(scheduleText(impact.week.after)), names })
+        : t('Plan sada traži {week}. Novi upiti idu sa izmenjenim planom.', { week: quoted(scheduleText(impact.week.after)) })),
     impact?.opened.length > 0 &&
       t('Otvorila su se nova pitanja: {questions}. Asistent može da ih prođe sa vama.', { questions: impact.opened.join(', ') }),
     until && t('Privremeno je, do {date}. Tada javite asistentu kako je, da se plan vrati ili ostane.', { date: longDate(until) }),
@@ -281,7 +281,8 @@ export function healthOps(record, ops = []) {
       const name = String(op.name || '').trim();
       if (!list || !name) return null;
       if (op.action === 'end') {
-        const entry = record.health[list.id].find((e) => e.name.toLowerCase() === name.toLowerCase());
+        // the assistant was told the name in the language being read (recordState)
+        const entry = record.health[list.id].find((e) => [e.name, t(e.name)].some((n) => n.toLowerCase() === name.toLowerCase()));
         return entry ? { list: list.id, action: 'end', id: entry.id, name: entry.name } : null;
       }
       return { list: list.id, action: 'add', name, note: String(op.note || '').trim() };
@@ -315,34 +316,43 @@ const withHealth = (record, ops, since) => ({
 // Something that happened, written into the record once the family agreed to
 // what the assistant proposed: what it was and from when, each answer and
 // entry it moved, what it did to the plan, and what to do next.
-export function writeEvent(record, at, { event, impact, health = [], care, correction = false }) {
+export function writeEvent(record, at, { event, impact, impactFor, health = [], care, correction = false }) {
   // a proposal that is not an event (a correction, a plain change of the
   // plan) comes with none: `null`, which a default would not catch
   const what = String(event?.what || '').trim();
   const since = dayFrom(event?.since);
   const until = dayFrom(event?.until);
-  const rows = [...(impact?.rows || []), ...healthRows(health)];
-  const next = nextSteps({ impact, care, until });
+  // A history is read for years, in whatever language is chosen then: the
+  // entry is written in every language (the impact worked out again in each,
+  // `impactFor`, since what it names is in the language it was worked out in).
+  // What the assistant wrote (`what`) stays as it wrote it.
+  const entry = localized(() => {
+    const said = impactFor ? impactFor() : impact;
+    const rows = [...(said?.rows || []), ...healthRows(health)];
+    return {
+      title:
+        what ||
+        (rows.length === 1
+          ? rowLine(rows[0])
+          : `${correction ? t('Ispravka zapisa') : t('Promena stanja')}: ${tn(rows.length, 'izmena', 'izmene', 'izmena')}`),
+      lines: [
+        // one change with no event is its own title: not said twice
+        ...(what || rows.length !== 1 ? rows.map(rowLine) : []),
+        correction ? t('Ispravka zapisa.') : null,
+        [since && t('Od {date}', { date: longDate(since) }), until && t('privremeno, do {date}', { date: longDate(until) })]
+          .filter(Boolean)
+          .join(', ') || null,
+        said ? planLine(said) : t('Plan nege je ostao isti.'),
+      ].filter(Boolean),
+      next: nextSteps({ impact: said, care, until }),
+    };
+  });
   return written(withHealth(record, health, since), at, {
     // nothing happened to her: the record was wrong and is put right
     kind: correction ? 'correction' : 'state',
     by: 'you',
     via: 'assistant',
-    title:
-      what ||
-      (rows.length === 1
-        ? rowLine(rows[0])
-        : `${correction ? t('Ispravka zapisa') : t('Promena stanja')}: ${tn(rows.length, 'izmena', 'izmene', 'izmena')}`),
-    lines: [
-      // one change with no event is its own title: not said twice
-      ...(what || rows.length !== 1 ? rows.map(rowLine) : []),
-      correction ? t('Ispravka zapisa.') : null,
-      [since && t('Od {date}', { date: longDate(since) }), until && t('privremeno, do {date}', { date: longDate(until) })]
-        .filter(Boolean)
-        .join(', ') || null,
-      impact ? planLine(impact) : t('Plan nege je ostao isti.'),
-    ].filter(Boolean),
-    next,
+    ...entry,
   });
 }
 
@@ -352,7 +362,7 @@ export function recordState(record, today) {
   return [
     `Today is ${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.`,
     'Her medical record, the lists the plan is not built from:',
-    JSON.stringify(Object.fromEntries(HEALTH.map((h) => [h.id, record.health[h.id].map((e) => ({ name: e.name, note: e.note || undefined }))]))),
+    JSON.stringify(Object.fromEntries(HEALTH.map((h) => [h.id, record.health[h.id].map((e) => ({ name: t(e.name), note: e.note ? t(e.note) : undefined }))]))),
   ].join('\n');
 }
 
@@ -388,8 +398,8 @@ function visitNotes(care) {
         ]
           .filter(Boolean)
           .join(' · '),
-        v.report.concern,
-        v.report.note,
+        v.report.concern && t(v.report.concern),
+        v.report.note && t(v.report.note),
       ].filter(Boolean),
     }));
 }

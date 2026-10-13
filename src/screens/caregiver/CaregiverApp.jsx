@@ -7,13 +7,11 @@ import ClientPage from './ClientPage';
 import {
   DEFAULT_RATE,
   clients as seedClients,
-  money,
   paidThisMonth,
-  serviceShort,
-  serviceTitle,
+  servicesNamed,
   totalsFor,
 } from '../../data/caregiverBoard';
-import { msg, t } from '../../i18n';
+import { msg, say } from '../../i18n';
 
 // The caregiver's whole application: the board, one client, and the state both
 // read from. It lives here rather than in the board because the client page
@@ -81,7 +79,7 @@ export default function CaregiverApp({ user }) {
           c,
           'visit',
           msg('Poseta obavljena - {date} · {time}, {hours} h. Treba poslati radni nalog.'),
-          { date: t(c.plan.date), time: c.plan.time, hours: c.plan.hours }
+          { date: { $t: c.plan.date }, time: c.plan.time, hours: c.plan.hours }
         ),
       })),
   };
@@ -97,7 +95,7 @@ export default function CaregiverApp({ user }) {
           c,
           'visit-planned',
           msg('Plan posete poslat za {date} · {time}, {hours} h. Na kartici porodice rezervisano je {hold}.'),
-          { date: t(plan.date), time: plan.time, hours: plan.hours, hold: money(hold) }
+          { date: { $t: plan.date }, time: plan.time, hours: plan.hours, hold: { $eur: hold } }
         ),
       };
     });
@@ -132,8 +130,8 @@ export default function CaregiverApp({ user }) {
           : msg('Radni nalog poslat za posetu od {hours} h - {services}. {net} stiže vama kad se naplati za 24 sata, osim ako porodica nešto prijavi.'),
         {
           hours: report.hours,
-          services: report.services.map(serviceShort).join(', ').toLowerCase() || t('ništa nije označeno'),
-          net: money(net),
+          services: report.services.length ? servicesNamed(report.services) : say('ništa nije označeno'),
+          net: { $eur: net },
           concern: report.concern,
         }
       ),
@@ -144,14 +142,14 @@ export default function CaregiverApp({ user }) {
   const sendAgreement = (id, { services, rate }) =>
     patch(id, (c) => ({
       agreementSent: true,
-      sentOn: 'upravo',
+      sentOn: msg('upravo'),
       services,
       rate: rate || DEFAULT_RATE,
       activity: logged(
         c,
         'agreement-sent',
         msg('Ugovor poslat: {services} po {rate}/h. Čeka se potpis ({family}).'),
-        { services: services.map(serviceTitle).join(', ').toLowerCase(), rate: money(rate), family: c.family }
+        { services: servicesNamed(services), rate: { $eur: rate || DEFAULT_RATE }, family: c.family }
       ),
     }));
 

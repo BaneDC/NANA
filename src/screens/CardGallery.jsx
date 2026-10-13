@@ -7,12 +7,12 @@ import { reconcile } from '../data/dependencies';
 import { planEntries } from '../data/threads';
 import { startCare } from '../data/familyStart';
 import { startRecord } from '../data/record';
-import { dateText, relanguage, standingWith } from '../data/familyCare';
+import { dateText, hoursSaid, relanguage, servicesSaid, standingWith } from '../data/familyCare';
 import { Button } from '@/components/ui/button';
 import { toggleVariants } from '@/components/ui/toggle';
 import { PageDescription, PageTitle } from '@/components/page';
 import { cn } from '@/lib/utils';
-import { getLang, msg, t, useLang } from '../i18n';
+import { getLang, msg, say, t, useLang } from '../i18n';
 import Dashboard from './Dashboard';
 import CaregiverPage from './CaregiverPage';
 import VisitsPage from './VisitsPage';
@@ -47,6 +47,10 @@ const person = (c) => ({
   reviews: c.reviews,
   bio: c.bio,
 });
+
+// what the coordinator settled, and a visit paid, as the app writes them
+const RESOLVED = say('Koordinatorka je proverila: naplaćuje se {hours}, {amount}.', { hours: hoursSaid(2), amount: { $eur: 36 } });
+const PAID_54 = say('Plaćeno {amount}', { amount: { $eur: 54 } });
 
 const report = (over = {}) => ({
   hours: 3,
@@ -122,9 +126,9 @@ export function sampleCare() {
             confirmed: 'coordinator',
             chargedOn: '31. jula',
             queryReason: msg('Ostala je dva sata, ne tri.'),
-            resolution: { outcome: 'reduce', text: msg('Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.'), on: '31. jula' },
+            resolution: { outcome: 'reduce', text: RESOLVED, on: '31. jula' },
           }),
-          visit('g-cg-cancelled', '28. jula', 'cancelled', { cancelledBy: 'caregiver', cancelReason: msg('Negovateljica je otkazala: bila sam bolesna') }),
+          visit('g-cg-cancelled', '28. jula', 'cancelled', { cancelledBy: 'caregiver', cancelReason: say('Negovateljica je otkazala: {reason}', { reason: { $fmt: 'lower', value: 'Bila sam bolesna' } }) }),
           // enough of them that her page shows ten and "Prikaži još"
           ...['26. jula', '24. jula', '22. jula', '21. jula'].map((d, i) =>
             visit(`g-old-${i}`, d, 'paid', { report: report(), confirmed: i % 2 ? 'auto' : 'you', chargedOn: d })
@@ -168,13 +172,13 @@ export function sampleCare() {
     ],
     now: 8,
     log: [
-      { id: 'l9', at: 8, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: msg('Stigao je plan posete'), detail: msg('Sutra · 09:00–12:00. 54 € je rezervisano na kartici.') },
-      { id: 'l8', at: 7, kind: 'agreement', caregiverId: 'paivi', by: 'caregiver', title: msg('Stigli su novi uslovi, verzija 2'), detail: msg('17 € na sat, 7 usluga.') },
-      { id: 'l7', at: -10, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: msg('Stigao je radni nalog'), detail: msg('Juče · 3 sata. Naplaćuje se za 24 sata, osim ako nešto prijavite.') },
+      { id: 'l9', at: 8, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: msg('Stigao je plan posete'), detail: say('{date} · {time}. {amount} je rezervisano na kartici.', { date: say('Sutra'), time: '09:00–12:00', amount: { $eur: 54 } }) },
+      { id: 'l8', at: 7, kind: 'agreement', caregiverId: 'paivi', by: 'caregiver', title: say('Stigli su novi uslovi, verzija {version}', { version: 2 }), detail: say('{rate} na sat, {services}.', { rate: { $eur: 17 }, services: servicesSaid(7) }) },
+      { id: 'l7', at: -10, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: msg('Stigao je radni nalog'), detail: say('{date} · {hours}. Naplaćuje se za 24 sata, osim ako nešto prijavite.', { date: say('Juče'), hours: hoursSaid(3) }) },
       { id: 'l6', at: -14, kind: 'request', caregiverId: 'tuula', by: 'you', title: msg('Ponovo ste joj pisali'), detail: msg('Treba nam ponovo pomoć ujutru.') },
-      { id: 'l5', at: -40, kind: 'agreement', caregiverId: 'anneli', by: 'you', title: msg('Odbili ste uslove, verzija 1'), detail: msg('Koordinatorka će vas pozvati.') },
-      { id: 'l4', at: -60, kind: 'money', caregiverId: 'sanna', by: 'coordinator', title: msg('Prijava je rešena'), detail: msg('Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.') },
-      { id: 'l3', at: -200, kind: 'money', caregiverId: 'sanna', by: 'you', title: msg('Plaćeno 54 €'), detail: msg('Radni nalog za 5. avgusta je potvrđen.') },
+      { id: 'l5', at: -40, kind: 'agreement', caregiverId: 'anneli', by: 'you', title: say('Odbili ste uslove, verzija {version}', { version: 1 }), detail: msg('Koordinatorka će vas pozvati.') },
+      { id: 'l4', at: -60, kind: 'money', caregiverId: 'sanna', by: 'coordinator', title: msg('Prijava je rešena'), detail: RESOLVED },
+      { id: 'l3', at: -200, kind: 'money', caregiverId: 'sanna', by: 'you', title: PAID_54, detail: say('Radni nalog za {date} je potvrđen.', { date: { $fmt: 'date', value: { text: '5. avgusta' } } }) },
       { id: 'l2', at: -500, kind: 'money', by: 'you', title: msg('Kartica je dodata'), detail: msg('Visa ···· 4242. Posete sada mogu da se rezervišu.') },
       { id: 'l1', at: -520, kind: 'request', caregiverId: 'sanna', by: 'you', title: msg('Poslali ste upit'), detail: msg('Treba nam pomoć ujutru, tri puta nedeljno.') },
     ],
@@ -197,7 +201,7 @@ function longCare() {
     kind: 'money',
     caregiverId: 'sanna',
     by: i % 2 ? 'caregiver' : 'you',
-    title: i % 2 ? msg('Stigao je radni nalog') : msg('Plaćeno 54 €'),
+    title: i % 2 ? msg('Stigao je radni nalog') : PAID_54,
     detail: msg('Poseta od 3 sata.'),
   }));
   return {

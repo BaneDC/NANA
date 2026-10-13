@@ -57,7 +57,8 @@ import {
   vatText,
   visitCharge,
 } from '../../data/familyCare';
-import { msg, t, tn } from '@/i18n';
+import { scheduleText } from '../../data/familyStart';
+import { msg, say, t, tn } from '@/i18n';
 
 // Everything a family is asked to decide, each in the side pane the rest of the
 // app already uses: the terms a caregiver proposes, the work order after a
@@ -79,7 +80,7 @@ export function ServiceChips({ ids, missing = [], label, grouped }) {
         {groups.map((g) => (
           <Tags
             key={g.id}
-            label={g.title}
+            label={t(g.title)}
             items={g.items.filter((id) => ids.includes(id)).map(serviceTitle)}
             off={g.items.filter((id) => missing.includes(id)).map((id) => t('{service} - ovog puta ne', { service: serviceTitle(id) }))}
           />
@@ -114,7 +115,7 @@ function changesBetween(was, now) {
   if (added.length) rows.push({ label: added.length === 1 ? t('Nova usluga') : t('Nove usluge'), value: added.map(serviceTitle).join(', ') });
   if (dropped.length) rows.push({ label: dropped.length === 1 ? t('Usluga više ne') : t('Usluge više ne'), value: dropped.map(serviceTitle).join(', ') });
   if (now.hours !== was.hours) rows.push({ label: t('Sati'), value: t('{was} → {now} h nedeljno', { was: was.hours, now: now.hours }) });
-  if (now.schedule !== was.schedule) rows.push({ label: t('Raspored'), value: now.schedule });
+  if (now.schedule !== was.schedule) rows.push({ label: t('Raspored'), value: scheduleText(now.schedule) });
   return rows;
 }
 
@@ -173,7 +174,7 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
       <DataList className="mt-2">
         <Line label={t('Cena po satu')} value={rateText(pen.rate)} />
         <Line label={t('Dogovoreni sati')} value={t('{hours} h nedeljno', { hours: pen.hours })} />
-        <Line label={t('Raspored')} value={pen.schedule} />
+        <Line label={t('Raspored')} value={scheduleText(pen.schedule)} />
       </DataList>
       {pen.terms && (
         <>
@@ -277,8 +278,9 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
     else onClose();
   };
   const query = () => {
-    const label = t(QUERY_REASONS.find((q) => q.id === reason).label);
-    onCare(queryVisit(visitId, `${label}. ${text.trim()}`));
+    // the reason picked is a key, what they wrote stays as they wrote it
+    const label = QUERY_REASONS.find((q) => q.id === reason).label;
+    onCare(queryVisit(visitId, say('{reason}. {text}', { reason: { $t: label }, text: text.trim() })));
     onFlash(t('Poslato koordinatorki. Ništa se ne naplaćuje dok je otvoreno.'));
     onClose();
   };
@@ -462,7 +464,7 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
     onClose();
   };
   const callOff = () => {
-    onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : t(reason)));
+    onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : reason));
     onFlash(
       late
         ? t('Otkazano. {amount} se naplaćuje - bilo je u poslednjem satu.', { amount: money(held) })

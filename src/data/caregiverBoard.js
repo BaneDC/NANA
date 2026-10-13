@@ -1,5 +1,5 @@
 import { CFS } from './frailty';
-import { getLang, msg, t } from '../i18n';
+import { getLang, msg, registerFormat, t } from '../i18n';
 import { CATALOG, SERVICE_GROUPS } from './serviceCatalog';
 
 // The caregiver's side of the same product. A family sends a request; from the
@@ -30,6 +30,9 @@ export const SERVICES = SERVICE_GROUPS.flatMap((g) => g.items.map(([id, title]) 
 export const serviceTitle = (id) => (CATALOG[id]?.title ? t(CATALOG[id].title) : id);
 // a board card has the same name as everywhere else: the catalog's names are short
 export const serviceShort = serviceTitle;
+// services named inside a stored sentence, said when it is read: "obroci, šetnje"
+registerFormat('serviceList', (ids) => (ids || []).map(serviceTitle).join(', ').toLowerCase());
+export const servicesNamed = (ids) => ({ $fmt: 'serviceList', value: ids });
 
 // Helsinki, euros, the same families the rest of the app talks about. Amounts
 // go through the one shared formatter (15 €, 15,20 €); it keeps the name
