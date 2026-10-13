@@ -10,7 +10,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import Logo from './components/Logo';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStore } from './components/KitAssistant';
-import { demoAnswers, demoCountry, demoNotes, demoUser, wantsDemo } from './data/demoCase';
+import { demoAnswersNow, demoCountry, demoNotesNow, demoUser, wantsDemo } from './data/demoCase';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { FileText, Plus, X } from 'lucide-react';
 import HelpDialog from './components/HelpDialog';
@@ -33,7 +33,7 @@ import { SidePanelFrame } from './components/SidePanel';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, canAsk, dateOfToday, firstName, plansToConfirm, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { askCaregiver, canAsk, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { requestMessage, startCare, withAnswers } from './data/familyStart';
 import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
@@ -45,7 +45,7 @@ import { requestFoot, requestNote } from './data/firstSteps';
 import { planEntries } from './data/threads';
 import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
-import { locale, setLang, useLang } from './i18n';
+import { locale, setLang, t, useLang } from './i18n';
 
 const formatDate = (at) => new Date(at).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
 const formatToday = () => formatDate(Date.now());
@@ -53,7 +53,7 @@ const formatToday = () => formatDate(Date.now());
 // /?demo opens past the onboarding, on a finished plan — for trying the chat and
 // everything after it without talking the conversation through each time.
 const DEMO = wantsDemo();
-const demoStart = DEMO ? reconcile({}, demoAnswers).answers : null;
+const demoStart = DEMO ? reconcile({}, demoAnswersNow()).answers : null;
 // /?demo&puno opens it already a week into care (src/data/demoFill.js), so a
 // reload does not mean clicking through the simulation again.
 const FILLED = DEMO && new URLSearchParams(window.location.search).has('puno');
@@ -86,7 +86,7 @@ export default function App() {
   // her. Everything below reads her from here, so nothing has a second source.
   const [person, setPerson] = useState(() => {
     if (!DEMO) return newPerson();
-    const p = demoPerson(demoStart, demoNotes, demoUser);
+    const p = demoPerson(demoStart, demoNotesNow(), demoUser);
     return FILLED ? { ...p, care: fillCare(withAnswers(p.care, demoStart, demoUser)) } : p;
   });
   // a part of her set on its own, as a value or from the one before
@@ -97,12 +97,19 @@ export default function App() {
   const setAnswers = useMemo(() => setPart('answers'), [setPart]);
   const setNotes = useMemo(() => setPart('notes'), [setPart]);
   const setCare = useMemo(() => setPart('care'), [setPart]);
+  // after a switch, the dates kept on the care are said in the new language
+  const firstLang = useRef(lang);
+  useEffect(() => {
+    if (lang === firstLang.current) return;
+    firstLang.current = lang;
+    setCare(relanguage);
+  }, [lang, setCare]);
   // her medical record: what the answers do not hold, and its history
   const setRecord = useMemo(() => setPart('record'), [setPart]);
   const { answers, notes, care, record, log: planLog } = person;
   // rebuilt when what it is built from changes, not on every change to her care
   const { planMade } = person;
-  const plan = useMemo(() => planOf({ planMade, answers, notes }), [planMade, answers, notes]);
+  const plan = useMemo(() => planOf({ planMade, answers, notes }), [planMade, answers, notes, lang]);
   const [unlocked, setUnlocked] = useState(FILLED);
   // which plan they paid for and when, so settings can say what they are on
   const [subscription, setSubscription] = useState(FILLED ? { planId: 'monthly', at: Date.now() } : null); // { planId, at }
@@ -144,7 +151,7 @@ export default function App() {
   // The onboarding has made the plan: from now on it is built from her answers,
   // and its history starts. The plan it hands over is the same buildPlan.
   const onPlan = useCallback(() => setPerson((p) => withPlan(p)), []);
-  const onNote = useCallback((t) => setNotes((n) => (n.includes(t) ? n : [...n, t])), []);
+  const onNote = useCallback((note) => setNotes((n) => (n.includes(note) ? n : [...n, note])), []);
   // Answers are reconciled, not just merged: a changed frailty level retires the
   // branch questions it no longer asks, so the state can never hold an answer to a
   // question this user is not being asked. Both variants go through here.
@@ -164,7 +171,7 @@ export default function App() {
     const next = { ...user, ...patch, name: patch.name ?? user.name };
     setUser(next);
     updateAccount(next);
-    say('Podaci su sačuvani.');
+    say(t('Podaci su sačuvani.'));
   };
 
   // The care state follows the answers: who she is, where, and what the plan
@@ -235,11 +242,11 @@ export default function App() {
       changePlan({ nextAnswers: applyChanges(answers, changes).answers, nextNotes: notes, source: 'assistant', fromRecord: true });
     }
     setRecord((r) => writeEvent(r, care.now, { event, impact, health, care, correction }));
-    say(impact?.touched.length ? 'Upisano u karton. Plan nege je izmenjen.' : 'Upisano u karton.');
+    say(impact?.touched.length ? t('Upisano u karton. Plan nege je izmenjen.') : t('Upisano u karton.'));
   };
 
   const addNotes = (added) => {
-    const fresh = added.filter((t) => !notes.includes(t));
+    const fresh = added.filter((note) => !notes.includes(note));
     if (!fresh.length) return;
     changePlan({ nextAnswers: answers, nextNotes: [...notes, ...fresh], source: 'assistant' });
   };
@@ -253,13 +260,13 @@ export default function App() {
         written(r, care.now, {
           kind: 'undo',
           by: 'you',
-          title: 'Izmene su poništene',
-          lines: [`Vraćeno kako je bilo: ${planChange.rows.map((row) => row.title).join(', ')}.`],
+          title: t('Izmene su poništene'),
+          lines: [t('Vraćeno kako je bilo: {what}.', { what: planChange.rows.map((row) => row.title).join(', ') })],
         })
       );
     }
     setPlanChange(null);
-    say('Izmena je poništena.');
+    say(t('Izmena je poništena.'));
   };
   const goToChat = () => setView('chat');
   // In Razgovor the assistant is the page itself, so it is not opened again beside it.
@@ -304,7 +311,7 @@ export default function App() {
       return false;
     }
     setCare(askCaregiver(id, requestMessage(care)));
-    say(`Poruka je poslata zajedno sa planom nege. ${firstName(c.name)} obično odgovori istog dana.`);
+    say(t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(c.name) }));
     return true;
   };
   const openPage = (page) => {
@@ -341,14 +348,16 @@ export default function App() {
   };
   const chatActions = useMemo(
     () => [
-      { id: 'plan', label: 'Plan nege', icon: <FileText size={16} strokeWidth={1.75} />, onClick: () => chatCtx.current.onOpenPage('plan') },
-      { id: 'new', label: 'Novi razgovor', icon: <Plus size={16} strokeWidth={2} />, onClick: () => chatCtx.current.onNewChat() },
+      { id: 'plan', label: t('Plan nege'), icon: <FileText size={16} strokeWidth={1.75} />, onClick: () => chatCtx.current.onOpenPage('plan') },
+      { id: 'new', label: t('Novi razgovor'), icon: <Plus size={16} strokeWidth={2} />, onClick: () => chatCtx.current.onNewChat() },
     ],
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lang]
   );
   const panelActions = useMemo(
-    () => [{ id: 'close', label: 'Zatvori panel', icon: <X size={16} strokeWidth={1.75} />, onClick: () => setRightPanel(null), pinned: true }],
-    []
+    () => [{ id: 'close', label: t('Zatvori panel'), icon: <X size={16} strokeWidth={1.75} />, onClick: () => setRightPanel(null), pinned: true }],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lang]
   );
 
   // "Prijavi promenu" on the medical record: the assistant opens beside it
@@ -357,14 +366,14 @@ export default function App() {
     setRightPanel('copilot');
     const chat = chatStore.get(conversation);
     const draft = chat?.turns[chat.turns.length - 1];
-    if (draft && !chat.isStreaming) chat.submit(draft.id, CHANGE_OPENER);
+    if (draft && !chat.isStreaming) chat.submit(draft.id, t(CHANGE_OPENER));
   };
 
   // The demo from the sign-in screen: the same finished case as /?demo.
   const openDemo = () => {
-    const answersNow = reconcile({}, demoAnswers).answers;
+    const answersNow = reconcile({}, demoAnswersNow()).answers;
     setUser({ ...demoUser, country: demoCountry() });
-    setPerson(demoPerson(answersNow, demoNotes, demoUser));
+    setPerson(demoPerson(answersNow, demoNotesNow(), demoUser));
     setView('dashboard');
     setPhase('app');
   };
@@ -421,7 +430,7 @@ export default function App() {
       title: c.title,
       date:
         c.id === conversation
-          ? 'Trenutni'
+          ? t('Trenutni')
           : new Date(c.at).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' }),
     }));
   const openConversation = (id) => {
@@ -515,20 +524,20 @@ export default function App() {
                 <KitAssistant
                   id={conversation}
                   ctx={chatCtx}
-                  title="Razgovor"
+                  title={t('Razgovor')}
                   actions={chatActions}
                   openPane={openPane}
                   onOpenPane={setOpenPane}
                 />
               ) : (
                 <Page>
-                  <Attention title="Upoznavanje nije završeno">
+                  <Attention title={t('Upoznavanje nije završeno')}>
                     <Card>
                       <CardDescription>
-                        Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.
+                        {t('Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.')}
                       </CardDescription>
                       <CardFooter>
-                        <Button onClick={() => startVariant('ai')}>Nastavite razgovor</Button>
+                        <Button onClick={() => startVariant('ai')}>{t('Nastavite razgovor')}</Button>
                       </CardFooter>
                     </Card>
                   </Attention>
@@ -669,7 +678,7 @@ export default function App() {
         )}
         {rightPanel === 'copilot' && (
           <SidePanelFrame key="copilot-panel" onClose={() => setRightPanel(null)}>
-            <KitAssistant id={conversation} ctx={chatCtx} title="Asistent" actions={panelActions} className="chat-side" />
+            <KitAssistant id={conversation} ctx={chatCtx} title={t('Asistent')} actions={panelActions} className="chat-side" />
           </SidePanelFrame>
         )}
       </AnimatePresence>
@@ -762,7 +771,7 @@ export default function App() {
               setDrawer(null);
               setView('dashboard');
               setSim(false);
-              say('Primer je popunjen: dve negovateljice, posete, i dve stvari koje čekaju na vas.');
+              say(t('Primer je popunjen: dve negovateljice, posete, i dve stvari koje čekaju na vas.'));
             }}
             onClose={() => setSim(false)}
           />
@@ -778,8 +787,8 @@ export default function App() {
               setSharing(false);
               say(
                 emails.length === 1
-                  ? `Plan je poslat na ${emails[0]}.`
-                  : `Plan je poslat na ${emails.length} adrese.`
+                  ? t('Plan je poslat na {email}.', { email: emails[0] })
+                  : t('Plan je poslat na {count} adrese.', { count: emails.length })
               );
             }}
             onClose={() => setSharing(false)}
@@ -803,13 +812,13 @@ export default function App() {
             onPay={(chosen) => {
               setUnlocked(true);
               setSubscription({ planId: chosen?.id, at: Date.now() });
-              say('Pretplata je aktivna.');
+              say(t('Pretplata je aktivna.'));
               // unlocking the plan has nothing left to do here; a message still has to be sent
               if (!paywall.caregiver) setPaywall(null);
             }}
             onSend={(message) => {
               setCare(askCaregiver(paywall.caregiver.id, message));
-              say(`Poruka je poslata zajedno sa planom nege. ${firstName(paywall.caregiver.name)} obično odgovori istog dana.`);
+              say(t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(paywall.caregiver.name) }));
               setPaywall(null);
             }}
             onClose={() => setPaywall(null)}

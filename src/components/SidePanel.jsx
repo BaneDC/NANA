@@ -4,6 +4,7 @@ import { paneCloseClass } from '@/components/ui/dialog';
 import { SheetEyebrow } from '@/components/ui/sheet';
 import { useSidePaneMode } from '@/hooks/use-side-pane';
 import { cn } from '@/lib/utils';
+import { t } from '@/i18n';
 
 // The right-hand panel. Two things use it, the care plan and the assistant,
 // so the way it comes in and the chrome live here rather than in each of them.
@@ -77,7 +78,7 @@ export default function SidePanel({ eyebrow, title, onClose, footer, children })
           <SheetEyebrow>{eyebrow}</SheetEyebrow>
           <p className="text-sm font-medium text-foreground">{title}</p>
         </div>
-        <button type="button" className={cn(paneCloseClass, 'ml-auto')} onClick={onClose} aria-label="Zatvori panel">
+        <button type="button" className={cn(paneCloseClass, 'ml-auto')} onClick={onClose} aria-label={t('Zatvori panel')}>
           <X size={16} strokeWidth={1.75} />
         </button>
       </div>

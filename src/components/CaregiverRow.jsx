@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Item, ItemAction, ItemContent, ItemLink, ItemTitle } from '@/components/ui/item';
 import Rating from './Rating';
 import Standing from './Standing';
+import { t } from '../i18n';
 
 // One caregiver in the care plan: who she is, and the one thing the family can
 // do about her.
@@ -29,10 +30,10 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
       <ItemContent className="phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">
         <ItemTitle className="-mb-0.5">
           {onOpen ? <ItemLink onClick={() => onOpen(caregiver)}>{caregiver.name}</ItemLink> : <span>{caregiver.name}</span>}
-          <Badge className="my-[calc((var(--text-xs-leading)-20px)/2)] ml-2">Poklapanje · {caregiver.match}%</Badge>
+          <Badge className="my-[calc((var(--text-xs-leading)-20px)/2)] ml-2">{t('Poklapanje · {match}%', { match: caregiver.match })}</Badge>
         </ItemTitle>
         <div className="text-small text-muted-foreground">
-          <Rating caregiver={caregiver} /> · {caregiver.rate} · {caregiver.area}, do {caregiver.radius} km
+          <Rating caregiver={caregiver} /> · {caregiver.rate} · {t('{area}, do {radius} km', caregiver)}
         </div>
       </ItemContent>
       {standing ? (
@@ -43,13 +44,13 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
           <ItemAction>
             <Button onClick={() => onSelect(caregiver)}>
               <Send size={14} strokeWidth={1.75} />
-              Pošalji poruku
+              {t('Pošalji poruku')}
             </Button>
           </ItemAction>
         ) : (
           <Button className="phone:w-full" onClick={() => onSelect(caregiver)}>
             <Send size={14} strokeWidth={1.75} />
-            Pošalji poruku
+            {t('Pošalji poruku')}
           </Button>
         ))
       )}

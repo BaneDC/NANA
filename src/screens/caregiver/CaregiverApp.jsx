@@ -13,6 +13,7 @@ import {
   serviceTitle,
   totalsFor,
 } from '../../data/caregiverBoard';
+import { msg, t } from '../../i18n';
 
 // The caregiver's whole application: the board, one client, and the state both
 // read from. It lives here rather than in the board because the client page
@@ -30,7 +31,12 @@ export default function CaregiverApp({ user }) {
 
   // Every action the caregiver takes leaves a line behind. The activity feed is
   // only worth having if it is written by the same code that does the thing.
-  const logged = (client, kind, text) => [...(client.activity || []), { kind, when: 'upravo', text }];
+  // The text is kept as its Serbian key and its values, and translated where it
+  // is shown (ClientPage), so a line written before a language switch follows it.
+  const logged = (client, kind, text, vars) => [
+    ...(client.activity || []),
+    { kind, when: msg('upravo'), text, vars },
+  ];
 
   const actions = {
     onOpen: (id) => setOpenId(id),
@@ -40,16 +46,16 @@ export default function CaregiverApp({ user }) {
       patch(id, (c) => ({
         stage: 'agreement',
         agreementSent: false,
-        acceptedOn: 'upravo',
-        activity: logged(c, 'accepted', 'Prihvatili ste. Ugovor tek treba postaviti.'),
+        acceptedOn: msg('upravo'),
+        activity: logged(c, 'accepted', msg('Prihvatili ste. Ugovor tek treba postaviti.')),
       })),
 
     onDecline: (id) => setClients((cs) => cs.filter((c) => c.id !== id)),
 
     onRemind: (id) =>
       patch(id, (c) => ({
-        remindedOn: 'upravo',
-        activity: logged(c, 'note', `Poslali ste podsetnik da se ugovor potpiše (${c.family}).`),
+        remindedOn: msg('upravo'),
+        activity: logged(c, 'note', msg('Poslali ste podsetnik da se ugovor potpiše ({family}).'), { family: c.family }),
       })),
 
     // Marking a visit done is what creates the work order, and it takes the
@@ -58,7 +64,7 @@ export default function CaregiverApp({ user }) {
     onVisitDone: (id) =>
       patch(id, (c) => ({
         stage: 'work-order',
-        sinceVisit: 'upravo',
+        sinceVisit: msg('upravo'),
         plan: null,
         visits: [
           {
@@ -74,7 +80,8 @@ export default function CaregiverApp({ user }) {
         activity: logged(
           c,
           'visit',
-          `Poseta obavljena - ${c.plan.date} · ${c.plan.time}, ${c.plan.hours} h. Treba poslati radni nalog.`
+          msg('Poseta obavljena - {date} · {time}, {hours} h. Treba poslati radni nalog.'),
+          { date: t(c.plan.date), time: c.plan.time, hours: c.plan.hours }
         ),
       })),
   };
@@ -85,11 +92,12 @@ export default function CaregiverApp({ user }) {
     patch(id, (c) => {
       const hold = totalsFor(plan.hours, c.rate).charged;
       return {
-        plan: { ...plan, sentOn: 'upravo' },
+        plan: { ...plan, sentOn: msg('upravo') },
         activity: logged(
           c,
           'visit-planned',
-          `Plan posete poslat za ${plan.date} · ${plan.time}, ${plan.hours} h. Na kartici porodice rezervisano je ${money(hold)}.`
+          msg('Plan posete poslat za {date} · {time}, {hours} h. Na kartici porodice rezervisano je {hold}.'),
+          { date: t(plan.date), time: plan.time, hours: plan.hours, hold: money(hold) }
         ),
       };
     });
@@ -109,9 +117,9 @@ export default function CaregiverApp({ user }) {
           ? {
               ...v,
               ...report,
-              note: report.note || 'Bez napomena.',
+              note: report.note || msg('Bez napomena.'),
               status: 'awaiting',
-              sentOn: 'upravo',
+              sentOn: msg('upravo'),
               confirmsInHours: 24,
             }
           : v
@@ -119,8 +127,15 @@ export default function CaregiverApp({ user }) {
       activity: logged(
         c,
         'work-order',
-        `Radni nalog poslat za posetu od ${report.hours} h - ${report.services.map(serviceShort).join(', ').toLowerCase() || 'ništa nije označeno'}. ${money(net)} stiže vama kad se naplati za 24 sata, osim ako porodica nešto prijavi.` +
-          (report.concern ? ` Napomenuli ste: ${report.concern}` : '')
+        report.concern
+          ? msg('Radni nalog poslat za posetu od {hours} h - {services}. {net} stiže vama kad se naplati za 24 sata, osim ako porodica nešto prijavi. Napomenuli ste: {concern}')
+          : msg('Radni nalog poslat za posetu od {hours} h - {services}. {net} stiže vama kad se naplati za 24 sata, osim ako porodica nešto prijavi.'),
+        {
+          hours: report.hours,
+          services: report.services.map(serviceShort).join(', ').toLowerCase() || t('ništa nije označeno'),
+          net: money(net),
+          concern: report.concern,
+        }
       ),
     }));
     setOpenId(null);
@@ -135,7 +150,8 @@ export default function CaregiverApp({ user }) {
       activity: logged(
         c,
         'agreement-sent',
-        `Ugovor poslat: ${services.map(serviceTitle).join(', ').toLowerCase()} po ${money(rate)}/h. Čeka se potpis (${c.family}).`
+        msg('Ugovor poslat: {services} po {rate}/h. Čeka se potpis ({family}).'),
+        { services: services.map(serviceTitle).join(', ').toLowerCase(), rate: money(rate), family: c.family }
       ),
     }));
 

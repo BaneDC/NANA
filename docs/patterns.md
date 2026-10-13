@@ -626,6 +626,21 @@ Ova aplikacija je samo porodična, pa sve što bi uradile negovateljice i koordi
 
 ---
 
+## 12b. Jezici (odlučeno 13. 10.)
+
+Aplikacija je na srpskom, engleskom i finskom. Tržište ostaje finsko: imena ljudi, mesta i finskih službi (Kela…) se ne prevode.
+
+- **U kodu se piše srpski, umotan u `t()`:** `t('Sačuvaj')`. Srpska rečenica je sama sebi ključ, a prevodi su u `src/i18n/en/*.js` i `src/i18n/fi/*.js` (`'Sačuvaj': 'Save'`). Nema teksta interfejsa van `t()`.
+- **Vrednost u rečenici:** `t('Plaćeno {amount}', { amount })`, nikad spajanje delova rečenice.
+- **Broj sa imenicom:** `tn(n, 'usluga', 'usluge', 'usluga')`. U rečniku je `'usluga|usluge|usluga': 'service|services'`.
+- **Tekst u konstanti ili u sačuvanim podacima** se označi sa `msg('…')`, a prevede tamo gde se prikazuje: `t(x)`.
+- **Datumi i brojevi** idu kroz `locale()` iz `src/i18n`, ne `'sr-Latn-RS'`.
+- **Kad se menja ili dodaje tekst,** dopiše se i engleski i finski. `node scripts/i18n-missing.mjs` izlista šta fali; očekuje se nula. Tekst bez prevoda se prikaže na srpskom.
+- **Jezik se bira** u Podešavanjima, a za demo i na ekranu za prijavu („Za demo: jezik"), pre nego što postoji nalog, da i onboarding bude na tom jeziku. AI razgovara na izabranom jeziku.
+- Engleski bez velikih početnih slova u naslovima („Care plan", ne „Care Plan"); i u prevodu bez duge crte.
+
+---
+
 ## 13. Provera — obavezno posle izmene interfejsa
 
 **Sve kartice na jednoj stranici:** `/?kartice` (ili „Za pregled: sve kartice na jednoj stranici" ispod prijave). Stranica (`src/screens/CardGallery.jsx`) renderuje prave ekrane sa primerom podataka u kom je svaka kartica u svakom stanju, pa se kartice porede jedna pored druge. Novi ekran sa karticama dodaj i tamo.

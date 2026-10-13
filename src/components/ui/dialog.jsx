@@ -2,6 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
+import { t } from "@/i18n"
 
 // shadcn's dialog as NANA's modal (docs/patterns.md §7): an action asked in
 // the middle of the page. 440 wide (560 `wide`), 24 inside and 24 corners,
@@ -86,7 +87,7 @@ function DialogContent({
             data-slot="dialog-close"
             className={cn(paneCloseClass, "absolute top-3 right-3")}>
             <XIcon className="size-4" strokeWidth={1.75} />
-            <span className="sr-only">Zatvori</span>
+            <span className="sr-only">{t("Zatvori")}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

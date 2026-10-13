@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { XIcon } from "lucide-react"
 import { Dialog as SheetPrimitive } from "radix-ui"
 import { paneCloseClass } from "@/components/ui/dialog"
+import { t } from "@/i18n"
 
 // shadcn's sheet as NANA's drawer (docs/patterns.md §7): the details of
 // something on the page, beside it. It floats 12 off the screen's edges,
@@ -37,7 +38,7 @@ function SheetClose({
   return (
     <SheetPrimitive.Close data-slot="sheet-close" className={cn(paneCloseClass, className)} {...props}>
       <XIcon className="size-4" strokeWidth={1.75} />
-      <span className="sr-only">Zatvori panel</span>
+      <span className="sr-only">{t("Zatvori panel")}</span>
     </SheetPrimitive.Close>
   );
 }

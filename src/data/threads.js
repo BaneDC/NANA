@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 // The care plan, as the plan page and the nav read it. One per person: a
 // change rewrites it and is written in its history (src/data/planLog.js); a new
 // plan is never started beside it. Each entry carries the answers and notes it
@@ -9,7 +11,7 @@ export function planEntries({ plan, caregiverCount, today, answers = {}, notes =
     {
       id: 'live',
       plan,
-      title: `Plan nege · ${plan.name}`,
+      title: t('Plan nege · {name}', { name: plan.name }),
       date: today,
       summary: plan.summary,
       caregiverCount,

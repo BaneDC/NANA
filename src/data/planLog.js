@@ -1,5 +1,6 @@
 import { buildPlan } from './carePlan';
 import { describeChanges, planDiff } from './planEdits';
+import { getLang, locale, msg, t } from '../i18n';
 
 // What changed in the plan and when: one plan per person, never versions of it.
 // An entry is written only when the plan says something different afterwards
@@ -9,7 +10,7 @@ import { describeChanges, planDiff } from './planEdits';
 //
 // { id, at, kind: 'created' | 'changed', source, rows, frailty, touched, saved }
 
-export const createdEntry = (at = Date.now()) => ({ id: `log-${at}`, at, kind: 'created', source: 'assistant' });
+export const createdEntry = (at = Date.now()) => ({ id: 'log-' + at, at, kind: 'created', source: 'assistant' });
 
 // The entry for going from one state to the next, or null when the plan reads
 // the same afterwards.
@@ -21,7 +22,7 @@ export function changeEntry({ before, after, source, at = Date.now() }) {
   const diff = planDiff(before.plan, after.plan);
   if (!diff.touched.length && !desc.frailty) return null;
   return {
-    id: `log-${at}`,
+    id: 'log-' + at,
     at,
     kind: 'changed',
     source,
@@ -56,19 +57,22 @@ export function changedOn(log = []) {
   return on;
 }
 
-export const SOURCE = { assistant: 'u razgovoru sa Minnom', manual: 'ručno', both: 'ručno i sa Minnom' };
+// Serbian keys (msg): shown through t()
+export const SOURCE = { assistant: msg('u razgovoru sa Minnom'), manual: msg('ručno'), both: msg('ručno i sa Minnom') };
 
-// "10. oktobra", or "Danas" / "Juče"; a date as it is said, in the genitive
+// "10. oktobra", or "Danas" / "Juče"; a date as it is said, in Serbian in the
+// genitive, in English and Finnish as the locale says it ("10 October", "10. lokakuuta")
 const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
 const midnight = (t) => new Date(t).setHours(0, 0, 0, 0);
 export const dateOf = (at) => {
   const d = new Date(at);
-  return `${d.getDate()}. ${GENITIVE[d.getMonth()]}`;
+  if (getLang() !== 'sr') return d.toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
+  return d.getDate() + '. ' + GENITIVE[d.getMonth()];
 };
 export function dayOf(at, now = Date.now()) {
   const diff = Math.round((midnight(now) - midnight(at)) / 86400000);
-  if (diff === 0) return 'Danas';
-  if (diff === 1) return 'Juče';
+  if (diff === 0) return t('Danas');
+  if (diff === 1) return t('Juče');
   return dateOf(at);
 }
 export const timeOf = (at) => {

@@ -4,6 +4,7 @@ import { Item, ItemContent, ItemLink } from '@/components/ui/item';
 import { cn } from '@/lib/utils';
 import { activeVersion, allVisits, dayOf, lastVersion, money, pendingVersion, todayOf } from '../../data/familyCare';
 import { PARTNERS } from '../../data/partners';
+import { t } from '@/i18n';
 
 // The rows of the home's cards (docs/patterns.md §4a), and what each card
 // lists. They are here, not in the home, because a card shows three and the
@@ -63,21 +64,21 @@ export function ArrangementRow({ arrangement: a, onOpen }) {
       <ItemContent>
         <p className={cn(rowName, ended && 'text-muted-foreground')}>
           <ItemLink onClick={() => onOpen(a.caregiver.id)}>{a.caregiver.name}</ItemLink>
-          {pen && <Badge variant="warning">{act ? 'Novi uslovi' : 'Ugovor čeka'}</Badge>}
+          {pen && <Badge variant="warning">{act ? t('Novi uslovi') : t('Ugovor čeka')}</Badge>}
           {!pen && !act && !ended && lastVersion(a)?.status === 'declined' && (
-            <Badge variant="destructive">Uslovi odbijeni</Badge>
+            <Badge variant="destructive">{t('Uslovi odbijeni')}</Badge>
           )}
         </p>
         <p className={rowBody}>
           {ended
-            ? `Završeno ${a.endedOn}`
+            ? t('Završeno {date}', { date: a.endedOn })
             : a.since
-              ? `${a.caregiver.area} · od ${a.since}${act ? ` · ${money(act.rate)}/h` : ''}`
+              ? `${a.caregiver.area} · ${t('od {date}', { date: a.since })}${act ? ` · ${money(act.rate)}/h` : ''}`
               : pen
-                ? `${a.caregiver.area} · čeka da prihvatite ugovor`
+                ? `${a.caregiver.area} · ${t('čeka da prihvatite ugovor')}`
                 : a.versions.length
-                  ? `${a.caregiver.area} · ništa još ne važi`
-                  : `${a.caregiver.area} · prihvatila, ugovor stiže uskoro`}
+                  ? `${a.caregiver.area} · ${t('ništa još ne važi')}`
+                  : `${a.caregiver.area} · ${t('prihvatila, ugovor stiže uskoro')}`}
         </p>
       </ItemContent>
     </Row>
@@ -99,7 +100,7 @@ export function OfferRow({ rec, onOpen }) {
           ) : (
             <span className="text-xs font-medium text-foreground">{partner.name}</span>
           )}
-          <Badge variant="success">−{partner.discount}% preko Minne</Badge>
+          <Badge variant="success">{t('−{discount}% preko Minne', { discount: partner.discount })}</Badge>
         </div>
         {/* the partner is the row's title; what the offer is for reads as the
             line under it, not a second title */}

@@ -6,6 +6,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint, PaneLabel } from '@/components/pane';
 import { Field, Input, TextArea } from '../TextField';
 import { hoursIn, money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
+import { t } from '../../i18n';
 
 // The visit order: what is meant to happen, written before going. It sits
 // between the agreement and the work order and is the reason those two can be
@@ -28,31 +29,36 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
   return (
     <>
       <DialogDescription>
-        Zašto dolazite. Kad ovo pošaljete porodici, novac za posetu se rezerviše pre nego što
-        krenete, a radni nalog se posle otvara prema ovome - pa ono što ovde promenite je ono prema
-        čemu se poseta meri.
+        {t(
+          'Zašto dolazite. Kad ovo pošaljete porodici, novac za posetu se rezerviše pre nego što krenete, a radni nalog se posle otvara prema ovome - pa ono što ovde promenite je ono prema čemu se poseta meri.'
+        )}
       </DialogDescription>
 
       <div className="flex flex-wrap gap-3">
-        <Field label="Dan" className="w-auto min-w-0 flex-1">
-          <Input type="text" value={date} placeholder="četvrtak, 14. avgusta" onChange={setDate} />
+        <Field label={t('Dan')} className="w-auto min-w-0 flex-1">
+          <Input type="text" value={date} placeholder={t('četvrtak, 14. avgusta')} onChange={setDate} />
         </Field>
-        <Field label="Vreme" className="w-auto min-w-0 self-start">
+        <Field label={t('Vreme')} className="w-auto min-w-0 self-start">
           <Input type="text" value={time} placeholder="09:00–13:00" onChange={setTime} className="w-40!" />
         </Field>
       </div>
       <PaneHint>
         {hours
-          ? `${hours} h po dogovorenih ${money(client.rate)}/h. Na kartici porodice rezerviše se ${money(
-              totalsFor(hours, client.rate).charged
-            )}, od toga ${money(
-              totalsFor(hours, client.rate).net
-            )} vama ako poseta prođe po planu. Raspored iz ugovora: ${client.schedule}.`
-          : `Vreme kao raspon, npr. 09:00–13:00. Raspored iz ugovora: ${client.schedule}.`}
+          ? t(
+              '{hours} h po dogovorenih {rate}/h. Na kartici porodice rezerviše se {charged}, od toga {net} vama ako poseta prođe po planu. Raspored iz ugovora: {schedule}.',
+              {
+                hours,
+                rate: money(client.rate),
+                charged: money(totalsFor(hours, client.rate).charged),
+                net: money(totalsFor(hours, client.rate).net),
+                schedule: t(client.schedule),
+              }
+            )
+          : t('Vreme kao raspon, npr. 09:00–13:00. Raspored iz ugovora: {schedule}.', { schedule: t(client.schedule) })}
       </PaneHint>
 
-      <PaneLabel>Šta planirate da radite</PaneLabel>
-      <ToggleGroup type="multiple" value={services} onValueChange={setServices} aria-label="Šta planirate da radite">
+      <PaneLabel>{t('Šta planirate da radite')}</PaneLabel>
+      <ToggleGroup type="multiple" value={services} onValueChange={setServices} aria-label={t('Šta planirate da radite')}>
         {client.services.map((id) => (
           <ToggleGroupItem key={id} value={id}>
             {services.includes(id) && <Check size={13} strokeWidth={2.5} />}
@@ -61,18 +67,18 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
         ))}
       </ToggleGroup>
 
-      <Field label="Šta treba zapamtiti">
+      <Field label={t('Šta treba zapamtiti')}>
         <TextArea
           rows={2}
           value={notes}
-          placeholder="Recept za podizanje, nešto što je porodica tražila, nešto što treba proveriti."
+          placeholder={t('Recept za podizanje, nešto što je porodica tražila, nešto što treba proveriti.')}
           onChange={setNotes}
         />
       </Field>
 
       <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
-          Otkaži
+          {t('Otkaži')}
         </Button>
         <Button
           disabled={!valid}
@@ -81,7 +87,7 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
           }
         >
           <Send size={14} strokeWidth={1.75} />
-          {plan ? 'Pošalji izmenu' : 'Pošalji porodici'}
+          {plan ? t('Pošalji izmenu') : t('Pošalji porodici')}
         </Button>
       </DialogFooter>
     </>

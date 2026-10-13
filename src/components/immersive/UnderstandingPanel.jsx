@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
+import { msg, t } from '../../i18n';
 
 // How well Minna understands the family's situation, as a plain scale docked at
 // the top centre of the screen — out of the way of the question, and centred
@@ -16,17 +17,17 @@ import { AnimatePresence, motion } from 'motion/react';
 // Named steps rather than a percentage. A percent invites arithmetic on a
 // judgement — "why 64 and not 70" has no answer worth giving.
 const STEPS = [
-  { from: 0, to: 25, word: 'Tek počinjemo' },
-  { from: 25, to: 50, word: 'Upoznajemo se' },
-  { from: 50, to: 75, word: 'Slika se sklapa' },
-  { from: 75, to: 92, word: 'Skoro je jasno' },
-  { from: 92, to: 100, word: 'Znam dovoljno' },
+  { from: 0, to: 25, word: msg('Tek počinjemo') },
+  { from: 25, to: 50, word: msg('Upoznajemo se') },
+  { from: 50, to: 75, word: msg('Slika se sklapa') },
+  { from: 75, to: 92, word: msg('Skoro je jasno') },
+  { from: 92, to: 100, word: msg('Znam dovoljno') },
 ];
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
 export default function UnderstandingPanel({ level = 0, dropped }) {
-  const word = STEPS.filter((s) => level >= s.from).pop().word;
+  const word = t(STEPS.filter((s) => level >= s.from).pop().word);
 
   return (
     // The dock does the centring, so the pill's own transform is free for its
@@ -37,13 +38,13 @@ export default function UnderstandingPanel({ level = 0, dropped }) {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut', delay: 0.4 } }}
         role="meter"
-        aria-label="Koliko vas razumem"
+        aria-label={t('Koliko vas razumem')}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={level}
         aria-valuetext={word}
       >
-        <span className="imm-know-label">Koliko vas razumem</span>
+        <span className="imm-know-label">{t('Koliko vas razumem')}</span>
         <span className="imm-know-scale" aria-hidden="true">
           {STEPS.map((s) => (
             <span className="imm-know-step" key={s.from}>
@@ -65,7 +66,7 @@ export default function UnderstandingPanel({ level = 0, dropped }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
             >
-              otvorilo se novo pitanje
+              {t('otvorilo se novo pitanje')}
             </motion.span>
           )}
         </AnimatePresence>

@@ -1,4 +1,5 @@
 import { eur } from '../lib/money';
+import { msg, t } from '../i18n';
 
 // The partners a care plan sends people to, and what each of them costs.
 //
@@ -20,7 +21,7 @@ export const PARTNERS = {
   },
   tukivaline: {
     name: 'Tukiväline',
-    what: 'medicinska pomagala',
+    what: msg('medicinska pomagala'),
     discount: 5,
   },
 };
@@ -28,52 +29,55 @@ export const PARTNERS = {
 // Doctors' visits, per reason for contact. Each is one visit someone can book.
 const VISITS = {
   fall: [
-    { title: 'Pregled fizijatra', who: 'dr Laura Nieminen, fizijatar', price: 140 },
-    { title: 'Kućna poseta medicinske sestre posle pada', who: 'Koivu Klinikka, kućna nega', price: 95 },
-    { title: 'Denzitometrija - gustina kostiju', who: 'Koivu Klinikka, dijagnostika', price: 120 },
+    { title: msg('Pregled fizijatra'), who: msg('dr Laura Nieminen, fizijatar'), price: 140 },
+    { title: msg('Kućna poseta medicinske sestre posle pada'), who: msg('Koivu Klinikka, kućna nega'), price: 95 },
+    { title: msg('Denzitometrija - gustina kostiju'), who: msg('Koivu Klinikka, dijagnostika'), price: 120 },
   ],
   memory: [
-    { title: 'Pregled neurologa', who: 'dr Mikko Korhonen, neurolog', price: 190 },
-    { title: 'Test pamćenja sa psihologom', who: 'Sanna Lehtonen, klinički psiholog', price: 160 },
-    { title: 'Krvna slika sa B12 i štitnom žlezdom', who: 'Koivu Klinikka, laboratorija', price: 85 },
+    { title: msg('Pregled neurologa'), who: msg('dr Mikko Korhonen, neurolog'), price: 190 },
+    { title: msg('Test pamćenja sa psihologom'), who: msg('Sanna Lehtonen, klinički psiholog'), price: 160 },
+    { title: msg('Krvna slika sa B12 i štitnom žlezdom'), who: msg('Koivu Klinikka, laboratorija'), price: 85 },
   ],
   discharge: [
-    { title: 'Kućna poseta lekara opšte prakse', who: 'dr Anna Virtanen', price: 220 },
-    { title: 'Usklađivanje terapije sa internistom', who: 'dr Juha Mäkinen, internista', price: 170 },
-    { title: 'Kontrolna laboratorija', who: 'Koivu Klinikka, laboratorija', price: 70 },
+    { title: msg('Kućna poseta lekara opšte prakse'), who: msg('dr Anna Virtanen'), price: 220 },
+    { title: msg('Usklađivanje terapije sa internistom'), who: msg('dr Juha Mäkinen, internista'), price: 170 },
+    { title: msg('Kontrolna laboratorija'), who: msg('Koivu Klinikka, laboratorija'), price: 70 },
   ],
   medication: [
-    { title: 'Pregled terapije kod interniste', who: 'dr Juha Mäkinen, internista', price: 170 },
-    { title: 'EKG i merenje pritiska', who: 'Koivu Klinikka, kardiologija', price: 90 },
+    { title: msg('Pregled terapije kod interniste'), who: msg('dr Juha Mäkinen, internista'), price: 170 },
+    { title: msg('EKG i merenje pritiska'), who: msg('Koivu Klinikka, kardiologija'), price: 90 },
   ],
   diagnosis: [
-    { title: 'Konsultacija sa specijalistom', who: 'Prema dijagnozi, Koivu Klinikka bira lekara', price: 190 },
-    { title: 'Pregled interniste', who: 'dr Juha Mäkinen, internista', price: 170 },
+    { title: msg('Konsultacija sa specijalistom'), who: msg('Prema dijagnozi, Koivu Klinikka bira lekara'), price: 190 },
+    { title: msg('Pregled interniste'), who: msg('dr Juha Mäkinen, internista'), price: 170 },
   ],
   default: [
-    { title: 'Preventivni pregled za starije', who: 'dr Anna Virtanen, opšta praksa', price: 250 },
-    { title: 'Pregled interniste', who: 'dr Juha Mäkinen, internista', price: 170 },
+    { title: msg('Preventivni pregled za starije'), who: msg('dr Anna Virtanen, opšta praksa'), price: 250 },
+    { title: msg('Pregled interniste'), who: msg('dr Juha Mäkinen, internista'), price: 170 },
   ],
 };
 
-export const visitsFor = (reasonId) => VISITS[reasonId] || VISITS.default;
+// in the language being read: the plan keeps them as they were when it was built
+const said = (item) => ({ ...item, title: t(item.title), ...(item.who ? { who: t(item.who) } : {}) });
+
+export const visitsFor = (reasonId) => (VISITS[reasonId] || VISITS.default).map(said);
 
 // Aids, by how she moves. Only what her mobility answer calls for.
 export function aidsFor(mobilityId) {
   const aids = [];
   if (mobilityId === 'bed') {
     aids.push(
-      { title: 'Antidekubitni dušek', price: 390 },
-      { title: 'Trapez za ustajanje iz kreveta', price: 160 }
+      { title: msg('Antidekubitni dušek'), price: 390 },
+      { title: msg('Trapez za ustajanje iz kreveta'), price: 160 }
     );
   } else if (mobilityId && mobilityId !== 'independent') {
-    aids.push({ title: 'Hodalica sa točkićima i sedištem', price: 190 });
+    aids.push({ title: msg('Hodalica sa točkićima i sedištem'), price: 190 });
   }
   aids.push(
-    { title: 'Stolica za tuširanje', price: 85 },
-    { title: 'Merač pritiska za nadlakticu', price: 75 }
+    { title: msg('Stolica za tuširanje'), price: 85 },
+    { title: msg('Merač pritiska za nadlakticu'), price: 75 }
   );
-  return aids;
+  return aids.map(said);
 }
 
 // what they pay when the coordinator books it, to the whole euro, the way a

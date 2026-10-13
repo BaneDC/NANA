@@ -7,11 +7,12 @@ import { reconcile } from '../data/dependencies';
 import { planEntries } from '../data/threads';
 import { startCare } from '../data/familyStart';
 import { startRecord } from '../data/record';
-import { dateText, standingWith } from '../data/familyCare';
+import { dateText, relanguage, standingWith } from '../data/familyCare';
 import { Button } from '@/components/ui/button';
 import { toggleVariants } from '@/components/ui/toggle';
 import { PageDescription, PageTitle } from '@/components/page';
 import { cn } from '@/lib/utils';
+import { getLang, msg, t, useLang } from '../i18n';
 import Dashboard from './Dashboard';
 import CaregiverPage from './CaregiverPage';
 import VisitsPage from './VisitsPage';
@@ -52,7 +53,7 @@ const report = (over = {}) => ({
   mood: 'good',
   eating: 'usual',
   moving: 'usual',
-  note: 'Prošetale smo do parka, ručala je sve. Raspoložena, pričala o unucima.',
+  note: msg('Prošetale smo do parka, ručala je sve. Raspoložena, pričala o unucima.'),
   done: ['hygiene', 'food-preparation', 'walks'],
   ...over,
 });
@@ -67,7 +68,7 @@ export function sampleCare() {
     services: SERVICES,
     rate: 18,
     hours: 9,
-    schedule: 'pon, sre, pet · 09:00–12:00',
+    schedule: msg('pon, sre, pet · 09:00–12:00'),
     sentOn: '20. jula',
     agreedOn: '21. jula',
     ...over,
@@ -80,23 +81,23 @@ export function sampleCare() {
     rate: 18,
     services: SERVICES,
     status,
-    sentOn: 'juče',
+    sentOn: msg('juče'),
     ...over,
   });
   return {
     ...startCare(demoUser),
-    family: { name: 'Anna Korhonen', relation: 'ćerka' },
+    family: { name: 'Anna Korhonen', relation: msg('ćerka') },
     elder: { name: 'Aino Korhonen', area: 'Töölö' },
     payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: '20. jula' },
     requests: [
-      { caregiverId: 'sanna', status: 'accepted', requested: '19. jula', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Prihvatila je i poslala svoje uslove.' },
-      { caregiverId: 'paivi', status: 'accepted', requested: '19. jula', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Prihvatila je i poslala svoje uslove.' },
-      { caregiverId: 'liisa', status: 'declined', requested: '19. jula', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.' },
-      { id: 'tuula-2', caregiverId: 'tuula', status: 'pending', requested: 'juče', again: true, message: 'Treba nam ponovo pomoć ujutru.', detail: 'Još nije odgovorila. Javićemo vam u svakom slučaju.' },
-      { caregiverId: 'riitta', status: 'accepted', requested: '8. avgusta', message: 'Da li biste mogli vikendom?', detail: 'Prihvatila je. Uslove šalje uskoro.' },
-      { caregiverId: 'anneli', status: 'accepted', requested: '7. avgusta', message: 'Treba nam pomoć ujutru, tri puta nedeljno.', detail: 'Prihvatila je. Uslove šalje uskoro.' },
-      { caregiverId: 'johanna', status: 'pending', requested: 'juče', message: 'Da li biste mogli vikendom?', detail: 'Još nije odgovorila. Javićemo vam u svakom slučaju.' },
-      { id: 'tuula-1', caregiverId: 'tuula', status: 'accepted', requested: '28. juna', message: 'Treba nam pomoć ujutru.', detail: 'Prihvatila je i poslala svoje uslove.' },
+      { caregiverId: 'sanna', status: 'accepted', requested: '19. jula', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Prihvatila je i poslala svoje uslove.') },
+      { caregiverId: 'paivi', status: 'accepted', requested: '19. jula', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Prihvatila je i poslala svoje uslove.') },
+      { caregiverId: 'liisa', status: 'declined', requested: '19. jula', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.') },
+      { id: 'tuula-2', caregiverId: 'tuula', status: 'pending', requested: msg('juče'), again: true, message: msg('Treba nam ponovo pomoć ujutru.'), detail: msg('Još nije odgovorila. Javićemo vam u svakom slučaju.') },
+      { caregiverId: 'riitta', status: 'accepted', requested: '8. avgusta', message: msg('Da li biste mogli vikendom?'), detail: msg('Prihvatila je. Uslove šalje uskoro.') },
+      { caregiverId: 'anneli', status: 'accepted', requested: '7. avgusta', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Prihvatila je. Uslove šalje uskoro.') },
+      { caregiverId: 'johanna', status: 'pending', requested: msg('juče'), message: msg('Da li biste mogli vikendom?'), detail: msg('Još nije odgovorila. Javićemo vam u svakom slučaju.') },
+      { id: 'tuula-1', caregiverId: 'tuula', status: 'accepted', requested: '28. juna', message: msg('Treba nam pomoć ujutru.'), detail: msg('Prihvatila je i poslala svoje uslove.') },
     ],
     arrangements: [
       {
@@ -106,24 +107,24 @@ export function sampleCare() {
         versions: [terms(1, 'active')],
         visits: [
           // both booked: the first one's plan was seen, the one after it not yet
-          visit('g-planned', 'Sutra', 'planned', { dueInHours: 20, notes: 'Doneću spisak za nabavku.', planOk: true }),
-          visit('g-to-confirm', '14. avgusta', 'planned', { dueInHours: 68, sentOn: 'danas' }),
-          visit('g-charging', 'Juče', 'charging', { report: report(), chargesInHours: 3, sentOn: 'juče u 13:10' }),
-          visit('g-awaiting', 'Danas', 'awaiting'),
-          visit('g-disputed', '7. avgusta', 'disputed', { report: report({ hours: 2 }), queryReason: 'Ostala je dva sata, ne tri.' }),
+          visit('g-planned', msg('Sutra'), 'planned', { dueInHours: 20, notes: msg('Doneću spisak za nabavku.'), planOk: true }),
+          visit('g-to-confirm', '14. avgusta', 'planned', { dueInHours: 68, sentOn: msg('danas') }),
+          visit('g-charging', msg('Juče'), 'charging', { report: report(), chargesInHours: 3, sentOn: msg('juče u 13:10') }),
+          visit('g-awaiting', msg('Danas'), 'awaiting'),
+          visit('g-disputed', '7. avgusta', 'disputed', { report: report({ hours: 2 }), queryReason: msg('Ostala je dva sata, ne tri.') }),
           visit('g-paid-you', '5. avgusta', 'paid', { report: report({ mood: 'usual' }), confirmed: 'you', chargedOn: '6. avgusta' }),
-          visit('g-paid-auto', '3. avgusta', 'paid', { report: report({ mood: 'low', concern: 'Žalila se na koleno.' }), confirmed: 'auto', chargedOn: '4. avgusta' }),
-          visit('g-cancelled', '31. jula', 'cancelled', { cancelledBy: 'family', cancelReason: 'Hitan slučaj u porodici' }),
+          visit('g-paid-auto', '3. avgusta', 'paid', { report: report({ mood: 'low', concern: msg('Žalila se na koleno.') }), confirmed: 'auto', chargedOn: '4. avgusta' }),
+          visit('g-cancelled', '31. jula', 'cancelled', { cancelledBy: 'family', cancelReason: msg('Hitan slučaj u porodici') }),
           visit('g-extra', '2. avgusta', 'paid', { report: report({ hours: 4 }), extra: { hours: 1, status: 'asked' }, confirmed: 'auto', chargedOn: '3. avgusta' }),
           visit('g-less', '1. avgusta', 'paid', { report: report({ hours: 2, mood: 'low' }), confirmed: 'you', chargedOn: '1. avgusta' }),
           visit('g-resolved', '30. jula', 'paid', {
             report: report({ hours: 2 }),
             confirmed: 'coordinator',
             chargedOn: '31. jula',
-            queryReason: 'Ostala je dva sata, ne tri.',
-            resolution: { outcome: 'reduce', text: 'Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.', on: '31. jula' },
+            queryReason: msg('Ostala je dva sata, ne tri.'),
+            resolution: { outcome: 'reduce', text: msg('Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.'), on: '31. jula' },
           }),
-          visit('g-cg-cancelled', '28. jula', 'cancelled', { cancelledBy: 'caregiver', cancelReason: 'Negovateljica je otkazala: bila sam bolesna' }),
+          visit('g-cg-cancelled', '28. jula', 'cancelled', { cancelledBy: 'caregiver', cancelReason: msg('Negovateljica je otkazala: bila sam bolesna') }),
           // enough of them that her page shows ten and "Prikaži još"
           ...['26. jula', '24. jula', '22. jula', '21. jula'].map((d, i) =>
             visit(`g-old-${i}`, d, 'paid', { report: report(), confirmed: i % 2 ? 'auto' : 'you', chargedOn: d })
@@ -139,10 +140,10 @@ export function sampleCare() {
           terms(2, 'sent', {
             rate: 17,
             hours: 12,
-            sentOn: 'juče',
+            sentOn: msg('juče'),
             services: [...SERVICES, 'grocery-shopping'],
-            note: 'Mogla bih da dolazim i utorkom, i da usput uradim nabavku.',
-            terms: 'Ključ ostaje kod komšinice u stanu 4.',
+            note: msg('Mogla bih da dolazim i utorkom, i da usput uradim nabavku.'),
+            terms: msg('Ključ ostaje kod komšinice u stanu 4.'),
           }),
         ],
         visits: [visit('g-p-paid', '6. avgusta', 'paid', { rate: 16, report: report(), confirmed: 'you', chargedOn: '7. avgusta' })],
@@ -167,15 +168,15 @@ export function sampleCare() {
     ],
     now: 8,
     log: [
-      { id: 'l9', at: 8, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: 'Stigao je plan posete', detail: 'Sutra · 09:00–12:00. 54 € je rezervisano na kartici.' },
-      { id: 'l8', at: 7, kind: 'agreement', caregiverId: 'paivi', by: 'caregiver', title: 'Stigli su novi uslovi, verzija 2', detail: '17 € na sat, 7 usluga.' },
-      { id: 'l7', at: -10, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: 'Stigao je radni nalog', detail: 'Juče · 3 sata. Naplaćuje se za 24 sata, osim ako nešto prijavite.' },
-      { id: 'l6', at: -14, kind: 'request', caregiverId: 'tuula', by: 'you', title: 'Ponovo ste joj pisali', detail: 'Treba nam ponovo pomoć ujutru.' },
-      { id: 'l5', at: -40, kind: 'agreement', caregiverId: 'anneli', by: 'you', title: 'Odbili ste uslove, verzija 1', detail: 'Koordinatorka će vas pozvati.' },
-      { id: 'l4', at: -60, kind: 'money', caregiverId: 'sanna', by: 'coordinator', title: 'Prijava je rešena', detail: 'Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.' },
-      { id: 'l3', at: -200, kind: 'money', caregiverId: 'sanna', by: 'you', title: 'Plaćeno 54 €', detail: 'Radni nalog za 5. avgusta je potvrđen.' },
-      { id: 'l2', at: -500, kind: 'money', by: 'you', title: 'Kartica je dodata', detail: 'Visa ···· 4242. Posete sada mogu da se rezervišu.' },
-      { id: 'l1', at: -520, kind: 'request', caregiverId: 'sanna', by: 'you', title: 'Poslali ste upit', detail: 'Treba nam pomoć ujutru, tri puta nedeljno.' },
+      { id: 'l9', at: 8, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: msg('Stigao je plan posete'), detail: msg('Sutra · 09:00–12:00. 54 € je rezervisano na kartici.') },
+      { id: 'l8', at: 7, kind: 'agreement', caregiverId: 'paivi', by: 'caregiver', title: msg('Stigli su novi uslovi, verzija 2'), detail: msg('17 € na sat, 7 usluga.') },
+      { id: 'l7', at: -10, kind: 'visit', caregiverId: 'sanna', by: 'caregiver', title: msg('Stigao je radni nalog'), detail: msg('Juče · 3 sata. Naplaćuje se za 24 sata, osim ako nešto prijavite.') },
+      { id: 'l6', at: -14, kind: 'request', caregiverId: 'tuula', by: 'you', title: msg('Ponovo ste joj pisali'), detail: msg('Treba nam ponovo pomoć ujutru.') },
+      { id: 'l5', at: -40, kind: 'agreement', caregiverId: 'anneli', by: 'you', title: msg('Odbili ste uslove, verzija 1'), detail: msg('Koordinatorka će vas pozvati.') },
+      { id: 'l4', at: -60, kind: 'money', caregiverId: 'sanna', by: 'coordinator', title: msg('Prijava je rešena'), detail: msg('Koordinatorka je proverila: naplaćuje se 2 sata, 36 €.') },
+      { id: 'l3', at: -200, kind: 'money', caregiverId: 'sanna', by: 'you', title: msg('Plaćeno 54 €'), detail: msg('Radni nalog za 5. avgusta je potvrđen.') },
+      { id: 'l2', at: -500, kind: 'money', by: 'you', title: msg('Kartica je dodata'), detail: msg('Visa ···· 4242. Posete sada mogu da se rezervišu.') },
+      { id: 'l1', at: -520, kind: 'request', caregiverId: 'sanna', by: 'you', title: msg('Poslali ste upit'), detail: msg('Treba nam pomoć ujutru, tri puta nedeljno.') },
     ],
   };
 }
@@ -196,8 +197,8 @@ function longCare() {
     kind: 'money',
     caregiverId: 'sanna',
     by: i % 2 ? 'caregiver' : 'you',
-    title: i % 2 ? 'Stigao je radni nalog' : 'Plaćeno 54 €',
-    detail: 'Poseta od 3 sata.',
+    title: i % 2 ? msg('Stigao je radni nalog') : msg('Plaćeno 54 €'),
+    detail: msg('Poseta od 3 sata.'),
   }));
   return {
     ...c,
@@ -214,33 +215,36 @@ function askedCare(status) {
     caregiverId,
     status,
     requested,
-    message: 'Treba nam pomoć ujutru, tri puta nedeljno.',
-    detail: status === 'pending' ? 'Još nije odgovorila. Javićemo vam u svakom slučaju.' : 'Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.',
+    message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'),
+    detail:
+      status === 'pending'
+        ? msg('Još nije odgovorila. Javićemo vam u svakom slučaju.')
+        : msg('Ponedeljkom i četvrtkom je zauzeta kod druge porodice do oktobra.'),
   });
-  return { ...base, requests: [req('sanna', 'juče'), req('paivi', 'danas')] };
+  return { ...base, requests: [req('sanna', msg('juče')), req('paivi', msg('danas'))] };
 }
 
 const SECTIONS = [
-  { id: 'moja-nega', title: 'Moja nega', where: 'Pregled u mreži: Čeka na vas, tri broja (svaki svoja kartica), pa po dve kartice: Predstoji, Vaše negovateljice, Poslednja poseta, Iz plana nege (partneri sa logom), koordinatorka' },
-  { id: 'prvi-korak', title: 'Moja nega, pre prvog upita', where: 'Plan nege je stranica: Minnino pismo, preporuke, negovateljice' },
-  { id: 'upit-poslat', title: 'Moja nega, upit poslat', where: 'Čeka se odgovor, pa „Pogledaj upite"; ispod plan nege' },
-  { id: 'svi-odbili', title: 'Moja nega, svi su odbili', where: 'Stigli su odgovori, pa „Pogledaj upite"' },
-  { id: 'njena-stranica', title: 'Njena stranica', where: 'Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Prikaži još")' },
-  { id: 'nove-uslove', title: 'Njena stranica, novi uslovi čekaju', where: 'Čeka na vas, Novi uslovi' },
-  { id: 'zavrsena', title: 'Njena stranica, završena saradnja', where: 'Ponovni upit poslat, ugovor koji više ne važi' },
-  { id: 'bez-ugovora', title: 'Njena stranica, prihvatila bez ugovora', where: 'Prihvatila je, ugovor stiže' },
-  { id: 'odbijeni-uslovi', title: 'Njena stranica, odbijeni uslovi', where: 'Uslovi su odbijeni, verzija 1 odbijena' },
-  { id: 'posete', title: 'Sve posete', where: 'Posete po mesecima' },
-  { id: 'duge-liste', title: 'Duge liste', where: 'Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve zakazane", „Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"' },
-  { id: 'upiti', title: 'Moji upiti', where: 'Upit: čeka, prihvaćen, odbijen' },
-  { id: 'upiti-prazno', title: 'Moji upiti, prazno', where: 'Još nijedan upit: sledeći korak kao na Mojoj nezi' },
-  { id: 'pronadji', title: 'Pronađi negovateljicu', where: 'Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije' },
-  { id: 'plan', title: 'Plan nege', where: 'Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)' },
-  { id: 'plan-prazno', title: 'Plan nege, prazno', where: 'Još nema plana' },
-  { id: 'podesavanja', title: 'Podešavanja', where: 'Nalog, Plaćanje, Bezbednost, Opšte, Privatnost' },
-  { id: 'karton', title: 'Medicinski karton', where: 'Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju' },
-  { id: 'karton-prazno', title: 'Medicinski karton, prazno', where: 'Kartona još nema' },
-  { id: 'negovateljica', title: 'Strana negovateljice', where: 'Tabla i klijent (klik na karticu na tabli)' },
+  { id: 'moja-nega', title: msg('Moja nega'), where: msg('Pregled u mreži: Čeka na vas, tri broja (svaki svoja kartica), pa po dve kartice: Predstoji, Vaše negovateljice, Poslednja poseta, Iz plana nege (partneri sa logom), koordinatorka') },
+  { id: 'prvi-korak', title: msg('Moja nega, pre prvog upita'), where: msg('Plan nege je stranica: Minnino pismo, preporuke, negovateljice') },
+  { id: 'upit-poslat', title: msg('Moja nega, upit poslat'), where: msg('Čeka se odgovor, pa „Pogledaj upite"; ispod plan nege') },
+  { id: 'svi-odbili', title: msg('Moja nega, svi su odbili'), where: msg('Stigli su odgovori, pa „Pogledaj upite"') },
+  { id: 'njena-stranica', title: msg('Njena stranica'), where: msg('Čeka na vas, Ugovor o nezi, Ukratko, Posete (svaki status, 10 pa „Prikaži još")') },
+  { id: 'nove-uslove', title: msg('Njena stranica, novi uslovi čekaju'), where: msg('Čeka na vas, Novi uslovi') },
+  { id: 'zavrsena', title: msg('Njena stranica, završena saradnja'), where: msg('Ponovni upit poslat, ugovor koji više ne važi') },
+  { id: 'bez-ugovora', title: msg('Njena stranica, prihvatila bez ugovora'), where: msg('Prihvatila je, ugovor stiže') },
+  { id: 'odbijeni-uslovi', title: msg('Njena stranica, odbijeni uslovi'), where: msg('Uslovi su odbijeni, verzija 1 odbijena') },
+  { id: 'posete', title: msg('Sve posete'), where: msg('Posete po mesecima') },
+  { id: 'duge-liste', title: msg('Duge liste'), where: msg('Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve zakazane", „Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"') },
+  { id: 'upiti', title: msg('Moji upiti'), where: msg('Upit: čeka, prihvaćen, odbijen') },
+  { id: 'upiti-prazno', title: msg('Moji upiti, prazno'), where: msg('Još nijedan upit: sledeći korak kao na Mojoj nezi') },
+  { id: 'pronadji', title: msg('Pronađi negovateljicu'), where: msg('Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije') },
+  { id: 'plan', title: msg('Plan nege'), where: msg('Minnino pismo, preporuke, partneri, negovateljice (sa stanjem: već dolazi, upit poslat)') },
+  { id: 'plan-prazno', title: msg('Plan nege, prazno'), where: msg('Još nema plana') },
+  { id: 'podesavanja', title: msg('Podešavanja'), where: msg('Nalog, Plaćanje, Bezbednost, Opšte, Privatnost') },
+  { id: 'karton', title: msg('Medicinski karton'), where: msg('Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju') },
+  { id: 'karton-prazno', title: msg('Medicinski karton, prazno'), where: msg('Kartona još nema') },
+  { id: 'negovateljica', title: msg('Strana negovateljice'), where: msg('Tabla i klijent (klik na karticu na tabli)') },
 ];
 
 const S = (id) => SECTIONS.find((x) => x.id === id);
@@ -251,8 +255,8 @@ function Frame({ id, title, where, tall, children }) {
     // caregiver's board in a fixed 860, scrolling
     <section className="flex scroll-mt-6 flex-col gap-3" id={id}>
       <div>
-        <h2 className="flex items-center gap-2 text-sm font-medium text-foreground">{title}</h2>
-        <p className="text-xs leading-body text-muted-foreground">{where}</p>
+        <h2 className="flex items-center gap-2 text-sm font-medium text-foreground">{t(title)}</h2>
+        <p className="text-xs leading-body text-muted-foreground">{t(where)}</p>
       </div>
       <div
         data-slot="gallery-frame"
@@ -265,7 +269,11 @@ function Frame({ id, title, where, tall, children }) {
 }
 
 export default function CardGallery() {
-  const care = useMemo(sampleCare, []);
+  // the sample's dates are written in Serbian; in another language they are
+  // said again in it, as the app does after a switch (relanguage)
+  const lang = useLang();
+  const inLang = (c) => (getLang() === 'sr' ? c : relanguage(c));
+  const care = useMemo(() => inLang(sampleCare()), [lang]);
   const answers = useMemo(() => reconcile({}, demoAnswers).answers, []);
   const plan = useMemo(() => buildPlan(answers, demoNotes), [answers]);
   const entries = useMemo(
@@ -284,11 +292,11 @@ export default function CardGallery() {
   const shownDrawer = useKept(drawer);
   // which sample the open drawer reads: the usual one, or the year-on one
   const [drawerCare, setDrawerCare] = useState('sample');
-  const long = useMemo(longCare, []);
+  const long = useMemo(() => inLang(longCare()), [lang]);
   // the same plan with more from the partners than a card on the home shows
   const longPlan = useMemo(() => {
     const offers = plan.recommendations.filter((r) => r.kind === 'offer');
-    const more = ['Kontrolni pregled', 'Rukohvati u kupatilu', 'Šetalica'].map((title, i) => ({
+    const more = [msg('Kontrolni pregled'), msg('Rukohvati u kupatilu'), msg('Šetalica')].map((title, i) => ({
       ...offers[i % offers.length],
       id: `g-long-offer-${i}`,
       title,
@@ -302,22 +310,23 @@ export default function CardGallery() {
     <div className="flex h-full flex-col gap-8 overflow-y-auto px-6 py-8 *:mx-auto *:w-full *:max-w-[960px] phone:p-4">
       <header className="flex items-start justify-between gap-4 phone:flex-col">
         <div>
-          <PageTitle>Sve kartice</PageTitle>
+          <PageTitle>{t('Sve kartice')}</PageTitle>
           <PageDescription>
-            Prave komponente aplikacije sa primerom podataka u kom je svaka kartica u svakom stanju. Draweri na njenoj stranici se
-            otvaraju (npr. „Šta se desilo"), a ostala dugmad ne rade ništa. Za telefon otvorite stranicu na telefonu ili suzite prozor.
+            {t(
+              'Prave komponente aplikacije sa primerom podataka u kom je svaka kartica u svakom stanju. Draweri na njenoj stranici se otvaraju (npr. „Šta se desilo"), a ostala dugmad ne rade ništa. Za telefon otvorite stranicu na telefonu ili suzite prozor.'
+            )}
           </PageDescription>
         </div>
         <Button variant="secondary" onClick={() => (window.location.href = '/')}>
-          Nazad na prijavu
+          {t('Nazad na prijavu')}
         </Button>
       </header>
 
       {/* the parts, as chips */}
-      <nav className="flex flex-wrap gap-2" aria-label="Delovi">
+      <nav className="flex flex-wrap gap-2" aria-label={t('Delovi')}>
         {SECTIONS.map((s) => (
           <a key={s.id} className={cn(toggleVariants({ size: 'sm' }), 'no-underline')} href={`#${s.id}`}>
-            {s.title}
+            {t(s.title)}
           </a>
         ))}
       </nav>

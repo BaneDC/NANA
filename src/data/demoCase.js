@@ -3,6 +3,8 @@
 // without talking the whole conversation through each time. The answers are a
 // real case, the same one the end-to-end checks walk.
 
+import { msg, t } from '../i18n';
+
 // A family in Helsinki: the demo is being prepared for the Finnish market.
 export const demoUser = {
   role: 'family',
@@ -12,13 +14,13 @@ export const demoUser = {
   email: 'anna@mail.com',
   phone: '+358 40 123 4567',
   country: 'FI',
-  source: 'Preko prijatelja ili porodice',
+  source: msg('Preko prijatelja ili porodice'),
   consents: { processing: true, accuracy: true, newsletter: false },
 };
 
 export const demoAnswers = {
   'about-person': { values: { name: 'Aino Korhonen', age: '84', city: 'Töölö, Helsinki' } },
-  'about-you': { values: { 'your-name': 'Anna Korhonen', relation: 'Ćerka', 'your-phone': '+358 40 123 4567' } },
+  'about-you': { values: { 'your-name': 'Anna Korhonen', relation: msg('Ćerka'), 'your-phone': '+358 40 123 4567' } },
   household: { optionId: 'alone' },
   'home-condition': { optionId: 'mostly-fine' },
   mobility: { optionId: 'stick' },
@@ -42,10 +44,18 @@ export const demoAnswers = {
   'reason-for-contact': { optionId: 'fall' },
   onset: { optionId: 'gradual' },
   hospitalisation: { optionId: 'none' },
-  'family-goal': { values: { goal: 'Da ostane kod kuće i bude bezbedna.', worry: 'Novi pad kad je sama.' } },
+  'family-goal': { values: { goal: msg('Da ostane kod kuće i bude bezbedna.'), worry: msg('Novi pad kad je sama.') } },
 };
 
-export const demoNotes = ['Voli da ujutru popije kafu na terasi.'];
+export const demoNotes = [msg('Voli da ujutru popije kafu na terasi.')];
+
+// The same, in the language of the moment: what the family "wrote" is text, not
+// a key, once it is in the plan.
+export const demoAnswersNow = () => {
+  const goal = demoAnswers['family-goal'].values;
+  return { ...demoAnswers, 'family-goal': { values: { goal: t(goal.goal), worry: t(goal.worry) } } };
+};
+export const demoNotesNow = () => demoNotes.map((n) => t(n));
 
 export const wantsDemo = () => {
   try {

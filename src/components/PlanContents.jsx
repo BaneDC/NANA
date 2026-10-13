@@ -5,6 +5,7 @@ import RecommendationCard from './RecommendationCard';
 import { CoordinatorContact } from './PlanFooterBlocks';
 import { Button } from '@/components/ui/button';
 import { PageSection } from '@/components/page';
+import { t } from '../i18n';
 
 // The body of a care plan, in the order the client's document lays it out: the
 // coordinator's letter, then what we recommend — each saying why it is being
@@ -35,7 +36,7 @@ export default function PlanContents({
         <CoordinatorMessage letter={plan.letter} changed={Boolean(change?.letter)} changeKey={change?.at} />
       )}
 
-      <PageSection title="Šta preporučujemo">
+      <PageSection title={t('Šta preporučujemo')}>
 
           {open.map((rec) => (
             <RecommendationCard
@@ -87,13 +88,14 @@ export default function PlanContents({
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
                   <Lock size={14} strokeWidth={2} />
                 </span>
-                <p className="text-sm font-medium text-foreground">Još {locked.length} preporuke u punom planu</p>
+                <p className="text-sm font-medium text-foreground">{t('Još {count} preporuke u punom planu', { count: locked.length })}</p>
                 <p className="mb-2 max-w-[440px] text-xs leading-body text-muted-foreground">
-                  Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Minna, promene
-                  koje stan čine bezbednijim, i direktan broj svake negovateljice.
+                  {t(
+                    'Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Minna, promene koje stan čine bezbednijim, i direktan broj svake negovateljice.'
+                  )}
                 </p>
                 <Button size="lg" onClick={onUnlock}>
-                  <Lock size={12} strokeWidth={2} /> Otključajte ceo plan nege
+                  <Lock size={12} strokeWidth={2} /> {t('Otključajte ceo plan nege')}
                 </Button>
               </div>
             </div>

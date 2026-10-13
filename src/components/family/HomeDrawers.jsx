@@ -5,7 +5,7 @@ import Modal from '../Modal';
 import ShowMore from '../ShowMore';
 import VisitRow from './VisitRow';
 import { ArrangementRow, OfferRow, comingVisits, currentFirst, partnerOffers } from './HomeRows';
-import { pl } from '../../data/familyCare';
+import { t, tn } from '@/i18n';
 
 // The whole of a list the home shows three of (docs/patterns.md §4a): opened
 // by the button in the head of its card ("Sve zakazane", "Sve negovateljice",
@@ -19,11 +19,11 @@ export function ComingDrawer({ open = true, care, onClose, onOpen }) {
   const all = comingVisits(care);
   const list = useShowMore(all);
   return (
-    <Modal eyebrow={care.elder.name || 'Vaša nega'} title="Zakazane posete" wide open={open} onClose={onClose}>
+    <Modal eyebrow={care.elder.name || t('Vaša nega')} title={t('Zakazane posete')} wide open={open} onClose={onClose}>
       {all.length > 0 ? (
-        <PaneHint>{pl(all.length, 'poseta', 'posete', 'poseta')} · najbliže prvo</PaneHint>
+        <PaneHint>{t('{count} · najbliže prvo', { count: tn(all.length, 'poseta', 'posete', 'poseta') })}</PaneHint>
       ) : (
-        <PaneHint>Nijedna poseta nije zakazana.</PaneHint>
+        <PaneHint>{t('Nijedna poseta nije zakazana.')}</PaneHint>
       )}
       <ItemGroup>
         {list.visible.map((v) => (
@@ -40,8 +40,8 @@ export function CaregiversDrawer({ open = true, care, onClose, onCaregiver }) {
   const all = currentFirst(care.arrangements);
   const list = useShowMore(all);
   return (
-    <Modal eyebrow={care.elder.name || 'Vaša nega'} title="Vaše negovateljice" open={open} onClose={onClose}>
-      <PaneHint>{pl(all.length, 'negovateljica', 'negovateljice', 'negovateljica')}</PaneHint>
+    <Modal eyebrow={care.elder.name || t('Vaša nega')} title={t('Vaše negovateljice')} open={open} onClose={onClose}>
+      <PaneHint>{tn(all.length, 'negovateljica', 'negovateljice', 'negovateljica')}</PaneHint>
       <ItemGroup>
         {list.visible.map((a) => (
           <ArrangementRow key={a.caregiver.id} arrangement={a} onOpen={onCaregiver} />
@@ -58,8 +58,8 @@ export function OffersDrawer({ open = true, care, plan, onClose, onOpenPlan }) {
   const all = partnerOffers(plan);
   const list = useShowMore(all);
   return (
-    <Modal eyebrow={care.elder.name || 'Vaša nega'} title="Ponude partnera" open={open} onClose={onClose}>
-      <PaneHint>Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.</PaneHint>
+    <Modal eyebrow={care.elder.name || t('Vaša nega')} title={t('Ponude partnera')} open={open} onClose={onClose}>
+      <PaneHint>{t('Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.')}</PaneHint>
       <ItemGroup>
         {list.visible.map((rec) => (
           <OfferRow key={rec.id} rec={rec} onOpen={onOpenPlan} />

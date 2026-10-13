@@ -11,6 +11,7 @@ import {
 import { Drawer, DrawerClose, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { t } from '@/i18n';
 import { useIsPhone } from '@/hooks/use-phone';
 import { focusPane, useCloseThreshold } from '../lib/sheet';
 
@@ -90,7 +91,7 @@ export default function Dialog({
           {dismissible && (
             <DrawerClose className={cn(paneCloseClass, 'absolute top-[22px] right-4 z-3', closeClassName)}>
               <X className="size-4" strokeWidth={1.75} />
-              <span className="sr-only">Zatvori</span>
+              <span className="sr-only">{t('Zatvori')}</span>
             </DrawerClose>
           )}
           {children}
@@ -115,7 +116,7 @@ export default function Dialog({
           dismissible && (
             <DialogClose className={cn(paneCloseClass, 'shrink-0')}>
               <X className="size-4" strokeWidth={1.75} />
-              <span className="sr-only">Zatvori</span>
+              <span className="sr-only">{t('Zatvori')}</span>
             </DialogClose>
           )
         )}

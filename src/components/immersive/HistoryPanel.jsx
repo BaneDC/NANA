@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { paneCloseClass } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
 import { useIsPhone } from '@/hooks/use-phone';
+import { t } from '@/i18n';
 
 // What has been asked so far, and what was answered — a panel down the right
 // side, the way an assistant panel sits beside the work.
@@ -22,7 +23,7 @@ export default function HistoryPanel({ open, entries, onClose }) {
 
   const list =
     entries.length === 0 ? (
-      <p className="imm-history-empty">Ovde će stajati sva pitanja i vaši odgovori, kako budu prolazili.</p>
+      <p className="imm-history-empty">{t('Ovde će stajati sva pitanja i vaši odgovori, kako budu prolazili.')}</p>
     ) : (
       <ol className="imm-history-list">
         {entries.map((e, i) => (
@@ -39,7 +40,7 @@ export default function HistoryPanel({ open, entries, onClose }) {
 
   // the panes' own close, as in every drawer and sheet (28, 44 under a finger)
   const close = (
-    <button type="button" className={`${paneCloseClass} relative z-1 ml-auto`} onClick={onClose} aria-label="Zatvori">
+    <button type="button" className={`${paneCloseClass} relative z-1 ml-auto`} onClick={onClose} aria-label={t('Zatvori')}>
       <X className="size-4" strokeWidth={1.75} />
     </button>
   );
@@ -57,7 +58,7 @@ export default function HistoryPanel({ open, entries, onClose }) {
         >
           <div className="relative flex shrink-0 items-center gap-2 px-4 pt-6 pb-3">
             <DrawerHandle />
-            <DrawerTitle className="imm-history-title pointer-events-none relative">Dosad smo prošli</DrawerTitle>
+            <DrawerTitle className="imm-history-title pointer-events-none relative">{t('Dosad smo prošli')}</DrawerTitle>
             {close}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]">{list}</div>
@@ -75,10 +76,10 @@ export default function HistoryPanel({ open, entries, onClose }) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 24 }}
           transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
-          aria-label="Dosadašnji razgovor"
+          aria-label={t('Dosadašnji razgovor')}
         >
           <div className="imm-history-head">
-            <p className="imm-history-title">Dosad smo prošli</p>
+            <p className="imm-history-title">{t('Dosad smo prošli')}</p>
             {close}
           </div>
           {list}

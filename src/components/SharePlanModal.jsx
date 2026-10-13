@@ -6,7 +6,7 @@ import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { PaneHint } from '@/components/pane';
 import Dialog from './Dialog';
 import { Field, TextArea } from './TextField';
-import { pl } from '../data/familyCare';
+import { t, tn } from '../i18n';
 
 // Sending the care plan to someone who is not in the app: a sister who shares
 // the driving, a son abroad, the doctor the family wants to show it to. They
@@ -31,13 +31,14 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
   const ready = entered.length > 0 && wrong.length === 0;
 
   return (
-    <Dialog eyebrow={`Plan nege · ${plan.name}`} title="Pošaljite plan nekome" wide open={open} onClose={onClose}>
+    <Dialog eyebrow={t('Plan nege · {name}', { name: plan.name })} title={t('Pošaljite plan nekome')} wide open={open} onClose={onClose}>
       <DialogDescription>
-        Onaj ko ga dobije vidi plan nege onakav kakav je sada: šta preporučujemo, zašto, i ko od
-        negovateljica odgovara. Ne vidi vaš nalog, plaćanje ni poruke sa negovateljicama.
+        {t(
+          'Onaj ko ga dobije vidi plan nege onakav kakav je sada: šta preporučujemo, zašto, i ko od negovateljica odgovara. Ne vidi vaš nalog, plaćanje ni poruke sa negovateljicama.'
+        )}
       </DialogDescription>
 
-      <Field label="Email adrese">
+      <Field label={t('Email adrese')}>
         <TextArea rows={3} value={text} placeholder="ana@mail.com, milan@mail.com" onChange={setText} />
       </Field>
 
@@ -52,24 +53,24 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
         </div>
       )}
       {wrong.length > 0 && (
-        <PaneHint>Ovo ne liči na email adresu: {wrong.join(', ')}.</PaneHint>
+        <PaneHint>{t('Ovo ne liči na email adresu: {emails}.', { emails: wrong.join(', ') })}</PaneHint>
       )}
 
-      <Field label="Poruka uz plan (nije obavezno)">
-        <TextArea rows={2} value={note} placeholder="Evo šta smo dogovorili za mamu." onChange={setNote} />
+      <Field label={t('Poruka uz plan (nije obavezno)')}>
+        <TextArea rows={2} value={note} placeholder={t('Evo šta smo dogovorili za mamu.')} onChange={setNote} />
       </Field>
 
       {sentTo.length > 0 && (
-        <p className="text-xs leading-body text-muted-foreground">Već poslato: {sentTo.join(', ')}.</p>
+        <p className="text-xs leading-body text-muted-foreground">{t('Već poslato: {emails}.', { emails: sentTo.join(', ') })}</p>
       )}
 
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
-          Otkaži
+          {t('Otkaži')}
         </Button>
         <Button disabled={!ready} onClick={() => onSend(entered, note.trim())}>
           <Send size={14} strokeWidth={1.75} />
-          {entered.length > 1 ? `Pošalji na ${pl(entered.length, 'adresu', 'adrese', 'adresa')}` : 'Pošalji'}
+          {entered.length > 1 ? t('Pošalji na {addresses}', { addresses: tn(entered.length, 'adresu', 'adrese', 'adresa') }) : t('Pošalji')}
         </Button>
       </DialogFooter>
     </Dialog>

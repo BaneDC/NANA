@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Rating from './Rating';
 import Standing from './Standing';
+import { t } from '../i18n';
 
 // Who she is, at the top of her details (the profile drawer, her pane in the
 // chat), laid out as her card on Pronađi: the avatar, then her name with the
@@ -19,7 +20,7 @@ export default function CaregiverHead({ caregiver: c, standing }) {
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <CaregiverName name={c.name} match={c.match} />
         <p className="text-small text-muted-foreground">
-          <Rating caregiver={c} /> · {c.rate} · {c.area}, do {c.radius} km
+          <Rating caregiver={c} /> · {c.rate} · {t('{area}, do {radius} km', c)}
         </p>
         <Standing standing={standing} className="self-start" />
       </div>
@@ -35,7 +36,7 @@ export function CaregiverName({ name, match, children }) {
   return (
     <div className="-mb-0.5 flex items-center gap-2 phone:flex-col-reverse phone:items-start phone:gap-1">
       {children || <span className="text-xs font-medium text-foreground">{name}</span>}
-      <Badge className="ml-2 phone:ml-0">Poklapanje · {match}%</Badge>
+      <Badge className="ml-2 phone:ml-0">{t('Poklapanje · {match}%', { match })}</Badge>
     </div>
   );
 }

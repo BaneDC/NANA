@@ -7,7 +7,7 @@ import { useVisitHistory } from '@/hooks/use-visit-history';
 import Modal from '../Modal';
 import ShowMore from '../ShowMore';
 import VisitRow from './VisitRow';
-import { pl } from '../../data/familyCare';
+import { t, tn } from '@/i18n';
 
 // Every visit, read without leaving the home (docs/patterns.md §4a): opened
 // from "Sve posete" on the last visit's card and from the number of visits so
@@ -18,15 +18,15 @@ import { pl } from '../../data/familyCare';
 export default function VisitsDrawer({ open = true, care, onClose, onOpen }) {
   const { who, setWho, all, picked, list, groups, people } = useVisitHistory(care);
   return (
-    <Modal eyebrow={care.elder.name || 'Vaša nega'} title="Sve posete" wide open={open} onClose={onClose}>
+    <Modal eyebrow={care.elder.name || t('Vaša nega')} title={t('Sve posete')} wide open={open} onClose={onClose}>
       {/* one is always chosen: pressing the chosen one again does nothing */}
       {people.length > 1 && (
-        <ToggleGroup type="single" size="sm" className="items-center" value={who} onValueChange={(id) => id && setWho(id)} aria-label="Čije posete">
-          {[{ id: 'all', name: 'Sve' }, ...people].map((p) => (
+        <ToggleGroup type="single" size="sm" className="items-center" value={who} onValueChange={(id) => id && setWho(id)} aria-label={t('Čije posete')}>
+          {[{ id: 'all', name: t('Sve') }, ...people].map((p) => (
             <ToggleGroupItem key={p.id} value={p.id}>
               {p.name}
               {p.ended && (
-                <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">ranije</span>
+                <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">{t('ranije')}</span>
               )}
             </ToggleGroupItem>
           ))}
@@ -35,14 +35,14 @@ export default function VisitsDrawer({ open = true, care, onClose, onOpen }) {
       {picked.length > 0 && (
         <PaneHint>
           {picked.length === all.length
-            ? `${pl(all.length, 'poseta', 'posete', 'poseta')} · najnovije prvo`
-            : `${picked.length} od ${all.length} · najnovije prvo`}
+            ? t('{count} · najnovije prvo', { count: tn(all.length, 'poseta', 'posete', 'poseta') })
+            : t('{picked} od {all} · najnovije prvo', { picked: picked.length, all: all.length })}
         </PaneHint>
       )}
       {groups.map((g) => (
         <Fragment key={g.month}>
           <div className="flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
-            <PaneLabel>{g.month}</PaneLabel>
+            <PaneLabel>{g.month === 'Zakazano' ? t('Zakazano') : g.month}</PaneLabel>
             <Badge variant="secondary" className="ml-auto phone:ml-0">
               {g.visits.length}
             </Badge>
@@ -55,7 +55,7 @@ export default function VisitsDrawer({ open = true, care, onClose, onOpen }) {
         </Fragment>
       ))}
       <ShowMore list={list} />
-      {!picked.length && <PaneHint>Još nema poseta.</PaneHint>}
+      {!picked.length && <PaneHint>{t('Još nema poseta.')}</PaneHint>}
     </Modal>
   );
 }

@@ -1,5 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { t } from '../i18n';
+import { quoted } from '../data/carePlan';
 
 // A set of answer changes, one per line: the question, then what it was and what
 // it becomes — or, for a list, what comes off it and what goes on. The same rows
@@ -23,12 +25,12 @@ export default function ChangeRows({ rows, notes = [], stacked }) {
             <span className={change}>
               {r.removed.length > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-lg bg-destructive-muted px-2 py-1 text-small text-destructive">
-                  Više ne: {r.removed.join(', ')}
+                  {t('Više ne: {items}', { items: r.removed.join(', ') })}
                 </span>
               )}
               {r.added.length > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-lg bg-success-muted px-2 py-1 text-small font-medium text-success">
-                  Sada i: {r.added.join(', ')}
+                  {t('Sada i: {items}', { items: r.added.join(', ') })}
                 </span>
               )}
             </span>
@@ -41,11 +43,11 @@ export default function ChangeRows({ rows, notes = [], stacked }) {
           )}
         </li>
       ))}
-      {notes.map((t) => (
-        <li key={t} className={row}>
-          <span className="text-xs text-muted-foreground">Beleška</span>
+      {notes.map((n) => (
+        <li key={n} className={row}>
+          <span className="text-xs text-muted-foreground">{t('Beleška')}</span>
           <span className={change}>
-            <span className="font-medium text-foreground">„{t.replace(/[.„“"]+$/g, '')}“</span>
+            <span className="font-medium text-foreground">{quoted(n)}</span>
           </span>
         </li>
       ))}

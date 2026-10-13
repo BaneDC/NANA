@@ -43,7 +43,10 @@ for (const file of files) {
   // Serbian outside any of them: string literals and JSX text, comments skipped
   const bare = code.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' ')).replace(/(^|[^:'"`])\/\/[^\n]*/g, (c, p) => p + ' '.repeat(c.length - p.length));
   const inside = (i) => spans.some(([a, b]) => i >= a && i < b);
-  for (const m of bare.matchAll(new RegExp(STR + String.raw`|>([^<>{}]+)<`, 'g'))) {
+  // whole template literals first, so one with ${} inside is skipped as a unit
+  const ANY = String.raw`('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|\`(?:[^\`\\]|\\.)*\`)`;
+  for (const m of bare.matchAll(new RegExp(ANY + String.raw`|>([^<>{}]+)<`, 'g'))) {
+    if (m[1]?.[0] === '`' && m[1].includes('${')) continue;
     const text = m[1] ? unquote(m[1]) : m[2];
     if (SERBIAN.test(text) && !inside(m.index)) {
       const line = bare.slice(0, m.index).split('\n').length;

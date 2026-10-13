@@ -17,13 +17,13 @@ import {
   mapVisit,
   money,
   pendingVersion,
-  pl,
   relabel,
   todayOf,
   unsettled,
   visitCharge,
   whenText,
 } from './familyCare';
+import { msg, t, tn } from '../i18n';
 
 // The other side of the family's care, simulated. The caregivers' own app and
 // the coordinator are not part of this build, so everything they would do is
@@ -73,11 +73,11 @@ export const passTime = (hours) => (c) => {
       ...a,
       visits: a.visits.map((v) => {
         if (v.status === 'planned' && v.day != null && v.day * 24 + v.start + v.hours <= now) {
-          notes.push({ kind: 'visit', caregiverId: a.caregiver.id, by: 'caregiver', title: 'Poseta je obavljena', detail: `${dayLabel(v.day, today)} · ${v.time}. Čeka se radni nalog.` });
+          notes.push({ kind: 'visit', caregiverId: a.caregiver.id, by: 'caregiver', title: t('Poseta je obavljena'), detail: t('{date} · {time}. Čeka se radni nalog.', { date: dayLabel(v.day, today), time: v.time }) });
           return { ...v, status: 'awaiting' };
         }
         if (v.status === 'charging' && v.reportAt != null && v.reportAt + 24 <= now) {
-          notes.push({ kind: 'money', caregiverId: a.caregiver.id, by: 'coordinator', title: `Naplaćeno automatski ${money(visitCharge(v))}`, detail: 'Radni nalog je prošao posle 24 sata bez primedbe.' });
+          notes.push({ kind: 'money', caregiverId: a.caregiver.id, by: 'coordinator', title: t('Naplaćeno automatski {amount}', { amount: money(visitCharge(v)) }), detail: t('Radni nalog je prošao posle 24 sata bez primedbe.') });
           return { ...v, status: 'paid', confirmed: 'auto', chargedOn: dateText(today) };
         }
         return v;
@@ -90,11 +90,12 @@ export const passTime = (hours) => (c) => {
 
 // ── requests ────────────────────────────────────────────────────────────────
 
+// Serbian keys: shown and stored through t()
 export const DECLINE_REASONS = [
-  'Predaleko mi je',
-  'Ne uklapa se u moj raspored',
-  'To je van mojih kvalifikacija',
-  'Trenutno sam popunjena',
+  msg('Predaleko mi je'),
+  msg('Ne uklapa se u moj raspored'),
+  msg('To je van mojih kvalifikacija'),
+  msg('Trenutno sam popunjena'),
 ];
 
 // A yes opens a cooperation with no terms yet; she sends them next. A yes to a
@@ -106,8 +107,8 @@ export const answerRequest = (caregiverId, accept, reason = DECLINE_REASONS[0]) 
   const requests = c.requests.map((x) =>
     x === r
       ? accept
-        ? { ...x, status: 'accepted', detail: 'Prihvatila je. Uslove šalje uskoro.' }
-        : { ...x, status: 'declined', detail: reason }
+        ? { ...x, status: 'accepted', detail: t('Prihvatila je. Uslove šalje uskoro.') }
+        : { ...x, status: 'declined', detail: t(reason) }
       : x
   );
   let next = { ...c, requests };
@@ -118,8 +119,8 @@ export const answerRequest = (caregiverId, accept, reason = DECLINE_REASONS[0]) 
     kind: 'request',
     caregiverId,
     by: 'caregiver',
-    title: accept ? 'Upit je prihvaćen' : 'Upit je odbijen',
-    detail: accept ? 'Uslove šalje uskoro.' : reason,
+    title: accept ? t('Upit je prihvaćen') : t('Upit je odbijen'),
+    detail: accept ? t('Uslove šalje uskoro.') : t(reason),
   });
 };
 
@@ -156,17 +157,17 @@ export const sendTerms = (caregiverId) => (c) => {
     sentAt: now,
     sentOn: whenText(now, now),
     // what she adds to the agreement in her own words
-    terms: 'Ključ ostaje kod komšinice u stanu 4. Ako je sprečena, javlja dan ranije.',
+    terms: t('Ključ ostaje kod komšinice u stanu 4. Ako je sprečena, javlja dan ranije.'),
     note: change
-      ? 'Od sledeće nedelje mogu i nabavku, pa sam dodala tu uslugu. Cena je za euro veća.'
-      : 'Pročitala sam plan nege. Mogu da dolazim po rasporedu iz plana i da preuzmem sve što piše u njemu.',
+      ? t('Od sledeće nedelje mogu i nabavku, pa sam dodala tu uslugu. Cena je za euro veća.')
+      : t('Pročitala sam plan nege. Mogu da dolazim po rasporedu iz plana i da preuzmem sve što piše u njemu.'),
   };
   return logged(mapArrangement(c, caregiverId, (x) => ({ ...x, versions: [...x.versions, version] })), {
     kind: 'agreement',
     caregiverId,
     by: 'caregiver',
-    title: change ? `Stigli su novi uslovi, verzija ${version.version}` : `Stigao je ugovor o nezi, verzija ${version.version}`,
-    detail: `${money(version.rate)} na sat, ${pl(version.services.length, 'usluga', 'usluge', 'usluga')}.`,
+    title: change ? t('Stigli su novi uslovi, verzija {version}', { version: version.version }) : t('Stigao je ugovor o nezi, verzija {version}', { version: version.version }),
+    detail: t('{rate} na sat, {services}.', { rate: money(version.rate), services: tn(version.services.length, 'usluga', 'usluge', 'usluga') }),
   });
 };
 
@@ -178,7 +179,7 @@ export const withdrawTerms = (caregiverId) => (c) => {
       ...a,
       versions: a.versions.map((v) => (v === pen ? { ...v, status: 'withdrawn' } : v)),
     })),
-    { kind: 'agreement', caregiverId, by: 'caregiver', title: `Predlog je povučen, verzija ${pen.version}` }
+    { kind: 'agreement', caregiverId, by: 'caregiver', title: t('Predlog je povučen, verzija {version}', { version: pen.version }) }
   );
 };
 
@@ -187,14 +188,14 @@ export const withdrawTerms = (caregiverId) => (c) => {
 // Why she cannot send a visit plan right now, or null when she can.
 export function cannotPlan(c, caregiverId) {
   const a = arrangementOf(c, caregiverId);
-  if (!a || a.endedOn) return 'Nema saradnje.';
-  if (!activeVersion(a)) return 'Uslovi još nisu prihvaćeni.';
-  if (pendingVersion(a)) return 'Novi uslovi čekaju porodicu, posete su pauzirane.';
-  if (!c.payment.connected) return 'Porodica nema karticu.';
-  if (a.visits.some((v) => v.status === 'planned')) return 'Jedan plan posete već čeka.';
-  if (a.visits.some((v) => v.status === 'disputed')) return 'Prijava je otvorena kod koordinatorke.';
-  if (a.visits.some((v) => v.status === 'awaiting')) return 'Prvo radni nalog za prošlu posetu.';
-  if (a.visits.filter((v) => v.status === 'charging').length >= 2) return 'Dva radna naloga još nisu naplaćena.';
+  if (!a || a.endedOn) return t('Nema saradnje.');
+  if (!activeVersion(a)) return t('Uslovi još nisu prihvaćeni.');
+  if (pendingVersion(a)) return t('Novi uslovi čekaju porodicu, posete su pauzirane.');
+  if (!c.payment.connected) return t('Porodica nema karticu.');
+  if (a.visits.some((v) => v.status === 'planned')) return t('Jedan plan posete već čeka.');
+  if (a.visits.some((v) => v.status === 'disputed')) return t('Prijava je otvorena kod koordinatorke.');
+  if (a.visits.some((v) => v.status === 'awaiting')) return t('Prvo radni nalog za prošlu posetu.');
+  if (a.visits.filter((v) => v.status === 'charging').length >= 2) return t('Dva radna naloga još nisu naplaćena.');
   return null;
 }
 
@@ -221,7 +222,7 @@ export const planVisit = (caregiverId, soon = false) => (c) => {
     rate: act.rate,
     agreementVersion: act.version,
     services: act.services,
-    notes: a.visits.length ? 'Kao i prošli put. Ako treba nešto iz apoteke, ostavite recept na stolu.' : 'Prva poseta. Upoznaću se sa njom i proći kroz plan nege sa vama.',
+    notes: a.visits.length ? t('Kao i prošli put. Ako treba nešto iz apoteke, ostavite recept na stolu.') : t('Prva poseta. Upoznaću se sa njom i proći kroz plan nege sa vama.'),
     status: 'planned',
     sentAt: now,
   };
@@ -231,8 +232,8 @@ export const planVisit = (caregiverId, soon = false) => (c) => {
     kind: 'visit',
     caregiverId,
     by: 'caregiver',
-    title: 'Stigao je plan posete',
-    detail: `${v.date} · ${v.time}. ${money(chargedFor(hours, act.rate))} je rezervisano na kartici.`,
+    title: t('Stigao je plan posete'),
+    detail: t('{date} · {time}. {amount} je rezervisano na kartici.', { date: v.date, time: v.time, amount: money(chargedFor(hours, act.rate)) }),
   });
 };
 
@@ -251,12 +252,12 @@ export const sendWorkOrder = (visitId, kind = 'as-planned') => (c) => {
     moving: kind === 'more' ? 'more' : 'usual',
     note:
       kind === 'less'
-        ? 'Bila je umorna, pa smo završile ranije. Nismo stigle do svega sa spiska.'
+        ? t('Bila je umorna, pa smo završile ranije. Nismo stigle do svega sa spiska.')
         : kind === 'more'
-          ? 'Prošetale smo do parka i nazad, pa sam ostala sat duže da ručamo zajedno.'
-          : 'Sve po planu. Ručala je sve, pričale smo o unucima.',
+          ? t('Prošetale smo do parka i nazad, pa sam ostala sat duže da ručamo zajedno.')
+          : t('Sve po planu. Ručala je sve, pričale smo o unucima.'),
     done,
-    concern: kind === 'less' ? 'Žalila se na koleno.' : undefined,
+    concern: kind === 'less' ? t('Žalila se na koleno.') : undefined,
   };
   const next = relabel(
     mapVisit(c, visitId, (x) => ({
@@ -271,12 +272,12 @@ export const sendWorkOrder = (visitId, kind = 'as-planned') => (c) => {
     kind: 'visit',
     caregiverId: v.caregiver.id,
     by: 'caregiver',
-    title: kind === 'more' ? 'Stigao je radni nalog, sa dodatnim satima' : 'Stigao je radni nalog',
-    detail: `${v.date} · ${pl(hours, 'sat', 'sata', 'sati')}. Naplaćuje se za 24 sata, osim ako nešto prijavite.`,
+    title: kind === 'more' ? t('Stigao je radni nalog, sa dodatnim satima') : t('Stigao je radni nalog'),
+    detail: t('{date} · {hours}. Naplaćuje se za 24 sata, osim ako nešto prijavite.', { date: v.date, hours: tn(hours, 'sat', 'sata', 'sati') }),
   });
 };
 
-export const NOT_HAPPENED_REASONS = ['Niko nije bio kod kuće', 'Nisam mogla da dođem', 'Bila sam bolesna'];
+export const NOT_HAPPENED_REASONS = [msg('Niko nije bio kod kuće'), msg('Nisam mogla da dođem'), msg('Bila sam bolesna')];
 
 // The visit did not happen (after its time), or she calls it off (before it):
 // either way the reservation goes back, and nothing is charged.
@@ -291,14 +292,16 @@ export const visitNotHappened = (visitId, reason = NOT_HAPPENED_REASONS[0]) => (
       resolution: undefined,
       status: 'cancelled',
       cancelledBy: 'caregiver',
-      cancelReason: before ? `Negovateljica je otkazala: ${reason.toLowerCase()}` : `Poseta se nije desila: ${reason.toLowerCase()}`,
+      cancelReason: before
+        ? t('Negovateljica je otkazala: {reason}', { reason: t(reason).toLowerCase() })
+        : t('Poseta se nije desila: {reason}', { reason: t(reason).toLowerCase() }),
     })),
     {
       kind: 'visit',
       caregiverId: v.caregiver.id,
       by: 'caregiver',
-      title: before ? 'Negovateljica je otkazala posetu' : 'Poseta se nije desila',
-      detail: `${v.date} · ${v.time}. ${reason}. ${money(chargedFor(v.hours, v.rate))} vraćeno.`,
+      title: before ? t('Negovateljica je otkazala posetu') : t('Poseta se nije desila'),
+      detail: t('{date} · {time}. {reason}. {amount} vraćeno.', { date: v.date, time: v.time, reason: t(reason), amount: money(chargedFor(v.hours, v.rate)) }),
     }
   );
 };
@@ -316,13 +319,13 @@ export const caregiverEnds = (caregiverId) => (c) => {
 // hour less, or not at all; a queried plan stays, or the visit is called off.
 export const RESOLUTIONS = {
   charging: [
-    { id: 'charge', label: 'Naplati kako je poslato' },
-    { id: 'reduce', label: 'Umanji za sat' },
-    { id: 'waive', label: 'Ne naplaćuj ništa' },
+    { id: 'charge', label: msg('Naplati kako je poslato') },
+    { id: 'reduce', label: msg('Umanji za sat') },
+    { id: 'waive', label: msg('Ne naplaćuj ništa') },
   ],
   planned: [
-    { id: 'keep', label: 'Plan ostaje' },
-    { id: 'cancel', label: 'Otkaži posetu' },
+    { id: 'keep', label: msg('Plan ostaje') },
+    { id: 'cancel', label: msg('Otkaži posetu') },
   ],
 };
 
@@ -334,23 +337,23 @@ export const resolveQuery = (visitId, outcome) => (c) => {
   let text;
   if (outcome === 'charge') {
     fn = (x) => ({ ...x, status: 'paid', confirmed: 'coordinator', chargedOn: today });
-    text = `Koordinatorka je proverila: naplaćuje se kako je poslato, ${money(visitCharge(v))}.`;
+    text = t('Koordinatorka je proverila: naplaćuje se kako je poslato, {amount}.', { amount: money(visitCharge(v)) });
   } else if (outcome === 'reduce') {
     const hours = Math.max(0.5, (v.report?.hours ?? v.hours) - 1);
     fn = (x) => ({ ...x, status: 'paid', confirmed: 'coordinator', chargedOn: today, report: { ...x.report, hours } });
-    text = `Koordinatorka je proverila: naplaćuje se ${pl(hours, 'sat', 'sata', 'sati')}, ${money(visitCharge({ ...v, report: { ...v.report, hours } }))}.`;
+    text = t('Koordinatorka je proverila: naplaćuje se {hours}, {amount}.', { hours: tn(hours, 'sat', 'sata', 'sati'), amount: money(visitCharge({ ...v, report: { ...v.report, hours } })) });
   } else if (outcome === 'waive') {
-    fn = (x) => ({ ...x, status: 'cancelled', cancelledBy: 'coordinator', cancelReason: 'Koordinatorka je odlučila da se ništa ne naplaćuje' });
-    text = 'Koordinatorka je proverila: ništa se ne naplaćuje, rezervacija je vraćena.';
+    fn = (x) => ({ ...x, status: 'cancelled', cancelledBy: 'coordinator', cancelReason: t('Koordinatorka je odlučila da se ništa ne naplaćuje') });
+    text = t('Koordinatorka je proverila: ništa se ne naplaćuje, rezervacija je vraćena.');
   } else if (outcome === 'keep') {
     fn = (x) => ({ ...x, status: 'planned' });
-    text = 'Koordinatorka je proverila: plan posete ostaje kakav je.';
+    text = t('Koordinatorka je proverila: plan posete ostaje kakav je.');
   } else {
-    fn = (x) => ({ ...x, status: 'cancelled', cancelledBy: 'coordinator', cancelReason: 'Koordinatorka je otkazala posetu' });
-    text = 'Koordinatorka je otkazala posetu, rezervacija je vraćena.';
+    fn = (x) => ({ ...x, status: 'cancelled', cancelledBy: 'coordinator', cancelReason: t('Koordinatorka je otkazala posetu') });
+    text = t('Koordinatorka je otkazala posetu, rezervacija je vraćena.');
   }
   return logged(
     mapVisit(c, visitId, (x) => ({ ...fn(x), resolution: { outcome, text, on: today } })),
-    { kind: outcome === 'keep' || outcome === 'cancel' ? 'visit' : 'money', caregiverId: v.caregiver.id, by: 'coordinator', title: 'Prijava je rešena', detail: text }
+    { kind: outcome === 'keep' || outcome === 'cancel' ? 'visit' : 'money', caregiverId: v.caregiver.id, by: 'coordinator', title: t('Prijava je rešena'), detail: text }
   );
 };

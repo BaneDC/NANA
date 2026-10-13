@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import Dialog from './Dialog';
 import { COOKIE_GROUPS } from '../data/cookies';
+import { t, tn } from '../i18n';
 
 // What each group of cookies actually sets, not just its name.
 //
@@ -42,28 +43,28 @@ function Group({ group, on, onChange }) {
               strokeWidth={2}
               className={cn('shrink-0 text-muted-foreground transition-transform duration-200', open && 'rotate-180')}
             />
-            <span className="text-xs font-medium text-foreground group-hover/summary:text-primary-700">{group.label}</span>
+            <span className="text-xs font-medium text-foreground group-hover/summary:text-primary-700">{t(group.label)}</span>
             <span className="text-small text-disabled">
-              {group.cookies.length ? `${group.cookies.length} kolačića` : 'spisak još nije unet'}
+              {group.cookies.length ? tn(group.cookies.length, 'kolačić', 'kolačića', 'kolačića') : t('spisak još nije unet')}
             </span>
           </button>
           {/* The state says itself, in a word, beside the switch: a switch alone
               is read wrong often enough that the word is worth the room. */}
           <span className={cn('shrink-0 text-small', on ? 'text-primary-600' : 'text-muted-foreground')}>
-            {on ? 'Uključeno' : 'Isključeno'}
+            {on ? t('Uključeno') : t('Isključeno')}
           </span>
           {/* what cannot be turned off still has its switch, so the list reads
               as one, but a paler one that does not move: it shows it cannot */}
           <Switch
             className="relative z-1"
             checked={on}
-            aria-label={group.label}
+            aria-label={t(group.label)}
             disabled={group.fixed}
             onCheckedChange={onChange}
           />
         </div>
 
-        <p className="text-xs leading-body text-muted-foreground">{group.note}</p>
+        <p className="text-xs leading-body text-muted-foreground">{t(group.note)}</p>
       </div>
 
       <CollapsibleContent>
@@ -72,15 +73,15 @@ function Group({ group, on, onChange }) {
             {group.cookies.map((c) => (
               <li key={c.name} className="flex flex-col gap-1 border-t border-(--card-line) py-2">
                 <span className="font-mono text-small text-foreground">{c.name}</span>
-                <span className="text-xs leading-body text-foreground">{c.why}</span>
+                <span className="text-xs leading-body text-foreground">{t(c.why)}</span>
                 <span className="text-small text-disabled">
-                  Postavlja {c.by} · traje {c.keeps}
+                  {t('Postavlja {by} · traje {keeps}', { by: c.by, keeps: t(c.keeps) })}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-small text-muted-foreground">Spisak ovih kolačića još nije prepisan sa sajta.</p>
+          <p className="text-small text-muted-foreground">{t('Spisak ovih kolačića još nije prepisan sa sajta.')}</p>
         )}
       </CollapsibleContent>
     </Collapsible>
@@ -97,9 +98,9 @@ export default function CookieSettings({ open = true, cookies, onSave, onClose }
   const all = (value) => onSave({ analytics: value, recording: value, marketing: value });
 
   return (
-    <Dialog eyebrow="Privatnost" title="Podešavanja kolačića" wide open={open} onClose={onClose}>
+    <Dialog eyebrow={t('Privatnost')} title={t('Podešavanja kolačića')} wide open={open} onClose={onClose}>
       <p className="text-xs leading-body text-muted-foreground">
-        Izbor važi i za nanaprime.com. Možete ga promeniti kad god želite, odavde.
+        {t('Izbor važi i za nanaprime.com. Možete ga promeniti kad god želite, odavde.')}
       </p>
 
       <div className="flex flex-col gap-2">
@@ -115,12 +116,12 @@ export default function CookieSettings({ open = true, cookies, onSave, onClose }
 
       <DialogFooter>
         <Button variant="ghost" onClick={() => all(false)}>
-          Odbij sve
+          {t('Odbij sve')}
         </Button>
         <Button variant="secondary" onClick={() => all(true)}>
-          Prihvati sve
+          {t('Prihvati sve')}
         </Button>
-        <Button onClick={() => onSave(draft)}>Sačuvaj izbor</Button>
+        <Button onClick={() => onSave(draft)}>{t('Sačuvaj izbor')}</Button>
       </DialogFooter>
     </Dialog>
   );

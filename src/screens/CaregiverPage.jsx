@@ -40,6 +40,7 @@ import {
   shownVersion,
   workedHours,
 } from '../data/familyCare';
+import { t } from '../i18n';
 
 // One caregiver, from the family's side: what is next with her, the terms she
 // works under, how it has gone so far, and every visit she has made. Everything
@@ -60,92 +61,126 @@ function nextStep(care, a) {
   // asked again after it ended: where that request is
   if (again && !pen) {
     return again.status === 'pending'
-      ? { eyebrow: 'Upit je poslat', copy: `Pisali ste joj ponovo ${again.requested}. ${first} još nije odgovorila, javićemo vam u svakom slučaju.` }
+      ? {
+          eyebrow: t('Upit je poslat'),
+          copy: t('Pisali ste joj ponovo {date}. {name} još nije odgovorila, javićemo vam u svakom slučaju.', { date: again.requested, name: first }),
+        }
       : again.status === 'accepted'
-        ? { eyebrow: 'Prihvatila je', copy: `${first} je prihvatila da ponovo dolazi. Nove uslove šalje uskoro, a stari ugovor ne važi.` }
+        ? {
+            eyebrow: t('Prihvatila je'),
+            copy: t('{name} je prihvatila da ponovo dolazi. Nove uslove šalje uskoro, a stari ugovor ne važi.', { name: first }),
+          }
         : {
-            eyebrow: 'Odbila je',
-            copy: `${first} sada ne može: ${again.detail.toLowerCase()}. Možete da je pitate ponovo kasnije.`,
-            label: 'Pitaj ponovo',
+            eyebrow: t('Odbila je'),
+            copy: t('{name} sada ne može: {why}. Možete da je pitate ponovo kasnije.', { name: first, why: again.detail.toLowerCase() }),
+            label: t('Pitaj ponovo'),
             contact: true,
           };
   }
 
   if (pen && !care.payment.connected) {
     return {
-      eyebrow: 'Čeka na vas',
-      copy: `${first} je predložila uslove, a kartica mora biti sačuvana pre nego što se ijedna poseta rezerviše. Dodavanje kartice ništa ne naplaćuje.`,
-      label: 'Pogledaj uslove',
+      eyebrow: t('Čeka na vas'),
+      copy: t('{name} je predložila uslove, a kartica mora biti sačuvana pre nego što se ijedna poseta rezerviše. Dodavanje kartice ništa ne naplaćuje.', {
+        name: first,
+      }),
+      label: t('Pogledaj uslove'),
       drawer: { kind: 'terms', caregiverId: a.caregiver.id },
     };
   }
   if (pen) {
     return {
-      eyebrow: 'Čeka na vas',
-      copy: `${first} je predložila ${money(pen.rate)} na sat za ${services(pen.services.length)}. ${activeVersion(a) ? `Verzija ${activeVersion(a).version} važi dok ne odgovorite.` : 'Ništa ne može da se zakaže dok ne odgovorite, a prihvatanje ništa ne naplaćuje.'}`,
-      label: 'Pogledaj uslove',
+      eyebrow: t('Čeka na vas'),
+      copy: [
+        t('{name} je predložila {rate} na sat za {services}.', { name: first, rate: money(pen.rate), services: services(pen.services.length) }),
+        activeVersion(a)
+          ? t('Verzija {version} važi dok ne odgovorite.', { version: activeVersion(a).version })
+          : t('Ništa ne može da se zakaže dok ne odgovorite, a prihvatanje ništa ne naplaćuje.'),
+      ].join(' '),
+      label: t('Pogledaj uslove'),
       drawer: { kind: 'terms', caregiverId: a.caregiver.id },
     };
   }
   if (order) {
     return {
-      eyebrow: 'Čeka na vas',
-      copy: `${first} je poslala radni nalog za ${order.date.toLowerCase()}. Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.`,
-      label: 'Pogledaj radni nalog',
+      eyebrow: t('Čeka na vas'),
+      copy: t('{name} je poslala radni nalog za {day}. Ako je sve bilo kako je dogovoreno, ne morate ništa - prolazi samo.', {
+        name: first,
+        day: order.date.toLowerCase(),
+      }),
+      label: t('Pogledaj radni nalog'),
       drawer: { kind: 'work-order', visitId: order.id },
     };
   }
   if (extra) {
     return {
-      eyebrow: 'Čeka na vas',
-      copy: `${first} je radila ${extra.extra.hours} h duže nego što je bilo rezervisano ${extra.date.toLowerCase()}. To se naplaćuje samo ako odobrite.`,
-      label: 'Pogledaj radni nalog',
+      eyebrow: t('Čeka na vas'),
+      copy: t('{name} je radila {hours} h duže nego što je bilo rezervisano {day}. To se naplaćuje samo ako odobrite.', {
+        name: first,
+        hours: extra.extra.hours,
+        day: extra.date.toLowerCase(),
+      }),
+      label: t('Pogledaj radni nalog'),
       drawer: { kind: 'work-order', visitId: extra.id },
     };
   }
   if (queried) {
     return {
-      eyebrow: 'Kod vaše koordinatorke',
-      copy: 'Ono što ste prijavili se proverava. Ništa se ne naplaćuje dok je otvoreno, i neko će vas pozvati.',
+      eyebrow: t('Kod vaše koordinatorke'),
+      copy: t('Ono što ste prijavili se proverava. Ništa se ne naplaćuje dok je otvoreno, i neko će vas pozvati.'),
     };
   }
   if (booked) {
     return {
-      eyebrow: 'Predstoji',
-      copy: `${first} dolazi ${booked.date.toLowerCase()} u ${booked.time.split('–')[0]}. ${money(chargedFor(booked.hours, booked.rate))} je rezervisano, nije naplaćeno.`,
-      label: 'Pogledaj plan posete',
+      eyebrow: t('Predstoji'),
+      copy: t('{name} dolazi {day} u {time}. {amount} je rezervisano, nije naplaćeno.', {
+        name: first,
+        day: booked.date.toLowerCase(),
+        time: booked.time.split('–')[0],
+        amount: money(chargedFor(booked.hours, booked.rate)),
+      }),
+      label: t('Pogledaj plan posete'),
       drawer: { kind: 'plan', visitId: booked.id },
     };
   }
   if (done) {
     return {
-      eyebrow: 'Poseta je obavljena',
-      copy: `${first} je bila kod vas ${done.date.toLowerCase()}. Ništa se ne naplaćuje dok ne pošalje radni nalog.`,
+      eyebrow: t('Poseta je obavljena'),
+      copy: t('{name} je bila kod vas {day}. Ništa se ne naplaćuje dok ne pošalje radni nalog.', { name: first, day: done.date.toLowerCase() }),
     };
   }
   if (a.endedOn) {
     return {
-      eyebrow: 'Završeno',
-      copy: `Ova saradnja je završena ${a.endedOn}. Ako vam je ponovo potrebna, pošaljite joj plan nege kakav je sada. Ona odgovara kao na svaki upit, a nove uslove postavljate zajedno.`,
-      label: canAsk(care, a.caregiver.id) ? 'Ponovo sarađujte' : null,
+      eyebrow: t('Završeno'),
+      copy: t(
+        'Ova saradnja je završena {date}. Ako vam je ponovo potrebna, pošaljite joj plan nege kakav je sada. Ona odgovara kao na svaki upit, a nove uslove postavljate zajedno.',
+        { date: a.endedOn }
+      ),
+      label: canAsk(care, a.caregiver.id) ? t('Ponovo sarađujte') : null,
       contact: true,
     };
   }
   if (!a.versions.length) {
-    return { eyebrow: 'Prihvatila je', copy: `${first} je prihvatila upit. Ugovor o nezi šalje uskoro, a ništa ne važi dok ga ne prihvatite.` };
+    return {
+      eyebrow: t('Prihvatila je'),
+      copy: t('{name} je prihvatila upit. Ugovor o nezi šalje uskoro, a ništa ne važi dok ga ne prihvatite.', { name: first }),
+    };
   }
   if (!activeVersion(a) && lastVersion(a)?.status === 'declined') {
     return {
-      eyebrow: 'Uslovi su odbijeni',
-      copy: `Odbili ste verziju ${lastVersion(a).version}. Koordinatorka će vas pozvati, a ${first} može da pošalje nove uslove.`,
+      eyebrow: t('Uslovi su odbijeni'),
+      copy: t('Odbili ste verziju {version}. Koordinatorka će vas pozvati, a {name} može da pošalje nove uslove.', {
+        version: lastVersion(a).version,
+        name: first,
+      }),
     };
   }
   if (!activeVersion(a) && lastVersion(a)?.status === 'withdrawn') {
-    return { eyebrow: 'Predlog je povučen', copy: `${first} je povukla uslove. Ništa ne važi dok ne pošalje nove.` };
+    return { eyebrow: t('Predlog je povučen'), copy: t('{name} je povukla uslove. Ništa ne važi dok ne pošalje nove.', { name: first }) };
   }
   return {
-    eyebrow: 'Ništa ne čeka',
-    copy: `Nijedna poseta nije zakazana i ništa ne čeka vaš odgovor. ${first} šalje sledeći plan kad dođe vreme.`,
+    eyebrow: t('Ništa ne čeka'),
+    copy: t('Nijedna poseta nije zakazana i ništa ne čeka vaš odgovor. {name} šalje sledeći plan kad dođe vreme.', { name: first }),
   };
 }
 
@@ -167,19 +202,19 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
 
   // the badge says what became of the version shown
   const TERMS_STATE = {
-    sent: { text: 'još nije prihvaćena', pill: 'is-pending' },
-    active: { text: 'važi', pill: 'is-accepted' },
-    ended: { text: 'završena', pill: 'is-muted' },
-    declined: { text: 'odbijena', pill: 'is-declined' },
-    withdrawn: { text: 'povučena', pill: 'is-muted' },
-    replaced: { text: 'zamenjena', pill: 'is-muted' },
+    sent: { text: t('još nije prihvaćena'), pill: 'is-pending' },
+    active: { text: t('važi'), pill: 'is-accepted' },
+    ended: { text: t('završena'), pill: 'is-muted' },
+    declined: { text: t('odbijena'), pill: 'is-declined' },
+    withdrawn: { text: t('povučena'), pill: 'is-muted' },
+    replaced: { text: t('zamenjena'), pill: 'is-muted' },
   };
   const termsState = terms && (TERMS_STATE[terms.status] || TERMS_STATE.active);
-  const termsBadge = termsState && { text: `Verzija ${terms.version} · ${termsState.text}`, pill: termsState.pill };
+  const termsBadge = termsState && { text: t('Verzija {version} · {state}', { version: terms.version, state: termsState.text }), pill: termsState.pill };
 
   return (
     <Page>
-      <BackButton label="Moja nega" onClick={onBack} />
+      <BackButton label={t('Moja nega')} onClick={onBack} />
 
       <PageHeader>
         <PagePerson>
@@ -189,7 +224,8 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
           <PageHeaderText>
             <PageTitle>{cg.name}</PageTitle>
             <PageDescription>
-              {cg.area} · dolazi kod: {care.elder.name} · {ended ? `završeno ${a.endedOn}` : a.since ? `od ${a.since}` : 'ugovor još nije prihvaćen'}
+              {cg.area} · {t('dolazi kod: {name}', { name: care.elder.name })} ·{' '}
+              {ended ? t('završeno {date}', { date: a.endedOn }) : a.since ? t('od {date}', { date: a.since }) : t('ugovor još nije prihvaćen')}
             </PageDescription>
           </PageHeaderText>
         </PagePerson>
@@ -199,16 +235,16 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
         <PageActions>
           {!ended && (
             <Button variant="secondary" asChild>
-              <a href={`tel:${cg.phone.replace(/\s/g, '')}`} className="no-underline">
+              <a href={'tel:' + cg.phone.replace(/\s/g, '')} className="no-underline">
                 <Phone size={14} strokeWidth={1.75} />
                 {cg.phone}
               </a>
             </Button>
           )}
-          <Button variant="secondary" size="icon" aria-label="Pregled" title="Pregled" onClick={() => onDrawer({ kind: 'overview', caregiverId: cg.id })}>
+          <Button variant="secondary" size="icon" aria-label={t('Pregled')} title={t('Pregled')} onClick={() => onDrawer({ kind: 'overview', caregiverId: cg.id })}>
             <IdCard size={14} strokeWidth={1.75} />
           </Button>
-          <Button variant="secondary" size="icon" aria-label="Šta se desilo" title="Šta se desilo" onClick={() => onDrawer({ kind: 'activity', caregiverId: cg.id })}>
+          <Button variant="secondary" size="icon" aria-label={t('Šta se desilo')} title={t('Šta se desilo')} onClick={() => onDrawer({ kind: 'activity', caregiverId: cg.id })}>
             <History size={14} strokeWidth={1.75} />
           </Button>
         </PageActions>
@@ -232,7 +268,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
 
       <Card>
         <CardHeader>
-          <CardTitle>{pen ? 'Novi uslovi čekaju na vas' : 'Ugovor o nezi'}</CardTitle>
+          <CardTitle>{pen ? t('Novi uslovi čekaju na vas') : t('Ugovor o nezi')}</CardTitle>
           {termsBadge && (
             <CardAction>
               <Badge variant={statusVariant(termsBadge.pill)}>{termsBadge.text}</Badge>
@@ -243,47 +279,50 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
           <>
             {pen && act && (
               <CardDescription>
-                Dok ne odgovorite, važi verzija {act.version}: {money(act.rate)}/h za{' '}
-                {services(act.services.length)}.
+                {t('Dok ne odgovorite, važi verzija {version}: {rate}/h za {services}.', {
+                  version: act.version,
+                  rate: money(act.rate),
+                  services: services(act.services.length),
+                })}
               </CardDescription>
             )}
             <ServiceChips ids={terms.services} grouped />
             <DataList className="mt-2">
-              <Line label={terms.status === 'sent' ? 'Poslato' : terms.agreedOn ? 'Prihvaćeno' : 'Poslato'} value={terms.status === 'sent' || !terms.agreedOn ? terms.sentOn : terms.agreedOn} />
-              <Line label="Cena po satu" value={rateText(terms.rate)} />
-              <Line label="Dogovoreni sati" value={`${terms.hours} h nedeljno`} />
-              <Line label="Raspored" value={terms.schedule} />
+              <Line label={terms.status === 'sent' ? t('Poslato') : terms.agreedOn ? t('Prihvaćeno') : t('Poslato')} value={terms.status === 'sent' || !terms.agreedOn ? terms.sentOn : terms.agreedOn} />
+              <Line label={t('Cena po satu')} value={rateText(terms.rate)} />
+              <Line label={t('Dogovoreni sati')} value={t('{hours} h nedeljno', { hours: terms.hours })} />
+              <Line label={t('Raspored')} value={terms.schedule} />
             </DataList>
             {terms.terms && (
               <Groups>
-                <Group label="Dodatni uslovi" text={terms.terms} />
+                <Group label={t('Dodatni uslovi')} text={terms.terms} />
               </Groups>
             )}
             {a.versions.length > 1 && (
               <CardFooter>
                 <Button variant="secondary" onClick={() => onDrawer({ kind: 'versions', caregiverId: cg.id })}>
-                  Sve verzije ({a.versions.length})
+                  {t('Sve verzije ({count})', { count: a.versions.length })}
                 </Button>
               </CardFooter>
             )}
           </>
         ) : (
-          <CardDescription>{first} još nije poslala uslove.</CardDescription>
+          <CardDescription>{t('{name} još nije poslala uslove.', { name: first })}</CardDescription>
         )}
       </Card>
 
       <Card>
-        <CardTitle>Ukratko</CardTitle>
+        <CardTitle>{t('Ukratko')}</CardTitle>
         <DataList className="mt-2">
-          <Line label="Zajedno" value={ended ? `${a.since || '-'} – ${a.endedOn}` : a.since ? `od ${a.since}` : 'još niste počeli'} />
-          <Line label="Posete do sada" value={paid.length ? `${paid.length} · ${hoursSoFar} h` : 'još nijedna'} />
+          <Line label={t('Zajedno')} value={ended ? (a.since || '-') + ' – ' + a.endedOn : a.since ? t('od {date}', { date: a.since }) : t('još niste počeli')} />
+          <Line label={t('Posete do sada')} value={paid.length ? paid.length + ' · ' + hoursSoFar + ' h' : t('još nijedna')} />
           {(a.periods || []).map((p) => (
-            <Line key={p.since} label="Ranije" value={`${p.since || '-'} – ${p.endedOn}`} />
+            <Line key={p.since} label={t('Ranije')} value={(p.since || '-') + ' – ' + p.endedOn} />
           ))}
-          <Line label="Poslednja poseta" value={paid[0]?.date || '-'} />
+          <Line label={t('Poslednja poseta')} value={paid[0]?.date || '-'} />
           <Line
-            label="Način plaćanja"
-            value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'}
+            label={t('Način plaćanja')}
+            value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : t('Još nije dodat')}
           />
         </DataList>
         {!care.payment.connected && (
@@ -292,11 +331,11 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
               variant="secondary"
               onClick={() => {
                 onCare(linkCard);
-                onFlash('Kartica je dodata. Posete sada mogu da se rezervišu.');
+                onFlash(t('Kartica je dodata. Posete sada mogu da se rezervišu.'));
               }}
             >
               <CreditCard size={14} strokeWidth={1.75} />
-              Dodaj karticu
+              {t('Dodaj karticu')}
             </Button>
           </CardFooter>
         )}
@@ -304,17 +343,17 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
 
       <Card>
         <CardHeader>
-          <CardTitle>Posete</CardTitle>
+          <CardTitle>{t('Posete')}</CardTitle>
           <CardAction>
             <Badge variant="secondary">{a.visits.length}</Badge>
           </CardAction>
         </CardHeader>
         <CardDescription>
           {pen && act
-            ? 'Nove posete su pauzirane dok ne odgovorite na nove uslove. Zakazane ostaju.'
+            ? t('Nove posete su pauzirane dok ne odgovorite na nove uslove. Zakazane ostaju.')
             : act || ended
-              ? 'Svaka se unapred rezerviše, a naplaćuje kad potvrdi šta je uradila.'
-              : 'Posete počinju kad se uslovi prihvate.'}
+              ? t('Svaka se unapred rezerviše, a naplaćuje kad potvrdi šta je uradila.')
+              : t('Posete počinju kad se uslovi prihvate.')}
         </CardDescription>
         {visits.length > 0 && (
           <ItemGroup>
@@ -331,9 +370,9 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
           not a card of its own. */}
       {act && !ended && (
         <div className="flex items-center gap-3 px-4 py-3 text-xs leading-body text-disabled phone:flex-col phone:items-start phone:gap-1">
-          <p className="flex-1">Kad završite saradnju, nove posete prestaju. Sve što je već izmireno ostaje u vašoj evidenciji.</p>
+          <p className="flex-1">{t('Kad završite saradnju, nove posete prestaju. Sve što je već izmireno ostaje u vašoj evidenciji.')}</p>
           <Button variant="ghost" className="text-destructive phone:-ml-3" onClick={() => onDrawer({ kind: 'end', caregiverId: cg.id })}>
-            Završi saradnju
+            {t('Završi saradnju')}
           </Button>
         </div>
       )}

@@ -18,7 +18,7 @@ import { chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/fa
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword, hashBackupCodes } from '../lib/account';
 import { priceLine, renewsOn } from '../data/plans';
-import { LANGUAGES, setLang, useLang } from '../i18n';
+import { LANGUAGES, setLang, t, tn, useLang } from '../i18n';
 
 
 // A setting that is on or off: the whole row is its label, so a click anywhere
@@ -57,33 +57,33 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
     if (!fault) return setDone(true);
     setError(
       fault === 'wrong-current'
-        ? 'Trenutna lozinka nije tačna.'
+        ? t('Trenutna lozinka nije tačna.')
         : fault === 'no-account'
-          ? 'Nalog nije pronađen na ovom uređaju.'
-          : 'Nije sačuvano - proverite da li je čuvanje podataka dozvoljeno u pregledaču.'
+          ? t('Nalog nije pronađen na ovom uređaju.')
+          : t('Nije sačuvano - proverite da li je čuvanje podataka dozvoljeno u pregledaču.')
     );
   };
 
   if (done) {
     return (
-      <Dialog eyebrow="Nalog" title="Lozinka je promenjena" open={open} onClose={onDone}>
+      <Dialog eyebrow={t('Nalog')} title={t('Lozinka je promenjena')} open={open} onClose={onDone}>
         <DialogDescription>
-          Od sledeće prijave koristite novu lozinku. Ako ste je negde sačuvali, promenite je i tamo.
+          {t('Od sledeće prijave koristite novu lozinku. Ako ste je negde sačuvali, promenite je i tamo.')}
         </DialogDescription>
         <DialogFooter>
-          <Button onClick={onDone}>U redu</Button>
+          <Button onClick={onDone}>{t('U redu')}</Button>
         </DialogFooter>
       </Dialog>
     );
   }
 
   return (
-    <Dialog eyebrow="Nalog" title="Promenite lozinku" open={open} onClose={onClose}>
-      <DialogDescription>Nova lozinka mora imati najmanje 8 karaktera.</DialogDescription>
+    <Dialog eyebrow={t('Nalog')} title={t('Promenite lozinku')} open={open} onClose={onClose}>
+      <DialogDescription>{t('Nova lozinka mora imati najmanje 8 karaktera.')}</DialogDescription>
       {/* a real form, so the browser's password manager can offer and update it */}
       <form className="contents" onSubmit={(e) => (e.preventDefault(), ready && submit())}>
         <div className="flex flex-col gap-3">
-          <Field label="Trenutna lozinka">
+          <Field label={t('Trenutna lozinka')}>
             <Password
               value={current}
               onChange={(v) => {
@@ -92,10 +92,10 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
               }}
             />
           </Field>
-          <Field label="Nova lozinka" hint={short ? 'Kratka je - treba najmanje 8 karaktera.' : null}>
+          <Field label={t('Nova lozinka')} hint={short ? t('Kratka je - treba najmanje 8 karaktera.') : null}>
             <Password value={next} onChange={setNext} autoComplete="new-password" />
           </Field>
-          <Field label="Nova lozinka još jednom" hint={mismatch ? 'Dva unosa se ne poklapaju.' : null}>
+          <Field label={t('Nova lozinka još jednom')} hint={mismatch ? t('Dva unosa se ne poklapaju.') : null}>
             <Password value={again} onChange={setAgain} autoComplete="new-password" />
           </Field>
         </div>
@@ -104,10 +104,10 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
 
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={onClose}>
-            Otkaži
+            {t('Otkaži')}
           </Button>
           <Button type="submit" disabled={!ready}>
-            Sačuvaj lozinku
+            {t('Sačuvaj lozinku')}
           </Button>
         </DialogFooter>
       </form>
@@ -158,25 +158,25 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
     <Page>
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Podešavanja</PageTitle>
-          <PageDescription>Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.</PageDescription>
+          <PageTitle>{t('Podešavanja')}</PageTitle>
+          <PageDescription>{t('Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.')}</PageDescription>
         </PageHeaderText>
       </PageHeader>
 
-      <PageSection title="Nalog">
+      <PageSection title={t('Nalog')}>
         <AccountCard user={user} onSave={onSaveUser} />
       </PageSection>
 
-      <PageSection title="Plaćanje">
+      <PageSection title={t('Plaćanje')}>
         {/* Started and stopped from here. It used to be startable only from the
             dialog on the care plan, which is where somebody runs into the
             paywall — not where they go looking for what they pay for. */}
         <Card>
           <CardHeader>
-            <CardTitle>Pretplata</CardTitle>
+            <CardTitle>{t('Pretplata')}</CardTitle>
             <CardAction>
               <Badge variant={unlocked && !cancelled ? 'success' : 'secondary'}>
-                {unlocked ? (cancelled ? 'Otkazana' : 'Aktivna') : 'Niste pretplaćeni'}
+                {unlocked ? (cancelled ? t('Otkazana') : t('Aktivna')) : t('Niste pretplaćeni')}
               </Badge>
             </CardAction>
           </CardHeader>
@@ -184,26 +184,26 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             <>
               <CheckList>
                 <li>
-                  <Check size={12} strokeWidth={2.5} /> Kontakti negovateljica
+                  <Check size={12} strokeWidth={2.5} /> {t('Kontakti negovateljica')}
                 </li>
                 <li>
-                  <Check size={12} strokeWidth={2.5} /> Pregledi i pomagala kod partnera, do 10% jeftinije
+                  <Check size={12} strokeWidth={2.5} /> {t('Pregledi i pomagala kod partnera, do 10% jeftinije')}
                 </li>
               </CheckList>
               <CardDescription>
                 {cancelled
-                  ? `Otkazali ste pretplatu. Važi do ${until}, a posle toga se ne obnavlja.`
-                  : `${priceLine(user?.country, subscription?.planId)} · obnavlja se ${until}`}
+                  ? t('Otkazali ste pretplatu. Važi do {date}, a posle toga se ne obnavlja.', { date: until })
+                  : priceLine(user?.country, subscription?.planId) + ' · ' + t('obnavlja se {date}', { date: until })}
               </CardDescription>
               {/* What adds or changes something is primary; what switches
                   something off or cancels it is not — orange is what we
                   recommend, and we do not recommend this. It asks first. */}
               <CardFooter>
                 {cancelled ? (
-                  <Button onClick={() => onSubscribe?.('resume')}>Obnovi pretplatu</Button>
+                  <Button onClick={() => onSubscribe?.('resume')}>{t('Obnovi pretplatu')}</Button>
                 ) : (
                   <Button variant="secondary" onClick={() => setCancelling(true)}>
-                    Otkaži pretplatu
+                    {t('Otkaži pretplatu')}
                   </Button>
                 )}
               </CardFooter>
@@ -211,12 +211,12 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           ) : (
             <>
               <CardDescription>
-                Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.
+                {t('Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.')}
                 {' '}
                 {priceLine(user?.country)}.
               </CardDescription>
               <CardFooter>
-                <Button onClick={onSubscribe}>Pretplatite se</Button>
+                <Button onClick={onSubscribe}>{t('Pretplatite se')}</Button>
               </CardFooter>
             </>
           )}
@@ -225,7 +225,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             it belongs here and not on the dashboard. */}
         <Card>
           <CardHeader>
-            <CardTitle>Način plaćanja</CardTitle>
+            <CardTitle>{t('Način plaćanja')}</CardTitle>
             <CardAction>
               {payment.connected ? (
                 <Badge variant="success">
@@ -233,7 +233,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
                   {payment.brand} ···· {payment.last4}
                 </Badge>
               ) : (
-                <Badge variant="destructive">Nije podešeno</Badge>
+                <Badge variant="destructive">{t('Nije podešeno')}</Badge>
               )}
             </CardAction>
           </CardHeader>
@@ -241,81 +241,87 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           {payment.connected ? (
             <>
               <CardDescription>
-                Dodato {payment.connectedOn}. Svaka poseta se naplaćuje 24 sata pošto negovateljica
-                pošalje izveštaj - od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite
-                sa stranice Moja nega.
+                {t(
+                  'Dodato {date}. Svaka poseta se naplaćuje 24 sata pošto negovateljica pošalje izveštaj - od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite sa stranice Moja nega.',
+                  { date: payment.connectedOn }
+                )}
               </CardDescription>
               <DataList className="mt-2">
-                <DataRow label="Rezervisano za zakazane posete">{money(heldNow(care))}</DataRow>
-                <DataRow label="Naplaćuje se sada">
-                  {charging ? `${money(visitCharge(charging))} · za ${charging.chargesInHours} h` : 'Ništa'}
+                <DataRow label={t('Rezervisano za zakazane posete')}>{money(heldNow(care))}</DataRow>
+                <DataRow label={t('Naplaćuje se sada')}>
+                  {charging
+                    ? t('{amount} · za {hours} h', { amount: money(visitCharge(charging)), hours: charging.chargesInHours })
+                    : t('Ništa')}
                 </DataRow>
               </DataList>
               <CardFooter>
                 <Button variant="secondary" onClick={() => setCardOpen(true)}>
-                  Promeni karticu
+                  {t('Promeni karticu')}
                 </Button>
               </CardFooter>
             </>
           ) : (
             <>
               <CardDescription>
-                Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže.
-                Dodaje se preko Stripe-a - mi nikad ne vidimo broj.
+                {t(
+                  'Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže. Dodaje se preko Stripe-a - mi nikad ne vidimo broj.'
+                )}
               </CardDescription>
               <CardFooter>
-                <Button onClick={() => setCardOpen(true)}>Dodaj karticu</Button>
+                <Button onClick={() => setCardOpen(true)}>{t('Dodaj karticu')}</Button>
               </CardFooter>
             </>
           )}
         </Card>
       </PageSection>
 
-      <PageSection title="Bezbednost">
+      <PageSection title={t('Bezbednost')}>
         <Card>
           <CardHeader>
-            <CardTitle>Lozinka</CardTitle>
+            <CardTitle>{t('Lozinka')}</CardTitle>
           </CardHeader>
-          <CardDescription>Promenite lozinku kojom se prijavljujete.</CardDescription>
+          <CardDescription>{t('Promenite lozinku kojom se prijavljujete.')}</CardDescription>
           <CardFooter>
             <Button variant="secondary" onClick={() => setPasswordOpen(true)}>
-              Promenite lozinku
+              {t('Promenite lozinku')}
             </Button>
           </CardFooter>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Dvofaktorska prijava</CardTitle>
+            <CardTitle>{t('Dvofaktorska prijava')}</CardTitle>
             <CardAction>
-              <Badge variant={twoFactor ? 'success' : 'secondary'}>{twoFactor ? 'Uključena' : 'Isključena'}</Badge>
+              <Badge variant={twoFactor ? 'success' : 'secondary'}>{twoFactor ? t('Uključena') : t('Isključena')}</Badge>
             </CardAction>
           </CardHeader>
           <CardDescription>
-            Uz lozinku traži se i šestocifreni kod iz aplikacije na vašem telefonu.
+            {t('Uz lozinku traži se i šestocifreni kod iz aplikacije na vašem telefonu.')}
             {twoFactor && user?.backupCodesLeft
-              ? ` Ostalo vam je ${user.backupCodesLeft} rezervnih kodova.`
+              ? ' ' + t('Ostalo vam je {codes}.', {
+                  codes: tn(user.backupCodesLeft, 'rezervni kod', 'rezervna koda', 'rezervnih kodova'),
+                })
               : ''}
           </CardDescription>
           <CardFooter>
             {twoFactor ? (
               <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
-                Isključi
+                {t('Isključi')}
               </Button>
             ) : (
-              <Button onClick={() => setTwoFactorOpen(true)}>Uključi</Button>
+              <Button onClick={() => setTwoFactorOpen(true)}>{t('Uključi')}</Button>
             )}
           </CardFooter>
         </Card>
       </PageSection>
 
-      <PageSection title="Opšte">
+      <PageSection title={t('Opšte')}>
         {/* Language, cookies and the second factor: the account's own settings,
             the three the old platform kept together. */}
         <Card>
           <CardHeader>
-            <CardTitle>Jezik</CardTitle>
+            <CardTitle>{t('Jezik')}</CardTitle>
           </CardHeader>
-          <CardDescription>Jezik aplikacije i poruka koje vam šaljemo.</CardDescription>
+          <CardDescription>{t('Jezik aplikacije i poruka koje vam šaljemo.')}</CardDescription>
           {/* one is always chosen: pressing the chosen one again does nothing */}
           <ToggleGroup type="single" value={language} onValueChange={(id) => {
               if (!id) return;
@@ -330,17 +336,17 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           </ToggleGroup>
         </Card>
         <Card>
-          <CardTitle>Obaveštenja</CardTitle>
+          <CardTitle>{t('Obaveštenja')}</CardTitle>
           <div className="flex flex-col">
             <Toggle
-              label="Mesečni pregled"
-              hint="Jednom mesečno, kratak pregled poseta tog meseca"
+              label={t('Mesečni pregled')}
+              hint={t('Jednom mesečno, kratak pregled poseta tog meseca')}
               on={prefs.digest}
               onChange={set('digest')}
             />
             <Toggle
-              label="Novosti"
-              hint="Povremene vesti o NANA Prime"
+              label={t('Novosti')}
+              hint={t('Povremene vesti o NANA Prime')}
               on={prefs.marketing}
               onChange={set('marketing')}
             />
@@ -348,12 +354,12 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         </Card>
       </PageSection>
 
-      <PageSection title="Privatnost">
+      <PageSection title={t('Privatnost')}>
         <Card>
           <CardHeader>
-            <CardTitle>Kolačići</CardTitle>
+            <CardTitle>{t('Kolačići')}</CardTitle>
           </CardHeader>
-          <CardDescription>Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.</CardDescription>
+          <CardDescription>{t('Izaberite koje kolačiće dozvoljavate. Izbor važi i za nanaprime.com.')}</CardDescription>
           {/* Every group and where it stands, in words. Rows rather than chips:
               a chip here is the same shape as the ones that are pressed
               elsewhere, and this is a reading of the state, not a control. */}
@@ -361,15 +367,15 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             {COOKIE_GROUPS.map((g) => {
               const on = g.fixed || cookies[g.id];
               return (
-                <DataRow key={g.id} label={g.label} off={!on}>
-                  {on ? 'Uključeno' : 'Isključeno'}
-                  {g.fixed ? ' · uvek' : ''}
+                <DataRow key={g.id} label={t(g.label)} off={!on}>
+                  {on ? t('Uključeno') : t('Isključeno')}
+                  {g.fixed ? ' · ' + t('uvek') : ''}
                 </DataRow>
               );
             })}
           </DataList>
           <CardFooter>
-            <Button onClick={() => setCookiesOpen(true)}>Podešavanja kolačića</Button>
+            <Button onClick={() => setCookiesOpen(true)}>{t('Podešavanja kolačića')}</Button>
           </CardFooter>
         </Card>
       </PageSection>
@@ -386,14 +392,15 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         />
       )}
 
-      <Dialog eyebrow="Pretplata" title="Otkazati pretplatu?" open={cancelling} onClose={() => setCancelling(false)}>
+      <Dialog eyebrow={t('Pretplata')} title={t('Otkazati pretplatu?')} open={cancelling} onClose={() => setCancelling(false)}>
         <DialogDescription>
-          Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju
-          plaćenog perioda. Možete da se pretplatite ponovo kad god želite.
+          {t(
+            'Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju plaćenog perioda. Možete da se pretplatite ponovo kad god želite.'
+          )}
         </DialogDescription>
         <DialogFooter>
           <Button variant="secondary" onClick={() => setCancelling(false)}>
-            Zadrži pretplatu
+            {t('Zadrži pretplatu')}
           </Button>
           <Button
             variant="destructive"
@@ -402,7 +409,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
               onSubscribe?.(false);
             }}
           >
-            Otkaži pretplatu
+            {t('Otkaži pretplatu')}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -447,27 +454,28 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         />
       )}
 
-      <Dialog eyebrow="Plaćanje" title="Dodajte karticu" open={cardOpen} onClose={() => setCardOpen(false)}>
+      <Dialog eyebrow={t('Plaćanje')} title={t('Dodajte karticu')} open={cardOpen} onClose={() => setCardOpen(false)}>
         <DialogDescription>
-          Kartice čuva Stripe, ne mi - broj unosite na njihovoj stranici i mi ga nikad ne vidimo.
-          Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.
+          {t(
+            'Kartice čuva Stripe, ne mi - broj unosite na njihovoj stranici i mi ga nikad ne vidimo. Kad je sačuvana, posete se naplaćuju automatski i više vas ništa ne pitamo.'
+          )}
         </DialogDescription>
         <CheckList>
           <li>
-            <Check size={12} strokeWidth={2.5} /> Naplata 24 sata posle svakog izveštaja o poseti
+            <Check size={12} strokeWidth={2.5} /> {t('Naplata 24 sata posle svakog izveštaja o poseti')}
           </li>
           <li>
-            <Check size={12} strokeWidth={2.5} /> Ništa se ne uzima pre nego što se poseta obavi
+            <Check size={12} strokeWidth={2.5} /> {t('Ništa se ne uzima pre nego što se poseta obavi')}
           </li>
           <li>
-            <Check size={12} strokeWidth={2.5} /> U tom roku možete da zaustavite svaku naplatu
+            <Check size={12} strokeWidth={2.5} /> {t('U tom roku možete da zaustavite svaku naplatu')}
           </li>
         </CheckList>
         <DialogFooter>
           <Button variant="secondary" onClick={() => setCardOpen(false)}>
-            Otkaži
+            {t('Otkaži')}
           </Button>
-          <Button onClick={connect}>Nastavi na Stripe</Button>
+          <Button onClick={connect}>{t('Nastavi na Stripe')}</Button>
         </DialogFooter>
       </Dialog>
     </Page>

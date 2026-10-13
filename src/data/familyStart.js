@@ -1,6 +1,7 @@
 import { serviceTitle } from './caregiverBoard';
 import { servicesForNeed } from './serviceCatalog';
 import { START_HOUR } from './familyCare';
+import { t } from '../i18n';
 
 // The family's side as it really starts: nobody asked yet, nobody coming, no
 // card. Everything on it from here is something the family did, or a
@@ -45,12 +46,12 @@ export function needFrom(answers) {
   const often = answers['daily-help']?.optionId;
   const week =
     often === 'several-times'
-      ? { days: 'pon – pet', time: '09:00–13:00', perVisit: 4, visits: 5 }
+      ? { days: t('pon – pet'), time: '09:00–13:00', perVisit: 4, visits: 5 }
       : often === 'almost-constant' || often === 'dependent'
-        ? { days: 'pon – pet', time: '08:00–16:00', perVisit: 8, visits: 5 }
+        ? { days: t('pon – pet'), time: '08:00–16:00', perVisit: 8, visits: 5 }
         : often === 'none'
-          ? { days: 'uto, čet', time: '10:00–13:00', perVisit: 3, visits: 2 }
-          : { days: 'pon, sre, pet', time: '09:00–12:00', perVisit: 3, visits: 3 };
+          ? { days: t('uto, čet'), time: '10:00–13:00', perVisit: 3, visits: 2 }
+          : { days: t('pon, sre, pet'), time: '09:00–12:00', perVisit: 3, visits: 3 };
 
   return {
     // in the catalog's terms, as a caregiver's agreement would list them
@@ -79,10 +80,10 @@ export function withAnswers(care, answers, user) {
 export function requestMessage(care) {
   const what = (care.need?.services || []).map((s) => serviceTitle(s).toLowerCase()).join(', ');
   return [
-    'Tražimo negovateljicu, plan nege je u prilogu.',
-    what && `Potrebno je: ${what}.`,
-    care.need && `Otprilike ${care.need.schedule}.`,
-    'Da li biste mogli da dolazite?',
+    t('Tražimo negovateljicu, plan nege je u prilogu.'),
+    what && t('Potrebno je: {what}.', { what }),
+    care.need && t('Otprilike {schedule}.', { schedule: care.need.schedule }),
+    t('Da li biste mogli da dolazite?'),
   ]
     .filter(Boolean)
     .join(' ');

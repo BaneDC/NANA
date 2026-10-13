@@ -5,6 +5,7 @@ import { statusVariant } from '../Standing';
 import { Group, Groups } from '../Tags';
 import VisitReport from './VisitReport';
 import { chargedFor, firstName, money, returnedFor, visitCharge } from '../../data/familyCare';
+import { msg, t } from '@/i18n';
 
 // One visit, as the family sees it: when, who, where the money is, and — when
 // there is one — the thing they can do about it. Her page and the list of every
@@ -20,60 +21,65 @@ import { chargedFor, firstName, money, returnedFor, visitCharge } from '../../da
 // what happens next with its button under it, left, like a card's footer.
 
 const STATUS = {
-  planned: { label: 'Plan posete', pill: 'is-pending' },
-  awaiting: { label: 'Čeka radni nalog', pill: 'is-muted' },
-  charging: { label: 'Radni nalog stigao', pill: 'is-attention' },
-  disputed: { label: 'Prijavljeno', pill: 'is-declined' },
-  paid: { label: 'Plaćeno', pill: 'is-accepted' },
-  cancelled: { label: 'Otkazano', pill: 'is-muted' },
+  planned: { label: msg('Plan posete'), pill: 'is-pending' },
+  awaiting: { label: msg('Čeka radni nalog'), pill: 'is-muted' },
+  charging: { label: msg('Radni nalog stigao'), pill: 'is-attention' },
+  disputed: { label: msg('Prijavljeno'), pill: 'is-declined' },
+  paid: { label: msg('Plaćeno'), pill: 'is-accepted' },
+  cancelled: { label: msg('Otkazano'), pill: 'is-muted' },
 };
 
 // what the money of a visit is at, said short: the home's last visit says it too
 export function amountOf(v) {
-  if (v.status === 'planned') return { amount: money(chargedFor(v.hours, v.rate)), note: 'rezervisano' };
-  if (v.status === 'paid') return { amount: money(visitCharge(v)), note: 'naplaćeno' };
-  if (v.status === 'charging') return { amount: money(visitCharge(v)), note: 'biće naplaćeno' };
-  if (v.status === 'disputed') return { amount: money(chargedFor(v.hours, v.rate)), note: 'zadržano' };
-  if (v.status === 'awaiting') return { amount: money(chargedFor(v.hours, v.rate)), note: 'još nije naplaćeno' };
+  if (v.status === 'planned') return { amount: money(chargedFor(v.hours, v.rate)), note: t('rezervisano') };
+  if (v.status === 'paid') return { amount: money(visitCharge(v)), note: t('naplaćeno') };
+  if (v.status === 'charging') return { amount: money(visitCharge(v)), note: t('biće naplaćeno') };
+  if (v.status === 'disputed') return { amount: money(chargedFor(v.hours, v.rate)), note: t('zadržano') };
+  if (v.status === 'awaiting') return { amount: money(chargedFor(v.hours, v.rate)), note: t('još nije naplaćeno') };
   return v.lateCharge
-    ? { amount: money(chargedFor(v.hours, v.rate)), note: 'naplaćeno, kasno otkazano' }
-    : { amount: '-', note: 'vraćeno' };
+    ? { amount: money(chargedFor(v.hours, v.rate)), note: t('naplaćeno, kasno otkazano') }
+    : { amount: '-', note: t('vraćeno') };
 }
 
 function lineFor(v) {
   const first = firstName(v.caregiver.name);
   switch (v.status) {
     case 'planned':
-      return 'Rezervisano, nije naplaćeno - novac se uzima tek posle posete, kad stigne radni nalog.';
+      return t('Rezervisano, nije naplaćeno - novac se uzima tek posle posete, kad stigne radni nalog.');
     case 'awaiting':
-      return `${first} još treba da potvrdi šta je uradila pre nego što se išta naplati.`;
+      return t('{name} još treba da potvrdi šta je uradila pre nego što se išta naplati.', { name: first });
     case 'charging':
-      return `Naplaćuje se za ${v.chargesInHours} h, osim ako kažete da nešto nije u redu.${
-        v.extra?.status === 'asked' ? ` ${first} traži i ${v.extra.hours} h preko rezervisanog.` : ''
-      }`;
+      return [
+        t('Naplaćuje se za {hours} h, osim ako kažete da nešto nije u redu.', { hours: v.chargesInHours }),
+        v.extra?.status === 'asked' && t('{name} traži i {hours} h preko rezervisanog.', { name: first, hours: v.extra.hours }),
+      ]
+        .filter(Boolean)
+        .join(' ');
     case 'disputed':
-      return 'Ništa se ne naplaćuje dok je ovo otvoreno. Koordinatorka proverava i pozvaće vas.';
+      return t('Ništa se ne naplaćuje dok je ovo otvoreno. Koordinatorka proverava i pozvaće vas.');
     case 'paid': {
       const said = v.resolution
-        ? v.resolution.text
+        ? t(v.resolution.text)
         : v.confirmed === 'you'
-          ? 'Vi ste potvrdili.'
-          : 'Potvrđeno automatski posle 24 sata.';
+          ? t('Vi ste potvrdili.')
+          : t('Potvrđeno automatski posle 24 sata.');
       // what the coordinator settled already says what was charged
       const back = v.resolution ? 0 : returnedFor(v);
       const extra =
         v.extra?.status === 'asked'
-          ? ` ${first} traži još ${v.extra.hours} h, čeka vaš odgovor.`
+          ? t('{name} traži još {hours} h, čeka vaš odgovor.', { name: first, hours: v.extra.hours })
           : v.extra?.status === 'approved'
-            ? ` Dodatni sati su odobreni.`
+            ? t('Dodatni sati su odobreni.')
             : '';
-      return `${said}${back ? ` ${money(back)} je vraćeno, radila je kraće.` : ''}${extra}`;
+      return [said, back && t('{amount} je vraćeno, radila je kraće.', { amount: money(back) }), extra].filter(Boolean).join(' ');
     }
     default:
-      if (v.lateCharge) return 'Otkazano u poslednjem satu, pa je naplaćeno u celosti.';
-      if (v.resolution) return v.resolution.text;
-      if (v.cancelledBy === 'caregiver') return `${v.cancelReason}. Ništa nije naplaćeno.`;
-      return v.cancelReason ? `Otkazano - ${v.cancelReason.toLowerCase()}. Ništa nije naplaćeno.` : 'Rezervacija je vraćena. Ništa nije naplaćeno.';
+      if (v.lateCharge) return t('Otkazano u poslednjem satu, pa je naplaćeno u celosti.');
+      if (v.resolution) return t(v.resolution.text);
+      if (v.cancelledBy === 'caregiver') return t('{reason}. Ništa nije naplaćeno.', { reason: t(v.cancelReason) });
+      return v.cancelReason
+        ? t('Otkazano - {reason}. Ništa nije naplaćeno.', { reason: t(v.cancelReason).toLowerCase() })
+        : t('Rezervacija je vraćena. Ništa nije naplaćeno.');
   }
 }
 
@@ -82,11 +88,11 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
   const m = amountOf(v);
   const action =
     v.status === 'charging' || v.extra?.status === 'asked'
-      ? { label: 'Pogledaj radni nalog', variant: 'default', drawer: { kind: 'work-order', visitId: v.id } }
+      ? { label: t('Pogledaj radni nalog'), variant: 'default', drawer: { kind: 'work-order', visitId: v.id } }
       : v.status === 'planned'
-        ? { label: 'Pogledaj plan posete', variant: 'secondary', drawer: { kind: 'plan', visitId: v.id } }
+        ? { label: t('Pogledaj plan posete'), variant: 'secondary', drawer: { kind: 'plan', visitId: v.id } }
         : (v.status === 'paid' || v.status === 'disputed' || v.resolution) && v.report
-          ? { label: 'Radni nalog', variant: 'secondary', drawer: { kind: 'work-order', visitId: v.id } }
+          ? { label: t('Radni nalog'), variant: 'secondary', drawer: { kind: 'work-order', visitId: v.id } }
           : null;
 
   const open = action && (() => onDrawer(action.drawer));
@@ -106,12 +112,12 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
               </span>
             )}
             <Badge variant={statusVariant(s.pill)} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
-              {s.label}
+              {t(s.label)}
             </Badge>
           </p>
           <p className="text-xs leading-body text-muted-foreground">
             {showWho ? `${v.caregiver.name} · ` : ''}
-            {v.hours} h po {money(v.rate)}/h
+            {t('{hours} h po {rate}/h', { hours: v.hours, rate: money(v.rate) })}
           </p>
         </div>
         <div className="text-right">
@@ -125,7 +131,7 @@ export default function VisitRow({ visit: v, showWho, onDrawer }) {
       )}
       {v.status === 'disputed' && v.queryReason && (
         <Groups>
-          <Group label="Vi ste napisali" text={v.queryReason} />
+          <Group label={t('Vi ste napisali')} text={v.queryReason} />
         </Groups>
       )}
 

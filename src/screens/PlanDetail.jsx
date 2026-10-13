@@ -9,6 +9,7 @@ import PlanOverview from '../components/PlanOverview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import AskAssistant from '../components/AskAssistant';
+import { t } from '../i18n';
 
 // The care plan as its own page, reached from the nav. A person has one plan,
 // changed as she changes (docs/plan-nege.md), so there is no list of plans to
@@ -52,7 +53,7 @@ export default function PlanDetail({
         <PageActions>
           <AskAssistant iconOnly onClick={onAskAssistant} />
           {onShare && (
-            <Button variant="secondary" size="icon" onClick={onShare} aria-label="Pošalji plan" title="Pošalji plan">
+            <Button variant="secondary" size="icon" onClick={onShare} aria-label={t('Pošalji plan')} title={t('Pošalji plan')}>
               <Send size={14} strokeWidth={1.75} />
             </Button>
           )}
@@ -61,9 +62,9 @@ export default function PlanDetail({
 
       {/* the plan, and the overview it was built from: two views of one thing */}
       <Tabs value={side} onValueChange={setSide}>
-        <TabsList aria-label="Šta prikazati">
-          <TabsTrigger value="plan">Plan nege</TabsTrigger>
-          <TabsTrigger value="overview">Pregled i odgovori</TabsTrigger>
+        <TabsList aria-label={t('Šta prikazati')}>
+          <TabsTrigger value="plan">{t('Plan nege')}</TabsTrigger>
+          <TabsTrigger value="overview">{t('Pregled i odgovori')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="plan" className="flex flex-col gap-3">
@@ -100,14 +101,14 @@ export function NoPlan({ onGoToChat }) {
     <Page>
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Plan nege</PageTitle>
+          <PageTitle>{t('Plan nege')}</PageTitle>
         </PageHeaderText>
       </PageHeader>
-      <Attention title="Nema aktivnog plana">
+      <Attention title={t('Nema aktivnog plana')}>
         <Card>
-          <CardDescription>Odgovorite na pitanja u razgovoru i plan će se pojaviti ovde.</CardDescription>
+          <CardDescription>{t('Odgovorite na pitanja u razgovoru i plan će se pojaviti ovde.')}</CardDescription>
           <CardFooter>
-            <Button onClick={onGoToChat}>Idi na razgovor</Button>
+            <Button onClick={onGoToChat}>{t('Idi na razgovor')}</Button>
           </CardFooter>
         </Card>
       </Attention>

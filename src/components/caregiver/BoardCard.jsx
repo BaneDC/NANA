@@ -13,10 +13,12 @@ import {
   dueVisit,
   frailtyLabel,
   heldFor,
+  km,
   money,
   serviceShort,
   workOrderTotals,
 } from '../../data/caregiverBoard';
+import { t } from '../../i18n';
 
 // One family, on the caregiver's board. The card is the same object in every
 // column — same person, same header — and only the middle and the buttons
@@ -25,7 +27,7 @@ import {
 
 function Pill({ tone, icon: Icon, children }) {
   return (
-    <Badge variant={statusVariant(`is-${tone}`)}>
+    <Badge variant={statusVariant('is-' + tone)}>
       {Icon && <Icon size={12} strokeWidth={2} />}
       {children}
     </Badge>
@@ -35,8 +37,8 @@ function Pill({ tone, icon: Icon, children }) {
 // The request that has been sitting longest is the one that reads as being
 // ignored, so waiting is stated in the units it hurts in.
 function waitedFor(client) {
-  if (client.waitingDays) return `Čeka ${client.waitingDays} d`;
-  return `Pre ${client.waitingHours} h`;
+  if (client.waitingDays) return t('Čeka {n} d', { n: client.waitingDays });
+  return t('Pre {n} h', { n: client.waitingHours });
 }
 
 function Status({ client }) {
@@ -51,23 +53,23 @@ function Status({ client }) {
   if (client.stage === 'agreement') {
     return client.agreementSent ? (
       <Pill tone="pending" icon={Clock}>
-        Čeka potpis
+        {t('Čeka potpis')}
       </Pill>
     ) : (
       <Pill tone="accepted" icon={Check}>
-        Prihvaćeno
+        {t('Prihvaćeno')}
       </Pill>
     );
   }
   if (client.stage === 'active') {
-    return <Pill tone="muted">Od {client.since}</Pill>;
+    return <Pill tone="muted">{t('Od {date}', { date: t(client.since) })}</Pill>;
   }
   // An unsent work order has no clock of its own. It is money she has done the
   // work for and not yet asked for — the 24 hours belong to the family, and
   // only start once it is sent.
   return (
     <Pill tone="pending" icon={AlertTriangle}>
-      Nije poslato
+      {t('Nije poslato')}
     </Pill>
   );
 }
@@ -125,7 +127,7 @@ const BoardCard = forwardRef(function BoardCard(
             {client.elder}
           </button>
           <p className="text-small text-disabled">
-            {client.age} · {client.area} · {client.distance}
+            {client.age} · {client.area} · {km(client.distance)}
           </p>
         </div>
         <Status client={client} />
@@ -134,7 +136,7 @@ const BoardCard = forwardRef(function BoardCard(
       {client.stage === 'request' && (
         <>
           <p className="text-xs text-primary-600">
-            Krhkost {client.frailty} · {frailtyLabel(client.frailty)}
+            {t('Krhkost {level}', { level: client.frailty })} · {frailtyLabel(client.frailty)}
           </p>
           <div className="flex flex-wrap gap-2">
             {client.needs.map((n) => (
@@ -142,10 +144,10 @@ const BoardCard = forwardRef(function BoardCard(
             ))}
           </div>
           <DataList>
-            <Line label="Sati" value={`${client.hours} h nedeljno`} />
-            <Line label="Kada" value={client.schedule} />
-            <Line label="Početak" value={client.startsOn} />
-            <Line label="Pitao/la" value={`${client.family} · ${client.relation}`} />
+            <Line label={t('Sati')} value={t('{hours} h nedeljno', { hours: client.hours })} />
+            <Line label={t('Kada')} value={t(client.schedule)} />
+            <Line label={t('Početak')} value={t(client.startsOn)} />
+            <Line label={t('Pitao/la')} value={client.family + ' · ' + t(client.relation)} />
           </DataList>
         </>
       )}
@@ -153,8 +155,10 @@ const BoardCard = forwardRef(function BoardCard(
       {client.stage === 'agreement' && !client.agreementSent && (
         <>
           <p className="text-xs leading-body text-muted-foreground">
-            Prihvaćeno {client.acceptedOn}. Postavite usluge i cenu po satu - svaka poseta, radni nalog
-            i uplata posle ovoga računaju se iz toga.
+            {t(
+              'Prihvaćeno {when}. Postavite usluge i cenu po satu - svaka poseta, radni nalog i uplata posle ovoga računaju se iz toga.',
+              { when: t(client.acceptedOn) }
+            )}
           </p>
           <div className="flex flex-wrap gap-2">
             {client.needs.map((n) => (
@@ -162,8 +166,8 @@ const BoardCard = forwardRef(function BoardCard(
             ))}
           </div>
           <DataList>
-            <Line label="Sati" value={`${client.hours} h nedeljno`} />
-            <Line label="Kada" value={client.schedule} />
+            <Line label={t('Sati')} value={t('{hours} h nedeljno', { hours: client.hours })} />
+            <Line label={t('Kada')} value={t(client.schedule)} />
           </DataList>
         </>
       )}
@@ -171,12 +175,12 @@ const BoardCard = forwardRef(function BoardCard(
       {client.stage === 'agreement' && client.agreementSent && (
         <>
           <p className="text-xs leading-body text-muted-foreground">
-            Poslato {client.sentOn}. Ništa ne može da se zakaže dok porodica ne potpiše.
-            {client.remindedOn && ` Podsetnik poslat ${client.remindedOn}.`}
+            {t('Poslato {when}. Ništa ne može da se zakaže dok porodica ne potpiše.', { when: t(client.sentOn) })}
+            {client.remindedOn && ' ' + t('Podsetnik poslat {when}.', { when: t(client.remindedOn) })}
           </p>
           <DataList>
-            <Line label="Cena" value={`${money(client.rate)}/h`} />
-            <Line label="Sati" value={`${client.hours} h nedeljno`} />
+            <Line label={t('Cena')} value={money(client.rate) + '/h'} />
+            <Line label={t('Sati')} value={t('{hours} h nedeljno', { hours: client.hours })} />
           </DataList>
         </>
       )}
@@ -184,20 +188,23 @@ const BoardCard = forwardRef(function BoardCard(
       {client.stage === 'active' && (
         <DataList>
           <Line
-            label="Sledeća poseta"
+            label={t('Sledeća poseta')}
             value={
-              client.plan ? `${client.plan.date} · ${client.plan.time}` : 'Još ništa nije planirano'
+              client.plan ? t(client.plan.date) + ' · ' + client.plan.time : t('Još ništa nije planirano')
             }
           />
           {client.plan ? (
-            <Line label="Rezervisano" value={`${money(heldFor(client))} · poslato ${client.plan.sentOn}`} />
+            <Line
+              label={t('Rezervisano')}
+              value={t('{amount} · poslato {when}', { amount: money(heldFor(client)), when: t(client.plan.sentOn) })}
+            />
           ) : (
-            <Line label="Cena" value={`${money(client.rate)}/h`} />
+            <Line label={t('Cena')} value={money(client.rate) + '/h'} />
           )}
           {awaitingFor(client) > 0 ? (
-            <Line label="U obradi" value={`${money(awaitingFor(client))} · u roku od 24 h`} />
+            <Line label={t('U obradi')} value={t('{amount} · u roku od 24 h', { amount: money(awaitingFor(client)) })} />
           ) : (
-            <Line label="Dogovoreno" value={`${client.hours} h nedeljno`} />
+            <Line label={t('Dogovoreno')} value={t('{hours} h nedeljno', { hours: client.hours })} />
           )}
         </DataList>
       )}
@@ -205,14 +212,14 @@ const BoardCard = forwardRef(function BoardCard(
       {client.stage === 'work-order' && due && (
         <>
           <DataList>
-            <Line label="Poseta" value={`${due.date} · ${due.time}`} />
-            <Line label="Radila" value={`${due.hours} h po ${money(client.rate)}/h`} />
-            <Line label="Završeno" value={client.sinceVisit} />
+            <Line label={t('Poseta')} value={t(due.date) + ' · ' + due.time} />
+            <Line label={t('Radila')} value={t('{hours} h po {rate}/h', { hours: due.hours, rate: money(client.rate) })} />
+            <Line label={t('Završeno')} value={t(client.sinceVisit)} />
           </DataList>
           <Total>
-            <Line label="Naplaćeno" value={money(totals.charged)} />
-            <Line label="Provizija (10%)" value={`−${money(totals.fee)}`} />
-            <DataRow total label="Vi dobijate">
+            <Line label={t('Naplaćeno')} value={money(totals.charged)} />
+            <Line label={t('Provizija (10%)')} value={'−' + money(totals.fee)} />
+            <DataRow total label={t('Vi dobijate')}>
               {money(totals.net)}
             </DataRow>
           </Total>
@@ -224,11 +231,11 @@ const BoardCard = forwardRef(function BoardCard(
           <>
             <Button variant="secondary" onClick={act(onDecline)}>
               <X size={14} strokeWidth={2} />
-              Odbij
+              {t('Odbij')}
             </Button>
             <Button onClick={act(onAccept)}>
               <Check size={14} strokeWidth={2} />
-              Prihvati
+              {t('Prihvati')}
             </Button>
           </>
         )}
@@ -236,14 +243,14 @@ const BoardCard = forwardRef(function BoardCard(
         {client.stage === 'agreement' && !client.agreementSent && (
           <Button onClick={act(onOpen)}>
             <FileText size={14} strokeWidth={1.75} />
-            Postavi ugovor
+            {t('Postavi ugovor')}
           </Button>
         )}
 
         {client.stage === 'agreement' && client.agreementSent && (
           <Button variant="secondary" onClick={act(onRemind)}>
             <Send size={14} strokeWidth={1.75} />
-            Pošalji podsetnik
+            {t('Pošalji podsetnik')}
           </Button>
         )}
 
@@ -253,14 +260,14 @@ const BoardCard = forwardRef(function BoardCard(
         {client.stage === 'active' && !client.plan && (
           <Button variant="secondary" onClick={act(onOpen)}>
             <CalendarPlus size={14} strokeWidth={1.75} />
-            Isplaniraj posetu
+            {t('Isplaniraj posetu')}
           </Button>
         )}
 
         {client.stage === 'active' && client.plan && (
           <Button variant="secondary" onClick={act(onVisitDone)}>
             <CheckCheck size={14} strokeWidth={1.75} />
-            Poseta obavljena
+            {t('Poseta obavljena')}
           </Button>
         )}
 
@@ -270,7 +277,7 @@ const BoardCard = forwardRef(function BoardCard(
         {client.stage === 'work-order' && (
           <Button onClick={act(onOpen)}>
             <FileText size={14} strokeWidth={1.75} />
-            Popuni radni nalog
+            {t('Popuni radni nalog')}
           </Button>
         )}
       </div>

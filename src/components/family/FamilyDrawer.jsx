@@ -44,9 +44,9 @@ import {
   services,
   todayOf,
   linkCard,
+  lowerDate,
   money,
   pendingVersion,
-  pl,
   queryVisit,
   returnedFor,
   serviceTitle,
@@ -57,6 +57,7 @@ import {
   vatText,
   visitCharge,
 } from '../../data/familyCare';
+import { msg, t, tn } from '@/i18n';
 
 // Everything a family is asked to decide, each in the side pane the rest of the
 // app already uses: the terms a caregiver proposes, the work order after a
@@ -80,14 +81,14 @@ export function ServiceChips({ ids, missing = [], label, grouped }) {
             key={g.id}
             label={g.title}
             items={g.items.filter((id) => ids.includes(id)).map(serviceTitle)}
-            off={g.items.filter((id) => missing.includes(id)).map((id) => `${serviceTitle(id)} - ovog puta ne`)}
+            off={g.items.filter((id) => missing.includes(id)).map((id) => t('{service} - ovog puta ne', { service: serviceTitle(id) }))}
           />
         ))}
       </Groups>
     );
   }
   return (
-    <Tags label={label} items={ids.map(serviceTitle)} off={missing.map((id) => `${serviceTitle(id)} - ovog puta ne`)} />
+    <Tags label={label} items={ids.map(serviceTitle)} off={missing.map((id) => t('{service} - ovog puta ne', { service: serviceTitle(id) }))} />
   );
 }
 
@@ -104,16 +105,16 @@ function changesBetween(was, now) {
   const rows = [];
   if (now.rate !== was.rate) {
     rows.push({
-      label: now.rate > was.rate ? 'Cena raste' : 'Cena pada',
-      value: `${money(was.rate)} → ${money(now.rate)} na sat`,
+      label: now.rate > was.rate ? t('Cena raste') : t('Cena pada'),
+      value: t('{was} → {now} na sat', { was: money(was.rate), now: money(now.rate) }),
     });
   }
   const added = now.services.filter((s) => !was.services.includes(s));
   const dropped = was.services.filter((s) => !now.services.includes(s));
-  if (added.length) rows.push({ label: added.length === 1 ? 'Nova usluga' : 'Nove usluge', value: added.map(serviceTitle).join(', ') });
-  if (dropped.length) rows.push({ label: dropped.length === 1 ? 'Usluga više ne' : 'Usluge više ne', value: dropped.map(serviceTitle).join(', ') });
-  if (now.hours !== was.hours) rows.push({ label: 'Sati', value: `${was.hours} → ${now.hours} h nedeljno` });
-  if (now.schedule !== was.schedule) rows.push({ label: 'Raspored', value: now.schedule });
+  if (added.length) rows.push({ label: added.length === 1 ? t('Nova usluga') : t('Nove usluge'), value: added.map(serviceTitle).join(', ') });
+  if (dropped.length) rows.push({ label: dropped.length === 1 ? t('Usluga više ne') : t('Usluge više ne'), value: dropped.map(serviceTitle).join(', ') });
+  if (now.hours !== was.hours) rows.push({ label: t('Sati'), value: t('{was} → {now} h nedeljno', { was: was.hours, now: now.hours }) });
+  if (now.schedule !== was.schedule) rows.push({ label: t('Raspored'), value: now.schedule });
   return rows;
 }
 
@@ -128,35 +129,37 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
 
   const agree = () => {
     onCare(agreeTerms(caregiverId));
-    onFlash(act ? `Verzija ${pen.version} važi od danas.` : 'Uslovi su prihvaćeni. Posete sada mogu da se zakažu.');
+    onFlash(act ? t('Verzija {version} važi od danas.', { version: pen.version }) : t('Uslovi su prihvaćeni. Posete sada mogu da se zakažu.'));
     onClose();
   };
   const decline = () => {
     onCare(declineTerms(caregiverId));
-    onFlash(act ? `Odbijeno. Verzija ${act.version} i dalje važi.` : 'Odbijeno. Ništa ne važi.');
+    onFlash(act ? t('Odbijeno. Verzija {version} i dalje važi.', { version: act.version }) : t('Odbijeno. Ništa ne važi.'));
     onClose();
   };
 
   return (
     <>
-    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title={`Ugovor o nezi, verzija ${pen.version}`} wide open={open} onClose={onClose}>
+    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title={t('Ugovor o nezi, verzija {version}', { version: pen.version })} wide open={open} onClose={onClose}>
       <SheetDescription>
-        {first} je {pen.sentOn.toLowerCase()} poslala {act ? 'nove uslove' : 'svoje uslove'}.{' '}
         {act
-          ? `Verzija ${act.version} važi dok ne odgovorite.`
-          : 'Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.'}
+          ? t('{name} je {when} poslala nove uslove.', { name: first, when: lowerDate(pen.sentOn) })
+          : t('{name} je {when} poslala svoje uslove.', { name: first, when: lowerDate(pen.sentOn) })}{' '}
+        {act
+          ? t('Verzija {version} važi dok ne odgovorite.', { version: act.version })
+          : t('Ništa ne može da se zakaže dok ne prihvatite, a prihvatanje ništa ne naplaćuje.')}
       </SheetDescription>
 
       {pen.note && (
         <>
-          <PaneLabel>{act ? 'Zašto menja uslove' : `${first} je napisala`}</PaneLabel>
-          <SheetDescription>{pen.note}</SheetDescription>
+          <PaneLabel>{act ? t('Zašto menja uslove') : t('{name} je napisala', { name: first })}</PaneLabel>
+          <SheetDescription>{t(pen.note)}</SheetDescription>
         </>
       )}
 
       {act && (
         <>
-          <PaneLabel>Šta se menja</PaneLabel>
+          <PaneLabel>{t('Šta se menja')}</PaneLabel>
           <DataList className="mt-2">
             {changesBetween(act, pen).map((r) => (
               <Line key={r.label} label={r.label} value={r.value} />
@@ -165,51 +168,49 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
         </>
       )}
 
-      <PaneLabel>{act ? `Verzija ${pen.version} obuhvata` : 'Usluge'}</PaneLabel>
+      <PaneLabel>{act ? t('Verzija {version} obuhvata', { version: pen.version }) : t('Usluge')}</PaneLabel>
       <ServiceChips ids={pen.services} grouped />
       <DataList className="mt-2">
-        <Line label="Cena po satu" value={rateText(pen.rate)} />
-        <Line label="Dogovoreni sati" value={`${pen.hours} h nedeljno`} />
-        <Line label="Raspored" value={pen.schedule} />
+        <Line label={t('Cena po satu')} value={rateText(pen.rate)} />
+        <Line label={t('Dogovoreni sati')} value={t('{hours} h nedeljno', { hours: pen.hours })} />
+        <Line label={t('Raspored')} value={pen.schedule} />
       </DataList>
       {pen.terms && (
         <>
-          <PaneLabel>Dodatni uslovi</PaneLabel>
-          <SheetDescription>{pen.terms}</SheetDescription>
+          <PaneLabel>{t('Dodatni uslovi')}</PaneLabel>
+          <SheetDescription>{t(pen.terms)}</SheetDescription>
         </>
       )}
 
       <PaneHint>
-        Prihvatanjem uslova {first} može da zakazuje posete. Svaka se unapred rezerviše na vašoj
-        kartici, a naplaćuje tek kad se obavi.
+        {t('Prihvatanjem uslova {name} može da zakazuje posete. Svaka se unapred rezerviše na vašoj kartici, a naplaćuje tek kad se obavi.', { name: first })}
       </PaneHint>
 
       {!hasCard && (
         <Callout>
           <p>
-            Prvo dodajte način plaćanja. Prihvatanjem uslova {first} može da rezerviše posetu na vašoj
-            kartici - sada se ništa ne naplaćuje, niti pre nego što se poseta obavi.
+            {t('Prvo dodajte način plaćanja. Prihvatanjem uslova {name} može da rezerviše posetu na vašoj kartici - sada se ništa ne naplaćuje, niti pre nego što se poseta obavi.', { name: first })}
           </p>
           <Button
             variant="secondary"
             onClick={() => {
               onCare(linkCard);
-              onFlash('Kartica je dodata. Posete sada mogu da se rezervišu.');
+              onFlash(t('Kartica je dodata. Posete sada mogu da se rezervišu.'));
             }}
           >
             <CreditCard size={14} strokeWidth={1.75} />
-            Dodaj karticu
+            {t('Dodaj karticu')}
           </Button>
         </Callout>
       )}
 
       <SheetFooter>
         <Button variant="secondary" onClick={() => setDeclining(true)}>
-          Odbij
+          {t('Odbij')}
         </Button>
         <Button disabled={!hasCard} onClick={agree}>
           <Check size={14} strokeWidth={2} />
-          Prihvati uslove
+          {t('Prihvati uslove')}
         </Button>
       </SheetFooter>
     </Modal>
@@ -218,20 +219,19 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
     {declining && (
       <Dialog
         eyebrow={`${a.caregiver.name} · ${care.elder.name}`}
-        title={`Odbiti verziju ${pen.version}?`}
+        title={t('Odbiti verziju {version}?', { version: pen.version })}
         onClose={() => setDeclining(false)}
       >
         <DialogDescription>
-          Ništa novo ne počinje i ništa se ne naplaćuje. {first} će biti obaveštena, a koordinatorka će vas
-          pozvati da se dogovore uslovi koji vam odgovaraju.
-          {act && ` Verzija ${act.version} i dalje važi.`}
+          {t('Ništa novo ne počinje i ništa se ne naplaćuje. {name} će biti obaveštena, a koordinatorka će vas pozvati da se dogovore uslovi koji vam odgovaraju.', { name: first })}
+          {act && ` ${t('Verzija {version} i dalje važi.', { version: act.version })}`}
         </DialogDescription>
         <DialogFooter>
           <Button variant="secondary" onClick={() => setDeclining(false)}>
-            Nazad
+            {t('Nazad')}
           </Button>
           <Button variant="destructive" onClick={decline}>
-            Odbij verziju {pen.version}
+            {t('Odbij verziju {version}', { version: pen.version })}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -243,10 +243,10 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
 // ── the work order ──────────────────────────────────────────────────────────
 
 const QUERY_REASONS = [
-  { id: 'hours', label: 'Sati nisu tačni' },
-  { id: 'not-done', label: 'Nešto sa spiska nije urađeno' },
-  { id: 'no-visit', label: 'Poseta se nije desila' },
-  { id: 'other', label: 'Nešto drugo' },
+  { id: 'hours', label: msg('Sati nisu tačni') },
+  { id: 'not-done', label: msg('Nešto sa spiska nije urađeno') },
+  { id: 'no-visit', label: msg('Poseta se nije desila') },
+  { id: 'other', label: msg('Nešto drugo') },
 ];
 
 function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash, onOpen }) {
@@ -263,63 +263,70 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
   const extra = v.extra;
   const hoursText =
     r.hours < v.hours
-      ? `${r.hours} h, rezervisano ${v.hours} h`
+      ? t('{hours} h, rezervisano {reserved} h', { hours: r.hours, reserved: v.hours })
       : r.hours > v.hours
-        ? `${r.hours} h, rezervisano ${v.hours} h`
-        : `${r.hours} h - kako je planirano`;
+        ? t('{hours} h, rezervisano {reserved} h', { hours: r.hours, reserved: v.hours })
+        : t('{hours} h - kako je planirano', { hours: r.hours });
 
   const confirm = () => {
     onCare(confirmVisit(visitId));
-    onFlash(`Plaćeno. ${money(charge)} ide ka negovateljici.`);
+    onFlash(t('Plaćeno. {amount} ide ka negovateljici.', { amount: money(charge) }));
     // opened on the way to something else (ending the arrangement): paid, it
     // goes back there rather than leaving the family to find it again
     if (then) onOpen(then);
     else onClose();
   };
   const query = () => {
-    const label = QUERY_REASONS.find((q) => q.id === reason).label;
+    const label = t(QUERY_REASONS.find((q) => q.id === reason).label);
     onCare(queryVisit(visitId, `${label}. ${text.trim()}`));
-    onFlash('Poslato koordinatorki. Ništa se ne naplaćuje dok je otvoreno.');
+    onFlash(t('Poslato koordinatorki. Ništa se ne naplaćuje dok je otvoreno.'));
     onClose();
   };
   const answer = (yes) => {
     onCare(answerExtra(visitId, yes));
-    onFlash(yes ? `Dodatni sati su odobreni. ${money(chargedFor(extra.hours, v.rate))} se naplaćuje sa posetom.` : 'Dodatni sati su odbijeni. Ništa više se ne naplaćuje.');
+    onFlash(yes ? t('Dodatni sati su odobreni. {amount} se naplaćuje sa posetom.', { amount: money(chargedFor(extra.hours, v.rate)) }) : t('Dodatni sati su odbijeni. Ništa više se ne naplaćuje.'));
   };
 
   const lead =
     v.status === 'charging'
-      ? `${first} je ovo poslala ${v.reportSentOn || v.sentOn}. Ako je sve bilo kako je dogovoreno, ne morate ništa - ${money(charge)} se naplaćuje za ${v.chargesInHours} h.`
+      ? t('{name} je ovo poslala {when}. Ako je sve bilo kako je dogovoreno, ne morate ništa - {amount} se naplaćuje za {hours} h.', {
+          name: first,
+          when: v.reportSentOn || v.sentOn,
+          amount: money(charge),
+          hours: v.chargesInHours,
+        })
       : v.status === 'disputed'
-        ? 'Ovo ste prijavili koordinatorki. Ništa se ne naplaćuje dok ne proveri.'
+        ? t('Ovo ste prijavili koordinatorki. Ništa se ne naplaćuje dok ne proveri.')
         : v.resolution
-          ? v.resolution.text
-          : `Naplaćeno ${v.chargedOn} - ${v.confirmed === 'you' ? 'vi ste potvrdili' : 'potvrđeno automatski posle 24 sata'}.`;
+          ? t(v.resolution.text)
+          : v.confirmed === 'you'
+            ? t('Naplaćeno {date} - vi ste potvrdili.', { date: v.chargedOn })
+            : t('Naplaćeno {date} - potvrđeno automatski posle 24 sata.', { date: v.chargedOn });
 
   return (
     <>
-    <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title="Radni nalog" wide open={open} onClose={onClose}>
+    <Modal eyebrow={`${v.caregiver.name} · ${v.date}`} title={t('Radni nalog')} wide open={open} onClose={onClose}>
       <SheetDescription>{lead}</SheetDescription>
 
       <ReportRows>
-        <ReportRow label="Poseta">
+        <ReportRow label={t('Poseta')}>
           {v.date} · {v.time}
         </ReportRow>
-        <ReportRow label="Sati">{hoursText}</ReportRow>
-        <ReportRow label="Šta je uradila">{r.note}</ReportRow>
-        {v.notes && <ReportRow label="Traženo je">{v.notes}</ReportRow>}
-        <ReportRow label="Kako je bila">
+        <ReportRow label={t('Sati')}>{hoursText}</ReportRow>
+        <ReportRow label={t('Šta je uradila')}>{t(r.note)}</ReportRow>
+        {v.notes && <ReportRow label={t('Traženo je')}>{t(v.notes)}</ReportRow>}
+        <ReportRow label={t('Kako je bila')}>
           <Tags items={careSignals(r)} />
         </ReportRow>
       </ReportRows>
 
-      <PaneLabel>Šta je urađeno</PaneLabel>
+      <PaneLabel>{t('Šta je urađeno')}</PaneLabel>
       <ServiceChips ids={r.done} missing={skipped} grouped />
 
       {r.concern && (
         <Concern>
           <AlertTriangle size={12} strokeWidth={2} />
-          {first} je napomenula: {r.concern}
+          {t('{name} je napomenula: {concern}', { name: first, concern: t(r.concern) })}
         </Concern>
       )}
 
@@ -327,21 +334,25 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
           family says yes or no, here, whether or not the visit is charged yet. */}
       {extra && (
         <>
-          <PaneLabel>Dodatni sati</PaneLabel>
+          <PaneLabel>{t('Dodatni sati')}</PaneLabel>
           <SheetDescription>
             {extra.status === 'asked'
-              ? `${first} je radila ${pl(extra.hours, 'sat', 'sata', 'sati')} duže nego što je rezervisano. To se ne naplaćuje samo od sebe: odobrite ${money(chargedFor(extra.hours, v.rate))} ili odbijte.`
+              ? t('{name} je radila {hours} duže nego što je rezervisano. To se ne naplaćuje samo od sebe: odobrite {amount} ili odbijte.', {
+                  name: first,
+                  hours: tn(extra.hours, 'sat', 'sata', 'sati'),
+                  amount: money(chargedFor(extra.hours, v.rate)),
+                })
               : extra.status === 'approved'
-                ? `Odobrili ste ${pl(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati')}, ${money(chargedFor(extra.hours, v.rate))}.`
-                : `Odbili ste ${pl(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati')}. Ništa više se ne naplaćuje.`}
+                ? t('Odobrili ste {hours}, {amount}.', { hours: tn(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati'), amount: money(chargedFor(extra.hours, v.rate)) })
+                : t('Odbili ste {hours}. Ništa više se ne naplaćuje.', { hours: tn(extra.hours, 'dodatni sat', 'dodatna sata', 'dodatnih sati') })}
           </SheetDescription>
           {extra.status === 'asked' && (
             <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
               <Button variant="secondary" onClick={() => answer(false)}>
-                Odbij dodatne sate
+                {t('Odbij dodatne sate')}
               </Button>
               <Button onClick={() => answer(true)}>
-                Odobri {money(chargedFor(extra.hours, v.rate))}
+                {t('Odobri {amount}', { amount: money(chargedFor(extra.hours, v.rate)) })}
               </Button>
             </div>
           )}
@@ -349,40 +360,46 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
       )}
 
       <Total>
-        <Line label={`Rezervisano: ${v.hours} h po ${money(v.rate)}/h`} value={money(chargedFor(v.hours, v.rate))} />
-        {back > 0 && <Line label={`Vraća se: ${v.hours - r.hours} h manje`} value={money(back)} />}
-        {extra?.status === 'approved' && <Line label={`Dodatni sati: ${extra.hours} h`} value={money(chargedFor(extra.hours, v.rate))} />}
+        <Line label={t('Rezervisano: {hours} h po {rate}/h', { hours: v.hours, rate: money(v.rate) })} value={money(chargedFor(v.hours, v.rate))} />
+        {back > 0 && <Line label={t('Vraća se: {hours} h manje', { hours: v.hours - r.hours })} value={money(back)} />}
+        {extra?.status === 'approved' && <Line label={t('Dodatni sati: {hours} h', { hours: extra.hours })} value={money(chargedFor(extra.hours, v.rate))} />}
         <DataRow
           total
           label={
-            v.status === 'charging' ? `Naplaćuje se za ${v.chargesInHours} h` : v.status === 'disputed' ? 'Zadržano dok se ne proveri' : v.status === 'cancelled' ? 'Ništa nije naplaćeno' : 'Naplaćeno'
+            v.status === 'charging'
+              ? t('Naplaćuje se za {hours} h', { hours: v.chargesInHours })
+              : v.status === 'disputed'
+                ? t('Zadržano dok se ne proveri')
+                : v.status === 'cancelled'
+                  ? t('Ništa nije naplaćeno')
+                  : t('Naplaćeno')
           }
         >
           {v.status === 'cancelled' ? money(0) : money(charge)}
         </DataRow>
         {/* the VAT inside that total, as on a receipt: it adds nothing */}
-        {v.status !== 'cancelled' && charge > 0 && <Line label={`Od toga PDV (${vatText})`} value={money(vatIn(charge))} />}
+        {v.status !== 'cancelled' && charge > 0 && <Line label={t('Od toga PDV ({vat})', { vat: vatText() })} value={money(vatIn(charge))} />}
       </Total>
 
       {v.status === 'charging' && (
         <SheetFooter>
           <Button variant="secondary" onClick={() => setQuerying(true)}>
-            Nešto nije u redu
+            {t('Nešto nije u redu')}
           </Button>
           <Button onClick={confirm}>
             <Check size={14} strokeWidth={2} />
-            Sve je u redu - plati sada
+            {t('Sve je u redu - plati sada')}
           </Button>
         </SheetFooter>
       )}
     </Modal>
 
     {v.status === 'charging' && querying && (
-      <Dialog eyebrow={`Radni nalog · ${v.date}`} title="Šta nije u redu?" onClose={() => setQuerying(false)}>
-        <ToggleGroup type="single" size="sm" value={reason} onValueChange={(id) => id && setReason(id)} aria-label="Šta nije u redu">
+      <Dialog eyebrow={`${t('Radni nalog')} · ${v.date}`} title={t('Šta nije u redu?')} onClose={() => setQuerying(false)}>
+        <ToggleGroup type="single" size="sm" value={reason} onValueChange={(id) => id && setReason(id)} aria-label={t('Šta nije u redu')}>
           {QUERY_REASONS.map((q) => (
             <ToggleGroupItem key={q.id} value={q.id}>
-              {q.label}
+              {t(q.label)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
@@ -393,18 +410,18 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
             rows={3}
             value={text}
             autoFocus
-            placeholder="Šta ste primetili, i šta ste očekivali umesto toga."
-            aria-label="Šta nije u redu, vašim rečima"
+            placeholder={t('Šta ste primetili, i šta ste očekivali umesto toga.')}
+            aria-label={t('Šta nije u redu, vašim rečima')}
             onChange={setText}
           />
         </Field>
-        <PaneHint>Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.</PaneHint>
+        <PaneHint>{t('Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.')}</PaneHint>
         <DialogFooter>
           <Button variant="secondary" onClick={() => setQuerying(false)}>
-            Nazad
+            {t('Nazad')}
           </Button>
           <Button disabled={!text.trim()} onClick={query}>
-            Pošalji koordinatorki
+            {t('Pošalji koordinatorki')}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -415,8 +432,8 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
 
 // ── the plan, before a visit ────────────────────────────────────────────────
 
-const OTHER = 'Drugo';
-const CALL_OFF_REASONS = ['Nije nam potrebna', 'Hitan slučaj u porodici', OTHER];
+const OTHER = msg('Drugo');
+const CALL_OFF_REASONS = [msg('Nije nam potrebna'), msg('Hitan slučaj u porodici'), OTHER];
 
 function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const [mode, setMode] = useState('idle'); // idle | query | call-off
@@ -441,88 +458,90 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
 
   const query = () => {
     onCare(queryVisit(visitId, text.trim()));
-    onFlash('Poslato koordinatorki. Negovateljica je obaveštena da ne dolazi dok se ne reši.');
+    onFlash(t('Poslato koordinatorki. Negovateljica je obaveštena da ne dolazi dok se ne reši.'));
     onClose();
   };
   const callOff = () => {
-    onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : reason));
-    onFlash(late ? `Otkazano. ${money(held)} se naplaćuje - bilo je u poslednjem satu.` : `Otkazano. ${money(held)} se vraća na vašu karticu.`);
+    onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : t(reason)));
+    onFlash(
+      late
+        ? t('Otkazano. {amount} se naplaćuje - bilo je u poslednjem satu.', { amount: money(held) })
+        : t('Otkazano. {amount} se vraća na vašu karticu.', { amount: money(held) })
+    );
     onClose();
   };
 
   return (
     <>
-    <Modal eyebrow={`${v.caregiver.name} · ${v.date} · ${v.time}`} title="Plan posete" wide open={open} onClose={onClose}>
+    <Modal eyebrow={`${v.caregiver.name} · ${v.date} · ${v.time}`} title={t('Plan posete')} wide open={open} onClose={onClose}>
       <SheetDescription>
-        {first} planira da dođe na {v.hours} h. {money(held)} je rezervisano na vašoj kartici, nije
-        naplaćeno - novac se uzima tek posle posete, kad pošalje radni nalog.
+        {t('{name} planira da dođe na {hours} h. {amount} je rezervisano na vašoj kartici, nije naplaćeno - novac se uzima tek posle posete, kad pošalje radni nalog.', { name: first, hours: v.hours, amount: money(held) })}
       </SheetDescription>
 
-      <PaneLabel>Šta će raditi</PaneLabel>
+      <PaneLabel>{t('Šta će raditi')}</PaneLabel>
       <ServiceChips ids={v.services} grouped />
       {v.notes && (
         <>
-          <PaneLabel>Napomene za ovu posetu</PaneLabel>
-          <SheetDescription>{v.notes}</SheetDescription>
+          <PaneLabel>{t('Napomene za ovu posetu')}</PaneLabel>
+          <SheetDescription>{t(v.notes)}</SheetDescription>
         </>
       )}
       <DataList className="mt-2">
-        <Line label="Poslato" value={v.sentOn} />
-        <Line label="Rezervisano" value={`${money(held)} · ${v.hours} h po ${money(v.rate)}/h`} />
+        <Line label={t('Poslato')} value={v.sentOn} />
+        <Line label={t('Rezervisano')} value={`${money(held)} · ${t('{hours} h po {rate}/h', { hours: v.hours, rate: money(v.rate) })}`} />
         {/* the VAT inside it, as on the work order: it adds nothing */}
-        {held > 0 && <Line label={`Od toga PDV (${vatText})`} value={money(vatIn(held))} />}
+        {held > 0 && <Line label={t('Od toga PDV ({vat})', { vat: vatText() })} value={money(vatIn(held))} />}
       </DataList>
       {/* Until when calling it off costs nothing: said here, and not only in
           the dialog that calls it off, where it would be learnt too late.
           The hour is LATE_HOURS. */}
       <PaneHint>
-        Posetu možete da otkažete bez naplate do sat vremena pre dolaska. U poslednjem satu se naplaćuje u celosti.
+        {t('Posetu možete da otkažete bez naplate do sat vremena pre dolaska. U poslednjem satu se naplaćuje u celosti.')}
       </PaneHint>
 
       <SheetFooter>
         <Button variant="secondary" onClick={() => setMode('call-off')}>
-          Otkaži posetu
+          {t('Otkaži posetu')}
         </Button>
         <Button variant="secondary" onClick={() => setMode('query')}>
-          Nešto nije u redu
+          {t('Nešto nije u redu')}
         </Button>
       </SheetFooter>
     </Modal>
 
     {mode === 'query' && (
-      <Dialog eyebrow={`Plan posete · ${v.date}`} title="Šta nije u redu sa planom?" onClose={() => setMode('idle')}>
+      <Dialog eyebrow={`${t('Plan posete')} · ${v.date}`} title={t('Šta nije u redu sa planom?')} onClose={() => setMode('idle')}>
         <Field>
           <TextArea
             rows={3}
             value={text}
             autoFocus
-            placeholder="Dan, sati, šta će raditi…"
-            aria-label="Šta nije u redu sa planom"
+            placeholder={t('Dan, sati, šta će raditi…')}
+            aria-label={t('Šta nije u redu sa planom')}
             onChange={setText}
           />
         </Field>
         <PaneHint>
-          Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok se ne
-          reši. Čita koordinatorka, ne negovateljica.
+          {t('Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok se ne reši. Čita koordinatorka, ne negovateljica.')}
         </PaneHint>
         <DialogFooter>
           <Button variant="secondary" onClick={() => setMode('idle')}>
-            Nazad
+            {t('Nazad')}
           </Button>
           <Button disabled={!text.trim()} onClick={query}>
-            Pošalji koordinatorki
+            {t('Pošalji koordinatorki')}
           </Button>
         </DialogFooter>
       </Dialog>
     )}
 
     {mode === 'call-off' && (
-      <Dialog eyebrow={`Plan posete · ${v.date} · ${v.time}`} title="Otkazati posetu?" onClose={() => setMode('idle')}>
-        <PaneLabel>Zašto se otkazuje</PaneLabel>
-        <ToggleGroup type="single" size="sm" value={reason} onValueChange={(id) => id && setReason(id)} aria-label="Zašto se otkazuje">
+      <Dialog eyebrow={`${t('Plan posete')} · ${v.date} · ${v.time}`} title={t('Otkazati posetu?')} onClose={() => setMode('idle')}>
+        <PaneLabel>{t('Zašto se otkazuje')}</PaneLabel>
+        <ToggleGroup type="single" size="sm" value={reason} onValueChange={(id) => id && setReason(id)} aria-label={t('Zašto se otkazuje')}>
           {CALL_OFF_REASONS.map((r) => (
             <ToggleGroupItem key={r} value={r}>
-              {r}
+              {t(r)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
@@ -532,23 +551,23 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
               rows={2}
               value={other}
               autoFocus
-              placeholder="U par reči"
-              aria-label="Drugi razlog"
+              placeholder={t('U par reči')}
+              aria-label={t('Drugi razlog')}
               onChange={setOther}
             />
           </Field>
         )}
         <PaneHint>
           {late
-            ? `Do dolaska je ostalo manje od sat vremena, pa se rezervisanih ${money(held)} naplaćuje u celosti umesto da se vrati. Negovateljica je čuvala to vreme i sada ne može da ga popuni.`
-            : `Rezervisanih ${money(held)} se odmah vraća i ništa se ne naplaćuje. Negovateljica je obaveštena, a koordinatorka će pomoći da se dogovori drugi dan ako je potrebno. U poslednjem satu pre dolaska naplaćuje se u celosti.`}
+            ? t('Do dolaska je ostalo manje od sat vremena, pa se rezervisanih {amount} naplaćuje u celosti umesto da se vrati. Negovateljica je čuvala to vreme i sada ne može da ga popuni.', { amount: money(held) })
+            : t('Rezervisanih {amount} se odmah vraća i ništa se ne naplaćuje. Negovateljica je obaveštena, a koordinatorka će pomoći da se dogovori drugi dan ako je potrebno. U poslednjem satu pre dolaska naplaćuje se u celosti.', { amount: money(held) })}
         </PaneHint>
         <DialogFooter>
           <Button variant="secondary" onClick={() => setMode('idle')}>
-            Nazad
+            {t('Nazad')}
           </Button>
           <Button variant="destructive" disabled={!okReason} onClick={callOff}>
-            {late ? `Otkaži i plati ${money(held)}` : 'Otkaži i vrati novac'}
+            {late ? t('Otkaži i plati {amount}', { amount: money(held) }) : t('Otkaži i vrati novac')}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -567,26 +586,25 @@ function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen 
 
   const end = () => {
     onCare(endArrangement(caregiverId));
-    onFlash('Saradnja je završena.');
+    onFlash(t('Saradnja je završena.'));
     onClose();
   };
 
   return (
-    <Dialog eyebrow={`${a.caregiver.name} · samo ova saradnja`} title="Završiti saradnju?" open={open} onClose={onClose}>
+    <Dialog eyebrow={`${a.caregiver.name} · ${t('samo ova saradnja')}`} title={t('Završiti saradnju?')} open={open} onClose={onClose}>
       {blocked.length ? (
         <>
           <DialogDescription>
-            {first} je obavila posao koji još nije izmiren. To prvo mora da se završi - da sada prekinete,
-            ostala bi neplaćena za posetu koju je već obavila.
+            {t('{name} je obavila posao koji još nije izmiren. To prvo mora da se završi - da sada prekinete, ostala bi neplaćena za posetu koju je već obavila.', { name: first })}
           </DialogDescription>
-          <PaneHint>Prvo rešite otvoreni radni nalog, pa se vratite na ovo.</PaneHint>
+          <PaneHint>{t('Prvo rešite otvoreni radni nalog, pa se vratite na ovo.')}</PaneHint>
           <DialogFooter>
             <Button variant="secondary" onClick={onClose}>
-              Ne sada
+              {t('Ne sada')}
             </Button>
             {blocked[0].status === 'charging' && (
               <Button onClick={() => onOpen({ kind: 'work-order', visitId: blocked[0].id, then: { kind: 'end', caregiverId } })}>
-                Pogledaj radni nalog
+                {t('Pogledaj radni nalog')}
               </Button>
             )}
           </DialogFooter>
@@ -594,20 +612,19 @@ function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen 
       ) : (
         <>
           <DialogDescription>
-            Posle ovoga {first} ne može da šalje nove posete i ništa više ne može da se naplati. Sve što je
-            već izmireno ostaje u vašoj evidenciji.
+            {t('Posle ovoga {name} ne može da šalje nove posete i ništa više ne može da se naplati. Sve što je već izmireno ostaje u vašoj evidenciji.', { name: first })}
             {booked &&
-              ` Poseta zakazana za ${booked.date.toLowerCase()} se otkazuje, a ${money(chargedFor(booked.hours, booked.rate))} se vraća na vašu karticu.`}
+              ` ${t('Poseta zakazana za {date} se otkazuje, a {amount} se vraća na vašu karticu.', { date: lowerDate(booked.date), amount: money(chargedFor(booked.hours, booked.rate)) })}`}
           </DialogDescription>
           <PaneHint>
-            Koordinatorka će biti obaveštena i pomoći će da se organizuje druga nega ako je potrebna.
+            {t('Koordinatorka će biti obaveštena i pomoći će da se organizuje druga nega ako je potrebna.')}
           </PaneHint>
           <DialogFooter>
             <Button variant="secondary" onClick={onClose}>
-              Zadrži
+              {t('Zadrži')}
             </Button>
             <Button variant="destructive" onClick={end}>
-              Završi saradnju
+              {t('Završi saradnju')}
             </Button>
           </DialogFooter>
         </>
@@ -629,36 +646,36 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
   const ask = () => onContact(c);
 
   return (
-    <Modal title="Informacije o negovateljici" wide open={open} onClose={onClose}>
+    <Modal title={t('Informacije o negovateljici')} wide open={open} onClose={onClose}>
       <CaregiverHead caregiver={c} standing={standing} />
 
-      <PaneLabel>O sebi</PaneLabel>
-      <SheetDescription>{c.bio}</SheetDescription>
+      <PaneLabel>{t('O sebi')}</PaneLabel>
+      <SheetDescription>{t(c.bio)}</SheetDescription>
 
-      <PaneLabel>Klasifikacije</PaneLabel>
+      <PaneLabel>{t('Klasifikacije')}</PaneLabel>
       <Tags items={c.classifications} />
 
-      <PaneLabel>Kvalifikacije</PaneLabel>
+      <PaneLabel>{t('Kvalifikacije')}</PaneLabel>
       <DataList className="mt-2">
-        <Line label="Obrazovanje" value={c.education} />
-        <Line label="Jezici" value={c.languages.join(', ')} />
+        <Line label={t('Obrazovanje')} value={t(c.education)} />
+        <Line label={t('Jezici')} value={c.languages.map((l) => t(l)).join(', ')} />
       </DataList>
 
-      <PaneLabel>Kada može da dolazi</PaneLabel>
+      <PaneLabel>{t('Kada može da dolazi')}</PaneLabel>
       <DataList className="mt-2">
-        <Line label="Dani" value={daysText(c.days)} />
-        <Line label="Doba dana" value={c.slots.map((s) => `${SLOTS[s].label.toLowerCase()} ${SLOTS[s].hours}`).join(', ')} />
-        <Line label="Radijus" value={`do ${c.radius} km`} />
-        <Line label="Cena" value={c.rate} />
+        <Line label={t('Dani')} value={daysText(c.days)} />
+        <Line label={t('Doba dana')} value={c.slots.map((s) => `${t(SLOTS[s].label).toLowerCase()} ${SLOTS[s].hours}`).join(', ')} />
+        <Line label={t('Radijus')} value={t('do {km} km', { km: c.radius })} />
+        <Line label={t('Cena')} value={c.rate} />
       </DataList>
 
       {/* Her phone and e-mail open with the subscription, as on the platform. */}
-      <PaneLabel>Kontakt</PaneLabel>
+      <PaneLabel>{t('Kontakt')}</PaneLabel>
       <DataList className="mt-2">
-        <Line label="Telefon" value={unlocked ? c.phone : MASKED_PHONE} />
-        <Line label="E-mail" value={unlocked ? c.email : MASKED_EMAIL} />
+        <Line label={t('Telefon')} value={unlocked ? c.phone : MASKED_PHONE} />
+        <Line label={t('E-mail')} value={unlocked ? c.email : MASKED_EMAIL} />
       </DataList>
-      {!unlocked && <PaneHint>Telefon i e-mail se otključavaju pretplatom.</PaneHint>}
+      {!unlocked && <PaneHint>{t('Telefon i e-mail se otključavaju pretplatom.')}</PaneHint>}
 
       {/* what asking her costs, as it is said everywhere (firstSteps.js) */}
       {askNote && <PaneHint>{askNote}</PaneHint>}
@@ -670,16 +687,16 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
         <SheetFooter>
           {arrangementOf(care, c.id) ? (
             <Button variant="secondary" onClick={() => onCaregiver(c.id)}>
-              Njena stranica
+              {t('Njena stranica')}
             </Button>
           ) : (
             <Button variant="secondary" onClick={onClose}>
-              Ne sada
+              {t('Ne sada')}
             </Button>
           )}
           {canAsk(care, c.id) && (
             <Button onClick={ask}>
-              {!standing ? 'Pošalji poruku' : arrangementOf(care, c.id) ? 'Ponovo sarađujte' : 'Pitaj ponovo'}
+              {!standing ? t('Pošalji poruku') : arrangementOf(care, c.id) ? t('Ponovo sarađujte') : t('Pitaj ponovo')}
             </Button>
           )}
         </SheetFooter>
@@ -705,13 +722,13 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
     if (last && last.day === day) last.entries.push(e);
     else days.push({ day, entries: [e] });
   }
-  const who = caregiverId ? nameOf(care, caregiverId) : care.elder.name || 'Vaša nega';
+  const who = caregiverId ? nameOf(care, caregiverId) : care.elder.name || t('Vaša nega');
   return (
-    <Modal eyebrow={who} title="Šta se desilo" wide open={open} onClose={onClose}>
-      <ToggleGroup type="single" size="sm" className="items-center" value={kind} onValueChange={(id) => id && setKind(id)} aria-label="Šta prikazati">
+    <Modal eyebrow={who} title={t('Šta se desilo')} wide open={open} onClose={onClose}>
+      <ToggleGroup type="single" size="sm" className="items-center" value={kind} onValueChange={(id) => id && setKind(id)} aria-label={t('Šta prikazati')}>
         {[{ id: 'all', label: 'Sve' }, ...kinds].map((k) => (
           <ToggleGroupItem key={k.id} value={k.id}>
-            {k.label}
+            {t(k.label)}
             <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">
               {k.id === 'all' ? all.length : all.filter((e) => e.kind === k.id).length}
             </span>
@@ -720,8 +737,8 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
       </ToggleGroup>
       <PaneHint>
         {picked.length === all.length
-          ? `${pl(all.length, 'stavka', 'stavke', 'stavki')} · najnovije prvo`
-          : `${picked.length} od ${all.length} · najnovije prvo`}
+          ? t('{count} · najnovije prvo', { count: tn(all.length, 'stavka', 'stavke', 'stavki') })
+          : t('{picked} od {all} · najnovije prvo', { picked: picked.length, all: all.length })}
       </PaneHint>
       {days.map((d) => (
         <Fragment key={d.day}>
@@ -735,7 +752,7 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
         </Fragment>
       ))}
       <ShowMore list={list} />
-      {!picked.length && <PaneHint>Ovde još nema ničega.</PaneHint>}
+      {!picked.length && <PaneHint>{t('Ovde još nema ničega.')}</PaneHint>}
     </Modal>
   );
 }
@@ -750,14 +767,14 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
 
 // How long they have worked together, said roughly.
 function together(a, today) {
-  if (!a.since) return { value: 'Još ne', sub: 'saradnja počinje kad prihvatite uslove' };
+  if (!a.since) return { value: t('Još ne'), sub: t('saradnja počinje kad prihvatite uslove') };
   const from = dayOf(a.since, today);
   const to = a.endedOn ? dayOf(a.endedOn, today) : dayOf('danas', today);
   const days = Math.max(0, Math.round((to - from) / 86400000));
   const months = Math.floor(days / 30);
   // a short number, as the visits beside it: in days for the first month
-  const value = days < 1 ? 'Od danas' : months < 1 ? pl(days, 'dan', 'dana', 'dana') : pl(months, 'mesec', 'meseca', 'meseci');
-  return { value, sub: a.endedOn ? `${a.since} – ${a.endedOn}` : `od ${a.since}` };
+  const value = days < 1 ? t('Od danas') : months < 1 ? tn(days, 'dan', 'dana', 'dana') : tn(months, 'mesec', 'meseca', 'meseci');
+  return { value, sub: a.endedOn ? `${a.since} – ${a.endedOn}` : t('od {date}', { date: a.since }) };
 }
 
 function Overview({ open = true, care, caregiverId, onClose }) {
@@ -771,71 +788,70 @@ function Overview({ open = true, care, caregiverId, onClose }) {
   const coming = a.visits.filter((v) => v.status === 'planned').length;
   const time = together(a, todayOf(care));
   return (
-    <Modal eyebrow={`${a.caregiver.name} · ${a.caregiver.area}`} title="Pregled" wide open={open} onClose={onClose}>
+    <Modal eyebrow={`${a.caregiver.name} · ${a.caregiver.area}`} title={t('Pregled')} wide open={open} onClose={onClose}>
       <Stats>
         <Stat
           value={done.length}
-          label={`${pl(done.length, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '')} do sada`}
-          note={coming ? `${coming} zakazano` : 'nijedna nije zakazana'}
+          label={t('{noun} do sada', { noun: tn(done.length, 'poseta', 'posete', 'poseta').replace(/^\d+ /, '') })}
+          note={coming ? t('{count} zakazano', { count: coming }) : t('nijedna nije zakazana')}
         />
-        <Stat value={time.value} label="zajedno" note={time.sub} />
+        <Stat value={time.value} label={t('zajedno')} note={time.sub} />
       </Stats>
 
-      <PaneLabel>Kontakt</PaneLabel>
+      <PaneLabel>{t('Kontakt')}</PaneLabel>
       <DataList className="mt-2">
-        <Line label="Telefon" value={a.endedOn ? 'Skriven posle kraja saradnje' : a.caregiver.phone} />
-        {c?.email && <Line label="E-mail" value={a.endedOn ? 'Skriven posle kraja saradnje' : c.email} />}
-        <Line label="Opština" value={a.caregiver.area} />
-        {c?.languages && <Line label="Jezici" value={c.languages.join(', ')} />}
+        <Line label={t('Telefon')} value={a.endedOn ? t('Skriven posle kraja saradnje') : a.caregiver.phone} />
+        {c?.email && <Line label={t('E-mail')} value={a.endedOn ? t('Skriven posle kraja saradnje') : c.email} />}
+        <Line label={t('Opština')} value={a.caregiver.area} />
+        {c?.languages && <Line label={t('Jezici')} value={c.languages.map((l) => t(l)).join(', ')} />}
       </DataList>
       <PaneHint>
-        Ako nešto nije u redu tokom posete, prvo pozovite negovateljicu. Sve oko novca rešava koordinatorka.
+        {t('Ako nešto nije u redu tokom posete, prvo pozovite negovateljicu. Sve oko novca rešava koordinatorka.')}
       </PaneHint>
 
       {agreed && (
         <>
-          <PaneLabel>Dogovorena nega</PaneLabel>
+          <PaneLabel>{t('Dogovorena nega')}</PaneLabel>
           <DataList className="mt-2">
-            <Line label="Ugovor koji važi" value={`verzija ${act.version}`} />
-            <Line label="Cena po satu" value={rateText(act.rate)} />
+            <Line label={t('Ugovor koji važi')} value={t('verzija {version}', { version: act.version })} />
+            <Line label={t('Cena po satu')} value={rateText(act.rate)} />
           </DataList>
           <ServiceChips ids={act.services} grouped />
           {act.terms && (
             <Groups>
-              <Group label="Dodatni uslovi" text={act.terms} />
+              <Group label={t('Dodatni uslovi')} text={t(act.terms)} />
             </Groups>
           )}
         </>
       )}
 
-      <PaneLabel>Kvalifikacije</PaneLabel>
+      <PaneLabel>{t('Kvalifikacije')}</PaneLabel>
       <Tags items={a.caregiver.classifications || c?.classifications || []} />
       {c?.education && (
         <DataList className="mt-2">
-          <Line label="Obrazovanje" value={c.education} />
+          <Line label={t('Obrazovanje')} value={t(c.education)} />
         </DataList>
       )}
 
       {c?.bio && (
         <>
-          <PaneLabel>O negovateljici</PaneLabel>
-          <SheetDescription>{c.bio}</SheetDescription>
+          <PaneLabel>{t('O negovateljici')}</PaneLabel>
+          <SheetDescription>{t(c.bio)}</SheetDescription>
         </>
       )}
 
-      <PaneLabel>Ocene</PaneLabel>
+      <PaneLabel>{t('Ocene')}</PaneLabel>
       {/* the platform's one way of saying it (docs/patterns.md §8) */}
-      <SheetDescription>{c ? <Rating caregiver={c} /> : 'Nova'}</SheetDescription>
+      <SheetDescription>{c ? <Rating caregiver={c} /> : t('Nova')}</SheetDescription>
 
-      <PaneLabel>Kako se plaća</PaneLabel>
+      <PaneLabel>{t('Kako se plaća')}</PaneLabel>
       <DataList className="mt-2">
-        <Line label="Način plaćanja" value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : 'Još nije dodat'} />
-        <Line label="Rezerviše se" value="kad stigne plan posete" />
-        <Line label="Naplaćuje se" value="24 sata posle radnog naloga" />
+        <Line label={t('Način plaćanja')} value={care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : t('Još nije dodat')} />
+        <Line label={t('Rezerviše se')} value={t('kad stigne plan posete')} />
+        <Line label={t('Naplaćuje se')} value={t('24 sata posle radnog naloga')} />
       </DataList>
       <PaneHint>
-        Naplaćuje se samo poseta koja se desila i za koju je {first} poslala radni nalog. Sati preko
-        rezervisanih se naplaćuju samo ako ih odobrite.
+        {t('Naplaćuje se samo poseta koja se desila i za koju je {name} poslala radni nalog. Sati preko rezervisanih se naplaćuju samo ako ih odobrite.', { name: first })}
       </PaneHint>
     </Modal>
   );
@@ -843,12 +859,12 @@ function Overview({ open = true, care, caregiverId, onClose }) {
 
 // Every version of her terms, newest first, and what each changed.
 const VERSION_STATE = {
-  sent: { text: 'Čeka vaš odgovor', pill: 'is-pending' },
-  active: { text: 'Važi', pill: 'is-accepted' },
-  replaced: { text: 'Zamenjena', pill: 'is-muted' },
-  declined: { text: 'Odbijena', pill: 'is-declined' },
-  withdrawn: { text: 'Povučena', pill: 'is-muted' },
-  ended: { text: 'Završena', pill: 'is-muted' },
+  sent: { text: msg('Čeka vaš odgovor'), pill: 'is-pending' },
+  active: { text: msg('Važi'), pill: 'is-accepted' },
+  replaced: { text: msg('Zamenjena'), pill: 'is-muted' },
+  declined: { text: msg('Odbijena'), pill: 'is-declined' },
+  withdrawn: { text: msg('Povučena'), pill: 'is-muted' },
+  ended: { text: msg('Završena'), pill: 'is-muted' },
 };
 
 function Versions({ open = true, care, caregiverId, onClose }) {
@@ -856,7 +872,7 @@ function Versions({ open = true, care, caregiverId, onClose }) {
   if (!a) return null;
   const list = [...a.versions].reverse();
   return (
-    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title="Sve verzije ugovora" wide open={open} onClose={onClose}>
+    <Modal eyebrow={`${a.caregiver.name} · ${care.elder.name}`} title={t('Sve verzije ugovora')} wide open={open} onClose={onClose}>
       {list.map((v) => {
         const prev = a.versions[v.version - 2];
         const st = VERSION_STATE[v.status] || VERSION_STATE.replaced;
@@ -864,12 +880,12 @@ function Versions({ open = true, care, caregiverId, onClose }) {
         return (
           <div key={v.version}>
             <PaneLabel>
-              Verzija {v.version} <Badge variant={statusVariant(st.pill)}>{st.text}</Badge>
+              {t('Verzija {version}', { version: v.version })} <Badge variant={statusVariant(st.pill)}>{t(st.text)}</Badge>
             </PaneLabel>
             <DataList className="mt-2">
-              <Line label="Poslato" value={v.sentOn} />
-              <Line label="Cena po satu" value={rateText(v.rate)} />
-              <Line label="Usluge" value={services(v.services.length)} />
+              <Line label={t('Poslato')} value={v.sentOn} />
+              <Line label={t('Cena po satu')} value={rateText(v.rate)} />
+              <Line label={t('Usluge')} value={services(v.services.length)} />
               {changes.map((r) => (
                 <Line key={r.label} label={r.label} value={r.value} />
               ))}
@@ -877,7 +893,7 @@ function Versions({ open = true, care, caregiverId, onClose }) {
             {/* what she wrote with it, under its name (docs/patterns.md §10) */}
             {v.note && prev && (
               <Groups className="mt-2">
-                <Group label={`${firstName(a.caregiver.name)} je napisala`} text={v.note} />
+                <Group label={t('{name} je napisala', { name: firstName(a.caregiver.name) })} text={t(v.note)} />
               </Groups>
             )}
           </div>

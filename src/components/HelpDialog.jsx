@@ -1,5 +1,6 @@
 import Dialog from './Dialog';
 import { CoordinatorRows } from './PlanFooterBlocks';
+import { t } from '@/i18n';
 
 // "Pomoć" in the menu (docs/patterns.md §4): not a page, a dialog with how to
 // reach the coordinator, from wherever the family is. The same three rows as
@@ -8,8 +9,8 @@ import { CoordinatorRows } from './PlanFooterBlocks';
 export default function HelpDialog({ open = true, coordinator, onClose }) {
   return (
     <Dialog
-      title="Pomoć"
-      description={`${coordinator.name}, vaša koordinatorka nege, tu je za sve što vam treba. Javite joj se kako vam je najlakše.`}
+      title={t('Pomoć')}
+      description={t('{name}, vaša koordinatorka nege, tu je za sve što vam treba. Javite joj se kako vam je najlakše.', { name: coordinator.name })}
       open={open}
       onClose={onClose}
     >

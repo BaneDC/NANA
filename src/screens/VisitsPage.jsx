@@ -7,7 +7,7 @@ import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/
 import BackButton from '../components/BackButton';
 import ShowMore from '../components/ShowMore';
 import { useVisitHistory } from '@/hooks/use-visit-history';
-import { pl } from '../data/familyCare';
+import { t, tn } from '../i18n';
 
 // Every visit, newest first, across everyone who has come: who came, how long
 // they stayed, how the day went and what it cost. Grouped by month, because
@@ -19,12 +19,12 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
 
   return (
     <Page>
-      <BackButton label="Moja nega" onClick={onBack} />
+      <BackButton label={t('Moja nega')} onClick={onBack} />
 
       <PageHeader>
         <PageHeaderText>
-          <PageTitle>Posete</PageTitle>
-          <PageDescription>Sve posete, od najnovije. Ko je dolazio, koliko je ostao i kako je prošao dan.</PageDescription>
+          <PageTitle>{t('Posete')}</PageTitle>
+          <PageDescription>{t('Sve posete, od najnovije. Ko je dolazio, koliko je ostao i kako je prošao dan.')}</PageDescription>
         </PageHeaderText>
       </PageHeader>
 
@@ -39,27 +39,27 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
           if (!id) return;
           setWho(id);
         }}
-        aria-label="Čije posete"
+        aria-label={t('Čije posete')}
       >
-        {[{ id: 'all', name: 'Sve' }, ...people].map((p) => (
+        {[{ id: 'all', name: t('Sve') }, ...people].map((p) => (
           <ToggleGroupItem key={p.id} value={p.id}>
             {p.name}
             {p.ended && (
-              <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">ranije</span>
+              <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">{t('ranije')}</span>
             )}
           </ToggleGroupItem>
         ))}
         <span className="ml-auto text-small text-disabled">
-          {picked.length === all.length ? pl(all.length, 'poseta', 'posete', 'poseta') : `${picked.length} od ${all.length}`}
+          {picked.length === all.length ? tn(all.length, 'poseta', 'posete', 'poseta') : t('{picked} od {all}', { picked: picked.length, all: all.length })}
         </span>
       </ToggleGroup>
 
       {groups.map((g) => (
         <Card key={g.month}>
           <CardHeader>
-            <CardTitle>{g.month}</CardTitle>
+            <CardTitle>{g.month === 'Zakazano' ? t('Zakazano') : g.month}</CardTitle>
             <CardAction>
-              <Badge variant="secondary">{pl(g.visits.length, 'poseta', 'posete', 'poseta')}</Badge>
+              <Badge variant="secondary">{tn(g.visits.length, 'poseta', 'posete', 'poseta')}</Badge>
             </CardAction>
           </CardHeader>
           <ItemGroup>
@@ -72,7 +72,7 @@ export default function VisitsPage({ care, onDrawer, onBack }) {
 
       {!picked.length && (
         <Card>
-          <p className="text-xs leading-body text-muted-foreground">Još nema poseta.</p>
+          <p className="text-xs leading-body text-muted-foreground">{t('Još nema poseta.')}</p>
         </Card>
       )}
 

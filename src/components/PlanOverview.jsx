@@ -6,6 +6,7 @@ import { Group, Groups } from './Tags';
 import { planOverview } from '../data/carePlan.sr';
 import { srShort } from '../data/flow.sr';
 import { STEP_TITLE, answerText, planQuestions } from '../data/planEdits';
+import { t } from '../i18n';
 
 // The overview the onboarding ended on, kept with the plan: who she is, where
 // she is on the frailty scale, what is going on, what matters most, and every
@@ -18,7 +19,7 @@ export default function PlanOverview({ answers = {}, notes = [] }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageSection title="Ukratko">
+      <PageSection title={t('Ukratko')}>
         <Card>
           <p className="text-sm text-foreground">{o.lead}</p>
           {o.story.map((p) => (
@@ -32,7 +33,7 @@ export default function PlanOverview({ answers = {}, notes = [] }) {
           <Card>
             <Groups>
               {o.risks.length > 0 && (
-                <Group label="Na šta najviše treba paziti">
+                <Group label={t('Na šta najviše treba paziti')}>
                   <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-body text-foreground">
                     {o.risks.map((r) => (
                       <li key={r}>{r}</li>
@@ -40,20 +41,20 @@ export default function PlanOverview({ answers = {}, notes = [] }) {
                   </ul>
                 </Group>
               )}
-              {o.goal && <Group label="Najvažnije vam je" text={o.goal} />}
-              {o.worry && <Group label="Najviše vas brine" text={o.worry} />}
-              {o.notes.length > 0 && <Group label="Usput ste rekli" text={o.notes.join(' ')} />}
+              {o.goal && <Group label={t('Najvažnije vam je')} text={o.goal} />}
+              {o.worry && <Group label={t('Najviše vas brine')} text={o.worry} />}
+              {o.notes.length > 0 && <Group label={t('Usput ste rekli')} text={o.notes.join(' ')} />}
             </Groups>
           </Card>
         )}
       </PageSection>
 
       {/* every answer, in the order the conversation asked them */}
-      <PageSection title="Vaši odgovori">
+      <PageSection title={t('Vaši odgovori')}>
         {planQuestions(answers).map((s) => (
           <Card key={s.id}>
             <CardHeader>
-              <CardTitle>{STEP_TITLE[s.id] || s.title}</CardTitle>
+              <CardTitle>{STEP_TITLE[s.id] ? t(STEP_TITLE[s.id]) : s.title}</CardTitle>
             </CardHeader>
             <Facts>
               {s.questions.map(({ q, answer }) => (

@@ -1,4 +1,5 @@
 import { eur } from '../lib/money';
+import { getLang, locale, msg, t } from '../i18n';
 
 // What the subscription costs, per market.
 //
@@ -23,29 +24,29 @@ import { eur } from '../lib/money';
 
 const MONTHLY = {
   name: 'Basic',
-  description: 'Za porodice koje žele punu kontrolu i slobodu, bez dugoročnih obaveza.',
+  description: msg('Za porodice koje žele punu kontrolu i slobodu, bez dugoročnih obaveza.'),
   benefits: [
-    'Direktan pristup našoj bazi proverenih i pouzdanih negovateljica',
-    'Vi birate osobu sa kojom radite - bez posrednika, skrivenih provizija i ograničenja kakva postavljaju agencije',
-    'Podrška tima i koordinatorke tokom celog trajanja paketa',
-    'Zamena negovateljice u hitnim situacijama, bez dodatnih troškova',
-    'Formular „Pošalji zahtev" za dodatnu pomoć (lekar, medicinska sestra, rehabilitacija…)',
-    'Savet i pomoć pri izboru drugih vrsta nege',
-    'Pregledi i pomagala kod naših partnera, do 10% jeftinije',
-    'Pristup bazi mesec dana',
+    msg('Direktan pristup našoj bazi proverenih i pouzdanih negovateljica'),
+    msg('Vi birate osobu sa kojom radite - bez posrednika, skrivenih provizija i ograničenja kakva postavljaju agencije'),
+    msg('Podrška tima i koordinatorke tokom celog trajanja paketa'),
+    msg('Zamena negovateljice u hitnim situacijama, bez dodatnih troškova'),
+    msg('Formular „Pošalji zahtev" za dodatnu pomoć (lekar, medicinska sestra, rehabilitacija…)'),
+    msg('Savet i pomoć pri izboru drugih vrsta nege'),
+    msg('Pregledi i pomagala kod naših partnera, do 10% jeftinije'),
+    msg('Pristup bazi mesec dana'),
   ],
 };
 
 const QUARTERLY = {
   name: 'Premium',
-  description: 'Najčešći izbor naših korisnika - za porodice koje žele stabilnost, kontinuitet i sigurnu podršku.',
-  lead: 'Sve iz Basic plana, i još:',
+  description: msg('Najčešći izbor naših korisnika - za porodice koje žele stabilnost, kontinuitet i sigurnu podršku.'),
+  lead: msg('Sve iz Basic plana, i još:'),
   benefits: [
-    'Prednost kod slobodnih termina koordinatorke',
-    'Stabilnija podrška u planiranju dugoročnije nege',
-    'Lični vodič za negu kod kuće (na vaš zahtev)',
-    'Bez nove pretrage i dogovora svakog meseca',
-    'Pristup bazi tri meseca',
+    msg('Prednost kod slobodnih termina koordinatorke'),
+    msg('Stabilnija podrška u planiranju dugoročnije nege'),
+    msg('Lični vodič za negu kod kuće (na vaš zahtev)'),
+    msg('Bez nove pretrage i dogovora svakog meseca'),
+    msg('Pristup bazi tri meseca'),
   ],
 };
 
@@ -68,7 +69,7 @@ export const planPrice = ({ price }) => eur(price);
 export const perMonth = (plan) => planPrice({ ...plan, price: plan.price / plan.months });
 
 export const planEvery = (plan) =>
-  plan.months === 1 ? 'mesečno' : `svaka ${plan.months} meseca`;
+  plan.months === 1 ? t('mesečno') : t('svaka {n} meseca', { n: plan.months });
 
 // How much the longer plan saves against paying monthly, when it saves enough
 // to be worth saying.
@@ -87,7 +88,7 @@ export function planSaving(plan, plans) {
 export const priceLine = (country, planId) => {
   const plans = plansFor(country);
   const one = planId && plans.find((p) => p.id === planId);
-  return (one ? [one] : plans).map((p) => `${planPrice(p)} ${planEvery(p)}`).join(' ili ');
+  return (one ? [one] : plans).map((p) => planPrice(p) + ' ' + planEvery(p)).join(' ' + t('ili') + ' ');
 };
 
 const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
@@ -97,5 +98,7 @@ export function renewsOn(country, planId, at) {
   const plan = plansFor(country).find((p) => p.id === planId) || plansFor(country)[0];
   const d = new Date(at);
   d.setMonth(d.getMonth() + plan.months);
-  return `${d.getDate()}. ${GENITIVE[d.getMonth()]} ${d.getFullYear()}.`;
+  // Serbian wants the month in the genitive, which Intl does not give
+  if (getLang() === 'sr') return `${d.getDate()}. ${GENITIVE[d.getMonth()]} ${d.getFullYear()}.`;
+  return d.toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
 }
