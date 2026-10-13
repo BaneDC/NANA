@@ -45,7 +45,7 @@ import { requestFoot, requestNote } from './data/firstSteps';
 import { planEntries } from './data/threads';
 import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
-import { localized, locale, msg, setLang, t, useLang } from './i18n';
+import { localized, locale, msg, setLang, t, useKeepScroll, useLang } from './i18n';
 import { setMarket } from './data/market';
 
 const formatDate = (at) => new Date(at).toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
@@ -70,6 +70,7 @@ const shell = 'flex h-full overflow-hidden p-3 narrow:flex-col narrow:p-0';
 export default function App() {
   // A switch of language draws everything under here again; what App keeps stays.
   const lang = useLang();
+  useKeepScroll(lang);
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
   const [view, setView] = useState(DEMO ? 'dashboard' : 'chat');
   // `role` is chosen at registration and decides which of the two applications

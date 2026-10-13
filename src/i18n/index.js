@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { eur } from '../lib/money';
 import en from './en';
 import fi from './fi';
@@ -62,7 +62,25 @@ export function setLang(id) {
     /* the choice lasts until reload */
   }
   document.documentElement.lang = id;
+  // what is drawn again starts from the top, so where each page was scrolled to
+  // is kept here and put back by useKeepScroll before the new words are painted
+  kept = [...document.querySelectorAll(SCROLLERS)].map((e) => e.scrollTop);
   listeners.forEach((f) => f());
+}
+
+const SCROLLERS = '[data-slot=page], [data-slot=gallery]';
+let kept = null;
+
+// For the component that draws everything again on a switch (keyed by the
+// language): the pages under it stay scrolled where they were.
+export function useKeepScroll(lang) {
+  useLayoutEffect(() => {
+    if (!kept) return;
+    document.querySelectorAll(SCROLLERS).forEach((e, i) => {
+      if (kept[i]) e.scrollTop = kept[i];
+    });
+    kept = null;
+  }, [lang]);
 }
 
 const subscribe = (f) => {
