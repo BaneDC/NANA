@@ -510,5 +510,11 @@ export default {
   "Medicinski karton": "Medical record",
   "Gost": "Guest",
   "{name}, vaša koordinatorka nege, tu je za sve što vam treba. Javite joj se kako vam je najlakše.": "{name}, your care coordinator, is here for anything you need. Get in touch however suits you best.",
+  "Pozovite ili pišite": "Call or write",
+  "Ili joj ostavite poruku": "Or leave her a message",
+  "Pitanje, briga, pohvala ili zamerka, svojim rečima.": "A question, a worry, praise or a complaint, in your own words.",
+  "Poruka koordinatorki": "Message to the coordinator",
+  "{name} čita svaku poruku i javlja vam se istog dana.": "{name} reads every message and gets back to you the same day.",
+  "Poruka je poslata. {name} će vam se javiti danas.": "Message sent. {name} will get back to you today.",
   "Zatvori": "Close",
 };

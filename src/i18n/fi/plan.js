@@ -418,6 +418,7 @@ export default {
   'Sa poseta': 'Käynneiltä',
   'Promene stanja': 'Voinnin muutokset',
   Ispravke: 'Korjaukset',
+  'Filter istorije': 'Historian suodatin',
   // a visit's note: what was off, then the rest said once
   '{what}: {how}': '{what}: {how}',
   '{a} i {b}': '{a} ja {b}',
