@@ -36,7 +36,7 @@ import {
   declineTerms,
   endArrangement,
   LOG_KINDS,
-  dayLabel,
+  monthOfDay,
   dayOf,
   findVisit,
   firstName,
@@ -707,7 +707,7 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
   );
 }
 
-// Everything that has happened, newest first, by day, with a filter by kind:
+// Everything that has happened, newest first, by month, with a filter by kind:
 // one caregiver's from her page, everyone's from Moja nega. A step at a time,
 // "Prikaži još" adding the next (docs/patterns.md §8a).
 function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
@@ -716,10 +716,11 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
   const kinds = LOG_KINDS.filter((k) => all.some((e) => e.kind === k.id));
   const picked = kind === 'all' ? all : all.filter((e) => e.kind === kind);
   const list = useShowMore(picked, { reset: kind });
-  const today = todayOf(care);
+  // by month, as every long list is (docs/patterns.md §8a): a day seldom
+  // holds more than one or two, so by day nearly every row had its own title
   const days = [];
   for (const e of list.visible) {
-    const day = dayLabel(Math.floor(e.at / 24), today);
+    const day = monthOfDay(Math.floor(e.at / 24));
     const last = days[days.length - 1];
     if (last && last.day === day) last.entries.push(e);
     else days.push({ day, entries: [e] });

@@ -4,9 +4,10 @@
 //   node scripts/i18n-missing.mjs --unused   also entries no code uses any more
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname;
+// a path, not a URL's: a space in it stays a space, not %20
+const root = fileURLToPath(new URL('..', import.meta.url));
 const src = join(root, 'src');
 const walk = (dir) =>
   readdirSync(dir).flatMap((f) => {

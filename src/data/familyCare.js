@@ -116,9 +116,11 @@ export function dayOf(text, today = 0) {
   if (mi === -1) mi = MONTHS_IN.fi.indexOf(m);
   return mi === -1 ? new Date(0) : new Date(y ? Number(y) : EPOCH.getFullYear(), mi, parseInt(d, 10));
 }
-export const monthOf = (text, today = 0) => {
-  const d = dayOf(text, today);
-  if (Math.abs(d - dateOfDay(today)) <= 86400000) return t('Ove nedelje');
+// The month a long list groups by (docs/patterns.md §8a): "avgust 2026",
+// for a date written as text (a visit) or a prototype day (an entry's `at` / 24)
+export const monthOf = (text, today = 0) => monthName(dayOf(text, today));
+export const monthOfDay = (day) => monthName(dateOfDay(day));
+const monthName = (d) => {
   if (getLang() === 'sr') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   return d.toLocaleDateString(locale(), { month: 'long', year: 'numeric' });
 };
@@ -353,11 +355,28 @@ export const askCaregiver = (caregiverId, message) => (c) => {
   );
 };
 
+// A new card replaces the old one whole, so a declined or expiring one leaves
+// nothing behind. Stripe gives back the brand, the last four and when it
+// expires (month/year); the number never reaches us.
 export const linkCard = (c) =>
   logged(
-    { ...c, payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: dateText(todayOf(c)) } },
+    { ...c, payment: { connected: true, brand: 'Visa', last4: '4242', expires: '11/2028', connectedOn: dateText(todayOf(c)) } },
     { kind: 'money', by: 'you', title: msg('Kartica je dodata'), detail: msg('Visa ···· 4242. Posete sada mogu da se rezervišu.') }
   );
+
+// What is wrong with the saved card, if anything, on the care's own clock:
+// the last charge was declined, it has expired, or it expires this month or
+// the next (so the next visit or renewal may fall on it).
+export function cardTrouble(c) {
+  const p = c.payment;
+  if (!p?.connected) return null;
+  if (p.declined) return 'declined';
+  if (!p.expires) return null;
+  const [m, y] = p.expires.split('/').map(Number);
+  const d = dateOfToday(c);
+  const left = y * 12 + m - (d.getFullYear() * 12 + d.getMonth() + 1);
+  return left < 0 ? 'expired' : left <= 1 ? 'expiring' : null;
+}
 
 // The proposed version takes over; the one it replaces is kept, marked replaced.
 // Agreeing to terms after a cooperation ended starts it again: the earlier

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
 import { Fact, Facts } from '@/components/data-list';
+import { PaneLabel } from '@/components/pane';
 import { useShowMore } from '@/hooks/use-show-more';
 import Attention from '../components/Attention';
 import FirstTime from '../components/FirstTime';
 import FrailtyScale from '../components/FrailtyScale';
 import ShowMore from '../components/ShowMore';
 import Tags, { Group } from '../components/Tags';
-import { AMOUNT_LABEL, MOOD_LABEL, dayLabel, hourText, todayOf } from '../data/familyCare';
+import { AMOUNT_LABEL, MOOD_LABEL, dayLabel, hourText, monthOfDay, todayOf } from '../data/familyCare';
 import {
   HEALTH,
   HISTORY_FILTERS,
@@ -219,8 +220,17 @@ function History({ entries, kind, today }) {
   const chosen = historyFilters(entries).find((f) => f.id === kind);
   const picked = chosen ? entries.filter((e) => chosen.kinds.includes(e.kind)) : entries;
   const list = useShowMore(picked, { reset: kind });
+  // by month, as "Sve posete" is (§4a): a record runs for months and its
+  // entries are days apart, so by day nearly every day would hold one
+  const months = [];
+  for (const e of list.visible) {
+    const month = monthOfDay(Math.floor(e.at / 24));
+    const last = months[months.length - 1];
+    if (last && last.month === month) last.entries.push(e);
+    else months.push({ month, entries: [e] });
+  }
   return (
-    <Card className="[&>[data-slot=item-group]]:mt-2">
+    <Card>
       <CardHeader>
         <CardTitle>{t('Istorija kartona')}</CardTitle>
       </CardHeader>
@@ -230,30 +240,40 @@ function History({ entries, kind, today }) {
           : t('{picked} od {all}', { picked: picked.length, all: entries.length })}{' '}
         · {t('najnovije prvo. Ništa se odavde ne briše: izmena se upisuje pored onoga što je bilo.')}
       </CardDescription>
-      <ItemGroup>
-        {list.visible.map((e) => (
-          <Item key={e.id}>
-            <ItemContent>
-              <ItemTitle className="mb-1 flex-wrap">
-                <span className="min-w-0">{t(e.title)}</span>
-                <Badge variant={historyTone(e)} className={overLine}>
-                  {t(HISTORY_KIND[e.kind])}
-                </Badge>
-              </ItemTitle>
-              <ItemDescription>
-                {byText(e)} · {whenText(e, today)}
-              </ItemDescription>
-              {e.report && <VisitNote report={e.report} />}
-              {e.lines.map((line, i) => (
-                <ItemDescription key={i}>{t(line)}</ItemDescription>
-              ))}
-              {e.next?.map((line, i) => (
-                <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
-              ))}
-            </ItemContent>
-          </Item>
-        ))}
-      </ItemGroup>
+      {months.map((m) => (
+        <Fragment key={m.month}>
+          <div className="mt-2 flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
+            <PaneLabel className="mt-0">{m.month}</PaneLabel>
+            <Badge variant="secondary" className="ml-auto phone:ml-0">
+              {m.entries.length}
+            </Badge>
+          </div>
+          <ItemGroup>
+            {m.entries.map((e) => (
+              <Item key={e.id}>
+                <ItemContent>
+                  <ItemTitle className="mb-1 flex-wrap">
+                    <span className="min-w-0">{t(e.title)}</span>
+                    <Badge variant={historyTone(e)} className={overLine}>
+                      {t(HISTORY_KIND[e.kind])}
+                    </Badge>
+                  </ItemTitle>
+                  <ItemDescription>
+                    {byText(e)} · {whenText(e, today)}
+                  </ItemDescription>
+                  {e.report && <VisitNote report={e.report} />}
+                  {e.lines.map((line, i) => (
+                    <ItemDescription key={i}>{t(line)}</ItemDescription>
+                  ))}
+                  {e.next?.map((line, i) => (
+                    <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
+                  ))}
+                </ItemContent>
+              </Item>
+            ))}
+          </ItemGroup>
+        </Fragment>
+      ))}
       {list.rest > 0 && (
         <CardFooter>
           <ShowMore list={list} />

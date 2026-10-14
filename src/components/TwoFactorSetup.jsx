@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { Check, ChevronDown, Copy, Shield } from 'lucide-react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
@@ -59,11 +59,19 @@ function Stepper({ at }) {
 // code from the phone fills all six, and typing at speed loses nothing. It is
 // the one thing to do on its screen, so it has the focus as soon as it shows:
 // on the step it appears on, and when the dialog opens on it (data-autofocus,
-// which the pane's focus looks for).
+// which the pane's focus looks for). A wrong code is cleared by whoever checks
+// it, and the field takes the focus back from "Potvrdi", so the next code goes
+// straight in from the first box.
 export function CodeInput({ value, onChange, onComplete }) {
   const id = useId();
+  const box = useRef(null);
+  const was = useRef(value);
+  useEffect(() => {
+    if (!value && was.current) box.current?.querySelector('input')?.focus();
+    was.current = value;
+  }, [value]);
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div ref={box} className="flex flex-col items-center gap-2">
       <Label htmlFor={id}>{t('Kod iz aplikacije')}</Label>
       <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange} onComplete={onComplete}>
         <InputOTPGroup>
@@ -82,10 +90,102 @@ export function CodeInput({ value, onChange, onComplete }) {
   );
 }
 
+// The ten backup codes, shown once: after turning it on and after new ones are
+// made. It cannot be dismissed, because a stray click past the pane would lose
+// them.
+function BackupCodes({ open, email, codes, onDone, onClose }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = () => {
+    navigator.clipboard?.writeText(codes.join('\n'));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  };
+
+  const download = () => {
+    const blob = new Blob(
+      [t('NANA Prime - rezervni kodovi za {email}', { email }) + '\n\n' + codes.join('\n') + '\n'],
+      { type: 'text/plain' }
+    );
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = t('nana-prime-rezervni-kodovi.txt');
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  return (
+    <Dialog eyebrow={t('Bezbednost')} title={t('Rezervni kodovi')} dismissible={false} open={open} onClose={onClose}>
+      <DialogDescription>
+        {t(
+          'Sačuvajte ove kodove na sigurnom mestu. Svaki se koristi jednom, za prijavu ako izgubite pristup aplikaciji sa kodovima. Prikazujemo ih samo sada.'
+        )}
+      </DialogDescription>
+
+      <ul className="grid list-none grid-cols-2 gap-x-4 gap-y-2 rounded-2xl bg-muted p-4 text-center font-mono text-sm text-foreground">
+        {codes.map((c) => (
+          <li key={c}>{c}</li>
+        ))}
+      </ul>
+
+      {/* one row: keeping them (copy, download) on the left, done on the right */}
+      <DialogFooter>
+        <div className="mr-auto flex gap-2">
+          <Button variant="secondary" onClick={copy}>
+            {copied ? t('Kopirano') : t('Kopiraj')}
+          </Button>
+          <Button variant="secondary" onClick={download}>
+            {t('Preuzmi')}
+          </Button>
+        </div>
+        <Button onClick={onDone}>{t('Sačuvano')}</Button>
+      </DialogFooter>
+    </Dialog>
+  );
+}
+
+// New backup codes take a code from the phone first, as turning it off does:
+// the old ones stop working, and that is not for whoever finds the account
+// signed in. Then the new ones, once.
+export function TwoFactorNewCodes({ open = true, secret, email, onDone, onClose }) {
+  const [codes, setCodes] = useState(null);
+  if (codes) return <BackupCodes open={open} email={email} codes={codes} onDone={() => onDone(codes)} onClose={onClose} />;
+  return (
+    <CodeCheck
+      open={open}
+      secret={secret}
+      title={t('Novi rezervni kodovi')}
+      text={t(
+        'Unesite šestocifreni kod iz aplikacije da napravimo nove rezervne kodove. Kodovi koje sada imate prestaju da važe.'
+      )}
+      action={t('Napravi nove')}
+      onDone={() => setCodes(newBackupCodes())}
+      onClose={onClose}
+    />
+  );
+}
+
 // Turning it off takes a code from the phone too. Otherwise anyone who finds
 // the account signed in could take the second factor away with one click, and
 // the second factor is there for exactly that person.
 export function TwoFactorDisable({ open = true, secret, onDone, onClose }) {
+  return (
+    <CodeCheck
+      open={open}
+      secret={secret}
+      title={t('Isključite dvofaktorsku prijavu')}
+      text={t(
+        'Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za prijavu dovoljna lozinka, pa je nalog manje zaštićen.'
+      )}
+      action={t('Isključi')}
+      onDone={onDone}
+      onClose={onClose}
+    />
+  );
+}
+
+// A code from the phone before something that changes the second factor.
+function CodeCheck({ open, secret, title, text, action, onDone, onClose }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState(null);
   const [checking, setChecking] = useState(false);
@@ -97,22 +197,19 @@ export function TwoFactorDisable({ open = true, secret, onDone, onClose }) {
     const ok = !secret || (await verifyCode(secret, code));
     setChecking(false);
     if (ok) return onDone();
+    setCode('');
     setError(t('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.'));
   };
 
   return (
-    <Dialog eyebrow={t('Bezbednost')} title={t('Isključite dvofaktorsku prijavu')} open={open} onClose={onClose}>
-      <DialogDescription>
-        {t(
-          'Unesite šestocifreni kod iz aplikacije da isključite dvofaktorsku prijavu. Posle toga je za prijavu dovoljna lozinka, pa je nalog manje zaštićen.'
-        )}
-      </DialogDescription>
+    <Dialog eyebrow={t('Bezbednost')} title={title} open={open} onClose={onClose}>
+      <DialogDescription>{text}</DialogDescription>
 
       <CodeInput
         value={code}
         onChange={(v) => {
           setCode(v);
-          setError(null);
+          if (v) setError(null);
         }}
       />
 
@@ -123,7 +220,7 @@ export function TwoFactorDisable({ open = true, secret, onDone, onClose }) {
           {t('Otkaži')}
         </Button>
         <Button disabled={code.length !== 6 || checking} onClick={confirm}>
-          {t('Isključi')}
+          {action}
         </Button>
       </DialogFooter>
     </Dialog>
@@ -169,53 +266,12 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
       setStep(2);
       return;
     }
+    setCode('');
     setError(t('Kod nije tačan. Proverite da li ste prepisali poslednji koji aplikacija prikazuje.'));
   };
 
-  const download = () => {
-    const blob = new Blob(
-      [t('NANA Prime - rezervni kodovi za {email}', { email }) + '\n\n' + codes.join('\n') + '\n'],
-      { type: 'text/plain' }
-    );
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = t('nana-prime-rezervni-kodovi.txt');
-    a.click();
-    URL.revokeObjectURL(a.href);
-  };
-
-  // The last step cannot be dismissed: the codes are shown once and a stray
-  // click past the pane would lose them.
-  if (step === 2) {
-    return (
-      <Dialog eyebrow={t('Bezbednost')} title={t('Rezervni kodovi')} dismissible={false} open={open} onClose={onClose}>
-        <DialogDescription>
-          {t(
-            'Sačuvajte ove kodove na sigurnom mestu. Svaki se koristi jednom, za prijavu ako izgubite pristup aplikaciji sa kodovima. Prikazujemo ih samo sada.'
-          )}
-        </DialogDescription>
-
-        <ul className="grid list-none grid-cols-2 gap-x-4 gap-y-2 rounded-2xl bg-muted p-4 text-center font-mono text-sm text-foreground">
-          {codes.map((c) => (
-            <li key={c}>{c}</li>
-          ))}
-        </ul>
-
-        {/* one row: keeping them (copy, download) on the left, done on the right */}
-        <DialogFooter>
-          <div className="mr-auto flex gap-2">
-            <Button variant="secondary" onClick={() => copy(codes.join('\n'), 'codes')}>
-              {copied === 'codes' ? t('Kopirano') : t('Kopiraj')}
-            </Button>
-            <Button variant="secondary" onClick={download}>
-              {t('Preuzmi')}
-            </Button>
-          </div>
-          <Button onClick={() => onDone(codes, secret)}>{t('Sačuvano')}</Button>
-        </DialogFooter>
-      </Dialog>
-    );
-  }
+  // the last step: the codes, once
+  if (step === 2) return <BackupCodes open={open} email={email} codes={codes} onDone={() => onDone(codes, secret)} onClose={onClose} />;
 
   return (
     <Dialog eyebrow={t('Bezbednost')} title={t('Uključite dvofaktorsku prijavu')} open={open} onClose={onClose}>
@@ -283,7 +339,7 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
             {t('Unesite šestocifreni kod iz aplikacije da potvrdimo da je podešavanje prošlo.')}
           </DialogDescription>
 
-          <CodeInput value={code} onChange={setCode} />
+          <CodeInput value={code} onChange={(v) => (setCode(v), v && setError(null))} />
 
           {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
 
@@ -291,7 +347,15 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
             <Button variant="ghost" onClick={onClose}>
               {t('Otkaži')}
             </Button>
-            <Button variant="secondary" onClick={() => setStep(0)}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                // a new try after scanning again: no old code, no old error
+                setCode('');
+                setError(null);
+                setStep(0);
+              }}
+            >
               {t('Nazad')}
             </Button>
             <Button disabled={code.length !== 6 || checking} onClick={confirm}>

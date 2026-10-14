@@ -34,10 +34,11 @@ import { cn } from '@/lib/utils';
 import { msg, t } from '@/i18n';
 
 // The pages that open from the family's home stay under it in the nav: her page
-// and every visit are parts of the dashboard, not places of their own. The
+// is a part of the dashboard, not a place of its own (every visit is a drawer
+// on the home since 11 October). The
 // requests were one too, behind a link at the foot of the home; they are asked
 // for too often for that, so they are a place in the nav.
-const HOME_VIEWS = ['dashboard', 'caregiver', 'visits'];
+const HOME_VIEWS = ['dashboard', 'caregiver'];
 
 // the account is in Settings (the Profile page went on 10 October)
 const FOOTER_ITEMS = [{ id: 'settings', label: msg('Podešavanja'), icon: Settings }];

@@ -1,10 +1,9 @@
-import { msg } from '../i18n';
 import { useState } from 'react';
 import { useShowMore } from '@/hooks/use-show-more';
 import { allVisits, dayOf, monthOf, todayOf } from '../data/familyCare';
 
-// Every visit, newest first, across everyone who has come, as the page "Posete"
-// and the drawer "Sve posete" both list them: picked by who came, ten at a
+// Every visit, newest first, across everyone who has come, as the drawer
+// "Sve posete" lists them: picked by who came, ten at a
 // time (docs/patterns.md §8a), grouped by month, because that is how a family
 // looks something up ("what happened in April").
 export function useVisitHistory(care) {
@@ -17,12 +16,11 @@ export function useVisitHistory(care) {
   const picked = who === 'all' ? all : all.filter((v) => v.caregiver.id === who);
   const list = useShowMore(picked, { reset: who });
 
-  // what is booked past tomorrow stands on its own at the top: by month it
-  // split the month in two, either side of "Ove nedelje"
-  const tomorrow = dayOf('sutra', today);
+  // by month alone (§8a): a visit is planned for today or tomorrow at the
+  // latest, so what is coming sits in this month, its row saying "Sutra"
   const groups = [];
   for (const v of list.visible) {
-    const month = dayOf(v.date, today) > tomorrow ? msg('Zakazano') : monthOf(v.date, today);
+    const month = monthOf(v.date, today);
     const last = groups[groups.length - 1];
     if (last && last.month === month) last.visits.push(v);
     else groups.push({ month, visits: [v] });

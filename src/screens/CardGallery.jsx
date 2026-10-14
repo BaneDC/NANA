@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 import { getLang, msg, say, t, useLang } from '../i18n';
 import Dashboard from './Dashboard';
 import CaregiverPage from './CaregiverPage';
-import VisitsPage from './VisitsPage';
 import RequestsPage from './RequestsPage';
 import FindCaregiver from './FindCaregiver';
 import Settings from './Settings';
@@ -90,7 +89,7 @@ export function sampleCare() {
     ...startCare(demoUser),
     family: { name: 'Anna Korhonen', relation: msg('ćerka') },
     elder: { name: 'Aino Korhonen', area: 'Töölö' },
-    payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: '20. jula' },
+    payment: { connected: true, brand: 'Visa', last4: '4242', expires: '11/2028', connectedOn: '20. jula' },
     requests: [
       { caregiverId: 'sanna', status: 'accepted', requested: '19. jula', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Prihvatila je i poslala svoje uslove.') },
       { caregiverId: 'paivi', status: 'accepted', requested: '19. jula', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Prihvatila je i poslala svoje uslove.') },
@@ -108,9 +107,12 @@ export function sampleCare() {
         endedOn: null,
         versions: [terms(1, 'active')],
         visits: [
-          // both booked: the first one's plan was seen, the one after it not yet
+          // both booked: the first one's plan was seen, the one after it not
+          // yet. A visit is planned for today or tomorrow at the latest (as in
+          // her app), so the second is later today. Two plans at once break her
+          // app's one-at-a-time rule, kept so the gallery shows both states.
           visit('g-planned', msg('Sutra'), 'planned', { dueInHours: 20, notes: msg('Doneću spisak za nabavku.'), planOk: true }),
-          visit('g-to-confirm', '14. avgusta', 'planned', { dueInHours: 68, sentOn: msg('danas') }),
+          visit('g-to-confirm', msg('Danas'), 'planned', { time: '15:00–18:00', dueInHours: 7, sentOn: msg('danas') }),
           visit('g-charging', msg('Juče'), 'charging', { report: report(), chargesInHours: 3, sentOn: msg('juče u 13:10') }),
           visit('g-awaiting', msg('Danas'), 'awaiting'),
           visit('g-disputed', '7. avgusta', 'disputed', { report: report({ hours: 2 }), queryReason: msg('Ostala je dva sata, ne tri.') }),
@@ -190,8 +192,6 @@ function longCare() {
   const c = sampleCare();
   const a = c.arrangements[0];
   const paid = a.visits.find((v) => v.id === 'g-old-0');
-  const planned = a.visits.find((v) => v.id === 'g-planned');
-  const coming = [2, 4, 7, 9, 11, 14].map((d, i) => ({ ...planned, id: `g-long-plan-${i}`, date: dateText(d), notes: undefined }));
   const past = Array.from({ length: 36 }, (_, i) => ({ ...paid, id: `g-long-${i}`, date: dateText(-30 - i * 3), chargedOn: dateText(-29 - i * 3) }));
   const log = Array.from({ length: 30 }, (_, i) => ({
     id: `l-long-${i}`,
@@ -204,7 +204,7 @@ function longCare() {
   }));
   return {
     ...c,
-    arrangements: [{ ...a, visits: [...a.visits, ...coming, ...past] }, ...c.arrangements.slice(1)],
+    arrangements: [{ ...a, visits: [...a.visits, ...past] }, ...c.arrangements.slice(1)],
     log: [...c.log, ...log],
   };
 }
@@ -236,12 +236,14 @@ const SECTIONS = [
   { id: 'zavrsena', title: msg('Njena stranica, završena saradnja'), where: msg('Ponovni upit poslat, ugovor koji više ne važi') },
   { id: 'bez-ugovora', title: msg('Njena stranica, prihvatila bez ugovora'), where: msg('Prihvatila je, ugovor stiže') },
   { id: 'odbijeni-uslovi', title: msg('Njena stranica, odbijeni uslovi'), where: msg('Uslovi su odbijeni, verzija 1 odbijena') },
-  { id: 'posete', title: msg('Sve posete'), where: msg('Posete po mesecima') },
-  { id: 'duge-liste', title: msg('Duge liste'), where: msg('Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve zakazane", „Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"') },
+  { id: 'posete', title: msg('Sve posete'), where: msg('Drawer sa početne: posete po mesecima. Otvara se dugmetom ispod, ili „Sve posete" na kartici „Poslednja poseta".') },
+  { id: 'duge-liste', title: msg('Duge liste'), where: msg('Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"') },
   { id: 'upiti', title: msg('Moji upiti'), where: msg('Upit: čeka, prihvaćen, odbijen') },
   { id: 'upiti-prazno', title: msg('Moji upiti, prazno'), where: msg('Još nijedan upit: sledeći korak kao na Mojoj nezi') },
   { id: 'pronadji', title: msg('Pronađi negovateljicu'), where: msg('Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije') },
   { id: 'podesavanja', title: msg('Podešavanja'), where: msg('Nalog, Plaćanje, Bezbednost, Opšte, Privatnost') },
+  { id: 'podesavanja-paket', title: msg('Podešavanja, prelazak na drugi paket'), where: msg('Pretplata: Basic, od obnove Premium') },
+  { id: 'podesavanja-kartica', title: msg('Podešavanja, kartica odbijena'), where: msg('Pretplata nije plaćena, Način plaćanja traži novu karticu') },
   { id: 'karton', title: msg('Medicinski karton'), where: msg('Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju') },
   { id: 'karton-prazno', title: msg('Medicinski karton, prazno'), where: msg('Kartona još nema') },
   { id: 'negovateljica', title: msg('Strana negovateljice'), where: msg('Tabla i klijent (klik na karticu na tabli)') },
@@ -355,11 +357,18 @@ export default function CardGallery() {
         <CaregiverPage care={care} caregiverId="anneli" onBack={noop} {...family} />
       </Frame>
       <Frame {...S('posete')}>
-        <VisitsPage care={care} onDrawer={noop} onBack={noop} />
+        {/* a drawer, so it is opened here rather than laid out */}
+        <div className="flex flex-wrap gap-2 p-4">
+          <Button variant="secondary" onClick={() => family.onDrawer({ kind: 'visits' })}>
+            {t('Sve posete')}
+          </Button>
+          <Button variant="secondary" onClick={() => familyLong.onDrawer({ kind: 'visits' })}>
+            {t('Sve posete, godinu dana kasnije')}
+          </Button>
+        </div>
       </Frame>
       <Frame {...S('duge-liste')}>
         <Dashboard care={long} user={user} plan={longPlan} {...home} {...familyLong} />
-        <VisitsPage care={long} onDrawer={noop} onBack={noop} />
         <CaregiverPage care={long} caregiverId="sanna" onBack={noop} {...familyLong} />
       </Frame>
       <Frame {...S('upiti')}>
@@ -373,6 +382,12 @@ export default function CardGallery() {
       </Frame>
       <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
+      </Frame>
+      <Frame {...S('podesavanja-paket')}>
+        <Settings unlocked subscription={{ ...subscription, nextPlanId: 'quarterly' }} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
+      </Frame>
+      <Frame {...S('podesavanja-kartica')}>
+        <Settings unlocked subscription={subscription} care={{ ...care, payment: { ...care.payment, declined: true } }} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
       <Frame {...S('karton')}>
         <MedicalRecord answers={answers} plan={plan} care={care} record={record} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />

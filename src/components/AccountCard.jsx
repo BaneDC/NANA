@@ -13,19 +13,25 @@ import { msg, t } from '../i18n';
 // her medical record (docs/patterns.md §10a), the account was all that page
 // held, so it is a card here. Changed in a dialog, as the password is; in
 // Settings a button with a label has no icon (§11).
+//
+// Only the name and the phone change here. The e-mail is what they sign in
+// with, so it is not in the dialog, not even greyed out; a real change needs
+// the new address confirmed, the old one told and the password or a code, and
+// until that exists it goes through the coordinator.
 const FIELDS = [
   { id: 'name', label: msg('Ime i prezime') },
-  { id: 'email', label: msg('Email'), type: 'email' },
-  { id: 'phone', label: msg('Telefon') },
+  { id: 'email', label: msg('Email'), fixed: true },
+  { id: 'phone', label: msg('Telefon'), type: 'tel' },
 ];
+const EDITABLE = FIELDS.filter((f) => !f.fixed);
 
 function AccountDialog({ open, user, onSave, onClose }) {
-  const [values, setValues] = useState(() => Object.fromEntries(FIELDS.map((f) => [f.id, user[f.id] || ''])));
-  const complete = FIELDS.every((f) => values[f.id].trim());
+  const [values, setValues] = useState(() => Object.fromEntries(EDITABLE.map((f) => [f.id, user[f.id] || ''])));
+  const complete = EDITABLE.every((f) => values[f.id].trim());
   return (
     <Dialog eyebrow={t('Nalog')} title={t('Vaši podaci')} open={open} onClose={onClose}>
       <div className="flex flex-col gap-3">
-        {FIELDS.map((f) => (
+        {EDITABLE.map((f) => (
           <Field key={f.id} label={t(f.label)}>
             <Input type={f.type || 'text'} value={values[f.id]} onChange={(value) => setValues((v) => ({ ...v, [f.id]: value }))} />
           </Field>
@@ -54,7 +60,11 @@ export default function AccountCard({ user, onSave }) {
       </CardHeader>
       <Facts>
         {FIELDS.map((f) => (
-          <Fact key={f.id} label={t(f.label)}>
+          <Fact
+            key={f.id}
+            label={t(f.label)}
+            note={f.fixed ? t('Email je vaše ime za prijavu. Ako treba da ga promenite, javite se koordinatorki.') : null}
+          >
             {user?.[f.id] || '-'}
           </Fact>
         ))}
