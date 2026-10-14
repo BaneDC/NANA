@@ -6,7 +6,7 @@ import { frailtyOf } from './frailty';
 import { planOverview } from './carePlan.sr';
 import { needFrom, scheduleText } from './familyStart';
 import { known, localized, msg, t, tn } from '../i18n';
-import { AMOUNT_LABEL, MOOD_LABEL, START_HOUR, allVisits, dayOf, firstName, longDate, todayOf } from './familyCare';
+import { START_HOUR, allVisits, dayOf, firstName, longDate, todayOf } from './familyCare';
 
 // The medical record: everything about the person being cared for, in one
 // place, as a chart keeps it (docs/patterns.md §10a). The care plan is built
@@ -390,17 +390,10 @@ function visitNotes(care) {
       who: firstName(v.caregiver.name),
       day: v.date,
       title: msg('Zapažanje sa posete'),
-      lines: [
-        [
-          v.report.mood && t('Raspoloženje: {how}', { how: t(MOOD_LABEL[v.report.mood]).toLowerCase() }),
-          v.report.eating && t('Ishrana: {how}', { how: t(AMOUNT_LABEL[v.report.eating]).toLowerCase() }),
-          v.report.moving && t('Kretanje: {how}', { how: t(AMOUNT_LABEL[v.report.moving]).toLowerCase() }),
-        ]
-          .filter(Boolean)
-          .join(' · '),
-        v.report.concern && t(v.report.concern),
-        v.report.note && t(v.report.note),
-      ].filter(Boolean),
+      // what she wrote, as she wrote it: the history says it (VisitNote in
+      // MedicalRecord.jsx), what was off first
+      report: v.report,
+      lines: [],
     }));
 }
 
@@ -409,6 +402,25 @@ function visitNotes(care) {
 export function recordHistory(record, care) {
   return [...record.log, ...(care ? visitNotes(care) : [])].sort((a, b) => b.at - a.at);
 }
+
+// The colour of an entry's badge (docs/patterns.md §10a), by what kind of
+// entry it is and nothing else, so the list is not one grey: what changed
+// about her is orange (attention), what was written green (done), the rest
+// grey (routine, and most of the list). What a visit's note says is never in
+// the badge: what was off is said in the note itself.
+export const historyTone = (e) => (e.kind === 'state' ? 'default' : e.kind === 'added' ? 'success' : 'secondary');
+
+// What a caregiver's note counts as off: low spirits, eating or moving less.
+export const isOff = (value) => value === 'low' || value === 'less';
+
+// What the history can be narrowed to, each a few kinds that read as one
+// thing to a family. A chip shows only when there is something in it.
+export const HISTORY_FILTERS = [
+  { id: 'visit', label: msg('Sa poseta'), kinds: ['visit'] },
+  { id: 'state', label: msg('Promene stanja'), kinds: ['state', 'ended'] },
+  { id: 'correction', label: msg('Ispravke'), kinds: ['correction', 'undo'] },
+  { id: 'added', label: msg('Upisano'), kinds: ['opened', 'added'] },
+];
 
 // Serbian keys (msg): shown through t()
 export const HISTORY_KIND = {

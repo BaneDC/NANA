@@ -408,15 +408,20 @@ export default {
   'privremeno, do {date}': 'tilapäisesti {date} asti',
   'Alergija: {name}': 'Allergia: {name}',
   'Zapažanje sa posete': 'Havainto käynniltä',
-  'Raspoloženje: {how}': 'Mieliala: {how}',
-  'Ishrana: {how}': 'Syöminen: {how}',
-  'Kretanje: {how}': 'Liikkuminen: {how}',
   Otvoren: 'Avattu',
   Upisano: 'Kirjattu',
   Ispravka: 'Korjaus',
   Zaključeno: 'Suljettu',
   Poništeno: 'Peruttu',
   'Sa posete': 'Käynniltä',
+  // the history's filters
+  'Sa poseta': 'Käynneiltä',
+  'Promene stanja': 'Voinnin muutokset',
+  Ispravke: 'Korjaukset',
+  // a visit's note: what was off, then the rest said once
+  '{what}: {how}': '{what}: {how}',
+  '{a} i {b}': '{a} ja {b}',
+  '{a}, {b} i {c}': '{a}, {b} ja {c}',
   'izmena|izmene|izmena': 'muutos|muutosta',
 
   // the plan page
