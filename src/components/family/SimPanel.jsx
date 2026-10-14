@@ -23,6 +23,8 @@ import {
   canSendTerms,
   cannotPlan,
   caregiverEnds,
+  declineCard,
+  expireCard,
   passTime,
   planVisit,
   resolveQuery,
@@ -37,7 +39,7 @@ import {
 // send terms, plan a visit, send a work order, settle a query, and let time
 // pass. Hidden: Ctrl+H opens it, and nothing in it runs on its own.
 
-export default function SimPanel({ open = true, care, onCare, onFlash, onFill, onClose }) {
+export default function SimPanel({ open = true, care, onCare, onFlash, onFill, onRenew, onClose }) {
   const [reason, setReason] = useState(DECLINE_REASONS[0]);
   const run = (fn, said) => {
     onCare(fn);
@@ -80,6 +82,34 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
           {t('Prođe dan')}
         </Button>
       </div>
+
+      {/* Stripe's side of the card and the subscription: what the family
+          sees in Settings when a charge fails or the card runs out */}
+      {(care.payment?.connected || onRenew) && (
+        <>
+          <PaneLabel>{t('Kartica i pretplata')}</PaneLabel>
+          <div className="flex flex-wrap gap-2">
+            {onRenew && (
+              <Button variant="secondary" onClick={onRenew}>
+                {t('Dođe dan obnove pretplate')}
+              </Button>
+            )}
+            {care.payment?.connected && (
+              <>
+                <Button variant="secondary" onClick={() => run(declineCard, t('Kartica je odbijena.'))}>
+                  {t('Banka odbije naplatu')}
+                </Button>
+                <Button variant="secondary" onClick={() => run(expireCard, t('Kartica ističe ovog meseca.'))}>
+                  {t('Kartica ističe ovog meseca')}
+                </Button>
+              </>
+            )}
+          </div>
+          <PaneHint>
+            {t('Obnova sa isteklom ili odbijenom karticom ne prolazi, pa pretplata nije plaćena. Nova kartica u Podešavanjima briše i odbijanje i istek.')}
+          </PaneHint>
+        </>
+      )}
 
       {pending.length > 0 && (
         <>

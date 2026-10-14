@@ -12,14 +12,21 @@ import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
 import AccountCard from '../components/AccountCard';
 import CookieSettings from '../components/CookieSettings';
-import TwoFactorSetup, { TwoFactorDisable } from '../components/TwoFactorSetup';
+import TwoFactorSetup, { TwoFactorDisable, TwoFactorNewCodes } from '../components/TwoFactorSetup';
 import { Field, Password } from '../components/TextField';
-import { chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
+import { cardTrouble, chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword, hashBackupCodes } from '../lib/account';
-import { priceLine, renewsOn } from '../data/plans';
-import { LANGUAGES, setLang, t, tn, useLang } from '../i18n';
+import { planEvery, planPrice, plansFor, priceLine, renewsOn } from '../data/plans';
+import { LANGUAGES, msg, setLang, t, tn, useLang } from '../i18n';
 
+
+// What the card's description says first when the card needs changing.
+const TROUBLE = {
+  declined: msg('Banka je odbila poslednju naplatu. Promenite karticu da pretplata i posete ne bi ostale neplaćene.'),
+  expired: msg('Kartica je istekla. Promenite je da pretplata i posete ne bi ostale neplaćene.'),
+  expiring: msg('Kartica ističe {date}. Promenite je na vreme da pretplata i posete ne bi ostale neplaćene.'),
+};
 
 // A setting that is on or off: the whole row is its label, so a click anywhere
 // on it switches; the name, what it does under it, the switch right.
@@ -125,6 +132,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   const [cookiesOpen, setCookiesOpen] = useState(false);
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
   const [twoFactorOff, setTwoFactorOff] = useState(false);
+  const [newCodes, setNewCodes] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   // the dialogs that hold a form stay mounted while they close, then start
@@ -133,6 +141,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   const keptPassword = useKept(passwordOpen);
   const keptTwoFactor = useKept(twoFactorOpen);
   const keptTwoFactorOff = useKept(twoFactorOff);
+  const keptNewCodes = useKept(newCodes);
 
   const cookies = user?.cookies || COOKIE_DEFAULT;
   const twoFactor = Boolean(user?.twoFactor);
@@ -145,11 +154,20 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   // real build hands off to Stripe and gets a token back.
   const connect = () => {
     onCare(linkCard);
+    // the renewal that did not go through is charged on the new card
+    if (unpaid) onSubscribe?.('renew');
     setCardOpen(false);
   };
   // cancelled, it still runs to the end of the period already paid
   const cancelled = Boolean(subscription?.cancelled);
   const until = subscription ? renewsOn(user?.country, subscription.planId, subscription.at ?? Date.now()) : '';
+  // the plan they are on, and the one they move to at the next renewal
+  const plans = plansFor(user?.country);
+  const plan = plans.find((p) => p.id === subscription?.planId) || plans[0];
+  const nextPlan = subscription?.nextPlanId ? plans.find((p) => p.id === subscription.nextPlanId) : null;
+  // a declined card leaves the subscription unpaid until it is changed
+  const trouble = cardTrouble(care);
+  const unpaid = unlocked && !cancelled && trouble === 'declined';
 
   // Five groups, each under its own title, in the order people come looking:
   // who they are, what they pay, how the account is kept safe, how the app talks to them, and
@@ -175,36 +193,55 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           <CardHeader>
             <CardTitle>{t('Pretplata')}</CardTitle>
             <CardAction>
-              <Badge variant={unlocked && !cancelled ? 'success' : 'secondary'}>
-                {unlocked ? (cancelled ? t('Otkazana') : t('Aktivna')) : t('Niste pretplaćeni')}
+              <Badge variant={!unlocked || cancelled ? 'secondary' : unpaid ? 'destructive' : 'success'}>
+                {!unlocked ? t('Niste pretplaćeni') : cancelled ? t('Otkazana') : unpaid ? t('Nije plaćena') : t('Aktivna')}
               </Badge>
             </CardAction>
           </CardHeader>
           {unlocked ? (
             <>
-              <CheckList>
-                <li>
-                  <Check size={12} strokeWidth={2.5} /> {t('Kontakti negovateljica')}
-                </li>
-                <li>
-                  <Check size={12} strokeWidth={2.5} /> {t('Pregledi i pomagala kod partnera, do 10% jeftinije')}
-                </li>
-              </CheckList>
               <CardDescription>
                 {cancelled
                   ? t('Otkazali ste pretplatu. Važi do {date}, a posle toga se ne obnavlja.', { date: until })
-                  : priceLine(user?.country, subscription?.planId) + ' · ' + t('obnavlja se {date}', { date: until })}
+                  : unpaid
+                    ? t('Naplata pretplate nije uspela. Promenite karticu da kontakti negovateljica ne bi bili zatvoreni.')
+                    : t('Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.')}
+                {!cancelled && nextPlan
+                  ? ' ' + t('Od {date} prelazite na {plan}.', { date: until, plan: nextPlan.name })
+                  : ''}
               </CardDescription>
+              {/* which plan, what it costs and when the next charge comes, as
+                  every billing page puts it (docs/patterns.md §8) */}
+              <DataList className="mt-2">
+                <DataRow label={t('Paket')}>{plan.name}</DataRow>
+                <DataRow label={t('Cena')}>{planPrice(plan) + ' ' + planEvery(plan)}</DataRow>
+                {/* unpaid, the charge is due now, not on a date */}
+                {!cancelled && !unpaid && (
+                  <DataRow label={t('Sledeća naplata')}>
+                    {t('{amount} · {date}', { amount: planPrice(nextPlan || plan), date: until })}
+                  </DataRow>
+                )}
+              </DataList>
               {/* What adds or changes something is primary; what switches
                   something off or cancels it is not — orange is what we
-                  recommend, and we do not recommend this. It asks first. */}
+                  recommend, and we do not recommend this. It asks first. A
+                  declined charge has one thing to do about it, so that one is
+                  orange (§9). */}
               <CardFooter>
                 {cancelled ? (
                   <Button onClick={() => onSubscribe?.('resume')}>{t('Obnovi pretplatu')}</Button>
                 ) : (
-                  <Button variant="secondary" onClick={() => setCancelling(true)}>
-                    {t('Otkaži pretplatu')}
-                  </Button>
+                  <>
+                    {unpaid && <Button onClick={() => setCardOpen(true)}>{t('Promeni karticu')}</Button>}
+                    {!unpaid && plans.length > 1 && (
+                      <Button variant="secondary" onClick={() => onSubscribe?.('change')}>
+                        {t('Promeni paket')}
+                      </Button>
+                    )}
+                    <Button variant="secondary" onClick={() => setCancelling(true)}>
+                      {t('Otkaži pretplatu')}
+                    </Button>
+                  </>
                 )}
               </CardFooter>
             </>
@@ -228,8 +265,8 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             <CardTitle>{t('Način plaćanja')}</CardTitle>
             <CardAction>
               {payment.connected ? (
-                <Badge variant="success">
-                  <ShieldCheck size={12} strokeWidth={2} />
+                <Badge variant={trouble === 'expiring' ? 'warning' : trouble ? 'destructive' : 'success'}>
+                  {!trouble && <ShieldCheck size={12} strokeWidth={2} />}
                   {payment.brand} ···· {payment.last4}
                 </Badge>
               ) : (
@@ -241,12 +278,15 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
           {payment.connected ? (
             <>
               <CardDescription>
+                {trouble &&
+                  t(TROUBLE[trouble], { date: payment.expires }) + ' '}
                 {t(
                   'Dodato {date}. Svaka poseta se naplaćuje 24 sata pošto negovateljica pošalje izveštaj - od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite sa stranice Moja nega.',
                   { date: payment.connectedOn }
                 )}
               </CardDescription>
               <DataList className="mt-2">
+                {payment.expires && <DataRow label={t('Ističe')}>{payment.expires}</DataRow>}
                 <DataRow label={t('Rezervisano za zakazane posete')}>{money(heldNow(care))}</DataRow>
                 <DataRow label={t('Naplaćuje se sada')}>
                   {charging
@@ -255,7 +295,7 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
                 </DataRow>
               </DataList>
               <CardFooter>
-                <Button variant="secondary" onClick={() => setCardOpen(true)}>
+                <Button variant={trouble ? 'default' : 'secondary'} onClick={() => setCardOpen(true)}>
                   {t('Promeni karticu')}
                 </Button>
               </CardFooter>
@@ -301,12 +341,20 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
                   codes: tn(user.backupCodesLeft, 'rezervni kod', 'rezervna koda', 'rezervnih kodova'),
                 })
               : ''}
+            {/* almost out: say what to do about it */}
+            {twoFactor && user?.backupCodesLeft === 0 ? ' ' + t('Rezervnih kodova više nemate.') : ''}
+            {twoFactor && user?.backupCodesLeft <= 2 ? ' ' + t('Napravite nove.') : ''}
           </CardDescription>
           <CardFooter>
             {twoFactor ? (
-              <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
-                {t('Isključi')}
-              </Button>
+              <>
+                <Button variant="secondary" onClick={() => setNewCodes(true)}>
+                  {t('Novi rezervni kodovi')}
+                </Button>
+                <Button variant="secondary" onClick={() => setTwoFactorOff(true)}>
+                  {t('Isključi')}
+                </Button>
+              </>
             ) : (
               <Button onClick={() => setTwoFactorOpen(true)}>{t('Uključi')}</Button>
             )}
@@ -439,6 +487,22 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
             setTwoFactorOpen(false);
           }}
           onClose={() => setTwoFactorOpen(false)}
+        />
+      )}
+
+      {keptNewCodes && (
+        <TwoFactorNewCodes
+          open={newCodes}
+          secret={user?.twoFactorSecret}
+          email={user?.email}
+          onDone={(codes) => {
+            // the new ones replace the old: only their hashes are kept
+            hashBackupCodes(codes).then((backupCodeHashes) =>
+              onSaveUser({ backupCodesLeft: codes.length, backupCodeHashes })
+            );
+            setNewCodes(false);
+          }}
+          onClose={() => setNewCodes(false)}
         />
       )}
 

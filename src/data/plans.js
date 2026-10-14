@@ -94,10 +94,16 @@ export const priceLine = (country, planId) => {
 const GENITIVE = ['januara', 'februara', 'marta', 'aprila', 'maja', 'juna', 'jula', 'avgusta', 'septembra', 'oktobra', 'novembra', 'decembra'];
 
 // When a plan taken out on `at` renews: a month, or three, later.
-export function renewsOn(country, planId, at) {
+export function renewalAt(country, planId, at) {
   const plan = plansFor(country).find((p) => p.id === planId) || plansFor(country)[0];
   const d = new Date(at);
   d.setMonth(d.getMonth() + plan.months);
+  return d.getTime();
+}
+
+// The same, as it is said.
+export function renewsOn(country, planId, at) {
+  const d = new Date(renewalAt(country, planId, at));
   // Serbian wants the month in the genitive, which Intl does not give
   if (getLang() === 'sr') return `${d.getDate()}. ${GENITIVE[d.getMonth()]} ${d.getFullYear()}.`;
   return d.toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });

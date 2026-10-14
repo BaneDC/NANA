@@ -5,6 +5,7 @@ import {
   activeVersion,
   arrangementOf,
   chargedFor,
+  dateOfToday,
   dateSaid,
   dateText,
   endArrangement,
@@ -357,4 +358,13 @@ export const resolveQuery = (visitId, outcome) => (c) => {
     mapVisit(c, visitId, (x) => ({ ...fn(x), resolution: { outcome, text, on: today } })),
     { kind: outcome === 'keep' || outcome === 'cancel' ? 'visit' : 'money', caregiverId: v.caregiver.id, by: 'coordinator', title: msg('Prijava je rešena'), detail: text }
   );
+};
+
+// The card, from Stripe's side: the bank declines the next charge, or the card
+// runs out this month. Either way the family is asked to change it.
+export const declineCard = (c) => ({ ...c, payment: { ...c.payment, declined: true } });
+
+export const expireCard = (c) => {
+  const d = dateOfToday(c);
+  return { ...c, payment: { ...c.payment, expires: `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}` } };
 };

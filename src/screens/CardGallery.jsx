@@ -90,7 +90,7 @@ export function sampleCare() {
     ...startCare(demoUser),
     family: { name: 'Anna Korhonen', relation: msg('ćerka') },
     elder: { name: 'Aino Korhonen', area: 'Töölö' },
-    payment: { connected: true, brand: 'Visa', last4: '4242', connectedOn: '20. jula' },
+    payment: { connected: true, brand: 'Visa', last4: '4242', expires: '11/2028', connectedOn: '20. jula' },
     requests: [
       { caregiverId: 'sanna', status: 'accepted', requested: '19. jula', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Prihvatila je i poslala svoje uslove.') },
       { caregiverId: 'paivi', status: 'accepted', requested: '19. jula', message: msg('Treba nam pomoć ujutru, tri puta nedeljno.'), detail: msg('Prihvatila je i poslala svoje uslove.') },
@@ -242,6 +242,8 @@ const SECTIONS = [
   { id: 'upiti-prazno', title: msg('Moji upiti, prazno'), where: msg('Još nijedan upit: sledeći korak kao na Mojoj nezi') },
   { id: 'pronadji', title: msg('Pronađi negovateljicu'), where: msg('Kartica negovateljice: dugme, već dolazi, ugovor čeka, upit poslat, prihvatila, odbila, dolazila ranije') },
   { id: 'podesavanja', title: msg('Podešavanja'), where: msg('Nalog, Plaćanje, Bezbednost, Opšte, Privatnost') },
+  { id: 'podesavanja-paket', title: msg('Podešavanja, prelazak na drugi paket'), where: msg('Pretplata: Basic, od obnove Premium') },
+  { id: 'podesavanja-kartica', title: msg('Podešavanja, kartica odbijena'), where: msg('Pretplata nije plaćena, Način plaćanja traži novu karticu') },
   { id: 'karton', title: msg('Medicinski karton'), where: msg('Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju') },
   { id: 'karton-prazno', title: msg('Medicinski karton, prazno'), where: msg('Kartona još nema') },
   { id: 'negovateljica', title: msg('Strana negovateljice'), where: msg('Tabla i klijent (klik na karticu na tabli)') },
@@ -373,6 +375,12 @@ export default function CardGallery() {
       </Frame>
       <Frame {...S('podesavanja')}>
         <Settings unlocked subscription={subscription} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
+      </Frame>
+      <Frame {...S('podesavanja-paket')}>
+        <Settings unlocked subscription={{ ...subscription, nextPlanId: 'quarterly' }} care={care} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
+      </Frame>
+      <Frame {...S('podesavanja-kartica')}>
+        <Settings unlocked subscription={subscription} care={{ ...care, payment: { ...care.payment, declined: true } }} user={user} onCare={noop} onSaveUser={noop} onSubscribe={noop} />
       </Frame>
       <Frame {...S('karton')}>
         <MedicalRecord answers={answers} plan={plan} care={care} record={record} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />

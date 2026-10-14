@@ -47,7 +47,8 @@ export function Facts({ className, ...props }) {
   return <div data-slot="facts" className={cn('flex flex-col [[data-slot=card-header]+&]:mt-3', className)} {...props} />;
 }
 
-export function Fact({ label, className, children, ...props }) {
+// `note`: a short sentence under the value, when it needs explaining (§8).
+export function Fact({ label, note, className, children, ...props }) {
   return (
     <div
       data-slot="fact"
@@ -56,6 +57,7 @@ export function Fact({ label, className, children, ...props }) {
     >
       <span className="text-small text-muted-foreground">{label}</span>
       <span className="text-xs leading-body font-medium wrap-anywhere text-foreground">{children}</span>
+      {note && <span className="mt-1 text-small text-muted-foreground">{note}</span>}
     </div>
   );
 }

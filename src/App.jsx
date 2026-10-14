@@ -32,7 +32,8 @@ import { SidePanelFrame } from './components/SidePanel';
 import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, canAsk, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { declineCard } from './data/sim';
 import { requestSaid, startCare, withAnswers } from './data/familyStart';
 import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
@@ -45,6 +46,7 @@ import { changeEntry } from './data/planLog';
 import { demoPerson, newPerson, planOf, withPlan } from './data/person';
 import { localized, locale, msg, setLang, t, useKeepScroll, useLang } from './i18n';
 import { setMarket } from './data/market';
+import { renewalAt, renewsOn } from './data/plans';
 
 
 // /?demo opens past the onboarding, on a finished plan — for trying the chat and
@@ -125,6 +127,11 @@ export default function App() {
   // what asking a caregiver costs, said the same wherever it is said
   const askNote = requestNote(unlocked, user.country);
   const shownPaywall = useKept(paywall);
+  // a renewal that went through: the next period, on the plan they chose for it
+  const renewSubscription = () => {
+    setSubscription((x) => ({ planId: x.nextPlanId || x.planId, at: renewalAt(user.country, x.planId, x.at) }));
+    say(t('Pretplata je obnovljena.'));
+  };
   // the history of conversations opens when asked for
   const [chatListOpen, setChatListOpen] = useState(false);
   const [variant, setVariant] = useState('classic'); // classic | ai
@@ -660,6 +667,10 @@ export default function App() {
                   onSubscribe={(on = true) =>
                     on === 'resume'
                       ? setSubscription((x) => ({ ...x, cancelled: false }))
+                      : on === 'renew'
+                        ? renewSubscription()
+                      : on === 'change'
+                        ? setPaywall({ caregiver: null, change: true })
                       : on
                         ? setPaywall({ caregiver: null })
                         : // it runs to the end of the period already paid
@@ -782,6 +793,26 @@ export default function App() {
               setSim(false);
               say(t('Primer je popunjen: dve negovateljice, posete, i dve stvari koje čekaju na vas.'));
             }}
+            // The renewal, from Stripe's side. The subscription keeps real
+            // dates and the simulation a clock of its own, so the day it
+            // renews is a button rather than days passing.
+            onRenew={
+              subscription &&
+              (() => {
+                if (subscription.cancelled) {
+                  // a cancelled one runs out instead
+                  setSubscription(null);
+                  setUnlocked(false);
+                  return say(t('Pretplata je istekla.'));
+                }
+                const bad = cardTrouble(care);
+                if (bad === 'declined' || bad === 'expired') {
+                  setCare(declineCard);
+                  return say(t('Naplata pretplate nije uspela.'));
+                }
+                renewSubscription();
+              })
+            }
             onClose={() => setSim(false)}
           />
       )}
@@ -818,9 +849,27 @@ export default function App() {
             unlocked={unlocked}
             alreadyAsked={Boolean(shownPaywall.caregiver && !canAsk(care, shownPaywall.caregiver.id))}
             country={user.country}
+            // changing plans: the one they are on, or already moving to
+            current={shownPaywall.change ? subscription?.nextPlanId || subscription?.planId : undefined}
+            startsOn={subscription ? renewsOn(user.country, subscription.planId, subscription.at) : ''}
             onPay={(chosen) => {
+              if (paywall.change) {
+                // back to the plan they are on clears the move
+                const next = chosen.id === subscription.planId ? undefined : chosen.id;
+                setSubscription((x) => ({ ...x, nextPlanId: next }));
+                say(
+                  next
+                    ? t('Od {date} imate {plan}.', { date: renewsOn(user.country, subscription.planId, subscription.at), plan: chosen.name })
+                    : t('Ostajete na paketu {plan}.', { plan: chosen.name })
+                );
+                setPaywall(null);
+                return;
+              }
               setUnlocked(true);
               setSubscription({ planId: chosen?.id, at: Date.now() });
+              // the card it is paid with is kept for the visits too, so it is
+              // never asked for twice
+              setCare((c) => (c.payment?.connected ? c : linkCard(c)));
               say(t('Pretplata je aktivna.'));
               // unlocking the plan has nothing left to do here; a message still has to be sent
               if (!paywall.caregiver) setPaywall(null);

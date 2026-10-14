@@ -19,7 +19,11 @@ import { t } from '../i18n';
 // so; its button is the primary one, and on a phone it comes first. The buttons
 // sit at the foot of each card, full width, so they line up however long the
 // lists are (docs/patterns.md §5).
-function PlanCard({ plan, plans, onChoose }) {
+//
+// Changing plans (`current`): the plan they are on, or already moving to, has
+// no button to press, only "Vaš paket"; the other one says where it takes them.
+function PlanCard({ plan, plans, current, onChoose }) {
+  const mine = current === plan.id;
   const saving = planSaving(plan, plans);
   return (
     <Card className={cn('gap-3', plan.recommended && 'shadow-[0_0_0_1px_var(--primary),var(--shadow-card)] phone:-order-1')}>
@@ -60,11 +64,12 @@ function PlanCard({ plan, plans, onChoose }) {
 
       <CardFooter className="mt-auto pt-2">
         <Button
-          variant={plan.recommended || plans.length === 1 ? 'default' : 'secondary'}
+          variant={!mine && (current || plan.recommended || plans.length === 1) ? 'default' : 'secondary'}
           className="w-full"
+          disabled={mine}
           onClick={() => onChoose(plan)}
         >
-          {t('Izaberite {plan}', { plan: plan.name })}
+          {mine ? t('Vaš paket') : current ? t('Pređite na {plan}', { plan: plan.name }) : t('Izaberite {plan}', { plan: plan.name })}
         </Button>
       </CardFooter>
     </Card>
@@ -86,12 +91,16 @@ function PlanCard({ plan, plans, onChoose }) {
 // held on the floor while a long message scrolls, so the field can never push
 // the buttons off the screen. The plans are the same dialog, wider (880, 480
 // with one plan), 16 between its parts. On a phone both are a bottom sheet.
-export default function PaywallModal({ open = true, caregiver, unlocked, alreadyAsked, country, onPay, onSend, onClose }) {
+//
+// From Settings it also changes the plan (`current`, `startsOn`): the same
+// cards, and the new plan starts at the next renewal, so nothing is charged
+// twice or refunded.
+export default function PaywallModal({ open = true, caregiver, unlocked, alreadyAsked, country, current, startsOn, onPay, onSend, onClose }) {
   const [message, setMessage] = useState('');
   const [step, setStep] = useState('message');
   const plans = plansFor(country);
   const first = caregiver?.name.split(' ')[0];
-  const choosing = !unlocked && !alreadyAsked && (!caregiver || step === 'plans');
+  const choosing = Boolean(current) || (!unlocked && !alreadyAsked && (!caregiver || step === 'plans'));
 
   if (choosing) {
     return (
@@ -102,11 +111,13 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         closeClassName="top-4"
         header={(Title) => (
           <div className="flex flex-col gap-1 pr-8 phone:pt-2 phone:pr-12">
-            <Title className="text-base">{t('Izaberite pretplatu')}</Title>
+            <Title className="text-base">{current ? t('Promenite paket') : t('Izaberite pretplatu')}</Title>
             <p className="text-xs leading-body text-muted-foreground">
               {/* no name in these: Serbian would have to decline it ("za Vesnu"),
                   and a template cannot */}
-              {caregiver
+              {current
+                ? t('Novi paket počinje {date}, kad se sadašnji obnavlja. Do tada ništa se ne menja.', { date: startsOn })
+                : caregiver
                 ? t('Vaša poruka ide čim se pretplatite, zajedno sa planom nege.')
                 : t('Pretplata otključava ceo plan nege i kontakte negovateljica.')}
             </p>
@@ -115,12 +126,15 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
       >
         <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
           {plans.map((p) => (
-            <PlanCard key={p.id} plan={p} plans={plans} onChoose={onPay} />
+            <PlanCard key={p.id} plan={p} plans={plans} current={current} onChoose={onPay} />
           ))}
         </div>
 
         <div className="flex flex-col gap-1 text-center text-small text-muted-foreground">
           <p>{t('Pretplata se obnavlja automatski, a možete da je otkažete u svakom trenutku.')}</p>
+          {/* the card is saved for charges made while they are away, which
+              they agree to here (docs/patterns.md §9) */}
+          {!current && <p>{t('Kartica se čuva i za posete: svaka se naplaćuje 24 sata posle izveštaja negovateljice.')}</p>}
           <p>{t('Cene su izražene u evrima.')}</p>
         </div>
 
