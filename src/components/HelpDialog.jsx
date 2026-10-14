@@ -1,20 +1,61 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { DialogFooter } from '@/components/ui/dialog';
+import { Part, PaneHint } from '@/components/pane';
 import Dialog from './Dialog';
 import { CoordinatorRows } from './PlanFooterBlocks';
+import { Field, TextArea } from './TextField';
 import { t } from '@/i18n';
 
 // "Pomoć" in the menu (docs/patterns.md §4): not a page, a dialog with how to
-// reach the coordinator, from wherever the family is. The same three rows as
-// her card on the home and at the foot of the plan, each a link. There is
-// nothing to confirm, so it has no footer: the close is the way out.
-export default function HelpDialog({ open = true, coordinator, onClose }) {
+// reach the coordinator, from wherever the family is. First the same three
+// rows as her card on the home, each a link; then, for whoever would rather
+// not call, a message to her in their own words: a question, a worry, praise
+// or a complaint. "Pošalji poruku" waits for something to be written; sent,
+// the dialog closes and says who reads it.
+export default function HelpDialog({ open = true, coordinator, onSend, onClose }) {
+  const [text, setText] = useState('');
+  const first = coordinator.name.split(' ')[0];
+  const close = () => {
+    setText('');
+    onClose();
+  };
+  const send = () => {
+    onSend(text.trim());
+    close();
+  };
   return (
     <Dialog
       title={t('Pomoć')}
       description={t('{name}, vaša koordinatorka nege, tu je za sve što vam treba. Javite joj se kako vam je najlakše.', { name: coordinator.name })}
       open={open}
-      onClose={onClose}
+      onClose={close}
     >
-      <CoordinatorRows coordinator={coordinator} />
+      {/* parts 24 apart (Part, src/components/pane.jsx) */}
+      <div className="flex flex-col gap-6">
+        <Part label={t('Pozovite ili pišite')}>
+          <CoordinatorRows coordinator={coordinator} />
+        </Part>
+        {/* the one field: its part's name and the placeholder say what goes in,
+            so no label of its own (docs/patterns.md §10) */}
+        <Part label={t('Ili joj ostavite poruku')}>
+          <Field>
+            <TextArea
+              rows={3}
+              value={text}
+              placeholder={t('Pitanje, briga, pohvala ili zamerka, svojim rečima.')}
+              aria-label={t('Poruka koordinatorki')}
+              onChange={setText}
+            />
+          </Field>
+          <PaneHint>{t('{name} čita svaku poruku i javlja vam se istog dana.', { name: first })}</PaneHint>
+        </Part>
+      </div>
+      <DialogFooter>
+        <Button disabled={!text.trim()} onClick={send}>
+          {t('Pošalji poruku')}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
 }

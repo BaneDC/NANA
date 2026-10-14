@@ -836,7 +836,13 @@ export default function App() {
       ))}
       <Toast flash={flash} onDone={() => setFlash(null)} />
 
-      <HelpDialog open={help} coordinator={plan?.coordinator || coordinator} onClose={() => setHelp(false)} />
+      <HelpDialog
+        open={help}
+        coordinator={plan?.coordinator || coordinator}
+        // a prototype: the message goes nowhere, the family is told who reads it
+        onSend={() => say(t('Poruka je poslata. {name} će vam se javiti danas.', { name: firstName((plan?.coordinator || coordinator).name) }))}
+        onClose={() => setHelp(false)}
+      />
 
       {shownPaywall && plan && (
           <PaywallModal

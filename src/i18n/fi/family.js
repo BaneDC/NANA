@@ -510,5 +510,11 @@ export default {
   "Medicinski karton": 'Terveystiedot',
   "Gost": "Vieras",
   "{name}, vaša koordinatorka nege, tu je za sve što vam treba. Javite joj se kako vam je najlakše.": "{name}, hoitokoordinaattorinne, auttaa kaikessa, mitä tarvitsette. Ottakaa yhteyttä teille sopivimmalla tavalla.",
+  "Pozovite ili pišite": "Soita tai kirjoita",
+  "Ili joj ostavite poruku": "Tai jätä hänelle viesti",
+  "Pitanje, briga, pohvala ili zamerka, svojim rečima.": "Kysymys, huoli, kiitos tai moite omin sanoin.",
+  "Poruka koordinatorki": "Viesti koordinaattorille",
+  "{name} čita svaku poruku i javlja vam se istog dana.": "{name} lukee jokaisen viestin ja vastaa teille samana päivänä.",
+  "Poruka je poslata. {name} će vam se javiti danas.": "Viesti lähetetty. {name} ottaa teihin yhteyttä tänään.",
   "Zatvori": "Sulje",
 };
