@@ -20,7 +20,6 @@ import SharePlanModal from './components/SharePlanModal';
 import ImmersiveConversation from './screens/ImmersiveConversation';
 import FamilyDrawer from './components/family/FamilyDrawer';
 import CaregiverPage from './screens/CaregiverPage';
-import VisitsPage from './screens/VisitsPage';
 import RequestsPage from './screens/RequestsPage';
 import Toast from './components/family/Toast';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
@@ -617,9 +616,6 @@ export default function App() {
                   onBack={() => setView('dashboard')}
                   onContact={contactCaregiver}
                 />
-              )}
-              {view === 'visits' && (
-                <VisitsPage care={care} onDrawer={setDrawer} onBack={() => setView('dashboard')} />
               )}
               {view === 'requests' && (
                 <RequestsPage

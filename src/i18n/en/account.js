@@ -595,10 +595,9 @@ export default {
   'Njena stranica, odbijeni uslovi': 'Her page, terms declined',
   'Uslovi su odbijeni, verzija 1 odbijena': 'Terms declined, version 1 declined',
   'Sve posete': 'All visits',
-  'Posete po mesecima': 'Visits by month',
   'Duge liste': 'Long lists',
-  'Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve zakazane", „Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"':
-    'A year later. On the home a card shows 3 rows, and the button in its head ("All booked", "All caregivers", "All offers") opens a drawer with all of them; All visits, her page and "What happened" 10 at a time, each with "Show more"',
+  'Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"':
+    'A year later. On the home a card shows 3 rows, and the button in its head ("All caregivers", "All offers") opens a drawer with all of them; All visits, her page and "What happened" 10 at a time, each with "Show more"',
   'Moji upiti': 'My requests',
   'Upit: čeka, prihvaćen, odbijen': 'A request: waiting, accepted, declined',
   'Moji upiti, prazno': 'My requests, empty',
@@ -635,7 +634,6 @@ export default {
   "Banka odbije naplatu": "The bank declines a charge",
   "Kartica ističe ovog meseca.": "The card expires this month.",
   "Kartica ističe ovog meseca": "The card expires this month",
-  "Nova kartica u Podešavanjima briše oba.": "A new card in Settings clears both.",
   "Podešavanja, prelazak na drugi paket": "Settings, moving to another plan",
   "Pretplata: Basic, od obnove Premium": "Subscription: Basic, Premium from the renewal",
   "Podešavanja, kartica odbijena": "Settings, card declined",
@@ -658,4 +656,6 @@ export default {
   "Dođe dan obnove pretplate": "The subscription's renewal day comes",
   "Obnova sa isteklom ili odbijenom karticom ne prolazi, pa pretplata nije plaćena. Nova kartica u Podešavanjima briše i odbijanje i istek.": "A renewal on an expired or declined card does not go through, so the subscription is not paid. A new card in Settings clears both the decline and the expiry.",
   "Kartica se čuva i za posete: svaka se naplaćuje 24 sata posle izveštaja negovateljice.": "The card is also kept for visits: each is charged 24 hours after the caregiver's report.",
+  "Drawer sa početne: posete po mesecima. Otvara se dugmetom ispod, ili „Sve posete\" na kartici „Poslednja poseta\".": "A drawer on the home: visits by month. Opened with the button below, or \"All visits\" on the \"Last visit\" card.",
+  "Sve posete, godinu dana kasnije": "All visits, a year later",
 };

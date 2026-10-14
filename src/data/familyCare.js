@@ -116,9 +116,11 @@ export function dayOf(text, today = 0) {
   if (mi === -1) mi = MONTHS_IN.fi.indexOf(m);
   return mi === -1 ? new Date(0) : new Date(y ? Number(y) : EPOCH.getFullYear(), mi, parseInt(d, 10));
 }
-export const monthOf = (text, today = 0) => {
-  const d = dayOf(text, today);
-  if (Math.abs(d - dateOfDay(today)) <= 86400000) return t('Ove nedelje');
+// The month a long list groups by (docs/patterns.md §8a): "avgust 2026",
+// for a date written as text (a visit) or a prototype day (an entry's `at` / 24)
+export const monthOf = (text, today = 0) => monthName(dayOf(text, today));
+export const monthOfDay = (day) => monthName(dateOfDay(day));
+const monthName = (d) => {
   if (getLang() === 'sr') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   return d.toLocaleDateString(locale(), { month: 'long', year: 'numeric' });
 };

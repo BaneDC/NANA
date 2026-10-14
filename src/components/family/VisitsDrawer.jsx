@@ -11,7 +11,7 @@ import { t, tn } from '@/i18n';
 
 // Every visit, read without leaving the home (docs/patterns.md §4a): opened
 // from "Sve posete" on the last visit's card and from the number of visits so
-// far. The same list as the page "Posete", laid out as "Šta se desilo" is: who
+// far. Laid out as "Šta se desilo" is: who
 // came, as chips, when more than one has; how many; then the visits by month,
 // each the row a visit is everywhere, ten at a time. A visit with something to
 // open opens it in place of this.
@@ -42,7 +42,7 @@ export default function VisitsDrawer({ open = true, care, onClose, onOpen }) {
       {groups.map((g) => (
         <Fragment key={g.month}>
           <div className="flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
-            <PaneLabel>{g.month === 'Zakazano' ? t('Zakazano') : g.month}</PaneLabel>
+            <PaneLabel>{g.month}</PaneLabel>
             <Badge variant="secondary" className="ml-auto phone:ml-0">
               {g.visits.length}
             </Badge>

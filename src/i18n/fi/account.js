@@ -595,10 +595,9 @@ export default {
   'Njena stranica, odbijeni uslovi': 'Hoitajan sivu, hylätyt ehdot',
   'Uslovi su odbijeni, verzija 1 odbijena': 'Ehdot hylätty, versio 1 hylätty',
   'Sve posete': 'Kaikki käynnit',
-  'Posete po mesecima': 'Käynnit kuukausittain',
   'Duge liste': 'Pitkät listat',
-  'Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve zakazane", „Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"':
-    'Vuotta myöhemmin. Etusivulla kortti näyttää 3 riviä, ja otsikon painike (”Kaikki sovitut”, ”Kaikki hoitajat”, ”Kaikki tarjoukset”) avaa paneelin, jossa ovat kaikki; Kaikki käynnit, hoitajan sivu ja ”Mitä tapahtui” 10 kerrallaan, kussakin ”Näytä lisää”',
+  'Godinu dana kasnije. Na početnoj kartica pokazuje 3 reda, a dugme u glavi („Sve negovateljice", „Sve ponude") otvara drawer sa svima; Sve posete, njena stranica i „Šta se desilo" po 10, svaki sa „Prikaži još"':
+    'Vuotta myöhemmin. Etusivulla kortti näyttää 3 riviä, ja otsikon painike (”Kaikki hoitajat”, ”Kaikki tarjoukset”) avaa paneelin, jossa ovat kaikki; Kaikki käynnit, hoitajan sivu ja ”Mitä tapahtui” 10 kerrallaan, kussakin ”Näytä lisää”',
   'Moji upiti': 'Omat pyynnöt',
   'Upit: čeka, prihvaćen, odbijen': 'Pyyntö: odottaa, hyväksytty, hylätty',
   'Moji upiti, prazno': 'Omat pyynnöt, tyhjä',
@@ -635,7 +634,6 @@ export default {
   "Banka odbije naplatu": "Pankki hylkää veloituksen",
   "Kartica ističe ovog meseca.": "Kortti vanhenee tässä kuussa.",
   "Kartica ističe ovog meseca": "Kortti vanhenee tässä kuussa",
-  "Nova kartica u Podešavanjima briše oba.": "Uusi kortti asetuksissa poistaa molemmat.",
   "Podešavanja, prelazak na drugi paket": "Asetukset, siirtyminen toiseen pakettiin",
   "Pretplata: Basic, od obnove Premium": "Tilaus: Basic, uusiutumisesta alkaen Premium",
   "Podešavanja, kartica odbijena": "Asetukset, kortti hylätty",
@@ -658,4 +656,6 @@ export default {
   "Dođe dan obnove pretplate": "Tilauksen uusimispäivä koittaa",
   "Obnova sa isteklom ili odbijenom karticom ne prolazi, pa pretplata nije plaćena. Nova kartica u Podešavanjima briše i odbijanje i istek.": "Uusiminen vanhentuneella tai hylätyllä kortilla ei onnistu, joten tilaus jää maksamatta. Uusi kortti asetuksissa poistaa sekä hylkäyksen että vanhenemisen.",
   "Kartica se čuva i za posete: svaka se naplaćuje 24 sata posle izveštaja negovateljice.": "Kortti tallennetaan myös käyntejä varten: jokainen veloitetaan 24 tuntia hoitajan raportin jälkeen.",
+  "Drawer sa početne: posete po mesecima. Otvara se dugmetom ispod, ili „Sve posete\" na kartici „Poslednja poseta\".": "Etusivun paneeli: käynnit kuukausittain. Avataan alla olevasta painikkeesta tai ”Kaikki käynnit” -painikkeesta kortilla ”Viimeisin käynti”.",
+  "Sve posete, godinu dana kasnije": "Kaikki käynnit, vuotta myöhemmin",
 };
