@@ -166,80 +166,100 @@ function VisitNote({ report }) {
   );
 }
 
-// The history, narrowed by kind with chips over the card, as everywhere a
-// list is filtered (docs/patterns.md §10a): on the page, a chip only for
-// what there is, each with how many. One is always chosen. Right under the
-// tabs, they start where the tabs do, the card's edge, and not 16 in as under
-// a page's title (§4): two bars one over the other, 16 apart, read as a step.
-function History({ entries, today }) {
-  const [kind, setKind] = useState('all');
-  const filters = HISTORY_FILTERS.map((f) => ({ ...f, count: entries.filter((e) => f.kinds.includes(e.kind)).length }))
-    .filter((f) => f.count > 0);
-  const chosen = filters.find((f) => f.id === kind);
+// What the history can be narrowed to: only the kinds there are, each with
+// how many; nothing when there is one kind (docs/patterns.md §10a).
+const historyFilters = (entries) =>
+  HISTORY_FILTERS.map((f) => ({ ...f, count: entries.filter((e) => f.kinds.includes(e.kind)).length })).filter(
+    (f) => f.count > 0
+  );
+
+// The chips, beside the tabs where the page is wide enough and under them
+// where it is not. They are there only while the history is, so choosing
+// "Istorija" brings them in: each fades in from 6 to the left, from where the
+// tabs are, 40 after the one before (200, `ease-out-strong`), so the eye
+// catches that they came with the tab without it being a show. Only opacity
+// and the move are delayed; a chip's colour answers a click at once. With
+// reduced motion they only fade.
+function HistoryFilters({ entries, kind, onKind }) {
+  const filters = historyFilters(entries);
+  if (filters.length < 2) return null;
+  return (
+    <ToggleGroup
+      type="single"
+      size="sm"
+      className="items-center"
+      value={kind}
+      onValueChange={(id) => id && onKind(id)}
+      aria-label={t('Filter istorije')}
+    >
+      {[{ id: 'all', label: 'Sve', count: entries.length }, ...filters].map((f, i) => (
+        <ToggleGroupItem
+          key={f.id}
+          value={f.id}
+          className="ease-out-strong starting:-translate-x-1.5 starting:opacity-0 motion-reduce:starting:translate-x-0"
+          style={{
+            // Tailwind's translate is the `translate` property, not `transform`
+            transitionProperty: 'color, background-color, border-color, opacity, translate',
+            transitionDuration: '150ms, 150ms, 150ms, 200ms, 200ms',
+            transitionDelay: `0ms, 0ms, 0ms, ${i * 40}ms, ${i * 40}ms`,
+          }}
+        >
+          {t(f.label)}
+          <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">
+            {f.count}
+          </span>
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
+}
+
+// The history, as the chips over it narrow it.
+function History({ entries, kind, today }) {
+  const chosen = historyFilters(entries).find((f) => f.id === kind);
   const picked = chosen ? entries.filter((e) => chosen.kinds.includes(e.kind)) : entries;
   const list = useShowMore(picked, { reset: kind });
   return (
-    <div className="flex flex-col gap-3">
-      {filters.length > 1 && (
-        <ToggleGroup
-          type="single"
-          size="sm"
-          className="items-center"
-          value={kind}
-          onValueChange={(id) => id && setKind(id)}
-          aria-label={t('Šta prikazati')}
-        >
-          {[{ id: 'all', label: 'Sve', count: entries.length }, ...filters].map((f) => (
-            <ToggleGroupItem key={f.id} value={f.id}>
-              {t(f.label)}
-              <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">
-                {f.count}
-              </span>
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+    <Card className="[&>[data-slot=item-group]]:mt-2">
+      <CardHeader>
+        <CardTitle>{t('Istorija kartona')}</CardTitle>
+      </CardHeader>
+      <CardDescription>
+        {picked.length === entries.length
+          ? tn(entries.length, 'stavka', 'stavke', 'stavki')
+          : t('{picked} od {all}', { picked: picked.length, all: entries.length })}{' '}
+        · {t('najnovije prvo. Ništa se odavde ne briše: izmena se upisuje pored onoga što je bilo.')}
+      </CardDescription>
+      <ItemGroup>
+        {list.visible.map((e) => (
+          <Item key={e.id}>
+            <ItemContent>
+              <ItemTitle className="mb-1 flex-wrap">
+                <span className="min-w-0">{t(e.title)}</span>
+                <Badge variant={historyTone(e)} className={overLine}>
+                  {t(HISTORY_KIND[e.kind])}
+                </Badge>
+              </ItemTitle>
+              <ItemDescription>
+                {byText(e)} · {whenText(e, today)}
+              </ItemDescription>
+              {e.report && <VisitNote report={e.report} />}
+              {e.lines.map((line, i) => (
+                <ItemDescription key={i}>{t(line)}</ItemDescription>
+              ))}
+              {e.next?.map((line, i) => (
+                <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
+              ))}
+            </ItemContent>
+          </Item>
+        ))}
+      </ItemGroup>
+      {list.rest > 0 && (
+        <CardFooter>
+          <ShowMore list={list} />
+        </CardFooter>
       )}
-      <Card className="[&>[data-slot=item-group]]:mt-2">
-        <CardHeader>
-          <CardTitle>{t('Istorija kartona')}</CardTitle>
-        </CardHeader>
-        <CardDescription>
-          {picked.length === entries.length
-            ? tn(entries.length, 'stavka', 'stavke', 'stavki')
-            : t('{picked} od {all}', { picked: picked.length, all: entries.length })}{' '}
-          · {t('najnovije prvo. Ništa se odavde ne briše: izmena se upisuje pored onoga što je bilo.')}
-        </CardDescription>
-        <ItemGroup>
-          {list.visible.map((e) => (
-            <Item key={e.id}>
-              <ItemContent>
-                <ItemTitle className="mb-1 flex-wrap">
-                  <span className="min-w-0">{t(e.title)}</span>
-                  <Badge variant={historyTone(e)} className={overLine}>
-                    {t(HISTORY_KIND[e.kind])}
-                  </Badge>
-                </ItemTitle>
-                <ItemDescription>
-                  {byText(e)} · {whenText(e, today)}
-                </ItemDescription>
-                {e.report && <VisitNote report={e.report} />}
-                {e.lines.map((line, i) => (
-                  <ItemDescription key={i}>{t(line)}</ItemDescription>
-                ))}
-                {e.next?.map((line, i) => (
-                  <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
-                ))}
-              </ItemContent>
-            </Item>
-          ))}
-        </ItemGroup>
-        {list.rest > 0 && (
-          <CardFooter>
-            <ShowMore list={list} />
-          </CardFooter>
-        )}
-      </Card>
-    </div>
+    </Card>
   );
 }
 
@@ -254,6 +274,8 @@ export default function MedicalRecord({
   onReportChange,
 }) {
   const [side, setSide] = useState('now');
+  // what the history is narrowed to; kept while the other tab is open
+  const [kind, setKind] = useState('all');
   const person = answers['about-person']?.values || {};
   if (!person.name) {
     return (
@@ -342,10 +364,19 @@ export default function MedicalRecord({
 
       {/* the chart as it stands, and everything written into it: two views of one thing */}
       <Tabs value={side} onValueChange={setSide}>
-        <TabsList aria-label={t('Šta prikazati')}>
-          <TabsTrigger value="now">{t('Stanje sada')}</TabsTrigger>
-          <TabsTrigger value="history">{t('Istorija')}</TabsTrigger>
-        </TabsList>
+        {/* The tabs, and the history's chips with them: in one line, the
+            chips on the right, while the page is wide enough (672, as the
+            home's grid goes two to a line); under the tabs otherwise, at the
+            edge, as the tabs are (docs/patterns.md §10a). */}
+        <div className="@container">
+          <div className="flex flex-col items-start gap-3 @2xl:flex-row @2xl:items-center @2xl:justify-between">
+            <TabsList aria-label={t('Šta prikazati')}>
+              <TabsTrigger value="now">{t('Stanje sada')}</TabsTrigger>
+              <TabsTrigger value="history">{t('Istorija')}</TabsTrigger>
+            </TabsList>
+            {side === 'history' && <HistoryFilters entries={history} kind={kind} onKind={setKind} />}
+          </div>
+        </div>
 
         <TabsContent value="now" className="flex flex-col gap-8">
           <PageSection title={t('Ukratko')}>
@@ -389,7 +420,7 @@ export default function MedicalRecord({
         </TabsContent>
 
         <TabsContent value="history">
-          <History entries={history} today={today} />
+          <History entries={history} kind={kind} today={today} />
         </TabsContent>
       </Tabs>
     </Page>

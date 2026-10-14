@@ -417,6 +417,7 @@ export default {
   'Sa poseta': 'From visits',
   'Promene stanja': 'Changes in condition',
   Ispravke: 'Corrections',
+  'Filter istorije': 'History filter',
   // a visit's note: what was off, then the rest said once
   '{what}: {how}': '{what}: {how}',
   '{a} i {b}': '{a} and {b}',
