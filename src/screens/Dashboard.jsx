@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Clock, Search, Send } from 'lucide-react';
+import { Check, ChevronDown, Clock, Lock, Search, Send } from 'lucide-react';
 import { caregivers } from '../data/carePlan';
 import {
   activeVersion,
@@ -51,7 +51,7 @@ import {
 import VisitReport from '../components/family/VisitReport';
 import { amountOf } from '../components/family/VisitRow';
 import PlanChangeBanner from '../components/PlanChangeBanner';
-import PlanContents from '../components/PlanContents';
+import RecommendationCard from '../components/RecommendationCard';
 import { CoordinatorContact } from '../components/PlanFooterBlocks';
 import { getLang, t, tn } from '../i18n';
 
@@ -93,33 +93,61 @@ function Section({ title, action, sub, children }) {
   );
 }
 
-// What the coordinator wrote with the plan, kept once the plan is no longer
-// this page (docs/patterns.md §4a). A card like the others here, not the
-// tinted tray the letter has at the start: the tint is for what asks for
-// something, and this has been read. Its title says whose it is. Folded, it
-// is the letter's first line, cut off where the card ends; the button in its
-// head opens it, and the line becomes the greeting with the letter under it.
-function Letter({ letter, changed, changeKey }) {
+// What the coordinator wrote with the plan (docs/patterns.md §4a). A card
+// like the others here, not the tinted tray: the tint is for what asks for
+// something. Its title says whose it is.
+//
+// Until someone has said yes (`accordion`), the home is the plan it
+// introduces, so it opens and folds in place, starting open: "Sakrij" folds it
+// to its first line, "Pročitaj" opens it again. Once someone comes it is folded,
+// and the whole card and "Pročitaj" open it in a drawer.
+function Letter({ letter, changed, changeKey, accordion = false, onOpen }) {
   const { greeting, paragraphs, from } = letter;
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(accordion);
   // "koordinatorke Minne": her first name in the genitive
   const first = from.name.split(' ')[0];
   const whose = first.endsWith('a') ? `${first.slice(0, -1)}e` : first;
+  const title = t('Poruka koordinatorke {name}', { name: getLang() === 'sr' ? whose : first });
+  const ring = cn(changed && 'animate-plan-changed shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]');
+  const firstLine = (
+    <p className="mt-2 truncate text-xs leading-body text-muted-foreground">
+      {greeting} {paragraphs[0]}
+    </p>
+  );
+
+  if (!accordion) {
+    return (
+      <Card key={changed ? changeKey : 'letter'} className={ring}>
+        <CardHeader>
+          <CardTitle>
+            <CardLink onClick={onOpen}>{title}</CardLink>
+          </CardTitle>
+          <CardAction>
+            {changed && <Badge>{t('Izmenjeno')}</Badge>}
+            <Button variant="secondary" onClick={onOpen}>
+              {t('Pročitaj')}
+            </Button>
+          </CardAction>
+        </CardHeader>
+        {/* under a head with a button, 8 lower (§7) */}
+        {firstLine}
+      </Card>
+    );
+  }
+
   return (
-    <Card
-      key={changed ? changeKey : 'letter'}
-      className={cn(changed && 'animate-plan-changed shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]')}
-    >
+    <Card key={changed ? changeKey : 'letter'} className={ring}>
       {/* `contents`, so what it holds is laid out by the card, as in every
           other card; the card itself stays a card (its `data-slot`) */}
       <Collapsible open={open} onOpenChange={setOpen} className="contents">
         <CardHeader>
-          <CardTitle>{t('Poruka koordinatorke {name}', { name: getLang() === 'sr' ? whose : first })}</CardTitle>
+          <CardTitle>{title}</CardTitle>
           <CardAction>
             {changed && <Badge>{t('Izmenjeno')}</Badge>}
             <CollapsibleTrigger asChild>
               {/* on a phone the title takes the line, so the button is its
-                  arrow alone; the word stays for a screen reader */}
+                  arrow alone; the word stays for a screen reader (§10: what
+                  opens in place has an arrow that turns) */}
               <Button variant="secondary" className="phone:aspect-square phone:px-0">
                 <span className="phone:sr-only">{open ? t('Sakrij') : t('Pročitaj')}</span>
                 <ChevronDown size={14} strokeWidth={1.75} className={cn('transition-transform duration-200', open && 'rotate-180')} />
@@ -127,10 +155,11 @@ function Letter({ letter, changed, changeKey }) {
             </CollapsibleTrigger>
           </CardAction>
         </CardHeader>
-        {/* under a head with a button, 8 lower (§7) */}
-        <p className={cn('mt-2 text-xs leading-body', open ? 'font-medium text-foreground' : 'truncate text-muted-foreground')}>
-          {open ? greeting : `${greeting} ${paragraphs[0]}`}
-        </p>
+        {open ? (
+          <p className="mt-2 text-xs leading-body font-medium text-foreground">{greeting}</p>
+        ) : (
+          firstLine
+        )}
         {/* the 8 over the letter is the letter's own, so it folds away with it
             and not in a step once the letter has */}
         <CollapsibleContent className="-mt-2 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
@@ -241,6 +270,10 @@ export default function Dashboard({
 
   // the overview's own numbers: visits that have been, the next one, money moving
   const running = care.arrangements.length > 0;
+  // The overview is for care that has terms: until the family has agreed to
+  // a contract (one in force, or one that was), the home stays the plan,
+  // with what they wait for over it (docs/patterns.md §4a).
+  const agreed = care.arrangements.some((a) => a.versions.some((v) => v.status === 'active' || v.status === 'ended'));
   const done = allVisits(care).filter(hasBeen).length;
   const next = coming[0];
   const since = care.arrangements.map((a) => a.since).find(Boolean);
@@ -257,20 +290,118 @@ export default function Dashboard({
         {label} ({list.length})
       </Button>
     );
-  const more = (plan?.recommendations || []).filter((r) => r.locked).length;
-  // the plan as the page's content, while nobody comes yet
-  const thePlan = plan && !running && (
-    <PlanContents
-      plan={plan}
-      unlocked={unlocked}
-      askNote={askNote}
-      change={planChange}
-      onSelectCaregiver={onSelectCaregiver}
-      onOpenCaregiver={onOpenCaregiver}
-      onUnlock={onUnlock}
-      onFindCaregivers={onFindCaregiver}
-      standingOf={standingOf}
+  // What the plan recommends, as cards of the home (docs/patterns.md §4a):
+  // the caregivers to write to, what our partners offer, and the advice of
+  // what the family can do themselves. Without a subscription the last two are
+  // one card that says what is in them and opens them.
+  const recs = plan?.recommendations || [];
+  const careRec = !agreed && recs.find((r) => r.kind === 'caregivers' && !r.locked);
+  const advice = recs.filter((r) => r.kind === 'list');
+  const locked = recs.filter((r) => r.locked);
+  const offersCard = plan && offers.length > 0 && (
+    <Section title={t('Ponude partnera')} action={allOf(offers, 'offers', t('Sve ponude'))}>
+      <ItemGroup>
+        {offers.slice(0, HOME_ROWS).map((rec) => (
+          <OfferRow key={rec.id} rec={rec} onOpen={() => onDrawer({ kind: 'offer', recId: rec.id })} />
+        ))}
+      </ItemGroup>
+      {/* what these are, last in the card and pushed to its foot */}
+      <p className="mt-auto pt-2 text-small text-muted-foreground">
+        {t('Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.')}
+      </p>
+    </Section>
+  );
+
+  // What the family can do themselves, from the plan: each piece of advice a
+  // row, its title, why, and what it is, ticked.
+  const adviceCard = plan && advice.length > 0 && (
+    <Section title={t('Saveti iz plana nege')}>
+      <ItemGroup>
+        {advice.map((rec) => (
+          <Item key={rec.id}>
+            <ItemContent className="gap-1">
+              <p className={rowTitle}>{rec.title}</p>
+              <p className={rowBody}>{rec.why}</p>
+              <ul className="mt-1 flex list-none flex-col gap-1">
+                {rec.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-xs leading-body text-muted-foreground">
+                    <Check size={13} strokeWidth={2} className="h-[1lh] shrink-0 text-primary-600" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </ItemContent>
+          </Item>
+        ))}
+      </ItemGroup>
+    </Section>
+  );
+
+  // Before a subscription the partners and the advice are there, blurred and
+  // faint, so it is plain that something is kept back and what kind, with
+  // what opens them over them (the paywall's own look, as in the plan).
+  const partsRow = (offersCard || adviceCard) && (
+    <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2 @2xl:[&>:last-child:nth-child(odd)]:col-span-full">
+      {offersCard}
+      {adviceCard}
+    </div>
+  );
+  const lockedRow = partsRow && (
+    <div className="relative">
+      <div className="pointer-events-none opacity-50 blur-[6px] select-none" aria-hidden="true" inert>
+        {partsRow}
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-3xl bg-[color-mix(in_srgb,var(--surface-elevated)_55%,transparent)] p-4 text-center">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
+          <Lock size={14} strokeWidth={2} />
+        </span>
+        <p className="text-sm font-medium text-foreground">{t('Još {count} preporuke u punom planu', { count: locked.length })}</p>
+        <p className="mb-2 max-w-[440px] text-xs leading-body text-muted-foreground">
+          {t(
+            'Pregledi kod lekara i pomagala kod naših partnera, jeftinije kad ih zakaže Minna, promene koje stan čine bezbednijim, i direktan broj svake negovateljice.'
+          )}
+        </p>
+        <Button size="lg" onClick={onUnlock}>
+          <Lock size={12} strokeWidth={2} /> {t('Otključajte ceo plan nege')}
+        </Button>
+      </div>
+    </div>
+  );
+
+  const letterCard = plan?.letter && (
+    <Letter
+      accordion={!agreed}
+      letter={plan.letter}
+      changed={Boolean(planChange?.letter)}
+      changeKey={planChange?.at}
+      onOpen={() => onDrawer({ kind: 'letter' })}
     />
+  );
+
+  // While nobody comes yet, the home is the plan, laid out as the overview is
+  // (docs/patterns.md §4a): the coordinator's letter first, the caregivers to
+  // write to across the page, the partners and the advice two to a line
+  // (blurred until there is a subscription), the coordinator.
+  const thePlan = plan && !agreed && (
+    <div className="@container flex flex-col gap-3">
+      {letterCard}
+      {careRec && (
+        <RecommendationCard
+          rec={careRec}
+          unlocked={unlocked}
+          askNote={askNote}
+          bookable
+          changed={Boolean(planChange?.recs.includes(careRec.id))}
+          changeKey={planChange?.at}
+          onSelectCaregiver={onSelectCaregiver}
+          onOpenCaregiver={onOpenCaregiver}
+          onFindCaregivers={onFindCaregiver}
+          standingOf={standingOf}
+        />
+      )}
+      {unlocked ? partsRow : lockedRow}
+      <CoordinatorContact coordinator={plan.coordinator || coordinator} />
+    </div>
   );
 
   // Down the page to the caregivers the plan recommends, not to any one of
@@ -399,14 +530,12 @@ export default function Dashboard({
         <PlanChangeBanner
           key={planChange.at}
           change={planChange}
-          marked={!running}
+          marked={!agreed}
           onUndo={onUndoChange}
           onDismiss={onDismissChange}
         />
       )}
 
-      {/* nobody comes yet: the plan itself, with its next step in it */}
-      {thePlan}
 
       {ahead && (
         <Attention title={ahead.title}>
@@ -494,7 +623,11 @@ export default function Dashboard({
         </Attention>
       )}
 
-      {running && (
+      {/* No contract agreed yet: the plan, as cards, under every banner of
+          what is waited for (all banners are always at the top). */}
+      {thePlan}
+
+      {agreed && (
         // the grid follows the room the page has, not the window: with the
         // assistant open beside it the cards go one to a line
         <div className="@container flex flex-col gap-3">
@@ -601,34 +734,22 @@ export default function Dashboard({
             </Section>
 
             {/* what our partners offer, from the plan; a row opens the offer */}
-            {plan && (
-              <Section title={t('Ponude partnera')} action={unlocked && allOf(offers, 'offers', t('Sve ponude'))}>
-                {unlocked ? (
-                  <ItemGroup>
-                    {offers.slice(0, HOME_ROWS).map((rec) => (
-                      <OfferRow key={rec.id} rec={rec} onOpen={() => onDrawer({ kind: 'offer', recId: rec.id })} />
-                    ))}
-                  </ItemGroup>
-                ) : (
-                  <CardFooter>
-                    <Button onClick={onUnlock}>{t('Otključajte ceo plan nege')}</Button>
-                  </CardFooter>
-                )}
-                {/* what these are, last in the card and pushed to its foot */}
-                <p className="mt-auto pt-2 text-small text-muted-foreground">
-                  {t('Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.')}
-                </p>
+            {plan && !unlocked ? (
+              <Section title={t('Ponude partnera')}>
+                <CardFooter>
+                  <Button onClick={onUnlock}>{t('Otključajte ceo plan nege')}</Button>
+                </CardFooter>
               </Section>
+            ) : (
+              offersCard
             )}
-
+            {unlocked && adviceCard}
           </div>
 
           {/* What the coordinator wrote with the plan, kept now that the plan
               is no longer this page; then who to call when something is not
               right. Both the page's whole width (docs/patterns.md §4a). */}
-          {plan?.letter && (
-            <Letter letter={plan.letter} changed={Boolean(planChange?.letter)} changeKey={planChange?.at} />
-          )}
+          {letterCard}
           <CoordinatorContact coordinator={plan?.coordinator || coordinator} />
         </div>
       )}

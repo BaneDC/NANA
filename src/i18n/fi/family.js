@@ -320,6 +320,7 @@ export default {
   "Nijedna poseta nije zakazana.": "Yhtään käyntiä ei ole varattu.",
   "Vaše negovateljice": "Teidän hoitajanne",
   "Ponude partnera": "Kumppanien tarjoukset",
+  "Saveti iz plana nege": "Neuvoja hoitosuunnitelmasta",
   "Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.": "Tarkastuksia ja apuvälineitä hoitosuunnitelmasta, edullisemmin Minnan varaamina.",
   "negovateljica|negovateljice|negovateljica": "hoitaja|hoitajaa",
   "Novi uslovi": "Uudet ehdot",
