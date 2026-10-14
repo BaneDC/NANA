@@ -320,6 +320,7 @@ export default {
   "Nijedna poseta nije zakazana.": "No visit is booked.",
   "Vaše negovateljice": "Your caregivers",
   "Ponude partnera": "Partner offers",
+  "Saveti iz plana nege": "Advice from the care plan",
   "Pregledi i pomagala iz plana nege, jeftinije kad ih zakaže Minna.": "Check-ups and aids from the care plan, cheaper when Minna books them.",
   "negovateljica|negovateljice|negovateljica": "caregiver|caregivers",
   "Novi uslovi": "New terms",

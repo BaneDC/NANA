@@ -88,3 +88,24 @@ export function OfferDrawer({ open = true, care, plan, recId, unlocked, onClose 
     </Modal>
   );
 }
+
+// The letter the coordinator wrote with the plan, opened from its card on the
+// home once it is no longer the tinted letter at the top (docs/patterns.md
+// §4a): who wrote it over the greeting, then the letter and her name.
+export function LetterDrawer({ open = true, plan, onClose }) {
+  const letter = plan?.letter;
+  if (!letter) return null;
+  const { greeting, paragraphs, from } = letter;
+  return (
+    <Modal eyebrow={`${from.name} · ${t(from.role)}`} title={greeting} open={open} onClose={onClose}>
+      <div className="flex flex-col gap-2">
+        {paragraphs.map((p, i) => (
+          <p className="text-xs leading-body text-muted-foreground" key={i}>
+            {p}
+          </p>
+        ))}
+        <p className="mt-1 text-small text-muted-foreground">- {from.name.split(' ')[0]}</p>
+      </div>
+    </Modal>
+  );
+}
