@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
 import { Fact, Facts } from '@/components/data-list';
 import { useShowMore } from '@/hooks/use-show-more';
@@ -13,18 +14,21 @@ import FirstTime from '../components/FirstTime';
 import FrailtyScale from '../components/FrailtyScale';
 import ShowMore from '../components/ShowMore';
 import Tags, { Group } from '../components/Tags';
-import { dayLabel, hourText, todayOf } from '../data/familyCare';
+import { AMOUNT_LABEL, MOOD_LABEL, dayLabel, hourText, todayOf } from '../data/familyCare';
 import {
   HEALTH,
+  HISTORY_FILTERS,
   HISTORY_KIND,
   NOTED_ONLY,
   RECORD_PARTS,
   alertsOf,
   entryLine,
   partRows,
+  historyTone,
+  isOff,
   recordHistory,
 } from '../data/record';
-import { t, tn } from '../i18n';
+import { msg, t, tn } from '../i18n';
 
 // The medical record of the person being cared for (docs/patterns.md §10a):
 // her page, opened from who is signed in, at the foot of the menu. Two views
@@ -112,46 +116,130 @@ const byText = (e) =>
   e.by === 'you' ? (e.via === 'assistant' ? t('vi, preko asistenta') : t('vi')) : e.by === 'minna' ? 'Minna' : e.who || t('negovateljica');
 const whenText = (e, today) => (e.day ? e.day.toLowerCase() : t('{day} u {time}', { day: dayLabel(Math.floor(e.at / 24), today).toLowerCase(), time: hourText(e.at) }));
 
-function History({ entries, today }) {
-  const list = useShowMore(entries);
+// What a caregiver wrote after a visit (docs/patterns.md §10a). How she was
+// is one line: what was off first, in the warning's colour, then what was as
+// usual, said once for all of it ("Ishrana i kretanje: kao i obično") rather
+// than three times over. Then her worry, in the text's own colour, and her
+// note, grey. Nothing of it is in the entry's badge.
+const LOOKS = [
+  { label: msg('Raspoloženje'), key: 'mood', words: MOOD_LABEL },
+  { label: msg('Ishrana'), key: 'eating', words: AMOUNT_LABEL },
+  { label: msg('Kretanje'), key: 'moving', words: AMOUNT_LABEL },
+];
+const listed = (names) =>
+  names.length === 1
+    ? names[0]
+    : names.length === 2
+      ? t('{a} i {b}', { a: names[0], b: names[1].toLowerCase() })
+      : t('{a}, {b} i {c}', { a: names[0], b: names[1].toLowerCase(), c: names[2].toLowerCase() });
+
+function VisitNote({ report }) {
+  const said = LOOKS.filter((l) => report[l.key]);
+  const off = said.filter((l) => isOff(report[l.key]));
+  // the rest, those that read the same said together
+  const rest = [];
+  for (const l of said.filter((x) => !isOff(report[x.key]))) {
+    const how = t(l.words[report[l.key]]).toLowerCase();
+    const same = rest.find((r) => r.how === how);
+    if (same) same.names.push(t(l.label));
+    else rest.push({ how, names: [t(l.label)] });
+  }
+  const parts = [
+    ...off.map((l) => ({ text: t('{what}: {how}', { what: t(l.label), how: t(l.words[report[l.key]]).toLowerCase() }), off: true })),
+    ...rest.map((r) => ({ text: t('{what}: {how}', { what: listed(r.names), how: r.how }) })),
+  ];
   return (
-    <Card className="[&>[data-slot=item-group]]:mt-2">
-      <CardHeader>
-        <CardTitle>{t('Istorija kartona')}</CardTitle>
-      </CardHeader>
-      <CardDescription>
-        {tn(entries.length, 'stavka', 'stavke', 'stavki')} ·{' '}
-        {t('najnovije prvo. Ništa se odavde ne briše: izmena se upisuje pored onoga što je bilo.')}
-      </CardDescription>
-      <ItemGroup>
-        {list.visible.map((e) => (
-          <Item key={e.id}>
-            <ItemContent>
-              <ItemTitle className="mb-1 flex-wrap">
-                <span className="min-w-0">{t(e.title)}</span>
-                <Badge variant={e.kind === 'state' ? 'default' : 'secondary'} className={overLine}>
-                  {t(HISTORY_KIND[e.kind])}
-                </Badge>
-              </ItemTitle>
-              <ItemDescription>
-                {byText(e)} · {whenText(e, today)}
-              </ItemDescription>
-              {e.lines.map((line, i) => (
-                <ItemDescription key={i}>{t(line)}</ItemDescription>
-              ))}
-              {e.next?.map((line, i) => (
-                <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
-              ))}
-            </ItemContent>
-          </Item>
-        ))}
-      </ItemGroup>
-      {list.rest > 0 && (
-        <CardFooter>
-          <ShowMore list={list} />
-        </CardFooter>
+    <>
+      {parts.length > 0 && (
+        <ItemDescription>
+          {parts.map((p, i) => (
+            <span key={i}>
+              {i > 0 && ' · '}
+              <span className={p.off ? 'font-medium text-warning' : undefined}>{p.text}</span>
+            </span>
+          ))}
+        </ItemDescription>
       )}
-    </Card>
+      {report.concern && <ItemDescription className="font-medium text-foreground">{t(report.concern)}</ItemDescription>}
+      {report.note && <ItemDescription>{t(report.note)}</ItemDescription>}
+    </>
+  );
+}
+
+// The history, narrowed by kind with chips over the card, as everywhere a
+// list is filtered (docs/patterns.md §10a): on the page, a chip only for
+// what there is, each with how many. One is always chosen. Right under the
+// tabs, they start where the tabs do, the card's edge, and not 16 in as under
+// a page's title (§4): two bars one over the other, 16 apart, read as a step.
+function History({ entries, today }) {
+  const [kind, setKind] = useState('all');
+  const filters = HISTORY_FILTERS.map((f) => ({ ...f, count: entries.filter((e) => f.kinds.includes(e.kind)).length }))
+    .filter((f) => f.count > 0);
+  const chosen = filters.find((f) => f.id === kind);
+  const picked = chosen ? entries.filter((e) => chosen.kinds.includes(e.kind)) : entries;
+  const list = useShowMore(picked, { reset: kind });
+  return (
+    <div className="flex flex-col gap-3">
+      {filters.length > 1 && (
+        <ToggleGroup
+          type="single"
+          size="sm"
+          className="items-center"
+          value={kind}
+          onValueChange={(id) => id && setKind(id)}
+          aria-label={t('Šta prikazati')}
+        >
+          {[{ id: 'all', label: 'Sve', count: entries.length }, ...filters].map((f) => (
+            <ToggleGroupItem key={f.id} value={f.id}>
+              {t(f.label)}
+              <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">
+                {f.count}
+              </span>
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      )}
+      <Card className="[&>[data-slot=item-group]]:mt-2">
+        <CardHeader>
+          <CardTitle>{t('Istorija kartona')}</CardTitle>
+        </CardHeader>
+        <CardDescription>
+          {picked.length === entries.length
+            ? tn(entries.length, 'stavka', 'stavke', 'stavki')
+            : t('{picked} od {all}', { picked: picked.length, all: entries.length })}{' '}
+          · {t('najnovije prvo. Ništa se odavde ne briše: izmena se upisuje pored onoga što je bilo.')}
+        </CardDescription>
+        <ItemGroup>
+          {list.visible.map((e) => (
+            <Item key={e.id}>
+              <ItemContent>
+                <ItemTitle className="mb-1 flex-wrap">
+                  <span className="min-w-0">{t(e.title)}</span>
+                  <Badge variant={historyTone(e)} className={overLine}>
+                    {t(HISTORY_KIND[e.kind])}
+                  </Badge>
+                </ItemTitle>
+                <ItemDescription>
+                  {byText(e)} · {whenText(e, today)}
+                </ItemDescription>
+                {e.report && <VisitNote report={e.report} />}
+                {e.lines.map((line, i) => (
+                  <ItemDescription key={i}>{t(line)}</ItemDescription>
+                ))}
+                {e.next?.map((line, i) => (
+                  <ItemDescription key={i}>{t('Šta dalje: {step}', { step: line })}</ItemDescription>
+                ))}
+              </ItemContent>
+            </Item>
+          ))}
+        </ItemGroup>
+        {list.rest > 0 && (
+          <CardFooter>
+            <ShowMore list={list} />
+          </CardFooter>
+        )}
+      </Card>
+    </div>
   );
 }
 

@@ -407,15 +407,20 @@ export default {
   'privremeno, do {date}': 'temporary, until {date}',
   'Alergija: {name}': 'Allergy: {name}',
   'Zapažanje sa posete': 'Note from a visit',
-  'Raspoloženje: {how}': 'Mood: {how}',
-  'Ishrana: {how}': 'Eating: {how}',
-  'Kretanje: {how}': 'Moving: {how}',
   Otvoren: 'Opened',
   Upisano: 'Written',
   Ispravka: 'Correction',
   Zaključeno: 'Closed',
   Poništeno: 'Undone',
   'Sa posete': 'From a visit',
+  // the history's filters
+  'Sa poseta': 'From visits',
+  'Promene stanja': 'Changes in condition',
+  Ispravke: 'Corrections',
+  // a visit's note: what was off, then the rest said once
+  '{what}: {how}': '{what}: {how}',
+  '{a} i {b}': '{a} and {b}',
+  '{a}, {b} i {c}': '{a}, {b} and {c}',
   'izmena|izmene|izmena': 'change|changes',
 
   // the plan page
