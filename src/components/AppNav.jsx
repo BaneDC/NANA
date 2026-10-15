@@ -79,25 +79,13 @@ function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, chi
   // An empty list still drew its rule and its margins, which read as a gap
   // between this section and the next.
   const hasItems = Children.toArray(children).length > 0;
-  // Folded to icons there is nowhere for the list to open: the icon opens the
-  // menu, with the list.
-  if (collapsed) {
-    return (
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          isActive={active}
-          aria-label={label}
-          title={label}
-          onClick={() => {
-            setCollapsed(false);
-            onToggle(true);
-          }}
-        >
-          <Icon size={16} strokeWidth={1.75} />
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    );
-  }
+  // Folded to icons there is nowhere for the list to open: the row opens the
+  // menu, with the list. The row itself stays, so folding moves nothing.
+  const unfold = () => {
+    setCollapsed(false);
+    onToggle(true);
+  };
+  const named = collapsed ? { 'aria-label': label, title: label } : {};
   const list = hasItems
     ? children
     : empty && (
@@ -106,15 +94,16 @@ function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, chi
         </SidebarMenuSubItem>
       );
   return (
-    <Collapsible asChild open={open} onOpenChange={onToggle}>
+    <Collapsible asChild open={open && !collapsed} onOpenChange={onToggle}>
       <SidebarMenuItem className="flex flex-col gap-1">
         {onOpen ? (
           <>
-            <SidebarMenuButton isActive={active} onClick={onOpen}>
+            <SidebarMenuButton isActive={active} onClick={collapsed ? unfold : onOpen} {...named}>
               <Icon size={16} strokeWidth={1.75} />
-              <span>{label}</span>
+              <span className={FADES}>{label}</span>
             </SidebarMenuButton>
             <SidebarMenuAction
+              className={cn(FADES, 'menu-folded:pointer-events-none')}
               onClick={() => onToggle(!open)}
               aria-label={open ? t('Skupi: {label}', { label }) : t('Proširi: {label}', { label })}
               aria-expanded={open}
@@ -123,10 +112,10 @@ function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, chi
             </SidebarMenuAction>
           </>
         ) : (
-          <SidebarMenuButton onClick={() => onToggle(!open)} aria-expanded={open}>
+          <SidebarMenuButton onClick={collapsed ? unfold : () => onToggle(!open)} aria-expanded={open && !collapsed} {...named}>
             <Icon size={16} strokeWidth={1.75} />
-            <span>{label}</span>
-            <Chevron open={open} className="ml-auto text-(--nav-text-muted)" />
+            <span className={FADES}>{label}</span>
+            <Chevron open={open} className={cn('ml-auto text-(--nav-text-muted)', FADES)} />
           </SidebarMenuButton>
         )}
 
@@ -139,6 +128,10 @@ function Section({ label, icon: Icon, active, onOpen, open, onToggle, empty, chi
     </Collapsible>
   );
 }
+
+// What a row says, fading as the column folds; the edge cuts it, so it stays
+// where it is (docs/patterns.md §4).
+const FADES = 'transition-opacity duration-200 ease-out menu-folded:opacity-0';
 
 // A row that opens a page, with its count of what waits.
 // Folded to icons it is its icon, and says its name in `title`.
@@ -153,7 +146,7 @@ function Place({ icon: Icon, label, active, count, onClick }) {
         title={collapsed ? label : undefined}
       >
         <Icon size={16} strokeWidth={1.75} />
-        {!collapsed && <span>{label}</span>}
+        <span className={FADES}>{label}</span>
       </SidebarMenuButton>
       {count > 0 && <SidebarMenuBadge>{count}</SidebarMenuBadge>}
     </SidebarMenuItem>
@@ -196,26 +189,36 @@ export default function AppNav({
   return (
     <Sidebar>
       <SidebarHeader>
-        {/* the logo, and the button that folds the menu to icons; folded, the
-            button alone, where the icons under it stand */}
-        <div className="flex h-7 items-center justify-between pl-2 menu-folded:h-auto menu-folded:justify-center menu-folded:pl-0">
-          {!collapsed && <Logo width={110} />}
+        {/* the logo, and the button that folds the menu to icons. Folded, the
+            logo fades under the edge and the button, at the row's end, is where
+            the icons under it stand. The row is 28 either way; the button's
+            square (36) spills over it, so folding moves nothing down. */}
+        <div className="flex h-7 items-center">
+          <div className={cn('min-w-0 flex-1 overflow-hidden', FADES)}>
+            <div className="ml-2 w-fit">
+              <Logo width={110} />
+            </div>
+          </div>
           <SidebarFold />
         </div>
 
         {/* Starting a conversation is the one thing the menu asks for, so it is a
             button of its own above the list of them, not a "+" folded into the
             row beside a chevron. */}
-        {collapsed ? (
-          <Button variant="secondary" size="icon-lg" aria-label={t('Novi razgovor')} title={t('Novi razgovor')} onClick={go(onNewChat)}>
-            <Plus size={14} strokeWidth={1.75} />
-          </Button>
-        ) : (
-          <Button variant="secondary" className="w-full shrink-0" onClick={go(onNewChat)}>
-            <Plus size={14} strokeWidth={1.75} />
+        {/* one button in both: folded, its words narrow away and the "+" is
+            left in the middle of the square */}
+        <Button
+          variant="secondary"
+          className="w-full shrink-0 gap-0 px-0"
+          aria-label={collapsed ? t('Novi razgovor') : undefined}
+          title={collapsed ? t('Novi razgovor') : undefined}
+          onClick={go(onNewChat)}
+        >
+          <Plus size={14} strokeWidth={1.75} />
+          <span className="ml-2 max-w-40 overflow-hidden transition-[max-width,margin,opacity] duration-200 ease-out menu-folded:ml-0 menu-folded:max-w-0 menu-folded:opacity-0">
             {t('Novi razgovor')}
-          </Button>
-        )}
+          </span>
+        </Button>
       </SidebarHeader>
 
       <SidebarContent>
@@ -287,7 +290,11 @@ export default function AppNav({
           ))}
         </SidebarMenu>
         {/* who is signed in: a white card, the avatar as tall as the name and
-            the e-mail. It opens the medical record of the person they care for
+            the e-mail. Folded, the card's white and its side padding go with
+            the width, so the avatar slides 8 to the column's edge; the padding
+            above and below stays, so the card is as tall and nothing over it
+            moves. Folded, the ring is the avatar's, not the tall, narrow
+            card's. It opens the medical record of the person they care for
             (docs/patterns.md §10a), ringed on hover and while that page is
             open, as a card that opens something is. */}
         <button
@@ -296,17 +303,15 @@ export default function AppNav({
           aria-current={view === 'record' ? 'page' : undefined}
           aria-label={recordOf ? t('Medicinski karton: {name}', { name: recordOf }) : t('Medicinski karton')}
           title={t('Medicinski karton')}
-          className="flex cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:justify-center menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:p-0 transition-shadow duration-150 outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
+          className="group/me flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:px-0 pointer-coarse:menu-folded:pl-1 transition-[padding,background-color,border-radius,box-shadow] duration-200 ease-out outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:shadow-none! menu-folded:focus-visible:ring-0 [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
         >
-          <Avatar>
+          <Avatar className="transition-shadow duration-200 ease-out menu-folded:group-hover/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-aria-[current=page]/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-focus-visible/me:ring-[3px] menu-folded:group-focus-visible/me:ring-ring/50">
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          {!collapsed && (
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-xs font-medium text-foreground">{user.name || t('Gost')}</span>
-              <span className="truncate text-small text-muted-foreground">{user.email}</span>
-            </span>
-          )}
+          <span className={cn('flex min-w-0 flex-1 flex-col', FADES)}>
+            <span className="truncate text-xs font-medium text-foreground">{user.name || t('Gost')}</span>
+            <span className="truncate text-small text-muted-foreground">{user.email}</span>
+          </span>
         </button>
       </SidebarFooter>
     </Sidebar>

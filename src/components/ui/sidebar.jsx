@@ -166,8 +166,9 @@ function Sidebar({
       data-sidebar="sidebar"
       aria-label={label}
       className={cn(
-        // the width moves; what is in the column changes at once, so nothing
-        // in it may wrap or show past its edge on the way
+        // the width moves and nothing in the column does: every row keeps its
+        // place and is cut by the edge, its words fading, so no icon jumps on
+        // the way (docs/patterns.md §4). Nothing may wrap or show past the edge.
         "mr-3 h-full w-(--sidebar-width) shrink-0 overflow-hidden rounded-3xl whitespace-nowrap transition-[width] duration-200 ease-out",
         "menu-folded:w-(--sidebar-width-folded) pointer-coarse:menu-folded:w-(--sidebar-width-folded-touch)",
         className
@@ -227,7 +228,7 @@ function SidebarFold({ className, ...props }) {
       size="icon"
       className={cn(
         "shrink-0 text-(--nav-text-muted) hover:bg-(--nav-hover) hover:text-(--nav-text)",
-        "menu-folded:size-9 pointer-coarse:menu-folded:size-11",
+        "-my-1 size-9 pointer-coarse:-my-2 pointer-coarse:size-11",
         className
       )}
       aria-label={label}
@@ -348,11 +349,13 @@ function SidebarMenuItem({ className, ...props }) {
   )
 }
 
-// A row: hover tints it, `isActive` marks the page that is open. A row with a
+// A row: hover tints it, `isActive` marks the page that is open. Its icon is
+// 10 in (14 under a finger), which centres it in the folded column's 36 (44),
+// so folding moves nothing: the column's edge cuts the row down to its icon. A row with a
 // `SidebarMenuAction` beside it (the fold of Care plans) keeps the action's
 // room on its right and tints with it, as one row.
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs menu-folded:size-9 menu-folded:justify-center menu-folded:p-0 pointer-coarse:menu-folded:size-11 text-muted-foreground outline-hidden transition-[background-color,color] duration-150 group-has-data-[sidebar=menu-action]/menu-item:pr-9 group-has-data-[sidebar=menu-action]/menu-item:pointer-coarse:pr-14 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground group-hover/menu-item:data-[active=true]:bg-sidebar-primary group-hover/menu-item:data-[active=true]:text-sidebar-primary-foreground pointer-coarse:min-h-11 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-lg py-2 pr-3 pl-2.5 text-left text-xs pointer-coarse:pl-3.5 text-muted-foreground outline-hidden transition-[background-color,color] duration-150 group-has-data-[sidebar=menu-action]/menu-item:pr-9 group-has-data-[sidebar=menu-action]/menu-item:pointer-coarse:pr-14 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground group-hover/menu-item:data-[active=true]:bg-sidebar-primary group-hover/menu-item:data-[active=true]:text-sidebar-primary-foreground pointer-coarse:min-h-11 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
