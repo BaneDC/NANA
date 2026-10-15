@@ -1,221 +1,175 @@
 "use client"
 
 import * as React from "react"
+import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
 import { cn } from "@/lib/utils"
-import { Drawer as DrawerPrimitive } from "vaul"
 
-// shadcn's drawer (vaul) as NANA's bottom sheet: on a phone every pane is one
+// shadcn's drawer as NANA's bottom sheet: on a phone every pane is one
 // (docs/patterns.md §12), the drawer's details and the dialog's action alike.
 // Up from the bottom edge, as tall as what it holds and at most to 48 under
-// the top of the screen, top corners 24, the grip (36×4) on top. It is dragged
-// down by its head only (`handleOnly`, with `DrawerHandle` laid over the
-// head), so the content scrolls under a finger.
+// the top of the screen, top corners 24, the grip (36×4) on top.
 //
-// `overlayClassName` reaches the dim behind it (a z-index over the onboarding,
-// which sits at 60).
+// On Base UI's Drawer, as shadcn's is now (it was vaul, which is no longer
+// maintained and on Android let go of a drag halfway, refused one that began a
+// hair up, and kept the sheet at a height measured under the keyboard). The
+// sheet is dragged down from anywhere on it: where what is under the finger
+// scrolls, it scrolls first, and the sheet comes down once it is at its top.
+// It closes once let go 96 down (Base UI's own is half the sheet, 330 of a tall
+// one), or on a quick flick. Base UI's keyboard provider keeps the field being
+// typed in clear of the keyboard.
+//
+// `dismissible={false}` takes away the close, Escape, a press past it and the
+// drag: backup codes are shown once.
+//
+// `layerClassName` reaches the dim and the layer the sheet sits in (a z-index
+// over the onboarding, which sits at 60).
 //
 // `kind`: a "sheet" holds a header and a body that scrolls (the drawer's
 // parts); a "dialog" scrolls as a whole, 16 inside (the dialog's parts).
-// Either way the sheet itself never scrolls, and vaul's strip under it (to
-// show no gap when it is pulled up) is taken away: the sheet clips to its
-// corners, so the strip could never show, and in a sheet that scrolled it was
-// room to scroll into, white and empty.
+// Either way the sheet itself never scrolls.
 
-function Drawer({
-  ...props
-}) {
-  // `scrollLockTimeout={0}`: vaul refuses a drag whose first move goes up, as
-  // a scroll, and keeps refusing every move that follows within 100ms of the
-  // last, so the whole drag; it does that only once the sheet has been dragged
-  // and sprung back. A finger on a phone often starts a hair up, so after a
-  // drag or two the sheet would not come down at all. Ours is dragged by its
-  // head alone, which never scrolls, so there is no scroll to wait out.
-  return <DrawerPrimitive.Root data-slot="drawer" direction="bottom" handleOnly scrollLockTimeout={0} {...props} />;
-}
-
-function DrawerTrigger({
-  ...props
-}) {
-  return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
-}
-
-function DrawerPortal({
-  ...props
-}) {
-  return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />;
-}
-
-function DrawerClose({
-  ...props
-}) {
-  return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
-}
-
-function DrawerOverlay({
-  className,
-  ...props
-}) {
-  return (
-    <DrawerPrimitive.Overlay
-      data-slot="drawer-overlay"
-      className={cn(
-        "fixed inset-0 z-20 bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px]",
-        className
-      )}
-      {...props} />
-  );
-}
-
-// vaul lifts a sheet over the keyboard by writing a height on it, and when the
-// keyboard goes it writes back the height it measured as the keyboard came,
-// even when the sheet now holds something else. On Android the keyboard shrinks
-// the page itself (`interactive-widget=resizes-content`, index.html), so that
-// height was already the shrunk one: the message to a caregiver stayed short,
-// and the plans after it scrolled in the message's 375 instead of their own
-// 764. The sheet's own CSS already fits it to the page (its max-height), so a
-// height vaul writes is kept only while the keyboard covers part of the page
-// (Safari, which does not shrink it) and taken off the moment it does not.
+const CLOSE_AT = 96
 const FIELD = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
 
-function keyboardCovers() {
-  const vv = window.visualViewport
-  return Boolean(vv) && vv.height < window.innerHeight - 100
+const DrawerContext = React.createContext({ dismissible: true, close: () => {} })
+
+function Drawer({ open, onOpenChange, dismissible = true, children }) {
+  const close = React.useCallback(() => onOpenChange?.(false), [onOpenChange])
+  return (
+    <DrawerContext.Provider value={{ dismissible, close }}>
+      <DrawerPrimitive.Root
+        open={open}
+        swipeDirection="down"
+        disablePointerDismissal={!dismissible}
+        onOpenChange={(next, details) => {
+          if (!next && !dismissible) {
+            details.cancel()
+            return
+          }
+          onOpenChange?.(next)
+        }}
+      >
+        <DrawerPrimitive.VirtualKeyboardProvider>{children}</DrawerPrimitive.VirtualKeyboardProvider>
+      </DrawerPrimitive.Root>
+    </DrawerContext.Provider>
+  )
 }
 
-// vaul lets a drag go, and springs the sheet back, on a `contextmenu` or a
-// `pointerout` that reaches the sheet. Android sends `contextmenu` for a long
-// press, while the finger has moved only a few px, so a slow drag came down a
-// few px and went back up under the finger. A drag here starts on a handle, so
-// the handles keep both to themselves; the drag ends on the finger's lift.
-const keepTheDrag = {
-  onContextMenu: (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-  },
-  onPointerOut: (e) => e.stopPropagation(),
+function DrawerClose({ ...props }) {
+  return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />
 }
 
-function useOwnHeightAfterKeyboard() {
-  const [sheet, setSheet] = React.useState(null)
-  React.useEffect(() => {
-    if (!sheet) return undefined
-    const own = () => {
-      if (sheet.style.height && !keyboardCovers()) sheet.style.height = ""
-    }
-    // and when the keyboard shrinks the page, the field being typed in is
-    // brought back into view: the sheet shrank with the page and the field was
-    // left behind the buttons pinned at its foot (the 2FA code). The scroll
-    // padding at the foot keeps it above them.
-    let frame = 0
-    const resized = () => {
-      own()
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        const field = document.activeElement
-        if (field?.matches?.(FIELD) && sheet.contains(field)) field.scrollIntoView({ block: "nearest" })
-      })
-    }
-    const watch = new MutationObserver(own)
-    watch.observe(sheet, { attributes: true, attributeFilter: ["style"] })
-    window.visualViewport?.addEventListener("resize", resized)
-    window.addEventListener("resize", resized)
-    return () => {
-      cancelAnimationFrame(frame)
-      watch.disconnect()
-      window.visualViewport?.removeEventListener("resize", resized)
-      window.removeEventListener("resize", resized)
-    }
-  }, [sheet])
-  return setSheet
+// What the sheet focuses as it opens: a field that asked for it (autoFocus,
+// which TextField marks as data-autofocus), or else the sheet itself, so that no
+// button inside it starts out ringed as if it had been tabbed to.
+function initialFocusOf(popup) {
+  return () => popup.current?.querySelector("[data-autofocus]") || popup.current
 }
 
 function DrawerContent({
   className,
   bodyClassName,
+  layerClassName = "z-20",
   overlayClassName,
   children,
   kind = "sheet",
-  ref,
   ...props
 }) {
-  const ownHeight = useOwnHeightAfterKeyboard()
-  const setRef = React.useCallback(
-    (node) => {
-      ownHeight(node)
-      if (typeof ref === "function") ref(node)
-      else if (ref) ref.current = node
-    },
-    [ref, ownHeight]
-  )
+  const { dismissible, close } = React.useContext(DrawerContext)
+  const popup = React.useRef(null)
+  // let go 96 down closes it: read before Base UI takes the movement back
+  React.useEffect(() => {
+    if (!dismissible) return undefined
+    const onLift = () => {
+      const sheet = popup.current
+      if (!sheet?.hasAttribute("data-swiping")) return
+      const moved = parseFloat(getComputedStyle(sheet).getPropertyValue("--drawer-swipe-movement-y")) || 0
+      if (moved >= CLOSE_AT) close()
+    }
+    window.addEventListener("pointerup", onLift, true)
+    return () => window.removeEventListener("pointerup", onLift, true)
+  }, [dismissible, close])
+  // On Android the keyboard shrinks the page (`interactive-widget=
+  // resizes-content`, index.html) rather than covering it, which Base UI's
+  // keyboard provider does not see: the sheet shrinks with the page and the
+  // field being typed in is left behind the buttons pinned at its foot (the 2FA
+  // code). It is brought back into view, above them (`scroll-pb-20`).
+  React.useEffect(() => {
+    let frame = 0
+    const onResize = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const field = document.activeElement
+        if (field?.matches?.(FIELD) && popup.current?.contains(field)) field.scrollIntoView({ block: "nearest" })
+      })
+    }
+    window.addEventListener("resize", onResize)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener("resize", onResize)
+    }
+  }, [])
   return (
-    <DrawerPortal data-slot="drawer-portal">
-      <DrawerOverlay className={cn(kind === "dialog" && "bg-[rgba(42,42,42,0.35)]", overlayClassName)} />
-      <DrawerPrimitive.Content
-        ref={setRef}
-        data-slot="drawer-content"
-        data-kind={kind}
-        aria-describedby={undefined}
+    <DrawerPrimitive.Portal>
+      <DrawerPrimitive.Backdrop
+        data-slot="drawer-overlay"
         className={cn(
-          "group/drawer-content touch-pan-y! after:hidden! fixed inset-x-0 bottom-0 z-20 flex max-h-[calc(100%-48px-env(safe-area-inset-top,0px))] flex-col rounded-t-3xl bg-card shadow-container outline-none",
-          kind === "dialog" ? "overflow-hidden" : "overflow-hidden pb-[env(safe-area-inset-bottom,0px)]",
-          className
+          "fixed inset-0 bg-[rgba(42,42,42,0.3)] backdrop-blur-[2px]",
+          kind === "dialog" && "bg-[rgba(42,42,42,0.35)]",
+          // dims less as the sheet is dragged down, and fades with it
+          "opacity-[calc(1-var(--drawer-swipe-progress,0))] transition-opacity duration-240 ease-[cubic-bezier(0.22,0.61,0.36,1)] data-starting-style:opacity-0 data-ending-style:opacity-0 data-swiping:duration-0",
+          layerClassName,
+          overlayClassName
         )}
-        {...props}>
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute top-2 left-1/2 z-2 -ml-[18px] h-1 w-9 rounded-sm bg-neutral-300" />
-        {/* the grip and the strip it sits in drag the sheet too: in a dialog the
-            head starts 16 down, so a finger on the grip itself scrolled */}
-        <DrawerPrimitive.Handle
-          {...keepTheDrag}
-          data-slot="drawer-grip"
-          className="absolute! inset-x-0 top-0 z-1 m-0! h-6! w-auto! touch-none rounded-none! bg-transparent! opacity-100!" />
-        {kind === "dialog" ? (
-          <div
-            data-slot="drawer-scroll"
-            className={cn("flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto scroll-pb-20 px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]", bodyClassName)}>
-            {children}
+      />
+      <DrawerPrimitive.Viewport data-slot="drawer-viewport" className={cn("fixed inset-0 flex items-end", layerClassName)}>
+        <DrawerPrimitive.Popup
+          ref={popup}
+          data-slot="drawer-content"
+          data-kind={kind}
+          initialFocus={initialFocusOf(popup)}
+          className={cn(
+            "group/drawer-content relative flex w-full max-h-[calc(100%-48px-env(safe-area-inset-top,0px))] flex-col overflow-hidden rounded-t-3xl bg-card shadow-container outline-none",
+            kind === "sheet" && "pb-[env(safe-area-inset-bottom,0px)]",
+            // follows the finger, and slides in and out from the bottom edge
+            "[transform:translateY(var(--drawer-swipe-movement-y,0px))] transition-transform duration-240 ease-[cubic-bezier(0.22,0.61,0.36,1)] data-starting-style:[transform:translateY(100%)] data-ending-style:[transform:translateY(100%)] data-swiping:duration-0",
+            className
+          )}
+          {...(!dismissible && { "data-base-ui-swipe-ignore": "" })}
+          {...props}
+        >
+          {/* the grip, on a strip of the sheet's top that always drags it:
+              under it the body may be scrolled, where a drag would scroll */}
+          <div aria-hidden="true" data-slot="drawer-grip" className="absolute inset-x-0 top-0 z-1 h-6 touch-none">
+            <span className="absolute top-2 left-1/2 -ml-[18px] h-1 w-9 rounded-sm bg-neutral-300" />
           </div>
-        ) : children}
-      </DrawerPrimitive.Content>
-    </DrawerPortal>
-  );
+          {kind === "dialog" ? (
+            <div
+              data-slot="drawer-scroll"
+              className={cn(
+                "flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain scroll-pb-20 px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]",
+                bodyClassName
+              )}
+            >
+              {children}
+            </div>
+          ) : (
+            children
+          )}
+        </DrawerPrimitive.Popup>
+      </DrawerPrimitive.Viewport>
+    </DrawerPrimitive.Portal>
+  )
 }
 
-// The part of the head a finger drags the sheet down by: laid over the head
-// (which is `relative`), under its close button.
-function DrawerHandle({
-  className,
-  ...props
-}) {
-  return (
-    <DrawerPrimitive.Handle
-      {...keepTheDrag}
-      data-slot="drawer-handle"
-      className={cn("absolute! inset-0 z-0 m-0! h-auto! w-auto! touch-none bg-transparent! opacity-100!", className)}
-      {...props} />
-  );
-}
-
-function DrawerTitle({
-  className,
-  ...props
-}) {
+function DrawerTitle({ className, ...props }) {
   return (
     <DrawerPrimitive.Title
       data-slot="drawer-title"
       className={cn("text-sm font-medium text-foreground", className)}
-      {...props} />
-  );
+      {...props}
+    />
+  )
 }
 
-export {
-  Drawer,
-  DrawerPortal,
-  DrawerOverlay,
-  DrawerTrigger,
-  DrawerClose,
-  DrawerContent,
-  DrawerHandle,
-  DrawerTitle,
-}
+export { Drawer, DrawerClose, DrawerContent, DrawerTitle }

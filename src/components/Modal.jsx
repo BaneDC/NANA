@@ -1,11 +1,11 @@
 import { X } from 'lucide-react';
 import { paneCloseClass } from '@/components/ui/dialog';
 import { Sheet, SheetBody, SheetContent, SheetEyebrow, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Drawer, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useIsPhone } from '@/hooks/use-phone';
 import { cn } from '@/lib/utils';
 import { t } from '@/i18n';
-import { focusPane, useCloseThreshold } from '../lib/sheet';
+import { focusPane } from '../lib/sheet';
 
 // A card's details, opened as a pane beside the page (docs/patterns.md §7):
 // the details *of something you are looking at*, so the thing you clicked
@@ -21,7 +21,6 @@ import { focusPane, useCloseThreshold } from '../lib/sheet';
 // `dismissible={false}` takes away the close, Escape and a click past it.
 export default function Modal({ title, eyebrow, wide, dismissible = true, open = true, onClose, children }) {
   const phone = useIsPhone();
-  const sheet = useCloseThreshold();
   const onOpenChange = (next) => !next && onClose?.();
   const head = (Title) => (
     <div className="pointer-events-none relative min-w-0 flex-1">
@@ -37,10 +36,9 @@ export default function Modal({ title, eyebrow, wide, dismissible = true, open =
 
   if (phone) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible} closeThreshold={sheet.threshold}>
-        <DrawerContent ref={sheet.ref} tabIndex={-1} onOpenAutoFocus={focusPane}>
+      <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
+        <DrawerContent>
           <SheetHeader>
-            {dismissible && <DrawerHandle />}
             {head(DrawerTitle)}
             {close}
           </SheetHeader>
