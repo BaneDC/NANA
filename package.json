@@ -16,7 +16,7 @@
     "@vercel/functions": "^3.9.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "inline-chat-kit": "^0.60.0",
+    "inline-chat-kit": "^0.61.1",
     "input-otp": "^1.5.0",
     "lucide-react": "^1.28.0",
     "motion": "^12.43.0",
