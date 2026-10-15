@@ -61,30 +61,32 @@ function DrawerOverlay({
 }
 
 // vaul lifts a sheet over the keyboard by writing a height on it, and when the
-// keyboard goes it writes back the height the sheet had before it came, even
-// when the sheet now holds something else: the message to a caregiver, then the
-// plans, which were left scrolling in the message's 375 instead of their own
-// 764. Once no field has focus, the sheet goes back to its own height.
-const FIELD = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
+// keyboard goes it writes back the height it measured as the keyboard came,
+// even when the sheet now holds something else. On Android the keyboard shrinks
+// the page itself (`interactive-widget=resizes-content`, index.html), so that
+// height was already the shrunk one: the message to a caregiver stayed short,
+// and the plans after it scrolled in the message's 375 instead of their own
+// 764. The sheet's own CSS already fits it to the page (its max-height), so a
+// height vaul writes is kept only while the keyboard covers part of the page
+// (Safari, which does not shrink it) and taken off the moment it does not.
+function keyboardCovers() {
+  const vv = window.visualViewport
+  return Boolean(vv) && vv.height < window.innerHeight - 100
+}
 
 function useOwnHeightAfterKeyboard() {
   const [sheet, setSheet] = React.useState(null)
   React.useEffect(() => {
-    const vv = window.visualViewport
-    if (!sheet || !vv) return undefined
-    let frame = 0
-    // a frame later, so vaul's own handler for the same resize has written first
-    const onResize = () => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        if (document.activeElement?.matches?.(FIELD)) return
-        sheet.style.height = ""
-      })
+    if (!sheet) return undefined
+    const own = () => {
+      if (sheet.style.height && !keyboardCovers()) sheet.style.height = ""
     }
-    vv.addEventListener("resize", onResize)
+    const watch = new MutationObserver(own)
+    watch.observe(sheet, { attributes: true, attributeFilter: ["style"] })
+    window.visualViewport?.addEventListener("resize", own)
     return () => {
-      cancelAnimationFrame(frame)
-      vv.removeEventListener("resize", onResize)
+      watch.disconnect()
+      window.visualViewport?.removeEventListener("resize", own)
     }
   }, [sheet])
   return setSheet

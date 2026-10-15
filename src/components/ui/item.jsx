@@ -54,7 +54,7 @@ function Item({
         "has-[[data-slot=item-link]]:cursor-pointer has-[[data-slot=item-link]]:hover:bg-muted has-[[data-slot=item-link]]:hover:before:opacity-0 [[data-slot=item]:has([data-slot=item-link]):hover+&]:before:opacity-0",
         "has-[[data-slot=item-link]]:hover:[&_[data-variant=tag]]:bg-card",
         "has-[[data-slot=item-link]:focus-visible]:outline-2 has-[[data-slot=item-link]:focus-visible]:outline-offset-2 has-[[data-slot=item-link]:focus-visible]:outline-primary",
-        "has-[[data-slot=item-link]]:[&_[data-slot=button]]:relative has-[[data-slot=item-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=item-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:relative has-[[data-slot=item-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:z-1",
+        "has-[[data-slot=item-link]]:[&_[data-slot=button]]:relative has-[[data-slot=item-link]]:[&_[data-slot=button]]:z-1 has-[[data-slot=item-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:relative has-[[data-slot=item-link]]:[&_[data-slot=badge]:not([data-variant=tag])]:z-1 has-[[data-slot=item-link]]:[&_[data-slot=badge]]:pointer-events-none",
         className
       )}
       {...props} />

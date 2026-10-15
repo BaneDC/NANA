@@ -388,7 +388,7 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 </Card>
 ```
 
-- Ime je `ItemLink` u redu, a `CardLink` u kartici. Ime je pravo `<button>`: `::after` ga razvlači preko celog reda ili kartice, pa radi i tastatura i čitač ekrana. `Item` i `Card` same prepoznaju da imaju link (hover, fokus, kursor).
+- Ime je `ItemLink` u redu, a `CardLink` u kartici. Ime je pravo `<button>`: `::after` ga razvlači preko celog reda ili kartice, pa radi i tastatura i čitač ekrana. `Item` i `Card` same prepoznaju da imaju link (hover, fokus, kursor). Iznad tog `::after` su samo dugmad. Čipovi (`Badge`) su iznad njega po izgledu, ali klik prolazi kroz njih do reda (`pointer-events-none`), pa ceo red otvara detalje i preko „Poklapanje · 97%" (odlučeno 15. 10.).
 - Dugme i značka u takvom redu ili kartici stoje iznad linka i rade samo ono što kažu. Dugme koje kaže isto što i link je u `ItemAction` (na telefonu ga nema). Ne stavljaj `onClick` na div kartice.
 - **Desktop:**
   - kartica ima akciju u footeru; **izuzetak je kartica negovateljice na „Pronađi"**: dugme („Pošalji poruku") ili stanje („Već dolazi", „Čeka odgovor") je gore desno, u visini imena;
