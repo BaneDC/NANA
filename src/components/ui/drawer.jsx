@@ -60,18 +60,59 @@ function DrawerOverlay({
   );
 }
 
+// vaul lifts a sheet over the keyboard by writing a height on it, and when the
+// keyboard goes it writes back the height the sheet had before it came, even
+// when the sheet now holds something else: the message to a caregiver, then the
+// plans, which were left scrolling in the message's 375 instead of their own
+// 764. Once no field has focus, the sheet goes back to its own height.
+const FIELD = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
+
+function useOwnHeightAfterKeyboard() {
+  const [sheet, setSheet] = React.useState(null)
+  React.useEffect(() => {
+    const vv = window.visualViewport
+    if (!sheet || !vv) return undefined
+    let frame = 0
+    // a frame later, so vaul's own handler for the same resize has written first
+    const onResize = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        if (document.activeElement?.matches?.(FIELD)) return
+        sheet.style.height = ""
+      })
+    }
+    vv.addEventListener("resize", onResize)
+    return () => {
+      cancelAnimationFrame(frame)
+      vv.removeEventListener("resize", onResize)
+    }
+  }, [sheet])
+  return setSheet
+}
+
 function DrawerContent({
   className,
   bodyClassName,
   overlayClassName,
   children,
   kind = "sheet",
+  ref,
   ...props
 }) {
+  const ownHeight = useOwnHeightAfterKeyboard()
+  const setRef = React.useCallback(
+    (node) => {
+      ownHeight(node)
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+    },
+    [ref, ownHeight]
+  )
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay className={cn(kind === "dialog" && "bg-[rgba(42,42,42,0.35)]", overlayClassName)} />
       <DrawerPrimitive.Content
+        ref={setRef}
         data-slot="drawer-content"
         data-kind={kind}
         aria-describedby={undefined}
