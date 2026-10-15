@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils"
 // hair up, and kept the sheet at a height measured under the keyboard). The
 // sheet is dragged down from anywhere on it: where what is under the finger
 // scrolls, it scrolls first, and the sheet comes down once it is at its top.
-// It closes once let go 96 down (Base UI's own is half the sheet, 330 of a tall
-// one), or on a quick flick. Base UI's keyboard provider keeps the field being
+// It closes as Base UI closes it: let go past half its height, or on a quick
+// flick; let go sooner, it goes back. Base UI's keyboard provider keeps the field being
 // typed in clear of the keyboard.
 //
 // `dismissible={false}` takes away the close, Escape, a press past it and the
@@ -28,16 +28,14 @@ import { cn } from "@/lib/utils"
 // parts); a "dialog" scrolls as a whole, 16 inside (the dialog's parts).
 // Either way the sheet itself never scrolls.
 
-const CLOSE_AT = 96
 const FIELD = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
 const ALERT = '[role="alert"]'
 
-const DrawerContext = React.createContext({ dismissible: true, close: () => {} })
+const DrawerContext = React.createContext({ dismissible: true })
 
 function Drawer({ open, onOpenChange, dismissible = true, children }) {
-  const close = React.useCallback(() => onOpenChange?.(false), [onOpenChange])
   return (
-    <DrawerContext.Provider value={{ dismissible, close }}>
+    <DrawerContext.Provider value={{ dismissible }}>
       <DrawerPrimitive.Root
         open={open}
         swipeDirection="down"
@@ -76,7 +74,7 @@ function DrawerContent({
   kind = "sheet",
   ...props
 }) {
-  const { dismissible, close } = React.useContext(DrawerContext)
+  const { dismissible } = React.useContext(DrawerContext)
   const popup = React.useRef(null)
   // the sheet as state too, so what watches it starts once it has mounted
   const [sheet, setSheet] = React.useState(null)
@@ -84,18 +82,6 @@ function DrawerContent({
     popup.current = node
     setSheet(node)
   }, [])
-  // let go 96 down closes it: read before Base UI takes the movement back
-  React.useEffect(() => {
-    if (!dismissible) return undefined
-    const onLift = () => {
-      const sheet = popup.current
-      if (!sheet?.hasAttribute("data-swiping")) return
-      const moved = parseFloat(getComputedStyle(sheet).getPropertyValue("--drawer-swipe-movement-y")) || 0
-      if (moved >= CLOSE_AT) close()
-    }
-    window.addEventListener("pointerup", onLift, true)
-    return () => window.removeEventListener("pointerup", onLift, true)
-  }, [dismissible, close])
   // On Android the keyboard shrinks the page (`interactive-widget=
   // resizes-content`, index.html) rather than covering it, which Base UI's
   // keyboard provider does not see: the sheet shrinks with the page and the
