@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { paneCloseClass } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useIsPhone } from '@/hooks/use-phone';
 import { t } from '@/i18n';
 
@@ -53,11 +53,11 @@ export default function HistoryPanel({ open, entries, onClose }) {
             at 8, so the close is 12 under it and the title further), 16 from
             the sides, the title on the close's middle, 12 under it */}
         <DrawerContent
-          className="z-61 h-[98dvh] max-h-none border border-b-0 border-[rgba(255,255,255,0.75)] bg-[rgba(255,255,255,0.55)] text-left shadow-[0_8px_32px_rgba(122,92,70,0.1)] backdrop-blur-[18px] backdrop-saturate-[1.4]"
-          overlayClassName="z-61 bg-transparent backdrop-blur-none"
+          layerClassName="z-61"
+          className="h-[98dvh] max-h-none border border-b-0 border-[rgba(255,255,255,0.75)] bg-[rgba(255,255,255,0.55)] text-left shadow-[0_8px_32px_rgba(122,92,70,0.1)] backdrop-blur-[18px] backdrop-saturate-[1.4]"
+          overlayClassName="bg-transparent backdrop-blur-none"
         >
           <div className="relative flex shrink-0 items-center gap-2 px-4 pt-6 pb-3">
-            <DrawerHandle />
             <DrawerTitle className="imm-history-title pointer-events-none relative">{t('Dosad smo prošli')}</DrawerTitle>
             {close}
           </div>

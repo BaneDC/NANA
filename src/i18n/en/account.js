@@ -506,7 +506,7 @@ export default {
   'Skeniraj': 'Scan',
   'Rezervni kodovi': 'Backup codes',
   'Kod iz aplikacije': 'Code from the app',
-  'Email je vaše ime za prijavu. Ako treba da ga promenite, javite se koordinatorki.': 'Your email is what you sign in with. If you need to change it, contact your coordinator.',
+  'Email ne može da se menja, jer je vezan za vaš nalog.': 'Your email cannot be changed, as it is tied to your account.',
   'Isključite dvofaktorsku prijavu': 'Turn off two-factor sign-in',
   'Novi rezervni kodovi': 'New backup codes',
   'Unesite šestocifreni kod iz aplikacije da napravimo nove rezervne kodove. Kodovi koje sada imate prestaju da važe.': 'Enter the six-digit code from the app to make new backup codes. The codes you have now stop working.',

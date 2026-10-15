@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 // (docs/patterns.md §7). What it shows usually goes the moment it closes (the
 // drawer that was open is set back to null), so this hands back the last value
 // that was there until the animation has run — 500ms, the longest of them
-// (vaul's sheet on a phone) — and only then lets it go.
+// (the bottom sheet on a phone) — and only then lets it go.
 const CLOSING = 500;
 
 export function useKept(value) {

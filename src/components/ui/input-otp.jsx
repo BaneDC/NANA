@@ -6,6 +6,8 @@ import { OTPInput, OTPInputContext } from "input-otp"
 // (40×48 on a phone) with 16px digits, three and three around a short dash,
 // and, while the field has focus, the box the next digit goes in outlined in
 // the primary. No drawn caret: the outline says where the digit goes.
+// The boxes are their own stack (`isolate`): the outlined one is raised over its
+// neighbours only, not over a sheet's pinned buttons when it scrolls under them.
 
 function InputOTP({
   className,
@@ -15,7 +17,7 @@ function InputOTP({
   return (
     <OTPInput
       data-slot="input-otp"
-      containerClassName={cn("flex items-center gap-2 has-disabled:opacity-50", containerClassName)}
+      containerClassName={cn("isolate flex items-center gap-2 has-disabled:opacity-50", containerClassName)}
       className={cn("disabled:cursor-not-allowed", className)}
       {...props} />
   );

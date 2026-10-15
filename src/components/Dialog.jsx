@@ -8,12 +8,12 @@ import {
   DialogTitle,
   paneCloseClass,
 } from '@/components/ui/dialog';
-import { Drawer, DrawerClose, DrawerContent, DrawerHandle, DrawerTitle } from '@/components/ui/drawer';
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/i18n';
 import { useIsPhone } from '@/hooks/use-phone';
-import { focusPane, useCloseThreshold } from '../lib/sheet';
+import { focusPane } from '../lib/sheet';
 
 // An action, asked in the middle of the page: end the collaboration, subscribe,
 // turn something on, send, cancel. The drawer (`Modal`) is for details of
@@ -61,7 +61,6 @@ export default function Dialog({
   children,
 }) {
   const phone = useIsPhone();
-  const sheet = useCloseThreshold();
   const onOpenChange = (next) => !next && onClose?.();
   const head = (Title, close) =>
     header ? (
@@ -81,13 +80,9 @@ export default function Dialog({
 
   if (phone) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible} closeThreshold={sheet.threshold}>
-        <DrawerContent ref={sheet.ref} kind="dialog" bodyClassName={className} tabIndex={-1} onOpenAutoFocus={focusPane}>
-          {/* the head, with the part a finger drags the sheet by laid over it */}
-          <div className="relative">
-            {dismissible && <DrawerHandle />}
-            <div className="pointer-events-none relative">{head(DrawerTitle)}</div>
-          </div>
+      <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
+        <DrawerContent kind="dialog" bodyClassName={className}>
+          {head(DrawerTitle)}
           {dismissible && (
             <DrawerClose className={cn(paneCloseClass, 'absolute top-[22px] right-4 z-3', closeClassName)}>
               <X className="size-4" strokeWidth={1.75} />
