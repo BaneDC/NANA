@@ -506,7 +506,7 @@ export default {
   'Skeniraj': 'Skannaa',
   'Rezervni kodovi': 'Varakoodit',
   'Kod iz aplikacije': 'Sovelluksen koodi',
-  'Email je vaše ime za prijavu. Ako treba da ga promenite, javite se koordinatorki.': 'Sähköposti on kirjautumistunnuksenne. Jos sitä pitää muuttaa, ottakaa yhteyttä koordinaattoriin.',
+  'Email ne može da se menja, jer je vezan za vaš nalog.': 'Sähköpostia ei voi muuttaa, koska se on sidottu tiliinne.',
   'Isključite dvofaktorsku prijavu': 'Poista kaksivaiheinen kirjautuminen käytöstä',
   'Novi rezervni kodovi': 'Uudet varakoodit',
   'Unesite šestocifreni kod iz aplikacije da napravimo nove rezervne kodove. Kodovi koje sada imate prestaju da važe.': 'Syöttäkää sovelluksen kuusinumeroinen koodi, niin luomme uudet varakoodit. Nykyiset koodinne lakkaavat toimimasta.',

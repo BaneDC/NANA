@@ -63,7 +63,7 @@ export default function AccountCard({ user, onSave }) {
           <Fact
             key={f.id}
             label={t(f.label)}
-            note={f.fixed ? t('Email je vaše ime za prijavu. Ako treba da ga promenite, javite se koordinatorki.') : null}
+            note={f.fixed ? t('Email ne može da se menja, jer je vezan za vaš nalog.') : null}
           >
             {user?.[f.id] || '-'}
           </Fact>
