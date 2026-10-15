@@ -213,7 +213,7 @@ function CodeCheck({ open, secret, title, text, action, onDone, onClose }) {
         }}
       />
 
-      {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
+      {error && <p role="alert" className="text-center text-xs leading-body text-destructive">{error}</p>}
 
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
@@ -341,7 +341,7 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
 
           <CodeInput value={code} onChange={(v) => (setCode(v), v && setError(null))} />
 
-          {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
+          {error && <p role="alert" className="text-center text-xs leading-body text-destructive">{error}</p>}
 
           <DialogFooter>
             <Button variant="ghost" onClick={onClose}>

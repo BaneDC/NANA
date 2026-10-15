@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils"
 
 const CLOSE_AT = 96
 const FIELD = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
+const ALERT = '[role="alert"]'
 
 const DrawerContext = React.createContext({ dismissible: true, close: () => {} })
 
@@ -77,6 +78,12 @@ function DrawerContent({
 }) {
   const { dismissible, close } = React.useContext(DrawerContext)
   const popup = React.useRef(null)
+  // the sheet as state too, so what watches it starts once it has mounted
+  const [sheet, setSheet] = React.useState(null)
+  const setPopup = React.useCallback((node) => {
+    popup.current = node
+    setSheet(node)
+  }, [])
   // let go 96 down closes it: read before Base UI takes the movement back
   React.useEffect(() => {
     if (!dismissible) return undefined
@@ -94,21 +101,33 @@ function DrawerContent({
   // keyboard provider does not see: the sheet shrinks with the page and the
   // field being typed in is left behind the buttons pinned at its foot (the 2FA
   // code). It is brought back into view, above them (`scroll-pb-20`).
+  // An error that comes up while typing (a wrong 2FA code) is brought into view
+  // the same way: under the field, it was behind those buttons until the
+  // keyboard went.
   React.useEffect(() => {
+    if (!sheet) return undefined
     let frame = 0
-    const onResize = () => {
+    const reveal = () => {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
         const field = document.activeElement
-        if (field?.matches?.(FIELD) && popup.current?.contains(field)) field.scrollIntoView({ block: "nearest" })
+        if (field?.matches?.(FIELD) && sheet.contains(field)) field.scrollIntoView({ block: "nearest" })
+        for (const alert of sheet.querySelectorAll(ALERT)) alert.scrollIntoView({ block: "nearest" })
       })
     }
-    window.addEventListener("resize", onResize)
+    const onChange = (records) => {
+      const added = records.some((r) => [...r.addedNodes].some((n) => n.nodeType === 1 && (n.matches(ALERT) || n.querySelector(ALERT))))
+      if (added) reveal()
+    }
+    const watch = new MutationObserver(onChange)
+    watch.observe(sheet, { childList: true, subtree: true })
+    window.addEventListener("resize", reveal)
     return () => {
       cancelAnimationFrame(frame)
-      window.removeEventListener("resize", onResize)
+      watch.disconnect()
+      window.removeEventListener("resize", reveal)
     }
-  }, [])
+  }, [sheet])
   return (
     <DrawerPrimitive.Portal>
       <DrawerPrimitive.Backdrop
@@ -124,7 +143,7 @@ function DrawerContent({
       />
       <DrawerPrimitive.Viewport data-slot="drawer-viewport" className={cn("fixed inset-0 flex items-end", layerClassName)}>
         <DrawerPrimitive.Popup
-          ref={popup}
+          ref={setPopup}
           data-slot="drawer-content"
           data-kind={kind}
           initialFocus={initialFocusOf(popup)}
