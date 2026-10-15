@@ -11,7 +11,7 @@ Stvari koje smo našli u kitu dok smo ga koristili u NANA Prime. Kod nas su zaob
 
 **Predlog:** zatvaranje na `pointerdown` van menija i dugmeta (document listener dok je meni otvoren), a na dugmetu `onMouseDown={e => open && e.preventDefault()}` da pritisak ne izazove blur.
 
-**Kod nas:** `src/lib/kitMenus.js` radi upravo to spolja. Kad kit ovo popravi, fajl i poziv u `main.jsx` se brišu.
+**Popravljeno u 0.60.0.** `src/lib/kitMenus.js` i njegov poziv u `main.jsx` su obrisani.
 
 ## Dugmad su 38px, a na dodir treba bar 44px
 
@@ -27,6 +27,8 @@ Header i input jesu fiksirani (`composer="docked"`, `fill="container"`) — to r
 2. **Konverzacija skoči.** Novo pitanje se kači na vrh (`anchorOffset`), pa prethodni odgovor izleti sa ekrana u jednom koraku (scrollTop 0 → 444). Ispod pitanja ostaje prazan prostor rezervisan za odgovor, koji se skupi kad odgovor stigne (scrollHeight 1508 → 1188).
 3. **Naslov u headeru se menja** u tekst pitanja koje se trenutno čita, umesto naslova koji host zada („Asistent", „Razgovor").
 4. **Input se pomeri ~15px** nagore pri slanju i vrati kad stigne odgovor (828 → 813 → 828).
+
+**U 0.60.0:** tačke 1 i 4 su popravljene. Odgovor čeka da pitanje stigne na vrh (oko 0,45 s), a novi composer se pojavljuje na svom mestu, bez skoka. Tačke 2 i 3 i dalje stoje: nema `anchor="end"`, a naslov u headeru je i dalje tekst pitanja (izmereno u bočnom panelu, „Zdravo.").
 
 Nijedno od ovoga ne može da se isključi propovima: `animationConfig` menja samo opruge, a `anchorOffset` samo koliko ispod vrha pitanje staje.
 
@@ -44,7 +46,11 @@ Kit crta svoja dugmad (`Button` iz kita: `primary` je staklo, `secondary` je pro
 
 **Kod nas:** blok „The chat kit's buttons, drawn as ours" u `app.css` prepisuje varijante po klasama (`[class*='ick-primary-']`…) i po položaju (dugme u `ick-surface-*` je „Pošalji"). „Zaustavi" se prepoznaje po `aria-label` iz `src/data/chatLabels.sr.js`, pa se menja ako se promeni taj tekst. Širinu dugmeta „Pošalji" kit zadaje inline (28px), pa ono ostaje 28 i na dodir.
 
-## Kratka poruka izmerena kao dugačka: bledi tekst i „Prikaži više" (0.59.0, i dalje u 0.59.2)
+**U 0.60.0:** kit sad ima tokene `--ick-btn-<varijanta>-*` (plus `--ick-btn-radius`, `--ick-btn-weight`), a svako dugme ima `data-ick-role` (`send`, `stop`, `save`, `suggestion`, `header-action`, `header-more`, `answer-action`…) i `data-ick-variant`. Spisak je u `node_modules/inline-chat-kit/theming.md`. Naš blok u `src/styles/chat-kit.css` još nije prebačen na njih. Kad se prebaci, ispravlja se i ovo: „Zaustavi" se prepoznaje po srpskom `aria-label`, pa na finskom („Pysäytä vastaus") i engleskom dobija izgled dugmeta „Pošalji". `components={{ Button }}` kit namerno nije uveo.
+
+## Kratka poruka izmerena kao dugačka: bledi tekst i „Prikaži više" (0.59.0, i dalje u 0.59.2, popravljeno u 0.60.0)
+
+**Popravljeno u 0.60.0:** poruka se meri iznova kad promeni širinu. Provereno u bočnom panelu na 1440 i na 375, sa odgovorom koji stiže odmah: nema `data-fade` ni „Prikaži više".
 
 **Šta:** poslata poruka „Nešto se promenilo." (posle „Prijavi promenu" na kartonu) ima izbledeo tekst u narandžastom bubble-u, a na hover se pojavi „Prikaži više", iako je poruka jedan red. Samo na desktopu, u panelu sa strane; na telefonu ne.
 
