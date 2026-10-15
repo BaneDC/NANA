@@ -135,109 +135,87 @@
   --ick-input-radius: var(--radius-2xl);
 }
 
-/* ---------- The chat kit's buttons, drawn as ours ----------
-   The kit draws its own buttons and takes none of ours: its header actions are
-   described to it, not handed over (docs/kit-issues.md). So each one is dressed
-   as the Button it stands for (Button.jsx, .btn; docs/patterns.md §9):
-   - primary: send, as every "Pošalji" is, and as onboarding's send already is;
-   - secondary: stop, the header's actions and "…", the suggestions, a
-     question's steps — the kit's primary, secondary and outline;
-   - ghost: copy, again, thumbs — the kit's ghost.
-   Same height, corner, type, border and shadow as .btn: text buttons are
-   --button-size, glyphs --chip-size, both 44 under a finger. Only the in-app
-   chat (.nana-chat); onboarding keeps its own. */
-.nana-chat [class*='ick-btn-'] {
+/* ---------- The chat kit's buttons ----------
+   Since inline-chat-kit 0.61 every button the kit draws is ours: KitButton.jsx
+   is handed to ChatExperience and to the pane beside it, so a button in the
+   chat looks and presses like every Button in the app (docs/patterns.md §9).
+   What stays here is what the kit still owns:
+   - the box each button sits in, which sets its size: an icon alone is a chip
+     (28, 44 under a finger), a button with words is --button-size, as
+     everywhere else;
+   - the corner its own glyph and the composer around the buttons are drawn
+     from: ours, 8, so the composer is 8 + its 8 of padding = 16;
+   - the composer's send / stop / save, the one button that is still the
+     kit's (its glyph changes inside it): send and save orange, as every
+     "Pošalji"; stop is not something being set up, so it is secondary. Told
+     apart by `data-ick-role`, so it holds in every language. */
+.nana-chat,
+.chat-pane-wrap {
+  --ick-btn-radius: var(--radius-lg);
+}
+
+.nana-chat [data-ick-box][data-shape='square'],
+.chat-pane-wrap [data-ick-box][data-shape='square'] {
+  --ick-control-xs: var(--chip-size);
+  --ick-control-s: var(--chip-size);
+  --ick-control-m: var(--chip-size);
+  --ick-control-l: var(--chip-size);
+  --ick-control-xl: var(--chip-size);
+}
+
+.nana-chat [data-ick-box]:not([data-shape='square']),
+.chat-pane-wrap [data-ick-box]:not([data-shape='square']) {
+  --ick-control-xs: var(--button-size);
+  --ick-control-s: var(--button-size);
+  --ick-control-m: var(--button-size);
+  --ick-control-l: var(--button-size);
+  --ick-control-xl: var(--button-size);
+}
+
+.nana-chat :is([data-ick-role='send'], [data-ick-role='save'], [data-ick-role='stop']) {
   border-radius: var(--radius-lg);
-  font-family: var(--font-sans);
-  font-size: var(--text-xs-size);
-  line-height: var(--text-xs-leading);
-  font-weight: var(--font-normal); /* .btn sets none, so it reads at the page's 400 */
-  color: var(--text-primary);
+  box-shadow: var(--shadow-button);
   transition: opacity 0.18s ease, filter 0.15s ease, background 0.15s ease;
 }
 
-.nana-chat [class*='ick-btn-'][class*='ick-hasText-'] {
-  height: var(--button-size);
-  padding: 0 12px;
-  gap: var(--spacing-2);
-}
-
-.nana-chat [class*='ick-btn-']:not([class*='ick-hasText-']) {
-  width: var(--chip-size);
-  min-width: 0;
-  height: var(--chip-size);
-  padding: 0;
-}
-
-.nana-chat [class*='ick-btn-']:is([class*='ick-primary-'], [class*='ick-secondary-'], [class*='ick-outline-']) {
-  outline: 0;
-  border: 1px solid var(--surface-elevated-2);
-  background: var(--gradient-secondary);
-  box-shadow: var(--shadow-button);
-  color: var(--text-primary);
-}
-
-.nana-chat [class*='ick-btn-']:is([class*='ick-primary-'], [class*='ick-secondary-'], [class*='ick-outline-']):is(
-    :hover,
-    :active
-  ):not(:disabled) {
-  outline: 0;
-  background: var(--gradient-secondary);
-  box-shadow: var(--shadow-button);
-  filter: brightness(0.98);
-}
-
-/* send; stop is the same button while an answer comes, and stopping is not
-   something to set up, so it goes back to secondary (label from
-   data/chatLabels.sr.js) */
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-'][class*='ick-primary-']:not([aria-label='Zaustavi odgovor']),
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-'][class*='ick-primary-']:not([aria-label='Zaustavi odgovor']):is(
-    :hover,
-    :active
-  ):not(:disabled) {
-  border-color: var(--primary);
+.nana-chat :is([data-ick-role='send'], [data-ick-role='save']),
+.nana-chat :is([data-ick-role='send'], [data-ick-role='save']):is(:hover, :active):not(:disabled) {
+  border: 1px solid var(--primary);
   background: var(--gradient-primary);
   color: var(--primary-foreground);
 }
 
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-'][class*='ick-primary-']:not([aria-label='Zaustavi odgovor']):hover:not(:disabled) {
+.nana-chat :is([data-ick-role='send'], [data-ick-role='save']):hover:not(:disabled) {
   filter: brightness(1.05);
 }
 
-.nana-chat [class*='ick-btn-'][class*='ick-ghost-'] {
-  background: none;
-  box-shadow: none;
+.nana-chat [data-ick-role='stop'],
+.nana-chat [data-ick-role='stop']:is(:hover, :active):not(:disabled) {
+  border: 1px solid var(--surface-elevated-2);
+  background: var(--gradient-secondary);
   color: var(--text-primary);
-}
-
-.nana-chat [class*='ick-btn-'][class*='ick-ghost-']:is(:hover, :active):not(:disabled) {
-  background: var(--surface-2);
-  color: var(--text-primary);
-}
-
-/* The composer's own glyphs (send, stop) stay the 28 the kit builds its row
-   around: it fixes their width inline, and its own ::after already reaches 44
-   under a finger. */
-.nana-chat [class*='ick-surface-'] [class*='ick-btn-']:not([class*='ick-hasText-']) {
-  width: 28px;
-  height: 28px;
 }
 
 /* Button presses in to 0.97; the kit's went to 0.92–0.94 */
-.nana-chat [class*='ick-btn-']:active:not(:disabled) {
+.nana-chat :is([data-ick-role='send'], [data-ick-role='save'], [data-ick-role='stop']):active:not(:disabled) {
   transform: scale(0.97);
 }
 
-.nana-chat [class*='ick-btn-']:focus-visible {
+.nana-chat :is([data-ick-role='send'], [data-ick-role='save'], [data-ick-role='stop']):focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
 @media (pointer: coarse) {
 
-.nana-chat [class*='ick-btn-']:not([class*='ick-hasText-']) {
-    width: 44px;
-    height: 44px;
+/* an icon alone is 44 under a finger, as Button's own icon size is */
+.nana-chat [data-ick-box][data-shape='square'],
+  .chat-pane-wrap [data-ick-box][data-shape='square'] {
+    --ick-control-xs: 44px;
+    --ick-control-s: 44px;
+    --ick-control-m: 44px;
+    --ick-control-l: 44px;
+    --ick-control-xl: 44px;
   }
 
 /* The chat's composer is not an input but an editable div, and the 14 set on
@@ -258,9 +236,6 @@
     line-height: 24px;
   }
 
-.ick-theme {
-    --ick-control-m: 44px;
-  }
 }
 
 /* ---------- What we put in the chat: its cards and its pane ----------

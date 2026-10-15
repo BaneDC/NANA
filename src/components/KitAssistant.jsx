@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { ArtifactPane, ChatExperience, useChatTurns } from 'inline-chat-kit';
+import { ArtifactPane, ChatExperience, ComponentsProvider, useChatTurns } from 'inline-chat-kit';
 import 'inline-chat-kit/styles.css';
 import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';
 import { createClient } from '../lib/claudeChat';
@@ -13,6 +13,11 @@ import { getLang, msg, t } from '../i18n';
 import { Button } from '@/components/ui/button';
 import { paneFor, previewFor } from './ChatPanes';
 import { dropKeyboardAfterSend } from '../lib/keyboardViewport';
+import KitButton from './KitButton';
+
+// declared once, outside any render: a new object each render would be a new
+// component to the kit, and every button in the chat would remount
+const KIT_COMPONENTS = { Button: KitButton };
 
 // The assistant, drawn by inline-chat-kit. The kit owns the conversation's
 // look and motion; what is NANA's rides in the answer as custom parts — the
@@ -404,6 +409,8 @@ export function ChatPane({ openId, ctx, onClose }) {
   if (!pane) return null;
   return (
     <SideFrame className="chat-pane-wrap" onClose={onClose}>
+      {/* the pane is put together by hand, so it takes our button this way */}
+      <ComponentsProvider components={KIT_COMPONENTS}>
       <ArtifactPane
         className="chat-pane"
         title={pane.title}
@@ -415,6 +422,7 @@ export function ChatPane({ openId, ctx, onClose }) {
       >
         {pane.children}
       </ArtifactPane>
+      </ComponentsProvider>
     </SideFrame>
   );
 }
@@ -514,6 +522,8 @@ function KitChat({ chat, ctx, title, actions, className, openPane, onOpenPane })
     <div className={`ick-theme nana-chat${className ? ` ${className}` : ''}`} data-theme="light">
       <ChatExperience
         chat={chat}
+        // every button in the chat is ours, but the composer's send (KitButton)
+        components={KIT_COMPONENTS}
         renderPart={renderPart}
         labels={chatLabels()}
         headerActions={false}
