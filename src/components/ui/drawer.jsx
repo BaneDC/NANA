@@ -75,9 +75,24 @@ function DrawerOverlay({
 // 764. The sheet's own CSS already fits it to the page (its max-height), so a
 // height vaul writes is kept only while the keyboard covers part of the page
 // (Safari, which does not shrink it) and taken off the moment it does not.
+const FIELD = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
+
 function keyboardCovers() {
   const vv = window.visualViewport
   return Boolean(vv) && vv.height < window.innerHeight - 100
+}
+
+// vaul lets a drag go, and springs the sheet back, on a `contextmenu` or a
+// `pointerout` that reaches the sheet. Android sends `contextmenu` for a long
+// press, while the finger has moved only a few px, so a slow drag came down a
+// few px and went back up under the finger. A drag here starts on a handle, so
+// the handles keep both to themselves; the drag ends on the finger's lift.
+const keepTheDrag = {
+  onContextMenu: (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  },
+  onPointerOut: (e) => e.stopPropagation(),
 }
 
 function useOwnHeightAfterKeyboard() {
@@ -87,12 +102,28 @@ function useOwnHeightAfterKeyboard() {
     const own = () => {
       if (sheet.style.height && !keyboardCovers()) sheet.style.height = ""
     }
+    // and when the keyboard shrinks the page, the field being typed in is
+    // brought back into view: the sheet shrank with the page and the field was
+    // left behind the buttons pinned at its foot (the 2FA code). The scroll
+    // padding at the foot keeps it above them.
+    let frame = 0
+    const resized = () => {
+      own()
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const field = document.activeElement
+        if (field?.matches?.(FIELD) && sheet.contains(field)) field.scrollIntoView({ block: "nearest" })
+      })
+    }
     const watch = new MutationObserver(own)
     watch.observe(sheet, { attributes: true, attributeFilter: ["style"] })
-    window.visualViewport?.addEventListener("resize", own)
+    window.visualViewport?.addEventListener("resize", resized)
+    window.addEventListener("resize", resized)
     return () => {
+      cancelAnimationFrame(frame)
       watch.disconnect()
-      window.visualViewport?.removeEventListener("resize", own)
+      window.visualViewport?.removeEventListener("resize", resized)
+      window.removeEventListener("resize", resized)
     }
   }, [sheet])
   return setSheet
@@ -136,12 +167,13 @@ function DrawerContent({
         {/* the grip and the strip it sits in drag the sheet too: in a dialog the
             head starts 16 down, so a finger on the grip itself scrolled */}
         <DrawerPrimitive.Handle
+          {...keepTheDrag}
           data-slot="drawer-grip"
           className="absolute! inset-x-0 top-0 z-1 m-0! h-6! w-auto! touch-none rounded-none! bg-transparent! opacity-100!" />
         {kind === "dialog" ? (
           <div
             data-slot="drawer-scroll"
-            className={cn("flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]", bodyClassName)}>
+            className={cn("flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto scroll-pb-20 px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]", bodyClassName)}>
             {children}
           </div>
         ) : children}
@@ -158,6 +190,7 @@ function DrawerHandle({
 }) {
   return (
     <DrawerPrimitive.Handle
+      {...keepTheDrag}
       data-slot="drawer-handle"
       className={cn("absolute! inset-0 z-0 m-0! h-auto! w-auto! touch-none bg-transparent! opacity-100!", className)}
       {...props} />
