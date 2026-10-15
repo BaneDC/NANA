@@ -24,7 +24,13 @@ import { Drawer as DrawerPrimitive } from "vaul"
 function Drawer({
   ...props
 }) {
-  return <DrawerPrimitive.Root data-slot="drawer" direction="bottom" handleOnly {...props} />;
+  // `scrollLockTimeout={0}`: vaul refuses a drag whose first move goes up, as
+  // a scroll, and keeps refusing every move that follows within 100ms of the
+  // last, so the whole drag; it does that only once the sheet has been dragged
+  // and sprung back. A finger on a phone often starts a hair up, so after a
+  // drag or two the sheet would not come down at all. Ours is dragged by its
+  // head alone, which never scrolls, so there is no scroll to wait out.
+  return <DrawerPrimitive.Root data-slot="drawer" direction="bottom" handleOnly scrollLockTimeout={0} {...props} />;
 }
 
 function DrawerTrigger({
@@ -127,6 +133,11 @@ function DrawerContent({
         <span
           aria-hidden="true"
           className="pointer-events-none absolute top-2 left-1/2 z-2 -ml-[18px] h-1 w-9 rounded-sm bg-neutral-300" />
+        {/* the grip and the strip it sits in drag the sheet too: in a dialog the
+            head starts 16 down, so a finger on the grip itself scrolled */}
+        <DrawerPrimitive.Handle
+          data-slot="drawer-grip"
+          className="absolute! inset-x-0 top-0 z-1 m-0! h-6! w-auto! touch-none rounded-none! bg-transparent! opacity-100!" />
         {kind === "dialog" ? (
           <div
             data-slot="drawer-scroll"
