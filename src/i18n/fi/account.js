@@ -671,4 +671,9 @@ export default {
   "Poruka nije obavezna, plan nege ide u svakom slučaju.": "Viesti ei ole pakollinen, hoitosuunnitelma lähtee joka tapauksessa.",
   "Plan nege je poslat. {name} obično odgovori istog dana.": "Hoitosuunnitelma on lähetetty. {name} vastaa yleensä samana päivänä.",
   "Pretplata je obnovljena. Sledeća naplata je {date}": "Tilaus jatkuu. Seuraava veloitus on {date}.",
+  "Pretplata je otkazana. Važi do {date}": "Tilaus on peruttu. Se on voimassa {date} asti.",
+  "Kartica je promenjena.": "Kortti on vaihdettu.",
+  "Kartica je dodata.": "Kortti on lisätty.",
+  "Plan posete je primljen. Poseta je u „Predstoji\".": "Käyntisuunnitelma on vastaanotettu. Käynti on kohdassa ”Tulossa”.",
+  "Preuzeto": "Ladattu",
 };

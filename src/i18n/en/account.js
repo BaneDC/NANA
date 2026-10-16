@@ -671,4 +671,9 @@ export default {
   "Poruka nije obavezna, plan nege ide u svakom slučaju.": "The message is optional, the care plan goes either way.",
   "Plan nege je poslat. {name} obično odgovori istog dana.": "The care plan has been sent. {name} usually replies the same day.",
   "Pretplata je obnovljena. Sledeća naplata je {date}": "Your subscription is resumed. The next charge is on {date}.",
+  "Pretplata je otkazana. Važi do {date}": "Your subscription is cancelled. It runs until {date}.",
+  "Kartica je promenjena.": "The card has been changed.",
+  "Kartica je dodata.": "The card has been added.",
+  "Plan posete je primljen. Poseta je u „Predstoji\".": "Visit plan noted. The visit is under \"Coming up\".",
+  "Preuzeto": "Downloaded",
 };

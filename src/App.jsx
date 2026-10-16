@@ -175,11 +175,13 @@ export default function App() {
 
   // The account's own fields, changed from the profile or from settings. One
   // place, because both write the same record.
-  const saveUser = (patch) => {
+  // `quiet`: a switch that saves as it moves says so by moving
+  // (docs/patterns.md §10, "Obaveštenje posle radnje")
+  const saveUser = (patch, { quiet } = {}) => {
     const next = { ...user, ...patch, name: patch.name ?? user.name };
     setUser(next);
     updateAccount(next);
-    say(t('Podaci su sačuvani.'));
+    if (!quiet) say(t('Podaci su sačuvani.'));
   };
 
   // The care state follows the answers: who she is, where, and what the plan
@@ -660,6 +662,7 @@ export default function App() {
                   user={user}
                   onCare={setCare}
                   onSaveUser={saveUser}
+                  onFlash={say}
                   // starting one opens the same dialog the care plan uses, so
                   // the plans and the price are decided in one place
                   onSubscribe={(on = true) =>
@@ -675,7 +678,9 @@ export default function App() {
                       : on
                         ? setPaywall({ caregiver: null })
                         : // it runs to the end of the period already paid
-                          setSubscription((x) => ({ ...x, cancelled: true }))
+                          (setSubscription((x) => ({ ...x, cancelled: true })),
+                          // (the Serbian date ends in its own full stop)
+                          say(t('Pretplata je otkazana. Važi do {date}', { date: renewsOn(user.country, subscription.planId, subscription.at) })))
                   }
                 />
               )}

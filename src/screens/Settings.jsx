@@ -13,7 +13,7 @@ import { useKept } from '@/hooks/use-kept';
 import AccountCard from '../components/AccountCard';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable, TwoFactorNewCodes } from '../components/TwoFactorSetup';
-import { Field, Password, requiredError, useCheck } from '../components/TextField';
+import { Field, FieldError, Password, requiredError, useCheck } from '../components/TextField';
 import { cardTrouble, chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword, hashBackupCodes } from '../lib/account';
@@ -50,6 +50,9 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
   const [next, setNext] = useState('');
   const [again, setAgain] = useState('');
   const [error, setError] = useState(null);
+  // what went wrong: a wrong current password belongs under its field, the
+  // rest (no account here, nothing saved) to the whole dialog
+  const [fault, setFault] = useState(null);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -68,6 +71,7 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
     const fault = await changePassword(email, current, next);
     setSaving(false);
     if (!fault) return setDone(true);
+    setFault(fault);
     setError(
       fault === 'wrong-current'
         ? t('Trenutna lozinka nije tačna.')
@@ -96,12 +100,13 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
       {/* a real form, so the browser's password manager can offer and update it */}
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <div className="flex flex-col gap-3">
-          <Field label={t('Trenutna lozinka')} required error={check.show(errors.current) || error}>
+          <Field label={t('Trenutna lozinka')} required error={check.show(errors.current) || (fault === 'wrong-current' ? error : null)}>
             <Password
               value={current}
               onChange={(v) => {
                 setCurrent(v);
                 setError(null);
+                setFault(null);
               }}
             />
           </Field>
@@ -112,6 +117,8 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
             <Password value={again} onChange={setAgain} autoComplete="new-password" />
           </Field>
         </div>
+
+        {fault && fault !== 'wrong-current' && <FieldError className="text-center">{error}</FieldError>}
 
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={onClose}>
@@ -126,12 +133,12 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
   );
 }
 
-export default function Settings({ unlocked, subscription, care, user, onCare, onSaveUser, onSubscribe }) {
-  const [prefs, setPrefs] = useState({
-    digest: false,
-    marketing: false,
-  });
-  const set = (key) => (v) => setPrefs((p) => ({ ...p, [key]: v }));
+export default function Settings({ unlocked, subscription, care, user, onCare, onSaveUser, onFlash, onSubscribe }) {
+  // kept on the account, as the language and the cookies are: they were only in
+  // this page's state, so leaving it turned them back off. A switch saves as it
+  // moves, and its moving says so: no toast.
+  const prefs = { digest: false, marketing: false, ...user?.notifications };
+  const set = (key) => (v) => onSaveUser?.({ notifications: { ...prefs, [key]: v } }, { quiet: true });
   const [cardOpen, setCardOpen] = useState(false);
   const [cookiesOpen, setCookiesOpen] = useState(false);
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
@@ -157,9 +164,12 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
   // No card details are collected here, and none should be: this is where a
   // real build hands off to Stripe and gets a token back.
   const connect = () => {
+    const had = care?.payment?.connected;
     onCare(linkCard);
-    // the renewal that did not go through is charged on the new card
+    // the renewal that did not go through is charged on the new card, and that
+    // says so itself
     if (unpaid) onSubscribe?.('renew');
+    else onFlash?.(had ? t('Kartica je promenjena.') : t('Kartica je dodata.'));
     setCardOpen(false);
   };
   // cancelled, it still runs to the end of the period already paid

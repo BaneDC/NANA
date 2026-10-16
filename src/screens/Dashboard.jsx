@@ -247,6 +247,7 @@ export default function Dashboard({
   onUndoChange,
   onDismissChange,
   onShare,
+  onFlash,
 }) {
   const waiting = waitingOnYou(care);
   // a plan just sent is booked, so it is one of the visits that are coming;
@@ -625,7 +626,14 @@ export default function Dashboard({
               action={t('Pogledaj plan')}
               variant="default"
               onOpen={() => onDrawer({ kind: 'plan', visitId: v.id })}
-              aside={{ label: t('U redu'), onClick: () => onCare(confirmPlan(v.id)) }}
+              aside={{
+                label: t('U redu'),
+                onClick: () => {
+                  onCare(confirmPlan(v.id));
+                  // the row leaves "Čeka na vas", so it says where the visit is now
+                  onFlash?.(t('Plan posete je primljen. Poseta je u „Predstoji".'));
+                },
+              }}
             />
           ))}
         </Attention>

@@ -97,6 +97,9 @@ export function CodeInput({ value, onChange, onComplete, invalid }) {
 // them.
 function BackupCodes({ open, email, codes, onDone, onClose }) {
   const [copied, setCopied] = useState(false);
+  // as "Kopirano", the button says the file went: the browser's own download
+  // shows somewhere else, or nowhere at all on a phone
+  const [downloaded, setDownloaded] = useState(false);
 
   const copy = () => {
     navigator.clipboard?.writeText(codes.join('\n'));
@@ -114,6 +117,8 @@ function BackupCodes({ open, email, codes, onDone, onClose }) {
     a.download = t('nana-prime-rezervni-kodovi.txt');
     a.click();
     URL.revokeObjectURL(a.href);
+    setDownloaded(true);
+    setTimeout(() => setDownloaded(false), 1600);
   };
 
   return (
@@ -137,7 +142,7 @@ function BackupCodes({ open, email, codes, onDone, onClose }) {
             {copied ? t('Kopirano') : t('Kopiraj')}
           </Button>
           <Button variant="secondary" onClick={download}>
-            {t('Preuzmi')}
+            {downloaded ? t('Preuzeto') : t('Preuzmi')}
           </Button>
         </div>
         <Button onClick={onDone}>{t('Sačuvano')}</Button>
