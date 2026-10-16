@@ -345,7 +345,9 @@ export const askCaregiver = (caregiverId, message) => (c) => {
           requestedDay: today,
           requested: lowerDate(dayLabel(today, today)),
           detail: msg('Još nije odgovorila. Javićemo vam u svakom slučaju.'),
-          message: message || msg('Da li biste mogli da dolazite?'),
+          // the family's own words, or none: the plan goes with it either way, and a
+          // sentence they did not write would read as theirs in "Moji upiti"
+          message: message || '',
           again,
         },
         ...c.requests,
