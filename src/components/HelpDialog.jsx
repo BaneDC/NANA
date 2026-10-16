@@ -4,7 +4,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Part, PaneHint } from '@/components/pane';
 import Dialog from './Dialog';
 import { CoordinatorRows } from './PlanFooterBlocks';
-import { Field, TextArea } from './TextField';
+import { Field, TextArea, requiredError, useCheck } from './TextField';
 import { t } from '@/i18n';
 
 // "Pomoć" in the menu (docs/patterns.md §4): not a page, a dialog with how to
@@ -16,11 +16,15 @@ import { t } from '@/i18n';
 export default function HelpDialog({ open = true, coordinator, onSend, onClose }) {
   const [text, setText] = useState('');
   const first = coordinator.name.split(' ')[0];
+  const check = useCheck();
+  const error = !text.trim() && requiredError();
   const close = () => {
     setText('');
+    check.reset();
     onClose();
   };
   const send = () => {
+    if (!check.check([error])) return;
     onSend(text.trim());
     close();
   };
@@ -39,7 +43,7 @@ export default function HelpDialog({ open = true, coordinator, onSend, onClose }
         {/* the one field: its part's name and the placeholder say what goes in,
             so no label of its own (docs/patterns.md §10) */}
         <Part label={t('Ili joj ostavite poruku')}>
-          <Field>
+          <Field error={check.show(error)}>
             <TextArea
               rows={3}
               value={text}
@@ -52,7 +56,7 @@ export default function HelpDialog({ open = true, coordinator, onSend, onClose }
         </Part>
       </div>
       <DialogFooter>
-        <Button disabled={!text.trim()} onClick={send}>
+        <Button onClick={send}>
           {t('Pošalji poruku')}
         </Button>
       </DialogFooter>

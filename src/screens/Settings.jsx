@@ -13,7 +13,7 @@ import { useKept } from '@/hooks/use-kept';
 import AccountCard from '../components/AccountCard';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable, TwoFactorNewCodes } from '../components/TwoFactorSetup';
-import { Field, Password } from '../components/TextField';
+import { Field, Password, requiredError, useCheck } from '../components/TextField';
 import { cardTrouble, chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword, hashBackupCodes } from '../lib/account';
@@ -55,9 +55,15 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
 
   const short = next.length > 0 && next.length < 8;
   const mismatch = again.length > 0 && next !== again;
-  const ready = current && next.length >= 8 && next === again && !saving;
+  const check = useCheck();
+  const errors = {
+    current: !current && requiredError(),
+    next: !next ? requiredError() : short && t('Kratka je - treba najmanje 8 karaktera.'),
+    again: !again ? requiredError() : mismatch && t('Dva unosa se ne poklapaju.'),
+  };
 
   const submit = async () => {
+    if (saving || !check.check(Object.values(errors))) return;
     setSaving(true);
     const fault = await changePassword(email, current, next);
     setSaving(false);
@@ -88,9 +94,9 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
     <Dialog eyebrow={t('Nalog')} title={t('Promenite lozinku')} open={open} onClose={onClose}>
       <DialogDescription>{t('Nova lozinka mora imati najmanje 8 karaktera.')}</DialogDescription>
       {/* a real form, so the browser's password manager can offer and update it */}
-      <form className="contents" onSubmit={(e) => (e.preventDefault(), ready && submit())}>
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <div className="flex flex-col gap-3">
-          <Field label={t('Trenutna lozinka')}>
+          <Field label={t('Trenutna lozinka')} required error={check.show(errors.current) || error}>
             <Password
               value={current}
               onChange={(v) => {
@@ -99,21 +105,19 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
               }}
             />
           </Field>
-          <Field label={t('Nova lozinka')} hint={short ? t('Kratka je - treba najmanje 8 karaktera.') : null}>
+          <Field label={t('Nova lozinka')} required hint={short ? t('Kratka je - treba najmanje 8 karaktera.') : null} error={check.show(errors.next)}>
             <Password value={next} onChange={setNext} autoComplete="new-password" />
           </Field>
-          <Field label={t('Nova lozinka još jednom')} hint={mismatch ? t('Dva unosa se ne poklapaju.') : null}>
+          <Field label={t('Nova lozinka još jednom')} required hint={mismatch ? t('Dva unosa se ne poklapaju.') : null} error={check.show(errors.again)}>
             <Password value={again} onChange={setAgain} autoComplete="new-password" />
           </Field>
         </div>
-
-        {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
 
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={onClose}>
             {t('Otkaži')}
           </Button>
-          <Button type="submit" disabled={!ready}>
+          <Button type="submit" loading={saving}>
             {t('Sačuvaj lozinku')}
           </Button>
         </DialogFooter>

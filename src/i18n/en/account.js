@@ -658,4 +658,14 @@ export default {
   "Kartica se čuva i za posete: svaka se naplaćuje 24 sata posle izveštaja negovateljice.": "The card is also kept for visits: each is charged 24 hours after the caregiver's report.",
   "Drawer sa početne: posete po mesecima. Otvara se dugmetom ispod, ili „Sve posete\" na kartici „Poslednja poseta\".": "A drawer on the home: visits by month. Opened with the button below, or \"All visits\" on the \"Last visit\" card.",
   "Sve posete, godinu dana kasnije": "All visits, a year later",
+  // field errors (docs/patterns.md §10)
+  "Ovo polje je obavezno.": "This field is required.",
+  "Unesite broj veći od nule.": "Enter a number above zero.",
+  "Ključ počinje sa sk-ant-.": "The key starts with sk-ant-.",
+  "Unesite svih 6 cifara.": "Enter all 6 digits.",
+  "Unesite vreme kao raspon, npr. 09:00–13:00.": "Enter the time as a range, e.g. 09:00–13:00.",
+  "Prvo dodajte karticu.": "Add a card first.",
+  "Unesite ispravnu email adresu.": "Enter a valid email address.",
+  "Unesite ceo broj telefona.": "Enter the full phone number.",
+  "Unesite ceo rezervni kod.": "Enter the whole backup code.",
 };

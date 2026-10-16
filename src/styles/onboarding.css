@@ -711,6 +711,11 @@
   border-color: rgba(253, 155, 119, 0.6);
 }
 
+/* "Pošalji" pressed on an empty page (docs/patterns.md §10) */
+.imm-write textarea[aria-invalid='true'] {
+  border-color: var(--destructive);
+}
+
 .imm-write textarea::placeholder {
   color: rgba(76, 34, 18, 0.38);
 }
