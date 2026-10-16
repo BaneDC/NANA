@@ -33,11 +33,17 @@ const ALERT = '[role="alert"]'
 
 const DrawerContext = React.createContext({ dismissible: true })
 
+// A sheet is mostly mounted already open (useKept, src/hooks/use-kept.js), and
+// Base UI plays the way in only when `open` turns from false to true: mounted
+// open, the sheet was just there. So it mounts closed and opens a render later,
+// and slides up from the bottom edge like one opened in place.
 function Drawer({ open, onOpenChange, dismissible = true, children }) {
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
   return (
     <DrawerContext.Provider value={{ dismissible }}>
       <DrawerPrimitive.Root
-        open={open}
+        open={mounted && open}
         swipeDirection="down"
         disablePointerDismissal={!dismissible}
         onOpenChange={(next, details) => {

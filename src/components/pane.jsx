@@ -48,16 +48,19 @@ export function Callout({ className, ...props }) {
   );
 }
 
-// A report read as label and value, the labels in one column of 116.
+// A report read as label and value (the work order, docs/patterns.md §8): the
+// label over its value, always and everywhere, one under another, since most
+// of it is free text (what she did, what was asked) and beside a column of
+// labels it wrapped into a narrow strip. Rows 12 apart.
 export function ReportRows({ className, ...props }) {
-  return <dl data-slot="report-rows" className={cn('flex flex-col gap-1', className)} {...props} />;
+  return <dl data-slot="report-rows" className={cn('flex flex-col gap-3', className)} {...props} />;
 }
 
 export function ReportRow({ label, children }) {
   return (
-    <div data-slot="report-row" className="flex items-baseline gap-3 text-xs leading-body">
-      <dt className="w-[116px] shrink-0 text-disabled">{label}</dt>
-      <dd className="min-w-0 flex-1 text-foreground">{children}</dd>
+    <div data-slot="report-row" className="flex min-w-0 flex-col">
+      <dt className="text-small text-muted-foreground">{label}</dt>
+      <dd className="text-xs leading-body text-foreground">{children}</dd>
     </div>
   );
 }

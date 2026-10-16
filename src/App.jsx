@@ -603,6 +603,7 @@ export default function App() {
                   onView={setView}
                   onAskAssistant={askAssistant}
                   onFindCaregiver={() => setView('find-caregiver')}
+                  onShare={() => setSharing(true)}
                 />
               )}
               {view === 'caregiver' && (

@@ -246,6 +246,7 @@ export default function Dashboard({
   standingOf,
   onUndoChange,
   onDismissChange,
+  onShare,
 }) {
   const waiting = waitingOnYou(care);
   // a plan just sent is booked, so it is one of the visits that are coming;
@@ -456,8 +457,15 @@ export default function Dashboard({
         {/* Finding a caregiver is in the side menu, so the head does not say
             it again. Only a family that has asked nobody yet gets it, as the
             one step in the card below. */}
+        {/* Sending the plan on (SharePlanModal) is here since the plan has no
+            page of its own: the plan is this page (docs/patterns.md §4a). */}
         <PageActions>
           <AskAssistant onClick={onAskAssistant} />
+          {plan && onShare && (
+            <Button variant="secondary" size="icon" onClick={onShare} aria-label={t('Pošalji plan')} title={t('Pošalji plan')}>
+              <Send size={14} strokeWidth={1.75} />
+            </Button>
+          )}
         </PageActions>
       </PageHeader>
 
