@@ -664,7 +664,10 @@ export default function App() {
                   // the plans and the price are decided in one place
                   onSubscribe={(on = true) =>
                     on === 'resume'
-                      ? setSubscription((x) => ({ ...x, cancelled: false }))
+                      ? (setSubscription((x) => ({ ...x, cancelled: false })),
+                        // nothing is charged now: it renews on the day it would have
+                        // (the Serbian date ends in its own full stop)
+                        say(t('Pretplata je obnovljena. Sledeća naplata je {date}', { date: renewsOn(user.country, subscription.planId, subscription.at) })))
                       : on === 'renew'
                         ? renewSubscription()
                       : on === 'change'

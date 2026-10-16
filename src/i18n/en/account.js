@@ -670,4 +670,5 @@ export default {
   "Unesite ceo rezervni kod.": "Enter the whole backup code.",
   "Poruka nije obavezna, plan nege ide u svakom slučaju.": "The message is optional, the care plan goes either way.",
   "Plan nege je poslat. {name} obično odgovori istog dana.": "The care plan has been sent. {name} usually replies the same day.",
+  "Pretplata je obnovljena. Sledeća naplata je {date}": "Your subscription is resumed. The next charge is on {date}.",
 };

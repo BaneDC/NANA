@@ -670,4 +670,5 @@ export default {
   "Unesite ceo rezervni kod.": "Antakaa koko varakoodi.",
   "Poruka nije obavezna, plan nege ide u svakom slučaju.": "Viesti ei ole pakollinen, hoitosuunnitelma lähtee joka tapauksessa.",
   "Plan nege je poslat. {name} obično odgovori istog dana.": "Hoitosuunnitelma on lähetetty. {name} vastaa yleensä samana päivänä.",
+  "Pretplata je obnovljena. Sledeća naplata je {date}": "Tilaus jatkuu. Seuraava veloitus on {date}.",
 };
