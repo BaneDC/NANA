@@ -80,7 +80,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       )}
 
       <div className="flex flex-wrap gap-3">
-        <Field label={t('Odrađeni sati')} className="w-auto min-w-0 self-start" error={check.show(hoursError)}>
+        <Field label={t('Odrađeni sati')} required className="w-auto min-w-0 self-start" error={check.show(hoursError)}>
           <Input type="number" inputMode="decimal" step="0.5" value={hours} onChange={setHours} suffix="h" className="w-40!" />
         </Field>
         <Field label={t('Šta ste radili')} className="w-auto min-w-0 flex-1">

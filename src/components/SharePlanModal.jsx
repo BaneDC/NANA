@@ -40,7 +40,7 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
         )}
       </DialogDescription>
 
-      <Field label={t('Email adrese')} error={check.show(error)}>
+      <Field label={t('Email adrese')} required error={check.show(error)}>
         <TextArea rows={3} value={text} placeholder="ana@mail.com, milan@mail.com" onChange={setText} />
       </Field>
 

@@ -96,7 +96,7 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
       {/* a real form, so the browser's password manager can offer and update it */}
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <div className="flex flex-col gap-3">
-          <Field label={t('Trenutna lozinka')} error={check.show(errors.current) || error}>
+          <Field label={t('Trenutna lozinka')} required error={check.show(errors.current) || error}>
             <Password
               value={current}
               onChange={(v) => {
@@ -105,10 +105,10 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
               }}
             />
           </Field>
-          <Field label={t('Nova lozinka')} hint={short ? t('Kratka je - treba najmanje 8 karaktera.') : null} error={check.show(errors.next)}>
+          <Field label={t('Nova lozinka')} required hint={short ? t('Kratka je - treba najmanje 8 karaktera.') : null} error={check.show(errors.next)}>
             <Password value={next} onChange={setNext} autoComplete="new-password" />
           </Field>
-          <Field label={t('Nova lozinka još jednom')} hint={mismatch ? t('Dva unosa se ne poklapaju.') : null} error={check.show(errors.again)}>
+          <Field label={t('Nova lozinka još jednom')} required hint={mismatch ? t('Dva unosa se ne poklapaju.') : null} error={check.show(errors.again)}>
             <Password value={again} onChange={setAgain} autoComplete="new-password" />
           </Field>
         </div>

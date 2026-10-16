@@ -74,7 +74,10 @@ export function CodeInput({ value, onChange, onComplete, invalid }) {
   }, [value]);
   return (
     <div ref={box} className="flex flex-col items-center gap-2">
-      <Label htmlFor={id}>{t('Kod iz aplikacije')}</Label>
+      <Label htmlFor={id}>
+        {t('Kod iz aplikacije')}
+        <span className="text-primary-600"> *</span>
+      </Label>
       <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange} onComplete={onComplete} aria-invalid={invalid || undefined}>
         <InputOTPGroup>
           {[0, 1, 2].map((i) => (

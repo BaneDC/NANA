@@ -39,10 +39,10 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
       </DialogDescription>
 
       <div className="flex flex-wrap gap-3">
-        <Field label={t('Dan')} className="w-auto min-w-0 flex-1" error={check.show(errors.date)}>
+        <Field label={t('Dan')} required className="w-auto min-w-0 flex-1" error={check.show(errors.date)}>
           <Input type="text" value={date} placeholder={t('četvrtak, 14. avgusta')} onChange={setDate} />
         </Field>
-        <Field label={t('Vreme')} className="w-auto min-w-0 self-start" error={check.show(errors.time)}>
+        <Field label={t('Vreme')} required className="w-auto min-w-0 self-start" error={check.show(errors.time)}>
           <Input type="text" value={time} placeholder="09:00–13:00" onChange={setTime} className="w-40!" />
         </Field>
       </div>

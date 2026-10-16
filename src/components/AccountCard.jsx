@@ -33,7 +33,7 @@ function AccountDialog({ open, user, onSave, onClose }) {
     <Dialog eyebrow={t('Nalog')} title={t('Vaši podaci')} open={open} onClose={onClose}>
       <div className="flex flex-col gap-3">
         {EDITABLE.map((f) => (
-          <Field key={f.id} label={t(f.label)} error={check.show(errors[f.id])}>
+          <Field key={f.id} label={t(f.label)} required error={check.show(errors[f.id])}>
             <Input type={f.type || 'text'} value={values[f.id]} onChange={(value) => setValues((v) => ({ ...v, [f.id]: value }))} />
           </Field>
         ))}

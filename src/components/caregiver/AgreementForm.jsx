@@ -35,7 +35,10 @@ export default function AgreementForm({ client, onSend, onCancel }) {
         )}
       </DialogDescription>
 
-      <PaneLabel>{t('Usluge iz ovog ugovora')}</PaneLabel>
+      <PaneLabel>
+        {t('Usluge iz ovog ugovora')}
+        <span className="text-primary-600"> *</span>
+      </PaneLabel>
       {/* the catalog's four groups, each under its name; any number chosen */}
       {SERVICE_GROUPS.map((g) => (
         <Group key={g.id} label={t(g.title)}>
@@ -63,7 +66,7 @@ export default function AgreementForm({ client, onSend, onCancel }) {
       <PaneHint>{t('Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.')}</PaneHint>
       <FieldError>{check.show(errors.services)}</FieldError>
 
-      <Field label={t('Cena po satu')} className="w-auto self-start" error={check.show(errors.rate)}>
+      <Field label={t('Cena po satu')} required className="w-auto self-start" error={check.show(errors.rate)}>
         <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="€ / h" className="w-40!" />
       </Field>
       {valid && (
