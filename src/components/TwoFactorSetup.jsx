@@ -8,6 +8,7 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/comp
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import Dialog from './Dialog';
+import { FieldError, useCheck } from './TextField';
 import { newBackupCodes, newSecret, otpauthUrl, verifyCode } from '../lib/totp';
 import { msg, t } from '../i18n';
 
@@ -62,7 +63,8 @@ function Stepper({ at }) {
 // which the pane's focus looks for). A wrong code is cleared by whoever checks
 // it, and the field takes the focus back from "Potvrdi", so the next code goes
 // straight in from the first box.
-export function CodeInput({ value, onChange, onComplete }) {
+// `invalid` rings every box red, as a field with an error (docs/patterns.md §10).
+export function CodeInput({ value, onChange, onComplete, invalid }) {
   const id = useId();
   const box = useRef(null);
   const was = useRef(value);
@@ -73,17 +75,17 @@ export function CodeInput({ value, onChange, onComplete }) {
   return (
     <div ref={box} className="flex flex-col items-center gap-2">
       <Label htmlFor={id}>{t('Kod iz aplikacije')}</Label>
-      <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange} onComplete={onComplete}>
+      <InputOTP id={id} autoFocus data-autofocus="" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={value} onChange={onChange} onComplete={onComplete} aria-invalid={invalid || undefined}>
         <InputOTPGroup>
-          <InputOTPSlot index={0} />
-          <InputOTPSlot index={1} />
-          <InputOTPSlot index={2} />
+          {[0, 1, 2].map((i) => (
+            <InputOTPSlot key={i} index={i} aria-invalid={invalid || undefined} />
+          ))}
         </InputOTPGroup>
         <InputOTPSeparator />
         <InputOTPGroup>
-          <InputOTPSlot index={3} />
-          <InputOTPSlot index={4} />
-          <InputOTPSlot index={5} />
+          {[3, 4, 5].map((i) => (
+            <InputOTPSlot key={i} index={i} aria-invalid={invalid || undefined} />
+          ))}
         </InputOTPGroup>
       </InputOTP>
     </div>
@@ -95,6 +97,9 @@ export function CodeInput({ value, onChange, onComplete }) {
 // them.
 function BackupCodes({ open, email, codes, onDone, onClose }) {
   const [copied, setCopied] = useState(false);
+  // as "Kopirano", the button says the file went: the browser's own download
+  // shows somewhere else, or nowhere at all on a phone
+  const [downloaded, setDownloaded] = useState(false);
 
   const copy = () => {
     navigator.clipboard?.writeText(codes.join('\n'));
@@ -112,6 +117,8 @@ function BackupCodes({ open, email, codes, onDone, onClose }) {
     a.download = t('nana-prime-rezervni-kodovi.txt');
     a.click();
     URL.revokeObjectURL(a.href);
+    setDownloaded(true);
+    setTimeout(() => setDownloaded(false), 1600);
   };
 
   return (
@@ -135,7 +142,7 @@ function BackupCodes({ open, email, codes, onDone, onClose }) {
             {copied ? t('Kopirano') : t('Kopiraj')}
           </Button>
           <Button variant="secondary" onClick={download}>
-            {t('Preuzmi')}
+            {downloaded ? t('Preuzeto') : t('Preuzmi')}
           </Button>
         </div>
         <Button onClick={onDone}>{t('Sačuvano')}</Button>
@@ -189,8 +196,11 @@ function CodeCheck({ open, secret, title, text, action, onDone, onClose }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState(null);
   const [checking, setChecking] = useState(false);
+  const check = useCheck();
+  const shown = error || check.show(code.length < 6 && t('Unesite svih 6 cifara.'));
 
   const confirm = async () => {
+    if (!check.check([code.length < 6])) return;
     setChecking(true);
     // An account that turned it on before the key was kept has nothing to
     // check against; the prototype lets it through rather than lock it in.
@@ -211,15 +221,16 @@ function CodeCheck({ open, secret, title, text, action, onDone, onClose }) {
           setCode(v);
           if (v) setError(null);
         }}
+        invalid={Boolean(shown)}
       />
 
-      {error && <p role="alert" className="text-center text-xs leading-body text-destructive">{error}</p>}
+      <FieldError className="text-center">{shown}</FieldError>
 
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
           {t('Otkaži')}
         </Button>
-        <Button disabled={code.length !== 6 || checking} onClick={confirm}>
+        <Button loading={checking} onClick={confirm}>
           {action}
         </Button>
       </DialogFooter>
@@ -257,7 +268,11 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
     setTimeout(() => setCopied(null), 1600);
   };
 
+  const check = useCheck();
+  const shown = error || check.show(code.length < 6 && t('Unesite svih 6 cifara.'));
+
   const confirm = async () => {
+    if (!check.check([code.length < 6])) return;
     setChecking(true);
     const ok = await verifyCode(secret, code);
     setChecking(false);
@@ -339,9 +354,9 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
             {t('Unesite šestocifreni kod iz aplikacije da potvrdimo da je podešavanje prošlo.')}
           </DialogDescription>
 
-          <CodeInput value={code} onChange={(v) => (setCode(v), v && setError(null))} />
+          <CodeInput value={code} onChange={(v) => (setCode(v), v && setError(null))} invalid={Boolean(shown)} />
 
-          {error && <p role="alert" className="text-center text-xs leading-body text-destructive">{error}</p>}
+          <FieldError className="text-center">{shown}</FieldError>
 
           <DialogFooter>
             <Button variant="ghost" onClick={onClose}>
@@ -353,12 +368,13 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
                 // a new try after scanning again: no old code, no old error
                 setCode('');
                 setError(null);
+                check.reset();
                 setStep(0);
               }}
             >
               {t('Nazad')}
             </Button>
-            <Button disabled={code.length !== 6 || checking} onClick={confirm}>
+            <Button loading={checking} onClick={confirm}>
               {t('Potvrdi')}
             </Button>
           </DialogFooter>

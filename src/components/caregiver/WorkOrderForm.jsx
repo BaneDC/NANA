@@ -5,7 +5,7 @@ import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataRow } from '@/components/data-list';
 import { PaneHint, PaneLabel, Total } from '@/components/pane';
-import { Field, Input, TextArea } from '../TextField';
+import { Field, Input, TextArea, aboveZeroError, requiredError, useCheck } from '../TextField';
 import { money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 import { msg, t } from '../../i18n';
 
@@ -66,6 +66,8 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
 
   const worked = Number(hours);
   const valid = worked > 0;
+  const check = useCheck();
+  const hoursError = !hours.trim() ? requiredError() : !valid && aboveZeroError();
   const totals = totalsFor(valid ? worked : 0, client.rate);
   const overtime = valid && worked !== visit.hours;
 
@@ -87,7 +89,7 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
       )}
 
       <div className="flex flex-wrap gap-3">
-        <Field label={t('Odrađeni sati')} className="w-auto min-w-0 self-start">
+        <Field label={t('Odrađeni sati')} required className="w-auto min-w-0 self-start" error={check.show(hoursError)}>
           <Input type="number" inputMode="decimal" step="0.5" value={hours} onChange={setHours} suffix="h" className="w-40!" />
         </Field>
         <Field label={t('Šta ste radili')} className="w-auto min-w-0 flex-1">
@@ -176,8 +178,8 @@ export default function WorkOrderForm({ client, visit, onSend, onCancel }) {
           {t('Otkaži')}
         </Button>
         <Button
-          disabled={!valid}
           onClick={() =>
+            check.check([hoursError]) &&
             onSend(client.id, {
               hours: worked,
               note: note.trim(),

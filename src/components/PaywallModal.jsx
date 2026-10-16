@@ -173,7 +173,10 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
       ) : (
         <>
           <DialogDescription>
-            {t('Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.')}
+            {t('Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.')}{' '}
+            {/* the plan says enough on its own, so the message may be left out
+                (docs/patterns.md §10: a field with no label says so in words) */}
+            {t('Poruka nije obavezna, plan nege ide u svakom slučaju.')}
             {!unlocked && ' ' + t('Poruka se šalje čim se pretplatite.')}
           </DialogDescription>
           {/* no label: the sentence above says what goes in it, and the
@@ -198,7 +201,7 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         </Button>
         {!alreadyAsked &&
           (unlocked ? (
-            <Button disabled={!message.trim()} onClick={() => onSend(message.trim())}>
+            <Button onClick={() => onSend(message.trim())}>
               {t('Pošalji poruku')}
             </Button>
           ) : (

@@ -518,4 +518,5 @@ export default {
   "{name} čita svaku poruku i javlja vam se istog dana.": "{name} lukee jokaisen viestin ja vastaa teille samana päivänä.",
   "Poruka je poslata. {name} će vam se javiti danas.": "Viesti lähetetty. {name} ottaa teihin yhteyttä tänään.",
   "Zatvori": "Sulje",
+  "Samo za demo": "Vain demoa varten",
 };

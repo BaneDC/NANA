@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Check, CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import CaregiverHead from '../CaregiverHead';
 import Rating from '../Rating';
 import { careSignals } from './VisitReport';
 import { ActivityRows } from './Activity';
-import { Field, TextArea } from '../TextField';
+import { Field, FieldError, TextArea, requiredError, useCheck } from '../TextField';
 import {
   LATE_HOURS,
   activeVersion,
@@ -121,6 +121,8 @@ function changesBetween(was, now) {
 
 function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
   const [declining, setDeclining] = useState(false);
+  const check = useCheck();
+  const addCard = useRef(null);
   const a = arrangementOf(care, caregiverId);
   const pen = pendingVersion(a);
   const act = activeVersion(a);
@@ -129,6 +131,8 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
   if (!pen) return null;
 
   const agree = () => {
+    // with no card the press says so under "Dodaj karticu", which takes the focus
+    if (!check.check([!hasCard])) return requestAnimationFrame(() => addCard.current?.focus());
     onCare(agreeTerms(caregiverId));
     onFlash(act ? t('Verzija {version} važi od danas.', { version: pen.version }) : t('Uslovi su prihvaćeni. Posete sada mogu da se zakažu.'));
     onClose();
@@ -193,6 +197,7 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
             {t('Prvo dodajte način plaćanja. Prihvatanjem uslova {name} može da rezerviše posetu na vašoj kartici - sada se ništa ne naplaćuje, niti pre nego što se poseta obavi.', { name: first })}
           </p>
           <Button
+            ref={addCard}
             variant="secondary"
             onClick={() => {
               onCare(linkCard);
@@ -202,6 +207,7 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
             <CreditCard size={14} strokeWidth={1.75} />
             {t('Dodaj karticu')}
           </Button>
+          <FieldError className="px-0">{check.show(!hasCard && t('Prvo dodajte karticu.'))}</FieldError>
         </Callout>
       )}
 
@@ -209,7 +215,7 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
         <Button variant="secondary" onClick={() => setDeclining(true)}>
           {t('Odbij')}
         </Button>
-        <Button disabled={!hasCard} onClick={agree}>
+        <Button onClick={agree}>
           <Check size={14} strokeWidth={2} />
           {t('Prihvati uslove')}
         </Button>
@@ -254,6 +260,10 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
   const [querying, setQuerying] = useState(false);
   const [reason, setReason] = useState('hours');
   const [text, setText] = useState('');
+  const queryCheck = useCheck();
+  // a dialog opened again starts with no errors
+  const { reset } = queryCheck;
+  useEffect(() => reset(), [querying]); // eslint-disable-line react-hooks/exhaustive-deps
   const v = findVisit(care, visitId);
   if (!v || !v.report) return null;
   const first = firstName(v.caregiver.name);
@@ -278,6 +288,7 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
     else onClose();
   };
   const query = () => {
+    if (!queryCheck.check([!text.trim()])) return;
     // the reason picked is a key, what they wrote stays as they wrote it
     const label = QUERY_REASONS.find((q) => q.id === reason).label;
     onCare(queryVisit(visitId, say('{reason}. {text}', { reason: { $t: label }, text: text.trim() })));
@@ -407,7 +418,7 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
         </ToggleGroup>
         {/* the one field in it: no label, the title and the placeholder say
             what goes in (docs/patterns.md §10) */}
-        <Field>
+        <Field error={queryCheck.show(!text.trim() && requiredError())}>
           <TextArea
             rows={3}
             value={text}
@@ -422,7 +433,7 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
           <Button variant="secondary" onClick={() => setQuerying(false)}>
             {t('Nazad')}
           </Button>
-          <Button disabled={!text.trim()} onClick={query}>
+          <Button onClick={query}>
             {t('Pošalji koordinatorki')}
           </Button>
         </DialogFooter>
@@ -442,6 +453,13 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const [text, setText] = useState('');
   const [reason, setReason] = useState(CALL_OFF_REASONS[0]);
   const [other, setOther] = useState('');
+  const queryCheck = useCheck();
+  const offCheck = useCheck();
+  // a dialog opened again starts with no errors
+  useEffect(() => {
+    queryCheck.reset();
+    offCheck.reset();
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
   const v = findVisit(care, visitId);
   // A plan that is opened has been seen: it leaves "Čeka na vas" on the home,
   // where it stood only so as not to be missed (docs/patterns.md §4a). There
@@ -456,14 +474,16 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
   const first = firstName(v.caregiver.name);
   const held = chargedFor(v.hours, v.rate);
   const late = (v.dueInHours ?? Infinity) < LATE_HOURS;
-  const okReason = reason !== OTHER || other.trim();
+  const otherError = reason === OTHER && !other.trim() && requiredError();
 
   const query = () => {
+    if (!queryCheck.check([!text.trim()])) return;
     onCare(queryVisit(visitId, text.trim()));
     onFlash(t('Poslato koordinatorki. Negovateljica je obaveštena da ne dolazi dok se ne reši.'));
     onClose();
   };
   const callOff = () => {
+    if (!offCheck.check([otherError])) return;
     onCare(callOffVisit(visitId, reason === OTHER ? other.trim() : reason));
     onFlash(
       late
@@ -513,7 +533,7 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
 
     {mode === 'query' && (
       <Dialog eyebrow={`${t('Plan posete')} · ${v.date}`} title={t('Šta nije u redu sa planom?')} onClose={() => setMode('idle')}>
-        <Field>
+        <Field error={queryCheck.show(!text.trim() && requiredError())}>
           <TextArea
             rows={3}
             value={text}
@@ -530,7 +550,7 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
           <Button variant="secondary" onClick={() => setMode('idle')}>
             {t('Nazad')}
           </Button>
-          <Button disabled={!text.trim()} onClick={query}>
+          <Button onClick={query}>
             {t('Pošalji koordinatorki')}
           </Button>
         </DialogFooter>
@@ -548,7 +568,7 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
           ))}
         </ToggleGroup>
         {reason === OTHER && (
-          <Field>
+          <Field error={offCheck.show(otherError)}>
             <TextArea
               rows={2}
               value={other}
@@ -568,7 +588,7 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
           <Button variant="secondary" onClick={() => setMode('idle')}>
             {t('Nazad')}
           </Button>
-          <Button variant="destructive" disabled={!okReason} onClick={callOff}>
+          <Button variant="destructive" onClick={callOff}>
             {late ? t('Otkaži i plati {amount}', { amount: money(held) }) : t('Otkaži i vrati novac')}
           </Button>
         </DialogFooter>

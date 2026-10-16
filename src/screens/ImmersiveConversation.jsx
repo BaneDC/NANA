@@ -15,6 +15,7 @@ import HistoryPanel from '../components/immersive/HistoryPanel';
 import UnderstandingPanel from '../components/immersive/UnderstandingPanel';
 import { AMBIENT_AUDIO, createZenAudio } from '../lib/zenAudio';
 import Button from '../components/Button';
+import { FieldError, requiredError } from '../components/TextField';
 import { t, tn } from '../i18n';
 
 const letterFor = (i) => String.fromCharCode(97 + i);
@@ -231,6 +232,10 @@ function Cards({ question, onPick, onSend, sr }) {
   const [ids, setIds] = useState([]);
   const [one, setOne] = useState(null);
   const [typed, setTyped] = useState('');
+  // "Dalje" pressed with nothing chosen: it says so above itself, and goes as
+  // soon as something is (docs/patterns.md §9, §10)
+  const [tried, setTried] = useState(false);
+  const missing = (none) => tried && none && <FieldError className="basis-full pb-2 text-right">{requiredError()}</FieldError>;
 
   const label = (o) => t(sr.options?.[o.id] || o.title);
   const none = sr.empty ? t(sr.empty) : t('Ništa od toga');
@@ -283,12 +288,12 @@ function Cards({ question, onPick, onSend, sr }) {
         </motion.div>
         {/* Chosen, then sent: a card that answered on the first touch gave no
             moment to change one's mind, and read as a misclick when it did. */}
-        <motion.div className="imm-actions" variants={piece}>
+        <motion.div className="imm-actions flex-wrap" variants={piece}>
+          {missing(!chosen)}
           <Button
             variant="primary"
             size="lg"
-            disabled={!chosen}
-            onClick={() => chosen && onPick({ optionId: chosen.id }, label(chosen))}
+            onClick={() => (chosen ? onPick({ optionId: chosen.id }, label(chosen)) : setTried(true))}
           >
             {t('Dalje')}
           </Button>
@@ -344,8 +349,9 @@ function Cards({ question, onPick, onSend, sr }) {
       </motion.div>
       {/* the confirm sits below the composer: it commits the whole answer,
           typed row included, so it cannot come before it */}
-      <motion.div className="imm-actions" variants={piece}>
-        <Button variant="primary" size="lg" disabled={!question.allowEmpty && empty} onClick={submit}>
+      <motion.div className="imm-actions flex-wrap" variants={piece}>
+        {missing(!question.allowEmpty && empty)}
+        <Button variant="primary" size="lg" onClick={() => (!question.allowEmpty && empty ? setTried(true) : submit())}>
           {question.allowEmpty && empty ? none : t('Dalje')}
         </Button>
       </motion.div>
@@ -370,6 +376,14 @@ export default function ImmersiveConversation({
   const [stage, setStage] = useState('open'); // open | talking | plan
   const [said, setSaid] = useState('');
   const [draft, setDraft] = useState('');
+  // "Pošalji" pressed on an empty page: it says so under the field
+  const [draftTried, setDraftTried] = useState(false);
+  const draftField = useRef(null);
+  const sendDraft = () => {
+    if (draft.trim()) return turn(draft.trim(), answers, notes);
+    setDraftTried(true);
+    draftField.current?.focus();
+  };
   const [asked, setAsked] = useState(null);
   const [followUp, setFollowUp] = useState(null); // string[] of suggestions
   // Why the question on screen is being asked — only when Minna judged it needs
@@ -666,23 +680,26 @@ export default function ImmersiveConversation({
               </motion.p>
               <motion.div className="imm-write" variants={piece}>
                 <textarea
+                  ref={draftField}
                   rows={5}
                   value={draft}
                   placeholder={t('Majka ima 84 godine i živi sama u Helsinkiju. Pala je dvaput ove godine…')}
+                  aria-invalid={draftTried && !draft.trim() ? true : undefined}
+                  aria-describedby={draftTried && !draft.trim() ? 'imm-draft-error' : undefined}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      if (draft.trim()) turn(draft.trim(), answers, notes);
+                      sendDraft();
                     }
                   }}
                 />
+                {draftTried && !draft.trim() && <FieldError id="imm-draft-error">{requiredError()}</FieldError>}
                 <div className="imm-write-actions">
                   <Button
                     variant="primary"
                     size="lg"
-                    disabled={!draft.trim()}
-                    onClick={() => turn(draft.trim(), answers, notes)}
+                    onClick={sendDraft}
                   >
                     {t('Pošalji')}
                   </Button>

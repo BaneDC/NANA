@@ -2,6 +2,7 @@ import * as React from "react"
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils"
 import { Slot } from "radix-ui"
+import { Loader2 } from "lucide-react"
 
 // shadcn's button, drawn as NANA's: the variant and size names are shadcn's,
 // what they draw is ours, and every value comes from tokens.css. Heights go
@@ -44,11 +45,17 @@ const buttonVariants = cva(
   }
 )
 
+// `loading`: while what it sent is on its way. Not `disabled` (docs/patterns.md
+// §9): the button keeps its look, a spinner takes its icon's place (or comes in
+// front of its words), and a second press does nothing, so nothing goes twice.
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  loading = false,
+  onClick,
+  children,
   ...props
 }) {
   const Comp = asChild ? Slot.Root : "button"
@@ -58,8 +65,20 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props} />
+      data-loading={loading || undefined}
+      aria-busy={loading || undefined}
+      className={cn(buttonVariants({ variant, size, className }), loading && "cursor-progress [&>svg:not([data-spinner])]:hidden")}
+      onClick={loading ? (e) => e.preventDefault() : onClick}
+      {...props}>
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {loading && <Loader2 data-spinner="" className="size-3.5 animate-spin" strokeWidth={1.75} />}
+          {children}
+        </>
+      )}
+    </Comp>
   );
 }
 

@@ -5,7 +5,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Fact, Facts } from '@/components/data-list';
 import { useKept } from '@/hooks/use-kept';
 import Dialog from './Dialog';
-import { Field, Input } from './TextField';
+import { Field, Input, requiredError, useCheck } from './TextField';
 import { msg, t } from '../i18n';
 
 // Who is signed in: their name, e-mail and phone, first in Settings. This was
@@ -27,12 +27,13 @@ const EDITABLE = FIELDS.filter((f) => !f.fixed);
 
 function AccountDialog({ open, user, onSave, onClose }) {
   const [values, setValues] = useState(() => Object.fromEntries(EDITABLE.map((f) => [f.id, user[f.id] || ''])));
-  const complete = EDITABLE.every((f) => values[f.id].trim());
+  const check = useCheck();
+  const errors = Object.fromEntries(EDITABLE.map((f) => [f.id, !values[f.id].trim() && requiredError()]));
   return (
     <Dialog eyebrow={t('Nalog')} title={t('Vaši podaci')} open={open} onClose={onClose}>
       <div className="flex flex-col gap-3">
         {EDITABLE.map((f) => (
-          <Field key={f.id} label={t(f.label)}>
+          <Field key={f.id} label={t(f.label)} required error={check.show(errors[f.id])}>
             <Input type={f.type || 'text'} value={values[f.id]} onChange={(value) => setValues((v) => ({ ...v, [f.id]: value }))} />
           </Field>
         ))}
@@ -41,7 +42,7 @@ function AccountDialog({ open, user, onSave, onClose }) {
         <Button variant="secondary" onClick={onClose}>
           {t('Otkaži')}
         </Button>
-        <Button disabled={!complete} onClick={() => onSave(values)}>
+        <Button onClick={() => check.check(Object.values(errors)) && onSave(values)}>
           {t('Sačuvaj')}
         </Button>
       </DialogFooter>

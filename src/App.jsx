@@ -175,11 +175,13 @@ export default function App() {
 
   // The account's own fields, changed from the profile or from settings. One
   // place, because both write the same record.
-  const saveUser = (patch) => {
+  // `quiet`: a switch that saves as it moves says so by moving
+  // (docs/patterns.md §10, "Obaveštenje posle radnje")
+  const saveUser = (patch, { quiet } = {}) => {
     const next = { ...user, ...patch, name: patch.name ?? user.name };
     setUser(next);
     updateAccount(next);
-    say(t('Podaci su sačuvani.'));
+    if (!quiet) say(t('Podaci su sačuvani.'));
   };
 
   // The care state follows the answers: who she is, where, and what the plan
@@ -508,6 +510,7 @@ export default function App() {
           user={user}
           recordOf={answers['about-person']?.values?.name}
           onHelp={() => setHelp(true)}
+          onSim={() => setSim(true)}
           careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
           requestsBadge={unseenAnswers(care)}
           threads={conversationEntries}
@@ -659,11 +662,15 @@ export default function App() {
                   user={user}
                   onCare={setCare}
                   onSaveUser={saveUser}
+                  onFlash={say}
                   // starting one opens the same dialog the care plan uses, so
                   // the plans and the price are decided in one place
                   onSubscribe={(on = true) =>
                     on === 'resume'
-                      ? setSubscription((x) => ({ ...x, cancelled: false }))
+                      ? (setSubscription((x) => ({ ...x, cancelled: false })),
+                        // nothing is charged now: it renews on the day it would have
+                        // (the Serbian date ends in its own full stop)
+                        say(t('Pretplata je obnovljena. Sledeća naplata je {date}', { date: renewsOn(user.country, subscription.planId, subscription.at) })))
                       : on === 'renew'
                         ? renewSubscription()
                       : on === 'change'
@@ -671,7 +678,9 @@ export default function App() {
                       : on
                         ? setPaywall({ caregiver: null })
                         : // it runs to the end of the period already paid
-                          setSubscription((x) => ({ ...x, cancelled: true }))
+                          (setSubscription((x) => ({ ...x, cancelled: true })),
+                          // (the Serbian date ends in its own full stop)
+                          say(t('Pretplata je otkazana. Važi do {date}', { date: renewsOn(user.country, subscription.planId, subscription.at) })))
                   }
                 />
               )}
@@ -879,7 +888,11 @@ export default function App() {
             }}
             onSend={(message) => {
               setCare(askCaregiver(paywall.caregiver.id, message));
-              say(t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(paywall.caregiver.name) }));
+              say(
+                message
+                  ? t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(paywall.caregiver.name) })
+                  : t('Plan nege je poslat. {name} obično odgovori istog dana.', { name: firstName(paywall.caregiver.name) })
+              );
               setPaywall(null);
             }}
             onClose={() => setPaywall(null)}
