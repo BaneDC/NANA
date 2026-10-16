@@ -879,7 +879,11 @@ export default function App() {
             }}
             onSend={(message) => {
               setCare(askCaregiver(paywall.caregiver.id, message));
-              say(t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(paywall.caregiver.name) }));
+              say(
+                message
+                  ? t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(paywall.caregiver.name) })
+                  : t('Plan nege je poslat. {name} obično odgovori istog dana.', { name: firstName(paywall.caregiver.name) })
+              );
               setPaywall(null);
             }}
             onClose={() => setPaywall(null)}

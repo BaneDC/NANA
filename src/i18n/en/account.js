@@ -668,4 +668,6 @@ export default {
   "Unesite ispravnu email adresu.": "Enter a valid email address.",
   "Unesite ceo broj telefona.": "Enter the full phone number.",
   "Unesite ceo rezervni kod.": "Enter the whole backup code.",
+  "Poruka nije obavezna, plan nege ide u svakom slučaju.": "The message is optional, the care plan goes either way.",
+  "Plan nege je poslat. {name} obično odgovori istog dana.": "The care plan has been sent. {name} usually replies the same day.",
 };

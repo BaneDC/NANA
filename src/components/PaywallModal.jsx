@@ -9,7 +9,7 @@ import { CheckList } from '@/components/data-list';
 import { cn } from '@/lib/utils';
 import { perMonth, planPrice, planSaving, plansFor } from '../data/plans';
 import Dialog from './Dialog';
-import { Field, TextArea, requiredError, useCheck } from './TextField';
+import { Field, TextArea } from './TextField';
 import { t } from '../i18n';
 
 // One plan, as the live platform's plan picker shows it: what it is called, what
@@ -98,8 +98,6 @@ function PlanCard({ plan, plans, current, onChoose }) {
 export default function PaywallModal({ open = true, caregiver, unlocked, alreadyAsked, country, current, startsOn, onPay, onSend, onClose }) {
   const [message, setMessage] = useState('');
   const [step, setStep] = useState('message');
-  const check = useCheck();
-  const messageError = !message.trim() && requiredError();
   const plans = plansFor(country);
   const first = caregiver?.name.split(' ')[0];
   const choosing = Boolean(current) || (!unlocked && !alreadyAsked && (!caregiver || step === 'plans'));
@@ -175,13 +173,16 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
       ) : (
         <>
           <DialogDescription>
-            {t('Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.')}
+            {t('Uz poruku ide i plan nege, pa ne morate da objašnjavate sve iznova. Upit nikoga ne obavezuje.')}{' '}
+            {/* the plan says enough on its own, so the message may be left out
+                (docs/patterns.md §10: a field with no label says so in words) */}
+            {t('Poruka nije obavezna, plan nege ide u svakom slučaju.')}
             {!unlocked && ' ' + t('Poruka se šalje čim se pretplatite.')}
           </DialogDescription>
           {/* no label: the sentence above says what goes in it, and the
               placeholder says it again inside. It takes the focus as the
               dialog opens, so the message can be typed at once. */}
-          <Field error={check.show(messageError)}>
+          <Field>
             <TextArea
               autoFocus
               value={message}
@@ -200,7 +201,7 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         </Button>
         {!alreadyAsked &&
           (unlocked ? (
-            <Button onClick={() => check.check([messageError]) && onSend(message.trim())}>
+            <Button onClick={() => onSend(message.trim())}>
               {t('Pošalji poruku')}
             </Button>
           ) : (

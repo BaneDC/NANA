@@ -111,7 +111,7 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
                         {cg.area} · {cg.rate} · {r.again ? t('ponovni upit poslat {when}', { when: r.requested }) : t('upit poslat {when}', { when: r.requested })}
                       </p>
                       <Groups className="mt-2">
-                        <Group label={t('Vaša poruka')} text={t(r.message)} />
+                        {r.message && <Group label={t('Vaša poruka')} text={t(r.message)} />}
                         <p className="text-xs leading-body text-muted-foreground">
                           {r.status === 'declined' ? (
                             <>

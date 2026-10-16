@@ -668,4 +668,6 @@ export default {
   "Unesite ispravnu email adresu.": "Antakaa kelvollinen sähköpostiosoite.",
   "Unesite ceo broj telefona.": "Antakaa koko puhelinnumero.",
   "Unesite ceo rezervni kod.": "Antakaa koko varakoodi.",
+  "Poruka nije obavezna, plan nege ide u svakom slučaju.": "Viesti ei ole pakollinen, hoitosuunnitelma lähtee joka tapauksessa.",
+  "Plan nege je poslat. {name} obično odgovori istog dana.": "Hoitosuunnitelma on lähetetty. {name} vastaa yleensä samana päivänä.",
 };
