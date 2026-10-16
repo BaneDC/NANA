@@ -43,14 +43,23 @@ function Group({ group, on, onChange }) {
               strokeWidth={2}
               className={cn('shrink-0 text-muted-foreground transition-transform duration-200', open && 'rotate-180')}
             />
-            <span className="text-xs font-medium text-foreground group-hover/summary:text-primary-700">{t(group.label)}</span>
-            <span className="text-small text-disabled">
-              {group.cookies.length ? tn(group.cookies.length, 'kolačić', 'kolačića', 'kolačića') : t('spisak još nije unet')}
+            {/* On a phone the name has the row to itself, and how many and the
+                state go under it in one line: beside the switch the four of
+                them broke into two lines each at 320 (docs/patterns.md §12). */}
+            <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 phone:flex-col phone:items-start">
+              <span className="text-xs font-medium text-foreground group-hover/summary:text-primary-700">{t(group.label)}</span>
+              <span className="text-small text-disabled">
+                {group.cookies.length ? tn(group.cookies.length, 'kolačić', 'kolačića', 'kolačića') : t('spisak još nije unet')}
+                <span className={cn('hidden phone:inline', on ? 'text-primary-600' : 'text-muted-foreground')}>
+                  {' · '}
+                  {on ? t('Uključeno') : t('Isključeno')}
+                </span>
+              </span>
             </span>
           </button>
           {/* The state says itself, in a word, beside the switch: a switch alone
               is read wrong often enough that the word is worth the room. */}
-          <span className={cn('shrink-0 text-small', on ? 'text-primary-600' : 'text-muted-foreground')}>
+          <span className={cn('shrink-0 text-small phone:hidden', on ? 'text-primary-600' : 'text-muted-foreground')}>
             {on ? t('Uključeno') : t('Isključeno')}
           </span>
           {/* what cannot be turned off still has its switch, so the list reads

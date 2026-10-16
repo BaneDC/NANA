@@ -19,9 +19,15 @@ export default function VisitsDrawer({ open = true, care, onClose, onOpen }) {
   const { who, setWho, all, picked, list, groups, people } = useVisitHistory(care);
   return (
     <Modal eyebrow={care.elder.name || t('Vaša nega')} title={t('Sve posete')} wide open={open} onClose={onClose}>
-      {/* one is always chosen: pressing the chosen one again does nothing */}
+      {/* one is always chosen: pressing the chosen one again does nothing. On
+          a phone one row that scrolls sideways, out to the screen's edges, not
+          four rows of 44 under one another (docs/patterns.md §12). */}
       {people.length > 1 && (
-        <ToggleGroup type="single" size="sm" className="items-center" value={who} onValueChange={(id) => id && setWho(id)} aria-label={t('Čije posete')}>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          className="items-center phone:-mx-4 phone:-my-1 phone:shrink-0 phone:flex-nowrap phone:overflow-x-auto phone:px-4 phone:py-1 phone:[scrollbar-width:none] phone:[&>*]:shrink-0 phone:[&::-webkit-scrollbar]:hidden"
+          value={who} onValueChange={(id) => id && setWho(id)} aria-label={t('Čije posete')}>
           {[{ id: 'all', name: t('Sve') }, ...people].map((p) => (
             <ToggleGroupItem key={p.id} value={p.id}>
               {p.name}

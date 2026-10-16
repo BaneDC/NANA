@@ -136,6 +136,9 @@ function SheetFooter({
       data-slot="sheet-footer"
       className={cn(
         "sticky -bottom-4 z-1 -mx-4 mt-auto -mb-4 flex shrink-0 justify-end gap-2 border-t bg-card px-4 py-3",
+        // on a phone the buttons share the width; when they do not fit in one
+        // row they stack, the last (the main one) on top (docs/patterns.md §12)
+        "phone:flex-wrap-reverse phone:[&>*]:grow",
         className
       )}
       {...props} />

@@ -32,12 +32,21 @@ const AMOUNTS = [
   { id: 'more', label: msg('Više nego obično') },
 ];
 
-// one of a few, always one chosen
+// one of a few, always one chosen. On a phone the three are one row of equal
+// columns and a longer word breaks inside its own (docs/patterns.md §12):
+// "Više nego obično" fell to a second row of its own at 320 and 360.
 function Choice({ options, value, onChange, name }) {
   return (
-    <ToggleGroup type="single" size="sm" value={value} onValueChange={(v) => v && onChange(v)} aria-label={name}>
+    <ToggleGroup
+      type="single"
+      size="sm"
+      className="phone:grid phone:grid-cols-3"
+      value={value}
+      onValueChange={(v) => v && onChange(v)}
+      aria-label={name}
+    >
       {options.map((o) => (
-        <ToggleGroupItem key={o.id} value={o.id}>
+        <ToggleGroupItem key={o.id} value={o.id} className="phone:px-2 phone:text-center phone:whitespace-normal">
           {t(o.label)}
         </ToggleGroupItem>
       ))}

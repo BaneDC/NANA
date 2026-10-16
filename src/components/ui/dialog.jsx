@@ -157,6 +157,9 @@ function DialogFooter({
       className={cn(
         "sticky -bottom-6 z-1 -mx-6 -mt-2 -mb-6 flex justify-end gap-2 bg-card px-6 pt-3 pb-6",
         "phone:-bottom-4 phone:-mx-4 phone:mt-auto phone:-mb-4 phone:border-t phone:px-4 phone:py-3",
+        // on a phone the buttons share the width; when they do not fit in one
+        // row they stack, the last (the main one) on top (docs/patterns.md §12)
+        "phone:flex-wrap-reverse phone:[&>*]:grow",
         className
       )}
       {...props} />

@@ -81,8 +81,7 @@ export default function Dialog({
   if (phone) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
-        <DrawerContent kind="dialog" bodyClassName={className}>
-          {head(DrawerTitle)}
+        <DrawerContent kind="dialog" bodyClassName={className} head={head(DrawerTitle)}>
           {dismissible && (
             <DrawerClose className={cn(paneCloseClass, 'absolute top-[22px] right-4 z-3', closeClassName)}>
               <X className="size-4" strokeWidth={1.75} />
