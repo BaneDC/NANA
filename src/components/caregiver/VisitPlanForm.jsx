@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint, PaneLabel } from '@/components/pane';
-import { Field, Input, TextArea } from '../TextField';
+import { Field, Input, TextArea, requiredError, useCheck } from '../TextField';
 import { hoursIn, money, serviceTitle, totalsFor } from '../../data/caregiverBoard';
 import { t } from '../../i18n';
 
@@ -24,7 +24,11 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
   const [notes, setNotes] = useState(plan?.notes || '');
 
   const hours = hoursIn(time);
-  const valid = date.trim().length > 0 && hours > 0;
+  const check = useCheck();
+  const errors = {
+    date: !date.trim() && requiredError(),
+    time: !time.trim() ? requiredError() : !(hours > 0) && t('Unesite vreme kao raspon, npr. 09:00–13:00.'),
+  };
 
   return (
     <>
@@ -35,10 +39,10 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
       </DialogDescription>
 
       <div className="flex flex-wrap gap-3">
-        <Field label={t('Dan')} className="w-auto min-w-0 flex-1">
+        <Field label={t('Dan')} className="w-auto min-w-0 flex-1" error={check.show(errors.date)}>
           <Input type="text" value={date} placeholder={t('četvrtak, 14. avgusta')} onChange={setDate} />
         </Field>
-        <Field label={t('Vreme')} className="w-auto min-w-0 self-start">
+        <Field label={t('Vreme')} className="w-auto min-w-0 self-start" error={check.show(errors.time)}>
           <Input type="text" value={time} placeholder="09:00–13:00" onChange={setTime} className="w-40!" />
         </Field>
       </div>
@@ -81,8 +85,8 @@ export default function VisitPlanForm({ client, plan, onSave, onCancel }) {
           {t('Otkaži')}
         </Button>
         <Button
-          disabled={!valid}
           onClick={() =>
+            check.check(Object.values(errors)) &&
             onSave(client.id, { date: date.trim(), time: time.trim(), hours, services, notes: notes.trim() })
           }
         >

@@ -8,7 +8,7 @@ import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
 import SelectCard from '../components/SelectCard';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
-import { Field, Input, Password, Select } from '../components/TextField';
+import { Field, FieldError, Input, Password, Select, requiredError, useCheck } from '../components/TextField';
 import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
@@ -73,17 +73,26 @@ const sourceOptions = () => SOURCES.map((s) => ({ value: s, label: t(s) }));
 const MIN_PASSWORD = 8;
 
 // A consent: the box and its sentence, the whole line its label.
-function Consent({ checked, onChange, children, required }) {
+// `error` under it once a press has asked (docs/patterns.md §10).
+function Consent({ checked, onChange, children, required, error }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2 text-xs text-foreground">
-      <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} />
-      <span>
-        {children}
-        {required && <span className="text-primary-600"> *</span>}
-      </span>
-    </label>
+    <div className="flex flex-col gap-1">
+      <label className="flex cursor-pointer items-start gap-2 text-xs text-foreground">
+        <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} aria-invalid={error ? true : undefined} />
+        <span>
+          {children}
+          {required && <span className="text-primary-600"> *</span>}
+        </span>
+      </label>
+      <FieldError className="px-0 pl-6">{error}</FieldError>
+    </div>
   );
 }
+
+// what a filled field can still get wrong
+const emailError = (email) => (!email.trim() ? requiredError() : !/\S+@\S+\.\S+/.test(email) ? t('Unesite ispravnu email adresu.') : null);
+const passwordError = (password) =>
+  !password ? requiredError() : password.length < MIN_PASSWORD ? t('Kratka je - treba najmanje 8 karaktera.') : null;
 
 // The sign-up's parts, all 480 wide at most: a heading, a grey form card
 // (24 corners, 16 inside, fields 16 apart) and the actions under it.
@@ -107,18 +116,21 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
   const [busy, setBusy] = useState(false);
 
   const dial = COUNTRIES.find((c) => c.id === country);
-  const valid =
-    firstName.trim() &&
-    lastName.trim() &&
-    /\S+@\S+\.\S+/.test(email) &&
-    phone.replace(/\D/g, '').length >= 6 &&
-    password.length >= MIN_PASSWORD &&
-    source &&
-    processing &&
-    accuracy;
+  const check = useCheck();
+  const errors = {
+    firstName: !firstName.trim() && requiredError(),
+    lastName: !lastName.trim() && requiredError(),
+    email: emailError(email),
+    phone: !phone.trim() ? requiredError() : phone.replace(/\D/g, '').length < 6 ? t('Unesite ceo broj telefona.') : null,
+    password: passwordError(password),
+    source: !source && requiredError(),
+    processing: !processing && requiredError(),
+    accuracy: !accuracy && requiredError(),
+  };
+  const show = (k) => check.show(errors[k]);
 
   const submit = async () => {
-    if (!valid || busy) return;
+    if (busy || !check.check(Object.values(errors))) return;
     setBusy(true);
     const user = {
       role,
@@ -162,17 +174,17 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
 
         <FormCard>
           <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
-            <Field label={t('Ime')} required>
+            <Field label={t('Ime')} required error={show('firstName')}>
               <Input value={firstName} onChange={setFirstName} placeholder="Anna" autoComplete="given-name" />
             </Field>
-            <Field label={t('Prezime')} required>
+            <Field label={t('Prezime')} required error={show('lastName')}>
               <Input value={lastName} onChange={setLastName} placeholder="Korhonen" autoComplete="family-name" />
             </Field>
           </div>
-          <Field label={t('Email')} required>
+          <Field label={t('Email')} required error={show('email')}>
             <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
-          <Field label={t('Broj telefona')} required as="div" labelId="reg-phone">
+          <Field label={t('Broj telefona')} required as="div" labelId="reg-phone" error={show('phone')}>
             {/* the country's code in front, behind a line, then the number */}
             <InputGroup>
               <Select
@@ -188,6 +200,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
                 placeholder="40 123 4567"
                 autoComplete="tel-national"
                 aria-labelledby="reg-phone"
+                aria-invalid={show('phone') ? true : undefined}
                 onChange={(e) => setPhone(e.target.value)}
               />
             </InputGroup>
@@ -196,18 +209,19 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             label={t('Lozinka')}
             required
             hint={password && password.length < MIN_PASSWORD ? t('Još {n} karaktera', { n: MIN_PASSWORD - password.length }) : null}
+            error={show('password')}
           >
             <Password value={password} onChange={setPassword} placeholder={t('Najmanje 8 karaktera')} autoComplete="new-password" />
           </Field>
-          <Field label={t('Kako ste čuli za nas?')} required as="div" labelId="reg-source">
+          <Field label={t('Kako ste čuli za nas?')} required as="div" labelId="reg-source" error={show('source')}>
             <Select value={source} onChange={setSource} labelledBy="reg-source" options={sourceOptions()} />
           </Field>
 
           <div className="flex flex-col gap-2 px-1">
-            <Consent checked={processing} onChange={setProcessing} required>
+            <Consent checked={processing} onChange={setProcessing} required error={show('processing')}>
               {t('Saglasan/na sam sa obradom podataka')}
             </Consent>
-            <Consent checked={accuracy} onChange={setAccuracy} required>
+            <Consent checked={accuracy} onChange={setAccuracy} required error={show('accuracy')}>
               {t('Potvrđujem da su podaci tačni')}
             </Consent>
             <Consent checked={newsletter} onChange={setNewsletter}>
@@ -217,7 +231,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
         </FormCard>
 
         <Actions>
-          <Button type="submit" size="lg" className="w-full" disabled={!valid || busy}>
+          <Button type="submit" size="lg" className="w-full" loading={busy}>
             {t('Napravi nalog')}
           </Button>
           <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
@@ -314,13 +328,14 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [failed, setFailed] = useState(false);
-  const valid = /\S+@\S+\.\S+/.test(email) && password;
+  const check = useCheck();
+  const errors = { email: emailError(email), password: !password && requiredError() };
 
   // with two-factor on, the right password leads to the code, not in
   const [pending, setPending] = useState(null);
 
   const submit = async () => {
-    if (!valid) return;
+    if (!check.check(Object.values(errors))) return;
     const user = await signIn(email, password);
     if (!user) setFailed(true);
     else if (user.twoFactor && user.twoFactorSecret) setPending(user);
@@ -334,15 +349,15 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
       <Welcome title={t('Prijavite se')} sub={t('Email adresom i lozinkom kojima ste napravili nalog')} />
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <FormCard>
-          <Field label={t('Email')} required>
+          <Field label={t('Email')} required error={check.show(errors.email)}>
             <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
-          <Field label={t('Lozinka')} required hint={failed ? t('Email ili lozinka nisu tačni.') : null}>
+          <Field label={t('Lozinka')} required error={check.show(errors.password) || (failed ? t('Email ili lozinka nisu tačni.') : null)}>
             <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder={t('Vaša lozinka')} />
           </Field>
         </FormCard>
         <Actions>
-          <Button type="submit" size="lg" className="w-full" disabled={!valid}>
+          <Button type="submit" size="lg" className="w-full">
             {t('Prijavi se')}
           </Button>
           <Button type="button" variant="ghost" size="lg" onClick={onSignUp}>
@@ -397,12 +412,19 @@ function TwoFactorStep({ user, onContinue, onBack }) {
   const [typed, setTyped] = useState('');
   const [error, setError] = useState(null);
   const [checking, setChecking] = useState(false);
-  const ready = backup ? typed.trim().length >= 8 : code.length === 6;
+  const check = useCheck();
+  const missing = backup
+    ? !typed.trim()
+      ? requiredError()
+      : typed.trim().length < 8 && t('Unesite ceo rezervni kod.')
+    : code.length < 6 && t('Unesite svih 6 cifara.');
 
   // `entered` is the six digits as they complete: the code goes on its own,
   // with no need to press "Potvrdi"
   const submit = async (entered = code) => {
-    if (checking || (backup ? typed.trim().length < 8 : entered.length !== 6)) return;
+    if (checking) return;
+    // the six digits complete call this with them before the state has them
+    if (!(entered.length === 6 && !backup) && !check.check([missing])) return;
     setChecking(true);
     const next = backup ? await spendBackupCode(user, typed) : (await verifyCode(user.twoFactorSecret, entered)) && user;
     setChecking(false);
@@ -419,7 +441,9 @@ function TwoFactorStep({ user, onContinue, onBack }) {
   const switchTo = (toBackup) => {
     setBackup(toBackup);
     setError(null);
+    check.reset();
   };
+  const shown = error || check.show(missing);
 
   return (
     <>
@@ -430,7 +454,7 @@ function TwoFactorStep({ user, onContinue, onBack }) {
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <FormCard>
           {backup ? (
-            <Field label={t('Rezervni kod')} required>
+            <Field label={t('Rezervni kod')} required error={shown}>
               <Input
                 value={typed}
                 onChange={(v) => (setTyped(v), setError(null))}
@@ -441,9 +465,11 @@ function TwoFactorStep({ user, onContinue, onBack }) {
               />
             </Field>
           ) : (
-            <CodeInput value={code} onChange={(v) => (setCode(v), v && setError(null))} onComplete={submit} />
+            <>
+              <CodeInput value={code} onChange={(v) => (setCode(v), v && setError(null))} onComplete={submit} invalid={Boolean(shown)} />
+              <FieldError className="text-center">{shown}</FieldError>
+            </>
           )}
-          {error && <p className="text-center text-xs leading-body text-destructive">{error}</p>}
         </FormCard>
         <Actions>
           {/* the other way in and "Potvrdi" side by side, halves of the row;
@@ -453,7 +479,7 @@ function TwoFactorStep({ user, onContinue, onBack }) {
             <Button type="button" variant="secondary" size="lg" onClick={() => switchTo(!backup)}>
               {backup ? t('Koristite kod iz aplikacije') : t('Koristite rezervni kod')}
             </Button>
-            <Button type="submit" size="lg" disabled={!ready || checking}>
+            <Button type="submit" size="lg" loading={checking}>
               {t('Potvrdi')}
             </Button>
           </div>

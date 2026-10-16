@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { PaneHint } from '@/components/pane';
 import Dialog from './Dialog';
-import { Field, TextArea } from './TextField';
+import { Field, TextArea, requiredError, useCheck } from './TextField';
 import { t, tn } from '../i18n';
 
 // Sending the care plan to someone who is not in the app: a sister who shares
@@ -28,7 +28,9 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
   const [note, setNote] = useState('');
   const entered = parse(text);
   const wrong = entered.filter((e) => !EMAIL.test(e));
-  const ready = entered.length > 0 && wrong.length === 0;
+  const check = useCheck();
+  // the wrong addresses are named under the field already, as they are typed
+  const error = entered.length === 0 ? requiredError() : wrong.length > 0 && t('Ovo ne liči na email adresu: {emails}.', { emails: wrong.join(', ') });
 
   return (
     <Dialog eyebrow={t('Plan nege · {name}', { name: plan.name })} title={t('Pošaljite plan nekome')} wide open={open} onClose={onClose}>
@@ -38,7 +40,7 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
         )}
       </DialogDescription>
 
-      <Field label={t('Email adrese')}>
+      <Field label={t('Email adrese')} error={check.show(error)}>
         <TextArea rows={3} value={text} placeholder="ana@mail.com, milan@mail.com" onChange={setText} />
       </Field>
 
@@ -52,7 +54,7 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
           ))}
         </div>
       )}
-      {wrong.length > 0 && (
+      {wrong.length > 0 && !check.show(error) && (
         <PaneHint>{t('Ovo ne liči na email adresu: {emails}.', { emails: wrong.join(', ') })}</PaneHint>
       )}
 
@@ -68,7 +70,7 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
         <Button variant="secondary" onClick={onClose}>
           {t('Otkaži')}
         </Button>
-        <Button disabled={!ready} onClick={() => onSend(entered, note.trim())}>
+        <Button onClick={() => check.check([error]) && onSend(entered, note.trim())}>
           <Send size={14} strokeWidth={1.75} />
           {entered.length > 1 ? t('Pošalji na {addresses}', { addresses: tn(entered.length, 'adresu', 'adrese', 'adresa') }) : t('Pošalji')}
         </Button>

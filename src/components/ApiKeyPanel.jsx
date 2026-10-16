@@ -3,7 +3,7 @@ import { KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
-import { Field, Input } from './TextField';
+import { Field, Input, requiredError, useCheck } from './TextField';
 import { t } from '../i18n';
 
 // The names of files and settings stay code in any language: a translated
@@ -20,7 +20,9 @@ const warning = 'rounded-lg bg-warning-muted p-3 text-xs leading-body text-warni
 // is readable by anything running on the page.
 export default function ApiKeyPanel({ initial = '', rejected = false, onSave, onCancel }) {
   const [value, setValue] = useState(initial);
-  const valid = /^sk-ant-/.test(value.trim());
+  const check = useCheck();
+  const error = !value.trim() ? requiredError() : !/^sk-ant-/.test(value.trim()) && t('Ključ počinje sa sk-ant-.');
+  const save = () => check.check([error]) && onSave(value.trim());
 
   return (
     <Page>
@@ -43,7 +45,7 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
         )}
 
         {/* the one field, as every field (docs/patterns.md §10) */}
-        <Field>
+        <Field error={check.show(error)}>
           <Input
             icon={KeyRound}
             type="password"
@@ -53,7 +55,7 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
             spellCheck={false}
             aria-label={t('Anthropic API ključ')}
             onChange={setValue}
-            onEnter={() => valid && onSave(value.trim())}
+            onEnter={save}
           />
         </Field>
 
@@ -70,7 +72,7 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
         </p>
 
         <CardFooter>
-          <Button disabled={!valid} onClick={() => onSave(value.trim())}>
+          <Button onClick={save}>
             {t('Sačuvaj i počni')}
           </Button>
           {onCancel && (

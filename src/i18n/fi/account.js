@@ -658,4 +658,14 @@ export default {
   "Kartica se čuva i za posete: svaka se naplaćuje 24 sata posle izveštaja negovateljice.": "Kortti tallennetaan myös käyntejä varten: jokainen veloitetaan 24 tuntia hoitajan raportin jälkeen.",
   "Drawer sa početne: posete po mesecima. Otvara se dugmetom ispod, ili „Sve posete\" na kartici „Poslednja poseta\".": "Etusivun paneeli: käynnit kuukausittain. Avataan alla olevasta painikkeesta tai ”Kaikki käynnit” -painikkeesta kortilla ”Viimeisin käynti”.",
   "Sve posete, godinu dana kasnije": "Kaikki käynnit, vuotta myöhemmin",
+  // field errors (docs/patterns.md §10)
+  "Ovo polje je obavezno.": "Tämä kenttä on pakollinen.",
+  "Unesite broj veći od nule.": "Antakaa nollaa suurempi luku.",
+  "Ključ počinje sa sk-ant-.": "Avain alkaa sk-ant-.",
+  "Unesite svih 6 cifara.": "Antakaa kaikki 6 numeroa.",
+  "Unesite vreme kao raspon, npr. 09:00–13:00.": "Antakaa aika välinä, esim. 09:00–13:00.",
+  "Prvo dodajte karticu.": "Lisätkää ensin kortti.",
+  "Unesite ispravnu email adresu.": "Antakaa kelvollinen sähköpostiosoite.",
+  "Unesite ceo broj telefona.": "Antakaa koko puhelinnumero.",
+  "Unesite ceo rezervni kod.": "Antakaa koko varakoodi.",
 };

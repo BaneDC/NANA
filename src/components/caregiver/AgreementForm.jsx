@@ -5,7 +5,7 @@ import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint, PaneLabel } from '@/components/pane';
 import { Group } from '../Tags';
-import { Field, Input } from '../TextField';
+import { Field, FieldError, Input, aboveZeroError, requiredError, useCheck } from '../TextField';
 import { DEFAULT_RATE, money, totalsFor } from '../../data/caregiverBoard';
 import { SERVICE_GROUPS } from '../../data/serviceCatalog';
 import { t } from '../../i18n';
@@ -20,6 +20,11 @@ export default function AgreementForm({ client, onSend, onCancel }) {
 
   const rateNumber = Number(rate);
   const valid = services.length > 0 && rateNumber > 0;
+  const check = useCheck();
+  const errors = {
+    services: services.length === 0 && requiredError(),
+    rate: !rate.trim() ? requiredError() : !(rateNumber > 0) && aboveZeroError(),
+  };
   const weekly = valid ? rateNumber * client.hours : 0;
 
   return (
@@ -56,8 +61,9 @@ export default function AgreementForm({ client, onSend, onCancel }) {
         </Group>
       ))}
       <PaneHint>{t('Označeno prema onome što je porodica tražila. Dodajte ili uklonite šta ne odgovara.')}</PaneHint>
+      <FieldError>{check.show(errors.services)}</FieldError>
 
-      <Field label={t('Cena po satu')} className="w-auto self-start">
+      <Field label={t('Cena po satu')} className="w-auto self-start" error={check.show(errors.rate)}>
         <Input type="number" inputMode="numeric" value={rate} onChange={setRate} suffix="€ / h" className="w-40!" />
       </Field>
       {valid && (
@@ -75,8 +81,7 @@ export default function AgreementForm({ client, onSend, onCancel }) {
           {t('Otkaži')}
         </Button>
         <Button
-          disabled={!valid}
-          onClick={() => onSend(client.id, { services, rate: rateNumber })}
+          onClick={() => check.check(Object.values(errors)) && onSend(client.id, { services, rate: rateNumber })}
         >
           <Send size={14} strokeWidth={1.75} />
           {t('Pošalji porodici')}
