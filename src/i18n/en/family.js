@@ -518,4 +518,5 @@ export default {
   "{name} čita svaku poruku i javlja vam se istog dana.": "{name} reads every message and gets back to you the same day.",
   "Poruka je poslata. {name} će vam se javiti danas.": "Message sent. {name} will get back to you today.",
   "Zatvori": "Close",
+  "Samo za demo": "Demo only",
 };

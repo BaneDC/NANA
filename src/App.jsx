@@ -508,6 +508,7 @@ export default function App() {
           user={user}
           recordOf={answers['about-person']?.values?.name}
           onHelp={() => setHelp(true)}
+          onSim={() => setSim(true)}
           careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
           requestsBadge={unseenAnswers(care)}
           threads={conversationEntries}

@@ -1,8 +1,10 @@
 import { Children } from 'react';
 import { useShowMore } from '@/hooks/use-show-more';
+import { useIsPhone } from '@/hooks/use-phone';
 import {
   ChevronDown,
   CircleHelp,
+  FlaskConical,
   LayoutDashboard,
   MessageSquare,
   Plus,
@@ -159,6 +161,7 @@ export default function AppNav({
   user,
   recordOf,
   onHelp,
+  onSim,
   careBadge,
   requestsBadge,
   threads,
@@ -173,6 +176,7 @@ export default function AppNav({
   // On a narrow screen the nav is a drawer over the page, so anything that
   // navigates also closes it — otherwise the page it opened is behind the nav.
   const { setOpenMobile, collapsed } = useSidebar();
+  const phone = useIsPhone();
   const go = (fn) => (...args) => {
     fn?.(...args);
     setOpenMobile(false);
@@ -284,6 +288,9 @@ export default function AppNav({
 
       <SidebarFooter>
         <SidebarMenu className="gap-2">
+          {/* the simulation, which Ctrl+H opens with a keyboard: a phone has
+              no Ctrl, so there it is a row of its own (docs/patterns.md §4) */}
+          {phone && onSim && <Place icon={FlaskConical} label={t('Simulacija')} onClick={go(() => onSim())} />}
           <Place icon={CircleHelp} label={t('Pomoć')} onClick={go(() => onHelp())} />
           {FOOTER_ITEMS.map(({ id, label, icon }) => (
             <Place key={id} icon={icon} label={t(label)} active={view === id} onClick={go(() => onView(id))} />

@@ -4,6 +4,7 @@ import { SheetDescription } from '@/components/ui/sheet';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint, PaneLabel } from '@/components/pane';
 import Modal from '../Modal';
+import { useIsPhone } from '@/hooks/use-phone';
 import {
   activeVersion,
   firstName,
@@ -40,6 +41,8 @@ import {
 // pass. Hidden: Ctrl+H opens it, and nothing in it runs on its own.
 
 export default function SimPanel({ open = true, care, onCare, onFlash, onFill, onRenew, onClose }) {
+  // a phone has no Ctrl: it opens from the menu there (AppNav)
+  const phone = useIsPhone();
   const [reason, setReason] = useState(DECLINE_REASONS[0]);
   const run = (fn, said) => {
     onCare(fn);
@@ -50,7 +53,7 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
   const live = care.arrangements.filter((a) => !a.endedOn || canSendTerms(care, a.caregiver.id) || pendingVersion(a));
 
   return (
-    <Modal eyebrow={t('Samo za demo · Ctrl+H')} title={t('Simulacija')} wide open={open} onClose={onClose}>
+    <Modal eyebrow={phone ? t('Samo za demo') : t('Samo za demo · Ctrl+H')} title={t('Simulacija')} wide open={open} onClose={onClose}>
       <SheetDescription>
         {t('Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.')}
       </SheetDescription>
