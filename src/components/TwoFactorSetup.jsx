@@ -137,7 +137,7 @@ function BackupCodes({ open, email, codes, onDone, onClose }) {
 
       {/* one row: keeping them (copy, download) on the left, done on the right */}
       <DialogFooter>
-        <div className="mr-auto flex gap-2">
+        <div className="mr-auto flex gap-2 phone:[&>*]:grow">
           <Button variant="secondary" onClick={copy}>
             {copied ? t('Kopirano') : t('Kopiraj')}
           </Button>

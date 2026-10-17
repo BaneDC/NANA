@@ -25,8 +25,12 @@ import { cn } from "@/lib/utils"
 // over the onboarding, which sits at 60).
 //
 // `kind`: a "sheet" holds a header and a body that scrolls (the drawer's
-// parts); a "dialog" scrolls as a whole, 16 inside (the dialog's parts).
-// Either way the sheet itself never scrolls.
+// parts); a "dialog" has its `head` (eyebrow, title, the sentence under them)
+// and under it the rest, which scrolls, 16 inside (the dialog's parts). The
+// sheet itself never scrolls: the head stays on top and the footer at the foot
+// however long what is between them is (docs/patterns.md §12). Once the
+// dialog's body is scrolled, a line under the head says something is under it,
+// as the drawer's header always has.
 
 const FIELD = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
 const ALERT = '[role="alert"]'
@@ -78,9 +82,11 @@ function DrawerContent({
   overlayClassName,
   children,
   kind = "sheet",
+  head,
   ...props
 }) {
   const { dismissible } = React.useContext(DrawerContext)
+  const [scrolled, setScrolled] = React.useState(false)
   const popup = React.useRef(null)
   // the sheet as state too, so what watches it starts once it has mounted
   const [sheet, setSheet] = React.useState(null)
@@ -155,15 +161,30 @@ function DrawerContent({
             <span className="absolute top-2 left-1/2 -ml-[18px] h-1 w-9 rounded-sm bg-neutral-300" />
           </div>
           {kind === "dialog" ? (
-            <div
-              data-slot="drawer-scroll"
-              className={cn(
-                "flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain scroll-pb-20 px-4 pt-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]",
-                bodyClassName
+            <>
+              {head && (
+                <div
+                  data-slot="drawer-head"
+                  className={cn(
+                    "shrink-0 border-b border-transparent px-4 pt-4 pb-3 transition-colors duration-150",
+                    scrolled && "border-border"
+                  )}
+                >
+                  {head}
+                </div>
               )}
-            >
-              {children}
-            </div>
+              <div
+                data-slot="drawer-scroll"
+                onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
+                className={cn(
+                  "flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain scroll-pb-20 px-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]",
+                  head ? "pt-0" : "pt-4",
+                  bodyClassName
+                )}
+              >
+                {children}
+              </div>
+            </>
           ) : (
             children
           )}
