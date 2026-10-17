@@ -18,7 +18,6 @@ import RequestsPage from './RequestsPage';
 import FindCaregiver from './FindCaregiver';
 import Settings from './Settings';
 import MedicalRecord from './MedicalRecord';
-import CaregiverApp from './caregiver/CaregiverApp';
 
 // Every card the platform has, on one page, for comparing them side by side:
 // /?kartice, or "Sve kartice" under the sign-in. Nothing here is a copy — each
@@ -246,7 +245,6 @@ const SECTIONS = [
   { id: 'podesavanja-kartica', title: msg('Podešavanja, kartica odbijena'), where: msg('Pretplata nije plaćena, Način plaćanja traži novu karticu') },
   { id: 'karton', title: msg('Medicinski karton'), where: msg('Skala krhkosti, delovi iz odgovora, zdravlje (redovi), gde živi, istorija sa zapažanjima sa poseta; dijalozi izmene se otvaraju') },
   { id: 'karton-prazno', title: msg('Medicinski karton, prazno'), where: msg('Kartona još nema') },
-  { id: 'negovateljica', title: msg('Strana negovateljice'), where: msg('Tabla i klijent (klik na karticu na tabli)') },
 ];
 
 const S = (id) => SECTIONS.find((x) => x.id === id);
@@ -394,9 +392,6 @@ export default function CardGallery() {
       </Frame>
       <Frame {...S('karton-prazno')}>
         <MedicalRecord answers={{}} plan={null} care={care} record={record} onGoToChat={noop} onOpenPlan={noop} onReportChange={noop} />
-      </Frame>
-      <Frame {...S('negovateljica')} tall>
-        <CaregiverApp user={{ name: 'Sanna Virtanen', email: 'sanna@mail.com', role: 'caregiver' }} />
       </Frame>
 
       {shownDrawer && (

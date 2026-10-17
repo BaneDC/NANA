@@ -3,10 +3,8 @@ import { motion } from 'motion/react';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
-import SelectCard from '../components/SelectCard';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Field, FieldError, Input, Password, Select, requiredError, useCheck } from '../components/TextField';
 import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
@@ -19,21 +17,6 @@ import { CodeInput } from '../components/TwoFactorSetup';
 // here; the caregiver's is reached from the same shell once it is back. Everything asked here is kept with the
 // account and handed to the rest of the app, so nothing the family has already
 // said is asked again: their name and number go straight into the onboarding.
-
-const ROLES = [
-  {
-    id: 'family',
-    letter: 'a',
-    title: msg('Treba mi nega za roditelja'),
-    description: msg('Odgovorite na nekoliko pitanja i naći ćemo nekoga blizu vas'),
-  },
-  {
-    id: 'caregiver',
-    letter: 'b',
-    title: msg('Ja sam negovateljica'),
-    description: msg('Primajte upite porodica, dogovorite uslove, budite plaćeni'),
-  },
-];
 
 const COUNTRIES = [
   { id: 'FI', name: msg('Finska'), flag: '🇫🇮', code: '+358' },
@@ -98,11 +81,8 @@ const passwordError = (password) =>
 // (24 corners, 16 inside, fields 16 apart) and the actions under it.
 const column = 'w-[480px] max-w-full shrink-0';
 
-// the role picker is hidden while only the family side is being shown
-const SHOW_ROLES = false;
 
 function SignUp({ onContinue, onSignIn, onDemo }) {
-  const [role, setRole] = useState('family');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -133,7 +113,8 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
     if (busy || !check.check(Object.values(errors))) return;
     setBusy(true);
     const user = {
-      role,
+      // the app is the family's side; caregivers are simulated (SimPanel)
+      role: 'family',
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       name: `${firstName.trim()} ${lastName.trim()}`,
@@ -153,24 +134,6 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
       <Welcome title={t('Dobro došli u NANA Prime')} sub={t('Polja označena zvezdicom su obavezna')} />
       {/* a real form, so the browser's password manager knows this is a sign-up */}
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
-
-        {SHOW_ROLES && (
-        <FormCard>
-          <div className="flex flex-col gap-2">
-            <Label className="px-3">{t('Ovde sam kao')}</Label>
-            {ROLES.map((r) => (
-              <SelectCard
-                key={r.id}
-                letter={r.letter}
-                title={t(r.title)}
-                description={t(r.description)}
-                selected={role === r.id}
-                onClick={() => setRole(r.id)}
-              />
-            ))}
-          </div>
-        </FormCard>
-        )}
 
         <FormCard>
           <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">

@@ -106,7 +106,7 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 | Dugme | `Button` | 14 | normal (odlučeno 5. 10.) | — |
 | Sitan tekst: naslov grupe, oznaka, napomena, meta, eyebrow | `text-small`: naslov u `PageSection`, `FieldLabel`, `FieldDescription`, `DialogEyebrow`, `PaneLabel`, `PaneHint`, oznaka u `Fact`, `Group`, meta linija (ocena i mesto negovateljice), e-mail u meniju | 12 / 16 | medium ili normal | secondary |
 | Značka | `Badge` (`text-badge`) | 12 / 12 (značka ostaje visoka 20) | medium | po stanju |
-| Broj (početna, tabla, cena pretplate) | `text-[24px] leading-8` (tabla 22 / 28) | 24 / 32 | medium | primary |
+| Broj (početna, cena pretplate) | `text-[24px] leading-8` | 24 / 32 | medium | primary |
 
 **Visine:** dugme 36, polje 40, čip i ikonica-dugme 28; na dodir dugme i polje 44 (`--button-size`, `--input-size`, `--chip-size`). Bočni meni je širok 232 (skupljen 60, na dodir 68; §4), a stavka u njemu visoka 36 (na dodir 44).
 
@@ -138,7 +138,7 @@ Hijerarhija se ne preskače: naslov grupe je tiši od naslova kartice, a naslov 
 | Između grupa | 32 (`PageSection` + `PageSection`: gap 12 + 20) |
 | Od ivice panela do sadržaja stranice | 24 sa svih strana (`Page`; na telefonu 16) |
 | Unutar kartice, između delova | 8 (gap kartice) |
-| Od glave sa avatarom do sadržaja ispod nje preko cele širine (kartica na tabli, poruka negovateljici, profil) | 20 (gap 8 + 12) |
+| Od glave sa avatarom do sadržaja ispod nje preko cele širine (poruka negovateljici, profil) | 20 (gap 8 + 12) |
 | Unutar grupe sadržaja (npr. ime i ocena) | 4 |
 | Između grupa sadržaja u kartici | 12 |
 | Od sadržaja do footera kartice | 16 |
@@ -351,7 +351,7 @@ Red koji je sam link (kontakt koordinatorke) je `<Item asChild><a href=…>…</
 | Red u kartici (`Item`: chat, Vaše negovateljice), kartica u „Čeka na vas", upit (Moji upiti) | 14 i rečenica | 42 |
 | Negovateljica u planu (`CaregiverRow`), kartica na „Pronađi", glava detalja | 14 i meta | 38 |
 | Njena stranica, klijent na strani negovateljice | naslov stranice i podnaslov | 48 |
-| Minnino pismo; kartica na tabli; poruka negovateljici | ime i sitan red | 36; 40 |
+| Minnino pismo; poruka negovateljici | ime i sitan red | 36; 40 |
 | Ko je prijavljen (meni, traka negovateljice) | ime i e-mail | 36 |
 
 **Uz avatar je naslov → red ispod 2** (odlučeno 11. 10.; od 5. 10. je bilo 8, pa probano 4 i 0). Visine redova (24 ili 20 za naslov, 20 ili 16 ispod) same daju vazduh između dva reda teksta: sa 8 i sa 4 naslov je stajao odvojeno od svoje rečenice, a bez razmaka su se redovi slepili. **Ovo je jedini razmak van mreže od 4 (§1)**, namerno, pa je i avatar uz njega van mreže (42, 38). Kolona teksta i dalje ima razmak 4 za ono što dolazi posle (treći red, stanje, oznake), a naslov mu svojom marginom oduzima 2 (`-mb-0.5`). Red bez avatara (poseta, zapis u kartonu) i dalje ima 8.
@@ -542,7 +542,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
 
 - **Tabovi su za to gde si, čipovi za ono što biraš** (odlučeno 9. 10.). Dva ili više prikaza iste stvari, od kojih se vidi jedan, su shadcn `Tabs`: siva traka visine dugmeta, bela kartica za izabrani prikaz (plan nege: „Plan nege" / „Pregled i odgovori"). Filteri i izbor ostaju čipovi. **Bela kartica je jedan komad koji klizi** do izabranog taba (250 ms, `ease-out-strong`), a boja natpisa se menja uz nju; ne gasi se jedan pa pali drugi. Svi prikazi ostaju u kodu (`forceMount`), pa povratak zatiče prikaz kako je ostavljen i ništa u njemu ne igra ulaznu animaciju ponovo; skriveni nemaju visinu i ne mogu se dohvatiti mišem, tasterom Tab ni čitačem. Izabrani ulazi iz prozirnog i 4 niže (200 ms), a stari nestaje odmah, pa se dva nikad ne preklapaju.
 - **Čip je samo za ono što se bira.** `ToggleGroupItem` (ivica, a popunjen kad je izabran) je dugme: izbor usluga u ugovoru, filteri, odgovor u tri reči, jezik. **Ono što se samo čita** (usluge iz ugovora, šta je urađeno na poseti, šta će raditi, zašto se negovateljica poklapa, njene klasifikacije, šta je porodica tražila) je oznaka: komponenta `Tags` (`src/components/Tags.jsx`, oznaka je `Badge variant="tag"`), siva podloga, bez ivice i **bez ikonice** (ni kvačice), 12px. Ono što je izostavljeno je bleđa oznaka (`off`) i to kaže rečima („— ovog puta ne"). `ServiceChips` crta oznake.
-- **Usluge su iz jednog kataloga** (`src/data/serviceCatalog.js`, odlučeno 3. 10.): 57 usluga u 4 grupe, kao u aplikaciji za negovateljice (Pomoć u svakodnevici, Lična nega i kuća, Praktična nega, Medicinska nega). Ugovor, plan posete, radni nalog i pregled ih prikazuju po grupama (`ServiceChips grouped`: ime grupe, pa oznake). Red negovateljice na Mojoj nezi pokazuje samo imena grupa, a ceo spisak je na njenoj stranici. Ceo katalog (svih 57) se vidi samo u formi gde negovateljica bira šta nudi.
+- **Usluge su iz jednog kataloga** (`src/data/serviceCatalog.js`, odlučeno 3. 10.): 57 usluga u 4 grupe, kao u aplikaciji za negovateljice (Pomoć u svakodnevici, Lična nega i kuća, Praktična nega, Medicinska nega). Ugovor, plan posete, radni nalog i pregled ih prikazuju po grupama (`ServiceChips grouped`: ime grupe, pa oznake). Red negovateljice na Mojoj nezi pokazuje samo imena grupa, a ceo spisak je na njenoj stranici.
 - **Dodatni sati** (odlučeno 3. 10.): radni nalog sa više sati nego što je rezervisano naplaćuje samo rezervisano. Višak je deo „Dodatni sati" u radnom nalogu sa „Odbij dodatne sate" (secondary) i „Odobri X €" (primary), a do odgovora je i stavka u „Čeka na vas". Manje sati: naplaćuje se koliko je radila, a razlika se vraća („Vraća se" u obračunu).
 - **Grupa oznaka uvek kaže šta je:** ime grupe (`label`, 12px sivo), a ispod njega oznake, 4 razmaka, kao jedna grupa (`Group`). Sledeća grupa je 12 niže (`Groups`). Primeri: „Poklapa se" i „Klasifikacije" na kartici negovateljice, „Usluge" u redu negovateljice i u ugovoru, „Urađeno" u poslednjoj poseti. U drawer-u ime grupe je `PaneLabel` sekcije, pa se `label` ne zadaje.
 - Grupa oznaka u redu stoji 12px ispod teksta reda.
@@ -725,7 +725,7 @@ Na `/?kartice` skript uzima glavni panel strane negovateljice (`AppPane`, `[data
 
 Skript prepoznaje komponente po njihovom `data-slot` atributu (`[data-slot=card]`, `[data-slot=card-title]`, `[data-slot=badge]`, `[data-slot=avatar]`), a ne po klasama: shadcn komponente klase nemaju. Ako skript ne nađe nijednu karticu (`cards: []`), proveri da li je selektor tačan, inače bi stranica „prošla" a da ništa nije izmereno.
 
-Očekivano: `cards` → `24px/16px`; `titles` → `card-title 16px` i `section-title 12px`. Kartica na tabli negovateljice je r16 sa 12 paddinga i nije `Card`.
+Očekivano: `cards` → `24px/16px`; `titles` → `card-title 16px` i `section-title 12px`.
 
 ---
 

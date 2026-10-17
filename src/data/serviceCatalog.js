@@ -1,10 +1,9 @@
 // The services a caregiver's agreement can cover, as the caregivers' own app
 // lists them: four groups, one closed list. That app sends agreements, visit
 // plans and work orders in these terms, so the family's side shows the same
-// names, grouped the same way. The caregiver screens in this repo keep their
-// own short list (caregiverBoard.SERVICES); `serviceTitle` reads both.
+// names, grouped the same way.
 
-import { msg } from '../i18n';
+import { msg, t } from '../i18n';
 
 // Every title here is a Serbian key (msg): it is shown through t().
 export const SERVICE_GROUPS = [
@@ -98,6 +97,9 @@ export const CATALOG = Object.fromEntries(
 // The services, in the catalog's order, each group under its own name: how an
 // agreement or a visit lists them (docs/patterns.md §10, a group of tags says
 // what it is). Ids the catalog does not know are left out.
+// a service by its id, in the current language
+export const serviceTitle = (id) => (CATALOG[id]?.title ? t(CATALOG[id].title) : id);
+
 export function groupServices(ids) {
   return SERVICE_GROUPS.map((g) => ({
     id: g.id,

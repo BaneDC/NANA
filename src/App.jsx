@@ -22,7 +22,6 @@ import FamilyDrawer from './components/family/FamilyDrawer';
 import CaregiverPage from './screens/CaregiverPage';
 import RequestsPage from './screens/RequestsPage';
 import Toast from './components/family/Toast';
-import CaregiverApp from './screens/caregiver/CaregiverApp';
 import ApiKeyPanel from './components/ApiKeyPanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter } from '@/components/ui/card';
@@ -426,7 +425,7 @@ export default function App() {
 
   // What the account has got to, kept so signing in again resumes it.
   useEffect(() => {
-    if (phase !== 'app' || !user.email || user.role === 'caregiver' || user === demoUser) return;
+    if (phase !== 'app' || !user.email || user === demoUser) return;
     saveProgress(user.email, { answers, notes, planDone: Boolean(plan), planLog });
   }, [phase, user, answers, notes, plan, planLog]);
 
@@ -475,18 +474,6 @@ export default function App() {
     setView('chat');
   };
 
-  // The caregiver's side shares the shell and the components and nothing else:
-  // no questionnaire, no care plan, no sidebar built for a family.
-  const isCaregiver = user.role === 'caregiver';
-
-  if (phase === 'app' && isCaregiver) {
-    return (
-      <div key={lang} className={shell}>
-        <CaregiverApp user={user} />
-      </div>
-    );
-  }
-
   return (
     <SidebarProvider key={lang} className={shell}>
       {/* On a phone there is no room for a nav beside the page, so it becomes a
@@ -532,7 +519,6 @@ export default function App() {
                 setUser(u);
                 setCare(startCare(u));
                 setPhase('app');
-                if (u.role === 'caregiver') return;
                 // Signing back in picks up where the account left off: a
                 // finished onboarding opens on Moja nega and is not run again.
                 const saved = loadProgress(u.email);
