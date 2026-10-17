@@ -1,5 +1,7 @@
 import { caregivers } from './carePlan';
-import { SERVICE_FEE, money, serviceTitle, totalsFor } from './caregiverBoard';
+import { SERVICE_FEE, totalsFor } from './fees';
+import { serviceTitle } from './serviceCatalog';
+import { eur as money } from '../lib/money';
 import { getLang, known, locale, msg, registerFormat, say, t, tn } from '../i18n';
 
 // The family's side of NANA Prime: everyone who has cared for their mother, the

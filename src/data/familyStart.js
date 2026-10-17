@@ -1,5 +1,4 @@
-import { serviceTitle } from './caregiverBoard';
-import { servicesForNeed } from './serviceCatalog';
+import { serviceTitle, servicesForNeed } from './serviceCatalog';
 import { START_HOUR } from './familyCare';
 import { localized, msg, t } from '../i18n';
 
