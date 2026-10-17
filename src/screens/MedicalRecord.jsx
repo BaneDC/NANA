@@ -188,6 +188,9 @@ function HistoryFilters({ entries, kind, onKind }) {
     <ToggleGroup
       type="single"
       size="sm"
+      // a filter: on a phone, under the tabs, one row that scrolls sideways
+      // (docs/patterns.md §12)
+      scroll
       className="items-center"
       value={kind}
       onValueChange={(id) => id && onKind(id)}

@@ -748,7 +748,8 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
   const who = caregiverId ? nameOf(care, caregiverId) : care.elder.name || t('Vaša nega');
   return (
     <Modal eyebrow={who} title={t('Šta se desilo')} wide open={open} onClose={onClose}>
-      <ToggleGroup type="single" size="sm" className="items-center" value={kind} onValueChange={(id) => id && setKind(id)} aria-label={t('Šta prikazati')}>
+      {/* a filter: on a phone one row that scrolls sideways (docs/patterns.md §12) */}
+      <ToggleGroup type="single" size="sm" scroll className="items-center" value={kind} onValueChange={(id) => id && setKind(id)} aria-label={t('Šta prikazati')}>
         {[{ id: 'all', label: 'Sve' }, ...kinds].map((k) => (
           <ToggleGroupItem key={k.id} value={k.id}>
             {t(k.label)}

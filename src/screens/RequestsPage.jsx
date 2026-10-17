@@ -65,8 +65,10 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
         <>
           {/* One is always chosen: pressing the chosen one again does nothing.
               16 in, on the line the title's text and the cards' avatars keep
-              (docs/patterns.md §4). */}
-          <ToggleGroup type="single" size="sm" className="pl-4" value={tab} onValueChange={(id) => id && setTab(id)} aria-label={t('Upiti po odgovoru')}>
+              (docs/patterns.md §4). A filter: on a phone one row that scrolls
+              sideways out to the screen's edges, its first chip still 16 in
+              from the page's (docs/patterns.md §12). */}
+          <ToggleGroup type="single" size="sm" scroll className="pl-4 phone:pl-8" value={tab} onValueChange={(id) => id && setTab(id)} aria-label={t('Upiti po odgovoru')}>
             {TABS.map((id) => (
               <ToggleGroupItem key={id} value={id}>
                 {id === 'all' ? t('Svi') : t(LABEL[id])}
