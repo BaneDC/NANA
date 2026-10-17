@@ -166,7 +166,7 @@ function DrawerContent({
                 <div
                   data-slot="drawer-head"
                   className={cn(
-                    "shrink-0 border-b border-transparent px-4 pt-4 pb-3 transition-colors duration-150",
+                    "shrink-0 border-b border-transparent px-4 pt-4 pb-2 transition-colors duration-150",
                     scrolled && "border-border"
                   )}
                 >
@@ -178,7 +178,10 @@ function DrawerContent({
                 onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
                 className={cn(
                   "flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain scroll-pb-20 px-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))]",
-                  head ? "pt-0" : "pt-4",
+                  // 4 under the head, not 0: a ring drawn past a card's edge (the
+                  // plan we recommend, a focus outline) was cut off by the edge
+                  // of what scrolls. With the head's 8 it is the 12 there was.
+                  head ? "pt-1" : "pt-4",
                   bodyClassName
                 )}
               >
