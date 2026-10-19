@@ -29,6 +29,12 @@ describe('store', () => {
     expect(s.load('sr').person.answers.n).toBe(2);
   });
 
+  it('a field named v in the state cannot overwrite the version', () => {
+    const s = createStore({ storage: memory(), Channel: bus() });
+    s.save('fi', { ...state(3), v: 99 });
+    expect(s.load('fi').person.answers.n).toBe(3);
+  });
+
   it('has nothing for a market never saved', () => {
     expect(createStore({ storage: memory(), Channel: bus() }).load('fi')).toBeNull();
   });

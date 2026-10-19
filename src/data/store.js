@@ -36,7 +36,7 @@ export function createStore({
   };
   const tell = (market) => channel && safe(() => channel.postMessage({ market }));
   const save = (market, state) => {
-    if (storage) safe(() => storage.setItem(key(market), JSON.stringify({ v: VERSION, ...state })));
+    if (storage) safe(() => storage.setItem(key(market), JSON.stringify({ ...state, v: VERSION })));
     tell(market);
   };
   const reset = (market) => {

@@ -2,30 +2,52 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { store } from '../data/store';
 
 // The demo's state for one market, as React state: read from the store (or
-// seeded), saved on every change, and replaced when another tab saves. What
-// arrives from another tab goes through `onReceive` (the dates said in this
-// tab's language) and is not saved back, or two tabs in two languages would
-// rewrite each other forever.
+// seeded), saved after every local change, and replaced when another tab
+// saves. What comes from the store, at mount, on a market change or from
+// another tab, goes through `onReceive` (the dates said in this tab's
+// language) and is never saved back, or two tabs in two languages would
+// rewrite each other forever. Only a local `update` (and a seed the store did
+// not have) is saved, in an effect after the commit, never inside a render.
+// A null market is plain local state, kept nowhere.
+const open = (market, seed, onReceive) => {
+  const stored = market ? store.load(market) : null;
+  return stored ? { market, state: onReceive(stored), save: false } : { market, state: seed(), save: !!market };
+};
+
 export function useShared(market, seed, { onReceive = (s) => s } = {}) {
-  const [state, setState] = useState(() => store.load(market) ?? seed());
+  const [box, setBox] = useState(() => open(market, seed, onReceive));
   const receive = useRef(onReceive);
   receive.current = onReceive;
+  const seeding = useRef(seed);
+  seeding.current = seed;
 
-  // the first state is kept at once, so a second tab opened now reads it
+  // the market changed while mounted: read the new one, never carry the old state over
+  let current = box;
+  if (box.market !== market) {
+    current = open(market, seed, onReceive);
+    setBox(current);
+  }
+
+  // keep what was changed here, once it is committed
   useEffect(() => {
-    if (!store.load(market)) store.save(market, state);
-    return store.subscribe(market, (next) => setState(next ? receive.current(next) : seed()));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (current.market && current.save) store.save(current.market, current.state);
+  }, [current]);
+
+  // replaced when another tab saves (or resets) this market
+  useEffect(() => {
+    if (!market) return undefined;
+    return store.subscribe(market, (next) =>
+      setBox({ market, state: next ? receive.current(next) : seeding.current(), save: false })
+    );
   }, [market]);
 
   const update = useCallback(
     (fnOrValue) =>
-      setState((s) => {
-        const next = typeof fnOrValue === 'function' ? fnOrValue(s) : fnOrValue;
-        if (next !== s) store.save(market, next);
-        return next;
+      setBox((b) => {
+        const next = typeof fnOrValue === 'function' ? fnOrValue(b.state) : fnOrValue;
+        return next === b.state ? b : { market: b.market, state: next, save: true };
       }),
-    [market]
+    []
   );
-  return [state, update];
+  return [current.state, update];
 }
