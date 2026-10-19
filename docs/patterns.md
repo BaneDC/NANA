@@ -209,6 +209,7 @@ Moja nega (`src/screens/Dashboard.jsx`) je početna stranica i mesto sa kog poro
 | Plan postoji, niko nije pitan | „Sledeći korak": pišite negovateljici (vidi ispod), pa **plan nege kao kartice pregleda** (odlučeno 14. 10.; vidi „Pre prve posete" ispod) |
 | Upit poslat, ugovor još nije prihvaćen | „Čeka se odgovor", „Stigli su odgovori", „Čeka se ugovor o nezi" ili „Čeka na vas" (ugovor), a ispod iste kartice plana |
 | Ugovor je prihvaćen (odlučeno 14. 10.; ranije: čim neko prihvati upit) | **pregled**, redom ispod; od plana ostaju „Ponude partnera" i poruka koordinatorke |
+| **Srbija** (tržište bez ugovora, odlučeno 19. 10.) | uvek plan nege; na vrhu po stanju „Sledeći korak", „Čeka se odgovor", **„Javite joj se"** (kad je neka prihvatila, a paket važi: bela kartica po negovateljici, ime otvara profil, ispod redovi telefon i e-mail kao kod koordinatorke) ili **„Paket je istekao"** („Izaberite paket"). Pregleda, poseta i novca za negu nema |
 
 **„Sledeći korak" dok nikome nije pisano** (odlučeno 11. 10.; §4b): narandžasti deo na vrhu, jedna kartica sa rečenicom „Kad budete spremni, pišite negovateljici koja vam odgovara. Upit nikoga ne obavezuje.". **Dugme ima samo na telefonu** (≤640): **„Pogledaj negovateljice"** (`default`, bez ikonice), koje spušta stranicu do kartice sa negovateljicama u planu (ako je plan nema, otvara „Pronađi negovateljicu"). Šire od toga dugmeta nema: negovateljice su odmah ispod pisma i svaka ima svoje „Pošalji poruku", pa bi dugme koje samo skroluje bilo još jedno glavno dugme pored njih. Dugme ne otvara nijednu određenu: izbor je porodičin. Ton prati Minnino pismo, koje ne požuruje. Zavisi od stanja, a ne od prve posete stranici: stoji dok se ne pošalje prvi upit, a tada ga zameni „Čeka se odgovor". Razlog: na telefonu red negovateljice nema dugme (§7), a prva je ispod prvog ekrana, pa bez ovoga na stranici nema nijednog vidljivog koraka. Tako svako stanje pre prve posete ima na vrhu ko je na potezu.
 
@@ -306,6 +307,7 @@ Nema vođene ture, tooltipova preko ekrana ni koraka „Dalje". Tura se preskač
 **Prazna stranica:** `Attention` sa naslovom šta nedostaje i belom karticom (rečenica i jedno dugme), kao „Sledeći korak" na Mojoj nezi (§5).
 
 **Izbor plana** (`PaywallModal`, `Dialog` širok 880, sa jednim planom 480):
+- **Paket (Srbija, odlučeno 19. 10.):** isti prozor i iste kartice, ali naslov „Izaberite paket", ispod cene „za 1 mesec · plaćate jednom, bez automatske obnove", precrtana stara cena i značka „Uštedite 31 €" (`was` u `plans.js`), podnaslov paketa, a na dnu rečenica da se paket ne obnavlja sam. Kartica se ne čuva. Ponašanje sledi podatak `once` na paketu, a ne ime tržišta.
 - Svaki plan je `Card` sa svim sadržajem: naziv, cena (24px), ušteda kao značka, rečenica za koga je, spisak šta uključuje i dugme „Izaberite" + naziv plana („Izaberite Premium"). Naslov dijaloga je „Izaberite pretplatu", a dugme koje ga otvara iz plana nege „Otključajte ceo plan nege": u naslovima i dugmadima „plan" znači samo plan nege, da se dva značenja ne sretnu na istom putu.
 - Kartice su jedna pored druge (mreža, najmanje 280 po kartici), a na telefonu jedna ispod druge, sa preporučenom prvom.
 - Preporučeni plan (`recommended` u `src/data/plans.js`) ima prsten u primarnoj boji, značku „Najpopularniji" i primary dugme; ostali imaju secondary.
@@ -474,6 +476,8 @@ U Finskoj zakon ograničava šta smemo da prikupimo o negovateljici, pa se prika
 | Dani (`pon–pet`), doba dana sa satima, radijus | — | — | „Kada može da dolazi" |
 | Telefon, e-mail | — | — | „Kontakt", zamaskirano do pretplate |
 
+**Srbija (odlučeno 19. 10.):** negovateljica nema cenu ni klasifikacije. Umesto njih je „Angažman" (dnevne posete, smena 24 h) na kartici i u profilu, a u „Kvalifikacijama" sertifikat (da / ne) i kursevi. Telefon i e-mail vide se tek kad je prihvatila upit i dok paket važi (`+381 ** *** ****` do tada). Spisak je `caregiversIn(market)`.
+
 - **Klasifikacije** su četiri, uvek finskim imenom: Hoiva-avustaja, Lähihoitaja, Sairaanhoitaja, Kotiavustaja. Stoje na mestu nekadašnjeg „Čime se bavi".
 - **Doba dana** su tri, kao u formi: jutro 06–14, popodne 14–22, veče 22–06. Nege od 24 sata nema.
 - **Nema:** godina iskustva, spiska veština, tačne udaljenosti, noćnih smena kao posebne stavke.
@@ -523,6 +527,7 @@ Lista koja je duža od onoga što prvo pokazuje **ne otvara drawer niti drugu st
   | Lozinka | „Promenite lozinku" — secondary | isto | lozinka uvek postoji, pa je ovo uvek menjanje |
   | Vaši podaci (nalog) | „Izmenite podatke" — secondary | isto | podaci uvek postoje, pa je ovo uvek menjanje |
   | Kolačići | „Podešavanja kolačića" — default | isto | nema stanja |
+  | Paket (Srbija) | „Izaberite paket" — default | dok važi bez dugmeta; istekao „Izaberite paket" — default | paket se plaća jednom, ne obnavlja se i ne otkazuje (odlučeno 19. 10.) |
 - **Kartice u grupi Plaćanje** (odlučeno 14. 10., `src/screens/Settings.jsx`):
   - **Pretplata:** rečenica šta otključava, pa redovi (`DataRow`) „Paket" (Basic / Premium), „Cena" i „Sledeća naplata" (iznos · datum). Promena paketa važi od sledeće obnove, pa ništa nije naplaćeno dva puta niti vraćeno; dok čeka, rečenica kaže „Od {datum} prelazite na Premium.", a „Sledeća naplata" je cena novog paketa. Bira se u istom prozoru kao pretplata (`PaywallModal` sa `current`): paket na kom je ili na koji prelazi ima isključeno dugme „Vaš paket", drugi „Pređite na …". Kad je kartica odbijena, ili je obnova došla na isteklu karticu, značka je „Nije plaćena" (destructive), red „Sledeća naplata" nestaje (naplata je dospela sada), a nova kartica naplati obnovu i pomeri je na sledeći period. Dok obnova ne dođe, istekla kartica ne menja Pretplatu: plaćena je i „Aktivna", a upozorava samo Način plaćanja. Otkazana: bez „Sledeće naplate", samo „Obnovi pretplatu"; na dan obnove ističe.
   - **Način plaćanja:** red „Ističe" (MM/GGGG) prvi. Kad kartica ističe ovog ili sledećeg meseca, značka je warning; odbijena ili istekla, destructive, bez štita. Rečenica o problemu ide ispred „Dodato …".

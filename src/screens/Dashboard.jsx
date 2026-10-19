@@ -52,7 +52,8 @@ import VisitReport from '../components/family/VisitReport';
 import { amountOf } from '../components/family/VisitRow';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import RecommendationCard from '../components/RecommendationCard';
-import { CoordinatorContact } from '../components/PlanFooterBlocks';
+import { CoordinatorContact, PersonRows } from '../components/PlanFooterBlocks';
+import { marketHas } from '../data/market';
 import { getLang, t, tn } from '../i18n';
 
 // The family's home, and the one page they should rarely need to leave
@@ -232,6 +233,7 @@ export default function Dashboard({
   user,
   plan,
   unlocked,
+  packageOver = false,
   askNote,
   planChange,
   onDrawer,
@@ -264,6 +266,9 @@ export default function Dashboard({
   // this page only says where things stand and takes them there. Once someone
   // comes, the page is about her and the requests are not repeated here.
   const asked = !care.arrangements.length && care.requests.length > 0;
+  // Serbia: a yes is the end of it on the platform; the family calls her, while
+  // their package holds (part 2 spec)
+  const yeses = marketHas('package') && unlocked ? care.requests.filter((r) => r.status === 'accepted') : [];
   const latest = care.requests.filter((r, i, all) => all.findIndex((x) => x.caregiverId === r.caregiverId) === i);
   const pendingNames = latest
     .filter((r) => r.status === 'pending')
@@ -450,7 +455,7 @@ export default function Dashboard({
         <PageHeaderText>
           <PageTitle>{t('Zdravo, {name}', { name: firstName(user?.name || care.family.name) })}</PageTitle>
           <PageDescription>
-            {[care.elder.name && t('Nega · {name}', { name: care.elder.name }), care.elder.area, care.payment.connected ? t('kartica je sačuvana') : t('kartica još nije dodata')]
+            {[care.elder.name && t('Nega · {name}', { name: care.elder.name }), care.elder.area, marketHas('card') && (care.payment.connected ? t('kartica je sačuvana') : t('kartica još nije dodata'))]
               .filter(Boolean)
               .join(' · ')}
           </PageDescription>
@@ -507,7 +512,45 @@ export default function Dashboard({
         </Attention>
       )}
 
-      {asked && (
+      {packageOver && care.requests.length > 0 && (
+        <Attention title={t('Paket je istekao')}>
+          <Card>
+            <CardDescription>{t('Upiti i kontakti negovateljica su zaključani dok ne izaberete paket ponovo.')}</CardDescription>
+            <CardFooter>
+              <Button onClick={onUnlock}>{t('Izaberite paket')}</Button>
+            </CardFooter>
+          </Card>
+        </Attention>
+      )}
+
+      {yeses.length > 0 && (
+        <Attention
+          title={yeses.length === 1 ? t('Javite joj se') : t('Javite im se')}
+          sub={t('Dogovorite se direktno: dane, sate i cenu. Koordinatorka je tu ako zatreba.')}
+        >
+          {yeses.map((r) => {
+            const c = caregiverById(r.caregiverId);
+            return (
+              <Card key={r.id}>
+                <div className="flex items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-body-leading))]">
+                  <Avatar>
+                    <AvatarFallback>{c.initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <p className="-mb-0.5 text-xs font-medium text-foreground">
+                      <CardLink onClick={() => onOpenCaregiver(c)}>{c.name}</CardLink>
+                    </p>
+                    <p className="text-xs leading-body text-muted-foreground">{t('Prihvatila je vaš upit.')}</p>
+                  </div>
+                </div>
+                <PersonRows phone={c.phone} email={c.email} />
+              </Card>
+            );
+          })}
+        </Attention>
+      )}
+
+      {asked && !yeses.length && !packageOver && (
         <Attention title={pendingNames.length ? t('Čeka se odgovor') : t('Stigli su odgovori')}>
           <Card>
             <CardDescription>

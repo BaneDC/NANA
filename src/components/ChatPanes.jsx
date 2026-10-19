@@ -6,7 +6,8 @@ import { SheetDescription } from '@/components/ui/sheet';
 import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
 import { DataList, DataRow } from '@/components/data-list';
 import { PaneLabel } from '@/components/pane';
-import { caregiverById, caregivers, daysText, slotsText } from '../data/carePlan';
+import { caregiverById, caregiversIn, daysText, slotsText } from '../data/carePlan';
+import { marketHas } from '../data/market';
 import { allVisits, firstName, money, pendingVersion, services, standingWith, waitingOnYou } from '../data/familyCare';
 import { priceLine } from '../data/plans';
 import PlanContents from './PlanContents';
@@ -137,7 +138,7 @@ function VisitsPane({ care, onDrawer }) {
 }
 
 function CaregiversPane({ care, onContact }) {
-  const list = [...caregivers].sort((a, b) => b.match - a.match);
+  const list = [...caregiversIn()].sort((a, b) => b.match - a.match);
   return (
     <ItemGroup>
       {list.map((c) => {
@@ -174,13 +175,20 @@ function CaregiversPane({ care, onContact }) {
 function SettingsPane({ care, unlocked, country, onUnlock }) {
   return (
     <DataList className="mt-2">
-      <DataRow label={t('Pretplata')}>{unlocked ? `${t('Aktivna')} · ${priceLine(country)}` : t('Nije aktivna')}</DataRow>
-      <DataRow label={t('Kartica')}>
-        {care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : t('Još nije dodata')}
-      </DataRow>
+      {/* Serbia: a package, and no card kept */}
+      {marketHas('package') ? (
+        <DataRow label={t('Paket')}>{unlocked ? t('Aktivan') : t('Nije aktivan')}</DataRow>
+      ) : (
+        <>
+          <DataRow label={t('Pretplata')}>{unlocked ? `${t('Aktivna')} · ${priceLine(country)}` : t('Nije aktivna')}</DataRow>
+          <DataRow label={t('Kartica')}>
+            {care.payment.connected ? `${care.payment.brand} ···· ${care.payment.last4}` : t('Još nije dodata')}
+          </DataRow>
+        </>
+      )}
       {!unlocked && (
         <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
-          <Button onClick={onUnlock}>{t('Pretplati se')}</Button>
+          <Button onClick={onUnlock}>{marketHas('package') ? t('Izaberite paket') : t('Pretplati se')}</Button>
         </div>
       )}
     </DataList>
@@ -218,9 +226,9 @@ export function paneFor(openId, ctx) {
     case 'visits':
       return { title: t('Posete'), children: <Pane><VisitsPane care={care} onDrawer={onDrawer} /></Pane> };
     case 'find-caregiver':
-      return { title: t('Negovateljice za vas'), meta: `${caregivers.length}`, children: <Pane><CaregiversPane care={care} onContact={onContact} /></Pane> };
+      return { title: t('Negovateljice za vas'), meta: `${caregiversIn().length}`, children: <Pane><CaregiversPane care={care} onContact={onContact} /></Pane> };
     case 'settings':
-      return { title: t('Pretplata i plaćanje'), children: <Pane><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></Pane> };
+      return { title: marketHas('package') ? t('Paket') : t('Pretplata i plaćanje'), children: <Pane><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></Pane> };
     case 'caregiver': {
       const c = caregiverById(id);
       if (!c) return null;
@@ -291,11 +299,13 @@ export function previewFor(kind, { plan, care }) {
     case 'find-caregiver':
       return {
         title: t('Negovateljice za vas'),
-        meta: `${caregivers.length}`,
-        content: [...caregivers].sort((a, b) => b.match - a.match).map((c) => `${c.name} · ${c.match}% · ${c.rate}`).join('\n'),
+        meta: `${caregiversIn().length}`,
+        content: [...caregiversIn()].sort((a, b) => b.match - a.match).map((c) => [c.name, `${c.match}%`, c.rate].filter(Boolean).join(' · ')).join('\n'),
       };
     case 'settings':
-      return { title: t('Pretplata i plaćanje'), content: care.payment.connected ? t('Kartica je sačuvana') : t('Kartica još nije dodata') };
+      return marketHas('package')
+        ? { title: t('Paket'), content: t('Jednokratno plaćanje, bez kartice') }
+        : { title: t('Pretplata i plaćanje'), content: care.payment.connected ? t('Kartica je sačuvana') : t('Kartica još nije dodata') };
     default:
       return null;
   }

@@ -33,7 +33,7 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
           <Badge className="my-[calc((var(--text-xs-leading)-20px)/2)] ml-2">{t('Poklapanje · {match}%', { match: caregiver.match })}</Badge>
         </ItemTitle>
         <div className="text-small text-muted-foreground">
-          <Rating caregiver={caregiver} /> · {caregiver.rate} · {t('{area}, do {radius} km', caregiver)}
+          <Rating caregiver={caregiver} /> · {caregiver.rate && <>{caregiver.rate} · </>}{t('{area}, do {radius} km', caregiver)}
         </div>
       </ItemContent>
       {standing ? (

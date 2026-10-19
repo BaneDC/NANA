@@ -8,7 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataList, DataRow } from '@/components/data-list';
 import { Callout, Concern, PaneHint, PaneLabel, ReportRow, ReportRows, Stat, Stats, Total } from '@/components/pane';
 import { statusVariant } from '../Standing';
-import { MASKED_EMAIL, MASKED_PHONE, caregiverById, daysText, SLOTS } from '../../data/carePlan';
+import { caregiverById, daysText, engagementText, maskedEmail, maskedPhone, SLOTS } from '../../data/carePlan';
 import ShowMore from '../ShowMore';
 import VisitsDrawer from './VisitsDrawer';
 import { CaregiversDrawer, ComingDrawer, LetterDrawer, OfferDrawer, OffersDrawer } from './HomeDrawers';
@@ -54,6 +54,7 @@ import {
   unsettled,
   rateText,
   vatIn,
+  latestRequest,
   vatText,
   visitCharge,
 } from '../../data/familyCare';
@@ -663,6 +664,7 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
   // where the family stands with her is said at the top, under who she is,
   // not in the footer where it read as a disabled button
   const standing = standingWith(care, c.id);
+  const contactOpen = unlocked && (c.market !== 'RS' || latestRequest(care, c.id)?.status === 'accepted');
 
   // writing to her goes through the one modal, sent once the subscription is paid
   const ask = () => onContact(c);
@@ -674,12 +676,19 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
       <PaneLabel>{t('O sebi')}</PaneLabel>
       <SheetDescription>{t(c.bio)}</SheetDescription>
 
-      <PaneLabel>{t('Klasifikacije')}</PaneLabel>
-      <Tags items={c.classifications} />
+      {/* Serbia has no classifications; a certificate and courses instead */}
+      {c.classifications.length > 0 && (
+        <>
+          <PaneLabel>{t('Klasifikacije')}</PaneLabel>
+          <Tags items={c.classifications} />
+        </>
+      )}
 
       <PaneLabel>{t('Kvalifikacije')}</PaneLabel>
       <DataList className="mt-2">
         <Line label={t('Obrazovanje')} value={t(c.education)} />
+        {c.market === 'RS' && <Line label={t('Sertifikat negovateljice')} value={c.certificate ? t('Da') : t('Ne')} />}
+        {c.market === 'RS' && c.courses && <Line label={t('Kursevi')} value={t(c.courses)} />}
         <Line label={t('Jezici')} value={c.languages.map((l) => t(l)).join(', ')} />
       </DataList>
 
@@ -688,16 +697,27 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
         <Line label={t('Dani')} value={daysText(c.days)} />
         <Line label={t('Doba dana')} value={c.slots.map((s) => `${t(SLOTS[s].label).toLowerCase()} ${SLOTS[s].hours}`).join(', ')} />
         <Line label={t('Radijus')} value={t('do {km} km', { km: c.radius })} />
-        <Line label={t('Cena')} value={c.rate} />
+        {c.engagement && <Line label={t('Angažman')} value={engagementText(c).join(', ')} />}
+        {c.rate && <Line label={t('Cena')} value={c.rate} />}
       </DataList>
 
-      {/* Her phone and e-mail open with the subscription, as on the platform. */}
+      {/* Her phone and e-mail open with the subscription, as on the platform.
+          In Serbia they open once she has said yes to the family, while
+          their package holds: that is how the two then agree everything. */}
       <PaneLabel>{t('Kontakt')}</PaneLabel>
       <DataList className="mt-2">
-        <Line label={t('Telefon')} value={unlocked ? c.phone : MASKED_PHONE} />
-        <Line label={t('E-mail')} value={unlocked ? c.email : MASKED_EMAIL} />
+        <Line label={t('Telefon')} value={contactOpen ? c.phone : maskedPhone(c)} />
+        <Line label={t('E-mail')} value={contactOpen ? c.email : maskedEmail(c)} />
       </DataList>
-      {!unlocked && <PaneHint>{t('Telefon i e-mail se otključavaju pretplatom.')}</PaneHint>}
+      {!contactOpen && (
+        <PaneHint>
+          {c.market !== 'RS'
+            ? t('Telefon i e-mail se otključavaju pretplatom.')
+            : unlocked
+              ? t('Telefon i e-mail vidite kad prihvati vaš upit.')
+              : t('Telefon i e-mail vidite kad prihvati vaš upit, dok vam paket važi.')}
+        </PaneHint>
+      )}
 
       {/* what asking her costs, as it is said everywhere (firstSteps.js) */}
       {askNote && <PaneHint>{askNote}</PaneHint>}

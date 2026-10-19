@@ -17,7 +17,8 @@ import { Field, FieldError, Password, requiredError, useCheck } from '../compone
 import { cardTrouble, chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
 import { changePassword, hashBackupCodes } from '../lib/account';
-import { planEvery, planPrice, plansFor, priceLine, renewsOn } from '../data/plans';
+import { dateOn, planEvery, planPrice, plansFor, priceLine, renewsOn } from '../data/plans';
+import { marketHas } from '../data/market';
 import { LANGUAGES, msg, setLang, t, tn, useLang } from '../i18n';
 
 
@@ -133,6 +134,44 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
   );
 }
 
+// Serbia's package: paid once, never renewed, so nothing here can be cancelled
+// or changed while it holds. It says which one, when it was paid and until
+// when it holds; once it is over, or before there was one, it offers the
+// choice again (docs/superpowers/specs/2026-10-19-porodica-srbija-design.md).
+function PackageCard({ country, subscription, unlocked, onChoose }) {
+  const plan = subscription && plansFor(country).find((p) => p.id === subscription.planId);
+  const state = !plan ? 'none' : unlocked ? 'active' : 'over';
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('Paket')}</CardTitle>
+        {state !== 'none' && (
+          <CardAction>
+            <Badge variant={state === 'active' ? 'success' : 'secondary'}>{state === 'active' ? t('Aktivan') : t('Istekao')}</Badge>
+          </CardAction>
+        )}
+      </CardHeader>
+      {state === 'none' ? (
+        <CardDescription>{t('Paket otključava ceo plan nege, upite negovateljicama i njihov kontakt kad prihvate.')}</CardDescription>
+      ) : (
+        <>
+          {state === 'active' && <CardDescription>{t('Ne obnavlja se sam. Kad istekne, izaberite paket ponovo.')}</CardDescription>}
+          <DataList className="mt-2">
+            <DataRow label={t('Paket')}>{t(plan.name)}</DataRow>
+            {state === 'active' && <DataRow label={t('Plaćeno')}>{t('{date} · {amount}', { date: dateOn(subscription.at), amount: planPrice(plan) })}</DataRow>}
+            <DataRow label={state === 'active' ? t('Važi do') : t('Važio do')}>{renewsOn(country, plan.id, subscription.at)}</DataRow>
+          </DataList>
+        </>
+      )}
+      {state !== 'active' && (
+        <CardFooter>
+          <Button onClick={onChoose}>{t('Izaberite paket')}</Button>
+        </CardFooter>
+      )}
+    </Card>
+  );
+}
+
 export default function Settings({ payments = true, unlocked, subscription, care, user, onCare, onSaveUser, onFlash, onSubscribe }) {
   // kept on the account, as the language and the cookies are: they were only in
   // this page's state, so leaving it turned them back off. A switch saves as it
@@ -192,7 +231,11 @@ export default function Settings({ payments = true, unlocked, subscription, care
         <PageHeaderText>
           <PageTitle>{t('Podešavanja')}</PageTitle>
           <PageDescription>
-            {payments ? t('Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.') : t('Nalog, bezbednost, jezik i obaveštenja, privatnost.')}
+            {!payments
+              ? t('Nalog, bezbednost, jezik i obaveštenja, privatnost.')
+              : marketHas('package')
+                ? t('Nalog, paket, bezbednost, jezik i obaveštenja, privatnost.')
+                : t('Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.')}
           </PageDescription>
         </PageHeaderText>
       </PageHeader>
@@ -204,6 +247,11 @@ export default function Settings({ payments = true, unlocked, subscription, care
       {/* a caregiver pays nothing here: her money comes in through Stripe */}
       {payments && (
         <PageSection title={t('Plaćanje')}>
+          {/* Serbia: one package paid once, no card kept (part 2 spec) */}
+          {marketHas('package') ? (
+            <PackageCard country={user?.country} subscription={subscription} unlocked={unlocked} onChoose={() => onSubscribe?.(true)} />
+          ) : (
+          <>
           {/* Started and stopped from here. It used to be startable only from the
               dialog on the care plan, which is where somebody runs into the
               paywall — not where they go looking for what they pay for. */}
@@ -331,6 +379,8 @@ export default function Settings({ payments = true, unlocked, subscription, care
               </>
             )}
           </Card>
+          </>
+          )}
         </PageSection>
       )}
 

@@ -1,5 +1,6 @@
 import { activeVersion, allVisits, firstName, hasBeen, plansToConfirm, waitingOnYou } from './familyCare';
 import { planPrice, plansFor } from './plans';
+import { marketHas } from './market';
 import { msg, t } from '../i18n';
 
 // What a family is told on its way to the first visit, and only then
@@ -12,16 +13,26 @@ import { msg, t } from '../i18n';
 // family is told so, with the price, before the dialog and not only in it.
 export function requestNote(unlocked, country) {
   if (unlocked) {
-    return t('Upit šalje plan nege negovateljici i nikoga ne obavezuje. Možete da pitate više njih, a ništa nije dogovoreno dok zajedno ne postavite uslove.');
+    return plansFor(country).every((p) => p.once)
+      ? t('Upit šalje plan nege negovateljici i nikoga ne obavezuje. Možete da pitate više njih. Kad neka prihvati, vidite njen telefon i e-mail i dogovarate se direktno.')
+      : t('Upit šalje plan nege negovateljici i nikoga ne obavezuje. Možete da pitate više njih, a ništa nije dogovoreno dok zajedno ne postavite uslove.');
   }
   const plans = plansFor(country);
   const monthly = plans.find((p) => p.months === 1) || plans[0];
+  // Serbia: a package paid once, and the rest agreed with her directly
+  if (monthly.once) {
+    return t('Slanje upita je deo paketa (od {price}, plaća se jednom). Sam upit nikoga ne obavezuje: kad prihvati, dogovarate se direktno sa njom.', { price: planPrice(monthly) });
+  }
   return t('Slanje upita je deo pretplate (od {price} mesečno). Sam upit nikoga ne obavezuje: ništa nije dogovoreno dok zajedno ne postavite uslove.', { price: planPrice(monthly) });
 }
 
 // the same, as the one line under a request in the assistant's card
 export const requestFoot = (unlocked) =>
-  unlocked ? t('Upit nikoga ne obavezuje.') : t('Slanje upita je deo pretplate. Sam upit nikoga ne obavezuje.');
+  unlocked
+    ? t('Upit nikoga ne obavezuje.')
+    : marketHas('package')
+      ? t('Slanje upita je deo paketa. Sam upit nikoga ne obavezuje.')
+      : t('Slanje upita je deo pretplate. Sam upit nikoga ne obavezuje.');
 
 // How long an answer usually takes, kept where the family is waiting and not
 // only in the message that goes away after a request is sent.

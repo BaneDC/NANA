@@ -28,24 +28,36 @@ function PlanCard({ plan, plans, current, onChoose }) {
   return (
     <Card className={cn('gap-3', plan.recommended && 'shadow-[0_0_0_1px_var(--primary),var(--shadow-card)] phone:-order-1')}>
       <CardHeader>
-        <CardTitle>{plan.name}</CardTitle>
+        <CardTitle>{t(plan.name)}</CardTitle>
         {plan.recommended && (
           <CardAction>
-            <Badge>{t('Najpopularniji')}</Badge>
+            <Badge>{t(plan.badge || 'Najpopularniji')}</Badge>
           </CardAction>
         )}
       </CardHeader>
 
       <div className="flex flex-col gap-1">
-        <p className="flex items-center gap-2 text-[24px] leading-8 font-medium text-foreground">
+        <p className="flex flex-wrap items-center gap-2 text-[24px] leading-8 font-medium text-foreground">
           {planPrice(plan)}
-          {saving && <Badge variant="success">{t('{percent}% uštede', { percent: saving })}</Badge>}
+          {/* a package paid once says what it was and what it saves in euros,
+              as the site does; a subscription says it in percent */}
+          {plan.was && <span className="text-xs font-normal text-muted-foreground line-through">{planPrice({ price: plan.was })}</span>}
+          {plan.was ? (
+            <Badge variant="success">{t('Uštedite {amount}', { amount: planPrice({ price: plan.was - plan.price }) })}</Badge>
+          ) : (
+            saving && <Badge variant="success">{t('{percent}% uštede', { percent: saving })}</Badge>
+          )}
         </p>
         <p className="text-small text-muted-foreground">
-          {plan.months === 1
-            ? t('mesečno, otkazujete kad god želite')
-            : t('za {n} meseca · {price} mesečno, naplaćuje se odjednom', { n: plan.months, price: perMonth(plan) })}
+          {plan.once
+            ? plan.months === 1
+              ? t('za 1 mesec · plaćate jednom, bez automatske obnove')
+              : t('za {n} meseca · plaćate jednom, bez automatske obnove', { n: plan.months })
+            : plan.months === 1
+              ? t('mesečno, otkazujete kad god želite')
+              : t('za {n} meseca · {price} mesečno, naplaćuje se odjednom', { n: plan.months, price: perMonth(plan) })}
         </p>
+        {plan.tagline && <p className="text-xs font-medium text-foreground">{t(plan.tagline)}</p>}
       </div>
 
       <CardDescription>{t(plan.description)}</CardDescription>
@@ -69,7 +81,7 @@ function PlanCard({ plan, plans, current, onChoose }) {
           disabled={mine}
           onClick={() => onChoose(plan)}
         >
-          {mine ? t('Vaš paket') : current ? t('Pređite na {plan}', { plan: plan.name }) : t('Izaberite {plan}', { plan: plan.name })}
+          {mine ? t('Vaš paket') : current ? t('Pređite na {plan}', { plan: t(plan.name) }) : t('Izaberite {plan}', { plan: t(plan.name) })}
         </Button>
       </CardFooter>
     </Card>
@@ -99,6 +111,8 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
   const [message, setMessage] = useState('');
   const [step, setStep] = useState('message');
   const plans = plansFor(country);
+  // a package (Serbia) is paid once and keeps no card; a subscription renews
+  const once = plans.every((p) => p.once);
   const first = caregiver?.name.split(' ')[0];
   const choosing = Boolean(current) || (!unlocked && !alreadyAsked && (!caregiver || step === 'plans'));
 
@@ -111,15 +125,19 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         closeClassName="top-4"
         header={(Title) => (
           <div className="flex flex-col gap-1 pr-8 phone:pt-2 phone:pr-12">
-            <Title className="text-base">{current ? t('Promenite paket') : t('Izaberite pretplatu')}</Title>
+            <Title className="text-base">{current ? t('Promenite paket') : once ? t('Izaberite paket') : t('Izaberite pretplatu')}</Title>
             <p className="text-xs leading-body text-muted-foreground">
               {/* no name in these: Serbian would have to decline it ("za Vesnu"),
                   and a template cannot */}
               {current
                 ? t('Novi paket počinje {date}, kad se sadašnji obnavlja. Do tada ništa se ne menja.', { date: startsOn })
                 : caregiver
-                ? t('Vaša poruka ide čim se pretplatite, zajedno sa planom nege.')
-                : t('Pretplata otključava ceo plan nege i kontakte negovateljica.')}
+                ? once
+                  ? t('Vaša poruka ide čim izaberete paket, zajedno sa planom nege.')
+                  : t('Vaša poruka ide čim se pretplatite, zajedno sa planom nege.')
+                : once
+                  ? t('Paket otključava ceo plan nege, upite negovateljicama i njihov kontakt kad prihvate.')
+                  : t('Pretplata otključava ceo plan nege i kontakte negovateljica.')}
             </p>
           </div>
         )}
@@ -131,10 +149,16 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         </div>
 
         <div className="flex flex-col gap-1 text-center text-small text-muted-foreground">
-          <p>{t('Pretplata se obnavlja automatski, a možete da je otkažete u svakom trenutku.')}</p>
-          {/* the card is saved for charges made while they are away, which
-              they agree to here (docs/patterns.md §9) */}
-          {!current && <p>{t('Kartica se čuva i za posete: svaka se naplaćuje 24 sata posle izveštaja negovateljice.')}</p>}
+          {once ? (
+            <p>{t('Plaćate jednom. Paket se ne obnavlja sam: kad istekne, izaberete ga ponovo ako vam treba.')}</p>
+          ) : (
+            <>
+              <p>{t('Pretplata se obnavlja automatski, a možete da je otkažete u svakom trenutku.')}</p>
+              {/* the card is saved for charges made while they are away, which
+                  they agree to here (docs/patterns.md §9) */}
+              {!current && <p>{t('Kartica se čuva i za posete: svaka se naplaćuje 24 sata posle izveštaja negovateljice.')}</p>}
+            </>
+          )}
           <p>{t('Cene su izražene u evrima.')}</p>
         </div>
 
@@ -177,7 +201,7 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
             {/* the plan says enough on its own, so the message may be left out
                 (docs/patterns.md §10: a field with no label says so in words) */}
             {t('Poruka nije obavezna, plan nege ide u svakom slučaju.')}
-            {!unlocked && ' ' + t('Poruka se šalje čim se pretplatite.')}
+            {!unlocked && ' ' + (once ? t('Poruka se šalje čim izaberete paket.') : t('Poruka se šalje čim se pretplatite.'))}
           </DialogDescription>
           {/* no label: the sentence above says what goes in it, and the
               placeholder says it again inside. It takes the focus as the
@@ -205,7 +229,7 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
               {t('Pošalji poruku')}
             </Button>
           ) : (
-            <Button onClick={() => setStep('plans')}>{t('Dalje: izaberite pretplatu')}</Button>
+            <Button onClick={() => setStep('plans')}>{once ? t('Dalje: izaberite paket') : t('Dalje: izaberite pretplatu')}</Button>
           ))}
       </DialogFooter>
     </Dialog>

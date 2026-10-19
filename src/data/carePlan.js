@@ -5,6 +5,7 @@ import { aidsFor, visitsFor } from './partners';
 import { eurRange } from '../lib/money';
 import { getLang, msg, t } from '../i18n';
 import { caregiversRs } from './caregiversRs';
+import { market } from './market';
 
 // Matched caregivers. `match` is the fake relevance score the assistant "computed"
 // from the questionnaire — it exists to sell the AI framing in the prototype.
@@ -306,10 +307,15 @@ export const slotsText = (slots) => slots.map((s) => t(SLOTS[s].label).toLowerCa
 export function matchReasons(c) {
   const reasons = [];
   if (c.match >= 85) reasons.push(t('Sve vrste nege'));
-  reasons.push(c.area === 'Helsinki' ? t('Isti grad') : t('Dolazi do {radius} km', { radius: c.radius }));
+  // the demo families live in Helsinki and in Belgrade
+  reasons.push(/Helsinki|Beograd/.test(c.area) ? t('Isti grad') : t('Dolazi do {radius} km', { radius: c.radius }));
   if (c.slots.includes('morning')) reasons.push(t('Raspored se poklapa'));
   return reasons;
 }
+
+// How a Serbian caregiver works: daily visits or shifts, a 24-hour shift, or both.
+const ENGAGEMENT = { daily: msg('Dnevne posete'), shift24: msg('Smena 24 h') };
+export const engagementText = (c) => (c.engagement || []).map((e) => t(ENGAGEMENT[e]));
 
 // What is shown in place of her phone and e-mail before the subscription.
 export const MASKED_EMAIL = '********@*****.fi';
@@ -317,11 +323,17 @@ export const MASKED_EMAIL = '********@*****.fi';
 // What a locked phone number looks like. Deliberately not derived from the real
 // number — no real digit reaches the client until the plan is paid for.
 export const MASKED_PHONE = '+358 ** *** ****';
+export const maskedPhone = (c) => (c?.market === 'RS' ? '+381 ** *** ****' : MASKED_PHONE);
+export const maskedEmail = (c) => (c?.market === 'RS' ? '********@*****.rs' : MASKED_EMAIL);
 
 // Mirrors what the API should do: `phone` is simply absent from the payload until
 // the plan is unlocked, so it never sits in the DOM waiting to be read out.
+// The caregivers a family in this market can find and write to: the Finnish list
+// or the Serbian one. Lookups by id go through caregiverById, which knows both.
+export const caregiversIn = (m = market()) => (m === 'RS' ? caregiversRs : caregivers);
+
 export function caregiversFor(unlocked) {
-  return caregivers.map(({ phone, ...rest }) => (unlocked ? { ...rest, phone } : rest));
+  return caregiversIn().map(({ phone, ...rest }) => (unlocked ? { ...rest, phone } : rest));
 }
 
 // The coordinator is a person, not a support queue — the client was explicit that

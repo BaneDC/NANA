@@ -50,8 +50,43 @@ const QUARTERLY = {
   ],
 };
 
+// Serbia's two packages, word for word from nanaprime.com/sr/pricing (19. 10.).
+// Paid once, never renewed: `once`. Models are still being tried, so what a
+// package is lives only here (docs/superpowers/specs/2026-10-19-porodica-srbija-design.md).
+const RS_MONTHLY = {
+  name: msg('Mesečni paket'),
+  tagline: msg('Fleksibilnost kada vam je potrebna'),
+  description: msg('Za porodice koje žele brzo da pronađu pouzdanu negovateljicu, bez dugoročnih obaveza.'),
+  benefits: [
+    msg('Pristup bazi proverenih negovateljica'),
+    msg('Pomoć pri pronalaženju odgovarajuće negovateljice'),
+    msg('Besplatan uvodni razgovor od 30 minuta sa koordinatorom'),
+    msg('Direktna komunikacija sa negovateljicama'),
+    msg('Zamena negovateljice u hitnim slučajevima, bez dodatnih troškova'),
+    msg('Bez posrednika i skrivenih troškova'),
+    msg('14-dnevna garancija povraćaja novca - ako ne pronađete odgovarajuću negovateljicu, vraćamo vam 100% novca'),
+  ],
+};
+const RS_QUARTERLY = {
+  name: msg('Tromesečni paket'),
+  tagline: msg('Više podrške. Više sigurnosti. Manje brige.'),
+  description: msg('Naš najpopularniji paket za porodice koje žele sigurnost, kontinuitet i ličnu podršku tokom dugoročnog zbrinjavanja.'),
+  lead: msg('Sve iz Mesečnog paketa, plus:'),
+  benefits: [
+    msg('Prioritet pri pronalaženju negovateljice'),
+    msg('Personalizovani plan nege prilagođen potrebama vaše porodice'),
+    msg('Prioritetna podrška koordinatora kada vam je potrebna pomoć'),
+    msg('Kontinuirana podrška u planiranju dugoročne nege'),
+    msg('Pomoć pri organizaciji dodatnih usluga, kao što su lekar ili rehabilitacija'),
+    msg('Personalizovani vodič za kućnu negu'),
+  ],
+};
+
 const PLANS = {
-  RS: [{ id: 'monthly', months: 1, price: 12.7, currency: 'EUR', ...MONTHLY }],
+  RS: [
+    { id: 'monthly', months: 1, price: 43, currency: 'EUR', once: true, ...RS_MONTHLY },
+    { id: 'quarterly', months: 3, price: 98, was: 129, currency: 'EUR', once: true, recommended: true, badge: msg('Najpopularnije'), ...RS_QUARTERLY },
+  ],
   FI: [
     { id: 'monthly', months: 1, price: 9.99, currency: 'EUR', ...MONTHLY },
     { id: 'quarterly', months: 3, price: 17.99, currency: 'EUR', recommended: true, ...QUARTERLY },
@@ -101,10 +136,21 @@ export function renewalAt(country, planId, at) {
   return d.getTime();
 }
 
-// The same, as it is said.
-export function renewsOn(country, planId, at) {
-  const d = new Date(renewalAt(country, planId, at));
+// A day, as it is said: "12. novembra 2026.", "12 November 2026".
+export function dateOn(at) {
+  const d = new Date(at);
   // Serbian wants the month in the genitive, which Intl does not give
   if (getLang() === 'sr') return `${d.getDate()}. ${GENITIVE[d.getMonth()]} ${d.getFullYear()}.`;
   return d.toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// The same, for when it renews (or, for a package, runs out).
+export const renewsOn = (country, planId, at) => dateOn(renewalAt(country, planId, at));
+
+// A package (paid once) is over once its months have passed; a subscription is
+// never "over" this way, it renews or is cancelled.
+export function packageOver(country, subscription, now = Date.now()) {
+  if (!subscription) return false;
+  const plan = plansFor(country).find((p) => p.id === subscription.planId);
+  return Boolean(plan?.once) && now >= renewalAt(country, subscription.planId, subscription.at);
 }

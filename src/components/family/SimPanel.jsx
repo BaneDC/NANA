@@ -51,6 +51,7 @@ export default function SimPanel({
   onFlash,
   onFill,
   onRenew,
+  onExpirePackage,
   onMarket,
   onSwitch,
   onReset,
@@ -124,6 +125,17 @@ export default function SimPanel({
           {t('Prođe dan')}
         </Button>
       </div>
+
+      {onExpirePackage && (
+        <>
+          <PaneLabel>{t('Paket')}</PaneLabel>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={onExpirePackage}>
+              {t('Paket ističe')}
+            </Button>
+          </div>
+        </>
+      )}
 
       {caregiver && <SimForCaregiver care={care} caregiverId={caregiverId} onCare={onCare} onFlash={onFlash} />}
 

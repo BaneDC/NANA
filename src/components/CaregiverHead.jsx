@@ -20,7 +20,7 @@ export default function CaregiverHead({ caregiver: c, standing }) {
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <CaregiverName name={c.name} match={c.match} />
         <p className="text-small text-muted-foreground">
-          <Rating caregiver={c} /> · {c.rate} · {t('{area}, do {radius} km', c)}
+          <Rating caregiver={c} /> · {c.rate && <>{c.rate} · </>}{t('{area}, do {radius} km', c)}
         </p>
         <Standing standing={standing} className="self-start" />
       </div>

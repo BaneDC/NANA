@@ -12,7 +12,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
-import { caregivers, matchReasons } from '../data/carePlan';
+import { caregiversIn, engagementText, matchReasons } from '../data/carePlan';
 import { standingWith } from '../data/familyCare';
 import Rating from '../components/Rating';
 import Tags, { Groups } from '../components/Tags';
@@ -37,7 +37,7 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
   const [page, setPage] = useState(1);
 
   // best match first, as the recommendation it is
-  const results = useMemo(() => [...caregivers].sort((a, b) => b.match - a.match), []);
+  const results = useMemo(() => [...caregiversIn()].sort((a, b) => b.match - a.match), []);
 
   const pages = Math.max(1, Math.ceil(results.length / PER_PAGE));
   const shown = results.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -85,13 +85,18 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
                   </span>
                 </CaregiverName>
                 <div className="text-small text-muted-foreground">
-                  <Rating caregiver={c} /> · {c.rate} · {t('{area}, do {radius} km', c)}
+                  <Rating caregiver={c} /> · {c.rate && <>{c.rate} · </>}{t('{area}, do {radius} km', c)}
                 </div>
                 {/* Why she comes up (the platform's reasons) and what she is,
                     each a labelled group of tags, the labels in one column. */}
                 <Groups className="mt-2">
                   <Tags label={t('Poklapa se')} items={matchReasons(c)} />
-                  <Tags label={t('Klasifikacije')} items={c.classifications} />
+                  {/* Serbia names no classifications: how she works instead */}
+                  {c.classifications.length > 0 ? (
+                    <Tags label={t('Klasifikacije')} items={c.classifications} />
+                  ) : (
+                    c.engagement && <Tags label={t('Angažman')} items={engagementText(c)} />
+                  )}
                 </Groups>
               </div>
               {/* Asking is not hiring. It sends the plan and waits — the terms

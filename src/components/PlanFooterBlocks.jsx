@@ -54,6 +54,17 @@ export function CoordinatorRows({ coordinator }) {
   );
 }
 
+// A caregiver's phone and e-mail, as the coordinator's rows: in Serbia, once
+// she has said yes (docs/superpowers/specs/2026-10-19-porodica-srbija-design.md)
+export function PersonRows({ phone, email }) {
+  return (
+    <ItemGroup>
+      <ContactRow href={`tel:${phone.replace(/\s/g, '')}`} icon={Phone} label={t('Telefon')} value={phone} />
+      <ContactRow href={`mailto:${email}`} icon={Mail} label={t('Email')} value={email} />
+    </ItemGroup>
+  );
+}
+
 export function CoordinatorContact({ coordinator }) {
   return (
     <Card>

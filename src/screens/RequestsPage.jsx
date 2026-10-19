@@ -9,7 +9,7 @@ import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/
 import Attention from '../components/Attention';
 import { Group, Groups } from '../components/Tags';
 import { caregiverById } from '../data/carePlan';
-import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../data/familyCare';
+import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers, withdrawRequest } from '../data/familyCare';
 import { USUAL_ANSWER } from '../data/firstSteps';
 import { msg, t } from '../i18n';
 
@@ -28,7 +28,7 @@ const BADGE = { pending: 'warning', accepted: 'success', declined: 'destructive'
 const ICON = { pending: Clock, accepted: CheckCircle2, declined: XCircle };
 const TABS = ['all', 'pending', 'accepted', 'declined'];
 
-export default function RequestsPage({ care, askNote, onCare, onCaregiver, onProfile, onFind, onContact }) {
+export default function RequestsPage({ care, askNote, onCare, onCaregiver, onProfile, onFind, onContact, onFlash }) {
   const [tab, setTab] = useState('all');
   const mine = care.requests;
   useEffect(() => {
@@ -122,6 +122,8 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
                             </>
                           ) : r.status === 'pending' ? (
                             t('{name} još nije odgovorila. {usual} Javićemo vam u svakom slučaju.', { name: firstName(cg.name), usual: t(USUAL_ANSWER) })
+                          ) : cg.market === 'RS' ? (
+                            t('{name} je prihvatila. Telefon i e-mail su u njenom profilu.', { name: firstName(cg.name) })
                           ) : linked ? (
                             t('{name} je prihvatila. Ugovor i posete su na njenoj stranici.', { name: firstName(cg.name) })
                           ) : (
@@ -132,6 +134,20 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
                     </div>
                     {/* its one action top right, level with her name; on a
                         phone under what the card says, in its column */}
+                    {/* one that waits can be taken back: it goes from the list */}
+                    {r.status === 'pending' && (
+                      <div className="flex shrink-0 gap-2 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            onCare(withdrawRequest(r.caregiverId));
+                            onFlash?.(t('Upit je otkazan.'));
+                          }}
+                        >
+                          {t('Otkaži')}
+                        </Button>
+                      </div>
+                    )}
                     {askAgain && (
                       <div className="flex shrink-0 gap-2 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
                         <Button onClick={() => onContact?.(cg)}>{t('Pitaj ponovo')}</Button>

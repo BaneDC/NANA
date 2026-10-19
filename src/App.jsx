@@ -46,8 +46,8 @@ import { requestFoot, requestNote } from './data/firstSteps';
 import { changeEntry } from './data/planLog';
 import { newPerson, planOf, withPlan } from './data/person';
 import { localized, locale, msg, setLang, t, useKeepScroll, useLang } from './i18n';
-import { setMarket } from './data/market';
-import { renewalAt, renewsOn } from './data/plans';
+import { marketHas, setMarket } from './data/market';
+import { packageOver, renewalAt, renewsOn } from './data/plans';
 
 
 // Who this tab is in the demo (src/data/demo.js): the address says it, or the
@@ -111,7 +111,10 @@ export default function App() {
       }),
     [setShared]
   );
-  const { unlocked, subscription } = shared.family; // subscription: { planId, at }
+  const { subscription } = shared.family; // subscription: { planId, at }
+  // a package (Serbia) holds for its months and then is over: what it opened
+  // closes again until another is chosen (part 2 spec)
+  const unlocked = shared.family.unlocked && !packageOver(user.country, subscription);
   const setFamily = useCallback(
     (key) => (next) =>
       setShared((s) => {
@@ -619,6 +622,7 @@ export default function App() {
                   user={user}
                   plan={plan}
                   unlocked={unlocked}
+                  packageOver={packageOver(user.country, subscription)}
                   askNote={askNote}
                   planChange={planChange}
                   onSelectCaregiver={selectCaregiver}
@@ -658,6 +662,7 @@ export default function App() {
                   onCaregiver={showCaregiver}
                   onProfile={showProfile}
                   onFind={() => setView('find-caregiver')}
+                  onFlash={say}
                 />
               )}
               {view === 'find-caregiver' && (
@@ -847,6 +852,15 @@ export default function App() {
             // The renewal, from Stripe's side. The subscription keeps real
             // dates and the simulation a clock of its own, so the day it
             // renews is a button rather than days passing.
+            // Serbia's package, from its last day: moved back by its months
+            onExpirePackage={
+              !caregiverSide && marketHas('package') && subscription && unlocked
+                ? () => {
+                    setSubscription((x) => ({ ...x, at: x.at - (renewalAt(user.country, x.planId, x.at) - x.at) }));
+                    say(t('Paket je istekao.'));
+                  }
+                : undefined
+            }
             onRenew={
               !caregiverSide &&
               subscription &&
@@ -935,9 +949,9 @@ export default function App() {
               setUnlocked(true);
               setSubscription({ planId: chosen?.id, at: Date.now() });
               // the card it is paid with is kept for the visits too, so it is
-              // never asked for twice
-              setCare((c) => (c.payment?.connected ? c : linkCard(c)));
-              say(t('Pretplata je aktivna.'));
+              // never asked for twice; a package (Serbia) keeps no card
+              if (marketHas('card')) setCare((c) => (c.payment?.connected ? c : linkCard(c)));
+              say(marketHas('package') ? t('Paket je aktivan. Važi do {date}', { date: renewsOn(user.country, chosen.id, Date.now()) }) : t('Pretplata je aktivna.'));
               // unlocking the plan has nothing left to do here; a message still has to be sent
               if (!paywall.caregiver) setPaywall(null);
             }}

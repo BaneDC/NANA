@@ -4,10 +4,10 @@ import { isLoadBearing } from '../data/dependencies';
 import { frailtyOf } from '../data/frailty';
 import { answerText, planQuestions } from '../data/planEdits';
 import { srField, srOption, srTitle } from '../data/flow.sr';
-import { caregivers, daysText, slotsText } from '../data/carePlan';
+import { caregiversIn, daysText, slotsText } from '../data/carePlan';
 import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/familyCare';
 import { HEALTH, healthOps, recordState } from '../data/record';
-import { emergencyNumber } from '../data/market';
+import { emergencyNumber, marketHas } from '../data/market';
 import { scheduleText } from '../data/familyStart';
 import { getLang, msg, t } from '../i18n';
 
@@ -118,7 +118,7 @@ const noteTool = () => ({
 const REQUEST = {
   name: 'propose_request',
   description:
-    'Offer to send a caregiver a request (an inquiry with the care plan attached; it commits nobody, and sending requests is part of their subscription). The family sees a button and sends it themselves. Only caregivers from the list in the latest system message who have not been asked yet.',
+    'Offer to send a caregiver a request (an inquiry with the care plan attached; it commits nobody, and sending requests is part of what they pay for). The family sees a button and sends it themselves. Only caregivers from the list in the latest system message who have not been asked yet.',
   input_schema: {
     type: 'object',
     properties: {
@@ -152,7 +152,9 @@ const SHOW = {
 const system = (name) =>
   [
     `You are the assistant in NANA Prime, for the family caring for ${name}. The person talking to you is a family member. You know their care plan, the caregivers who fit it, who they have asked, and what is waiting on them - all in the latest system message, which is the truth about their situation; never invent visits, prices or answers that are not there.`,
-    'Besides the plan you can help with the rest of their care: say how things work (a request commits nobody, and sending one is part of the subscription, so never call it free; terms must be agreed before anything is booked; a visit is reserved on their card and charged after the work order unless they query it), offer to send requests with `propose_request`, and point them to a page with `show_page`. Anything that moves money or agrees terms they do on the page themselves.',
+    marketHas('package')
+      ? 'Besides the plan you can help with the rest of their care: say how things work (a request commits nobody, and sending requests is part of their package, paid once, so never call it free; once a caregiver accepts, the family sees her phone and e-mail and they agree days, hours and pay directly with her; the platform takes no part in that and keeps no agreements, visits or work orders), offer to send requests with `propose_request`, and point them to a page with `show_page`.'
+      : 'Besides the plan you can help with the rest of their care: say how things work (a request commits nobody, and sending one is part of the subscription, so never call it free; terms must be agreed before anything is booked; a visit is reserved on their card and charged after the work order unless they query it), offer to send requests with `propose_request`, and point them to a page with `show_page`. Anything that moves money or agrees terms they do on the page themselves.',
     'The plan is not free text: it is built from their answers to the onboarding questions, and the recommendations and caregivers follow from those answers. To change the plan, call `propose_changes` with the answers that should now be different. The app shows the proposal and they apply it with a button - never say a change is made, say what you are proposing.',
     'One thing said often touches more than one question - what they still manage alone and where they need hands-on help, how they get around and whether they can go out alone. Look at every question it bears on and propose all of them in one call.',
     'Some answers carry the rest of the plan: the ones marked `carriesPlan` in the catalog set how much help she needs overall, and that decides which questions the plan asks at all and which caregivers fit. When what they tell you changes one of those, do not propose it on what they said alone. Ask first - one or two short questions about what else has changed around it, the ones whose answers you would need to fill in the rest - and propose the whole set once they answer. This is the only reason to ask rather than propose; for everything else, propose.',
@@ -203,7 +205,7 @@ function catalog(answers) {
 // is waiting on the family.
 function situation(care) {
   const asked = Object.fromEntries(care.requests.map((r) => [r.caregiverId, r]));
-  const list = caregivers.map((c) => ({
+  const list = caregiversIn().map((c) => ({
     id: c.id,
     name: c.name,
     match: `${c.match}%`,
@@ -328,7 +330,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
       }
       if (call.name === 'propose_request') {
         const asked = new Set((care?.requests || []).map((r) => r.caregiverId));
-        const ids = (call.input.caregiverIds || []).filter((id) => caregivers.some((c) => c.id === id) && !asked.has(id));
+        const ids = (call.input.caregiverIds || []).filter((id) => caregiversIn().some((c) => c.id === id) && !asked.has(id));
         requests.push(...ids.filter((id) => !requests.includes(id)));
         return {
           type: 'tool_result',

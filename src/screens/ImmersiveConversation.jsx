@@ -6,7 +6,7 @@ import { frailtyOf } from '../data/frailty';
 import { emergencyNumber } from '../data/market';
 import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
-import { buildPlan, caregivers } from '../data/carePlan';
+import { buildPlan, caregiversIn } from '../data/carePlan';
 import { planOverview } from '../data/carePlan.sr';
 import { createClient, runTurn } from '../lib/claudeChat';
 import CloudBackground from '../components/immersive/CloudBackground';
@@ -978,7 +978,7 @@ export default function ImmersiveConversation({
                     <p className="imm-plan-reco-title">{overview.role}</p>
                     <p className="imm-plan-text">{overview.recommendation}</p>
                     <div className="imm-plan-reco-foot">
-                      <span className="imm-plan-count">{tn(caregivers.length, 'negovateljica odgovara ovoj slici', 'negovateljice odgovaraju ovoj slici', 'negovateljica odgovara ovoj slici')}</span>
+                      <span className="imm-plan-count">{tn(caregiversIn().length, 'negovateljica odgovara ovoj slici', 'negovateljice odgovaraju ovoj slici', 'negovateljica odgovara ovoj slici')}</span>
                       <Button variant="primary" size="lg" onClick={onFinish}>
                         {t('Pogledaj ceo plan')} <ArrowUpRight size={14} strokeWidth={2} />
                       </Button>
