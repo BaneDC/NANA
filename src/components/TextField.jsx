@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, useState } from 'react';
+import { createContext, useContext, useId, useRef, useState } from 'react';
 import { CalendarDays, Eye, EyeOff } from 'lucide-react';
 import { FieldDescription, FieldError as FieldErrorRoot, FieldLabel, Field as FieldRoot } from '@/components/ui/field';
 import { Input as InputBox } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { longDate } from '../data/familyCare';
 import { t } from '../i18n';
 
@@ -254,5 +255,46 @@ export function DateInput({ value, onChange, from, to, today = from, placeholder
         />
       </PopoverContent>
     </Popover>
+  );
+}
+
+// A file, chosen and not typed (part 5, the caregiver's documents): the
+// browser's file input stays hidden and our button opens it, so the field
+// looks like every other button-field here. Once chosen, the name is shown
+// with "Promeni" and "Ukloni". The prototype keeps only the name.
+export function FileField({ value, onChange, accept = '.pdf,.jpg,.jpeg,.png', ariaLabel }) {
+  const ref = useRef(null);
+  const state = useContext(FieldState);
+  const pick = () => ref.current?.click();
+  return (
+    <div className="flex flex-wrap items-center gap-2" {...invalidOf(state)}>
+      <input
+        ref={ref}
+        type="file"
+        accept={accept}
+        className="hidden"
+        aria-label={ariaLabel}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onChange(f.name);
+          e.target.value = '';
+        }}
+      />
+      {value ? (
+        <>
+          <span className="min-w-0 flex-1 truncate text-xs text-foreground">{value}</span>
+          <Button type="button" variant="secondary" onClick={pick}>
+            {t('Promeni')}
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => onChange('')}>
+            {t('Ukloni')}
+          </Button>
+        </>
+      ) : (
+        <Button type="button" variant="secondary" onClick={pick}>
+          {t('Izaberite fajl')}
+        </Button>
+      )}
+    </div>
   );
 }

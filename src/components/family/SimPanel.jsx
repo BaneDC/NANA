@@ -52,6 +52,7 @@ export default function SimPanel({
   onFill,
   onRenew,
   onExpirePackage,
+  onActivate,
   onMarket,
   onSwitch,
   onReset,
@@ -132,6 +133,17 @@ export default function SimPanel({
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={onExpirePackage}>
               {t('Paket ističe')}
+            </Button>
+          </div>
+        </>
+      )}
+
+      {onActivate && (
+        <>
+          <PaneLabel>{t('Koordinatorka')}</PaneLabel>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={onActivate}>
+              {t('Koordinatorka aktivira profil')}
             </Button>
           </div>
         </>

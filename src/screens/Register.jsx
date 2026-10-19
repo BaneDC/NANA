@@ -11,6 +11,7 @@ import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
+import CaregiverSignUp from './caregiver/SignUp';
 import { LANGUAGES, msg, setLang, t, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
@@ -58,7 +59,7 @@ const MIN_PASSWORD = 8;
 
 // A consent: the box and its sentence, the whole line its label.
 // `error` under it once a press has asked (docs/patterns.md §10).
-function Consent({ checked, onChange, children, required, error }) {
+export function Consent({ checked, onChange, children, required, error }) {
   return (
     <div className="flex flex-col gap-1">
       <label className="flex cursor-pointer items-start gap-2 text-xs text-foreground">
@@ -80,7 +81,7 @@ const passwordError = (password) =>
 
 // The sign-up's parts, all 480 wide at most: a heading, a grey form card
 // (24 corners, 16 inside, fields 16 apart) and the actions under it.
-const column = 'w-[480px] max-w-full shrink-0';
+export const column = 'w-[480px] max-w-full shrink-0';
 
 
 function SignUp({ onContinue, onSignIn, onDemo }) {
@@ -152,23 +153,8 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
       </>
     );
 
-  if (who === 'caregiver')
-    return (
-      <>
-        <Welcome
-          title={t('Registracija negovateljica stiže uskoro')}
-          sub={t('Do tada možete da pogledate kako izgleda vaša strana, na demo nalogu.')}
-        />
-        <Actions>
-          <Button size="lg" className="w-full" onClick={() => onDemo('caregiver')}>
-            {t('Otvori demo negovateljice')}
-          </Button>
-          <Button variant="secondary" size="lg" className="w-full" onClick={() => setWho(null)}>
-            {t('Nazad')}
-          </Button>
-        </Actions>
-      </>
-    );
+  // her own sign-up (part 5), in this same frame
+  if (who === 'caregiver') return <CaregiverSignUp onBack={() => setWho(null)} onDone={(u, record) => onContinue(u, { record })} />;
 
   return (
     <>
@@ -268,7 +254,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
   );
 }
 
-function Welcome({ title, sub }) {
+export function Welcome({ title, sub }) {
   return (
     <div className={`${column} px-7 text-center text-foreground`}>
       <h1 className="text-base font-medium">{title}</h1>
@@ -277,11 +263,11 @@ function Welcome({ title, sub }) {
   );
 }
 
-function FormCard(props) {
+export function FormCard(props) {
   return <div className={`${column} flex flex-col gap-4 rounded-3xl bg-muted p-4`} {...props} />;
 }
 
-function Actions(props) {
+export function Actions(props) {
   return <div className={`${column} flex flex-col items-center gap-2 px-4`} {...props} />;
 }
 

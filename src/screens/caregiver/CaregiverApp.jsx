@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { AppPane } from '@/components/page';
+import { AppPane, Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import { Card, CardDescription } from '@/components/ui/card';
+import Attention from '../../components/Attention';
 import RequestsRs from './RequestsRs';
 import ClientProfile from './ClientProfile';
 import Board from './Board';
@@ -30,8 +32,28 @@ export default function CaregiverApp({ view, onView, user, market, care, clients
   const client = view === 'client' && clients.find((c) => c.id === openId);
   const fi = market !== 'sr';
 
+  // signed up, not yet through the talk with the coordinator: her home says so
+  const waiting = user.status && user.status !== 'active';
   let page;
-  if (view === 'settings') page = <Settings payments={false} user={user} care={care} onCare={onCare} onSaveUser={onSaveUser} onFlash={onFlash} />;
+  if (waiting && (view === 'board' || view === 'requests'))
+    page = (
+      <Page>
+        <PageHeader>
+          <PageHeaderText>
+            <PageTitle>{t('Dobro došli, {name}', { name: user.firstName || user.name })}</PageTitle>
+            <PageDescription>{t('Prijava je poslata.')}</PageDescription>
+          </PageHeaderText>
+        </PageHeader>
+        <Attention title={t('Profil se aktivira posle razgovora')}>
+          <Card>
+            <CardDescription>
+              {t('Koordinatorka vam se javlja preko kanala koji ste izabrali. Posle razgovora porodice vas vide na „Pronađi" i mogu da vam pišu. Do tada možete da dopunite profil.')}
+            </CardDescription>
+          </Card>
+        </Attention>
+      </Page>
+    );
+  else if (view === 'settings') page = <Settings payments={false} user={user} care={care} onCare={onCare} onSaveUser={onSaveUser} onFlash={onFlash} />;
   else if (view === 'profile') page = <Profile caregiver={caregiverById(caregiverId)} user={user} market={market} onSaveProfile={onSaveProfile} />;
   // Serbia: the requests, and a family's profile (part 4)
   else if (!fi && client) page = <ClientProfile client={client} onBack={() => onView('requests')} act={act} />;

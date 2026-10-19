@@ -40,7 +40,7 @@ import SimPanel from './components/family/SimPanel';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import { myClients } from './data/caregiverView';
 import { useKept } from './hooks/use-kept';
-import { buildPlan, caregiverById, coordinator, setProfiles } from './data/carePlan';
+import { buildPlan, caregiverById, coordinator, setProfiles, setRegistered } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { recordImpact, writeEvent, written } from './data/record';
 import { requestFoot, requestNote } from './data/firstSteps';
@@ -97,9 +97,12 @@ export default function App() {
   // With her, what the family pays: shared with every tab on this market in a
   // demo, this tab's own for a real account. A tab that receives them says the
   // dates in its own language, and does not save that back.
+  // a caregiver who signed up works on her market's demo state too: the
+  // families she can be found by are there (part 5)
+  const sharedTab = DEMO || user.role === 'caregiver';
   const [shared, setShared] = useShared(
-    DEMO ? market : null,
-    () => (DEMO ? seedState(market, { filled: false }) : { person: newPerson(), family: { unlocked: false, subscription: null }, clients: [] }),
+    sharedTab ? market : null,
+    () => (sharedTab ? seedState(market, { filled: false }) : { person: newPerson(), family: { unlocked: false, subscription: null }, clients: [] }),
     { onReceive: (s) => ({ ...s, person: { ...s.person, care: relanguage(s.person.care) } }) }
   );
   const person = shared.person;
@@ -116,6 +119,7 @@ export default function App() {
   // her side: what she changed on her profile, laid over her record wherever
   // she is shown, in this tab and the family's (src/data/carePlan.js)
   setProfiles(shared.profiles);
+  setRegistered(shared.registered);
   // her clients: the demo family and the others the demo gives her (part 3)
   const myClientsNow = user.role === 'caregiver' ? myClients(shared, user.caregiverId) : [];
   const onClientCare = (id, fn) =>
@@ -573,7 +577,20 @@ export default function App() {
             <Register
               key="register"
               onDemo={(role) => openDemo(role)}
-              onContinue={(u) => {
+              onContinue={(u, { record } = {}) => {
+                // a caregiver: her record goes onto her market's state, and her
+                // side opens (part 5)
+                if (u.role === 'caregiver') {
+                  const m = u.country === 'RS' ? 'sr' : 'fi';
+                  if (record) {
+                    const st = store.load(m) || seedState(m, { filled: false });
+                    store.save(m, { ...st, registered: [...(st.registered || []).filter((r) => r.id !== record.id), record] });
+                  }
+                  setUser(u);
+                  setView(m === 'sr' ? 'requests' : 'board');
+                  setPhase('app');
+                  return;
+                }
                 setUser(u);
                 setCare(startCare(u));
                 setPhase('app');
@@ -917,6 +934,16 @@ export default function App() {
             // a demo tab becomes someone else: the market, the other side,
             // or the same as it started (src/data/demo.js)
             onMarket={DEMO ? (m) => go({ role: user.role, market: m }) : undefined}
+            // a caregiver who signed up waits for the coordinator's talk
+            onActivate={
+              caregiverSide && user.status && user.status !== 'active'
+                ? () => {
+                    setShared((s) => ({ ...s, registered: (s.registered || []).map((r) => (r.id === user.caregiverId ? { ...r, status: 'active' } : r)) }));
+                    saveUser({ status: 'active' }, { quiet: true });
+                    say(t('Koordinatorka je aktivirala profil. Porodice vas sada vide na „Pronađi".'));
+                  }
+                : undefined
+            }
             onSwitch={() => go({ role: caregiverSide ? 'family' : 'caregiver', market })}
             onReset={() => {
               store.reset(market);

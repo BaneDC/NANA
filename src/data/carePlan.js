@@ -275,8 +275,20 @@ let profiles = {};
 export const setProfiles = (next) => {
   profiles = next || {};
 };
-const withProfile = (c) => (c && profiles[c.id] ? { ...c, ...profiles[c.id] } : c);
-export const caregiverById = (id) => withProfile(caregivers.find((c) => c.id === id) || caregiversRs.find((c) => c.id === id));
+// the range as shown, worked out again from the numbers, so a range she edits
+// (or one a new sign-up gives) is shown as it is now
+const withProfile = (c) => {
+  if (!c) return c;
+  const x = profiles[c.id] ? { ...c, ...profiles[c.id] } : c;
+  return x.rateMin && x.rateMax ? { ...x, rate: eurRange(x.rateMin, x.rateMax, '/h') } : x;
+};
+// Caregivers who signed up in this demo (part 5): found by id at once, on the
+// family's lists only once the coordinator has activated them.
+let registered = [];
+export const setRegistered = (list) => {
+  registered = list || [];
+};
+export const caregiverById = (id) => withProfile(caregivers.find((c) => c.id === id) || caregiversRs.find((c) => c.id === id) || registered.find((c) => c.id === id));
 
 // her languages as one line, in the language being read: "finski, engleski"
 export const languagesText = (c) => c.languages.map((l) => t(l)).join(', ');
@@ -339,7 +351,10 @@ export const maskedEmail = (c) => (c?.market === 'RS' ? '********@*****.rs' : MA
 // the plan is unlocked, so it never sits in the DOM waiting to be read out.
 // The caregivers a family in this market can find and write to: the Finnish list
 // or the Serbian one. Lookups by id go through caregiverById, which knows both.
-export const caregiversIn = (m = market()) => (m === 'RS' ? caregiversRs : caregivers).map(withProfile).filter((c) => c.available !== false);
+export const caregiversIn = (m = market()) =>
+  [...(m === 'RS' ? caregiversRs : caregivers), ...registered.filter((c) => c.market === m && c.status === 'active')]
+    .map(withProfile)
+    .filter((c) => c.available !== false);
 
 export function caregiversFor(unlocked) {
   return caregiversIn().map(({ phone, ...rest }) => (unlocked ? { ...rest, phone } : rest));
