@@ -4,6 +4,7 @@ import { useIsPhone } from '@/hooks/use-phone';
 import {
   ChevronDown,
   CircleHelp,
+  Inbox,
   FlaskConical,
   LayoutDashboard,
   MessageSquare,
@@ -156,6 +157,7 @@ function Place({ icon: Icon, label, active, count, onClick }) {
 }
 
 export default function AppNav({
+  role = 'family',
   view,
   onView,
   user,
@@ -177,6 +179,8 @@ export default function AppNav({
   // navigates also closes it — otherwise the page it opened is behind the nav.
   const { setOpenMobile, collapsed } = useSidebar();
   const phone = useIsPhone();
+  // her side (docs/superpowers/specs/2026-10-19-temelj-design.md): no chat, her own pages
+  const caregiver = role === 'caregiver';
   const go = (fn) => (...args) => {
     fn?.(...args);
     setOpenMobile(false);
@@ -211,74 +215,85 @@ export default function AppNav({
             row beside a chevron. */}
         {/* one button in both: folded, its words narrow away and the "+" is
             left in the middle of the square */}
-        <Button
-          variant="secondary"
-          className="w-full shrink-0 gap-0 px-0"
-          aria-label={collapsed ? t('Novi razgovor') : undefined}
-          title={collapsed ? t('Novi razgovor') : undefined}
-          onClick={go(onNewChat)}
-        >
-          <Plus size={14} strokeWidth={1.75} />
-          <span className="ml-2 max-w-40 overflow-hidden transition-[max-width,margin,opacity] duration-200 ease-out menu-folded:ml-0 menu-folded:max-w-0 menu-folded:opacity-0">
-            {t('Novi razgovor')}
-          </span>
-        </Button>
+        {!caregiver && (
+          <Button
+            variant="secondary"
+            className="w-full shrink-0 gap-0 px-0"
+            aria-label={collapsed ? t('Novi razgovor') : undefined}
+            title={collapsed ? t('Novi razgovor') : undefined}
+            onClick={go(onNewChat)}
+          >
+            <Plus size={14} strokeWidth={1.75} />
+            <span className="ml-2 max-w-40 overflow-hidden transition-[max-width,margin,opacity] duration-200 ease-out menu-folded:ml-0 menu-folded:max-w-0 menu-folded:opacity-0">
+              {t('Novi razgovor')}
+            </span>
+          </Button>
+        )}
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarMenu>
-          {/* Earlier conversations, folded: the row opens the list and goes
-              nowhere. A new one starts from "Novi razgovor" above. */}
-          <Section
-            label={t('Istorija razgovora')}
-            icon={MessageSquare}
-            open={chatListOpen}
-            onToggle={onToggleChatList}
-            empty={t('Još nema razgovora.')}
-          >
-            {/* the open one is always in the list */}
-            {threads
-              .filter((th) => chats.visible.includes(th) || (view === 'chat' && activeThread === th.id))
-              .map((th) => (
-                <SubItem
-                  key={th.id}
-                  active={view === 'chat' && activeThread === th.id}
-                  title={th.title}
-                  note={th.date}
-                  onClick={go(() => onSelectThread(th.id))}
-                />
-              ))}
-            {chats.rest > 0 && (
-              <SidebarMenuSubItem>
-                <SidebarMenuSubButton asChild>
-                  <button type="button" onClick={chats.more}>
-                    <span className="text-small text-(--nav-text-muted)">{t('Prikaži još {count}', { count: Math.min(chats.step, chats.rest) })}</span>
-                  </button>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            )}
-          </Section>
+          {!caregiver && (
+            <>
+              {/* Earlier conversations, folded: the row opens the list and goes
+                  nowhere. A new one starts from "Novi razgovor" above. */}
+              <Section
+                label={t('Istorija razgovora')}
+                icon={MessageSquare}
+                open={chatListOpen}
+                onToggle={onToggleChatList}
+                empty={t('Još nema razgovora.')}
+              >
+                {/* the open one is always in the list */}
+                {threads
+                  .filter((th) => chats.visible.includes(th) || (view === 'chat' && activeThread === th.id))
+                  .map((th) => (
+                    <SubItem
+                      key={th.id}
+                      active={view === 'chat' && activeThread === th.id}
+                      title={th.title}
+                      note={th.date}
+                      onClick={go(() => onSelectThread(th.id))}
+                    />
+                  ))}
+                {chats.rest > 0 && (
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <button type="button" onClick={chats.more}>
+                        <span className="text-small text-(--nav-text-muted)">{t('Prikaži još {count}', { count: Math.min(chats.step, chats.rest) })}</span>
+                      </button>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                )}
+              </Section>
 
-          <Place
-            icon={LayoutDashboard}
-            label={t('Moja nega')}
-            active={HOME_VIEWS.includes(view)}
-            count={careBadge}
-            onClick={go(() => onView('dashboard'))}
-          />
-          <Place
-            icon={Search}
-            label={t('Pronađi negovateljicu')}
-            active={view === 'find-caregiver'}
-            onClick={go(() => onView('find-caregiver'))}
-          />
-          <Place
-            icon={Send}
-            label={t('Moji upiti')}
-            active={view === 'requests'}
-            count={requestsBadge}
-            onClick={go(() => onView('requests'))}
-          />
+              <Place
+                icon={LayoutDashboard}
+                label={t('Moja nega')}
+                active={HOME_VIEWS.includes(view)}
+                count={careBadge}
+                onClick={go(() => onView('dashboard'))}
+              />
+              <Place
+                icon={Search}
+                label={t('Pronađi negovateljicu')}
+                active={view === 'find-caregiver'}
+                onClick={go(() => onView('find-caregiver'))}
+              />
+              <Place
+                icon={Send}
+                label={t('Moji upiti')}
+                active={view === 'requests'}
+                count={requestsBadge}
+                onClick={go(() => onView('requests'))}
+              />
+            </>
+          )}
+          {/* her side: for now one page, the requests sent to her; the board,
+              her clients and her earnings come with part 3 */}
+          {caregiver && (
+            <Place icon={Inbox} label={t('Upiti')} active={view === 'requests'} count={requestsBadge} onClick={go(() => onView('requests'))} />
+          )}
 
           {/* The care plan has no place here: before anyone comes it is
               "Moja nega" itself, and after that what is left of it is on that
@@ -306,10 +321,10 @@ export default function AppNav({
             open, as a card that opens something is. */}
         <button
           type="button"
-          onClick={go(() => onView('record'))}
-          aria-current={view === 'record' ? 'page' : undefined}
-          aria-label={recordOf ? t('Medicinski karton: {name}', { name: recordOf }) : t('Medicinski karton')}
-          title={t('Medicinski karton')}
+          onClick={go(() => onView(caregiver ? 'settings' : 'record'))}
+          aria-current={view === (caregiver ? 'settings' : 'record') ? 'page' : undefined}
+          aria-label={caregiver ? t('Podešavanja') : recordOf ? t('Medicinski karton: {name}', { name: recordOf }) : t('Medicinski karton')}
+          title={caregiver ? t('Podešavanja') : t('Medicinski karton')}
           className="group/me flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:px-0 pointer-coarse:menu-folded:pl-1 transition-[padding,background-color,border-radius,box-shadow] duration-200 ease-out outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:shadow-none! menu-folded:focus-visible:ring-0 [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
         >
           <Avatar className="transition-shadow duration-200 ease-out menu-folded:group-hover/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-aria-[current=page]/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-focus-visible/me:ring-[3px] menu-folded:group-focus-visible/me:ring-ring/50">

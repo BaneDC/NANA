@@ -36,6 +36,7 @@ import { askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, pl
 import { declineCard } from './data/sim';
 import { requestSaid, startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
+import CaregiverApp from './screens/caregiver/CaregiverApp';
 import { useKept } from './hooks/use-kept';
 import { buildPlan, caregiverById, coordinator } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
@@ -73,11 +74,13 @@ export default function App() {
   const lang = useLang();
   useKeepScroll(lang);
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
-  const [view, setView] = useState(DEMO ? 'dashboard' : 'chat');
+  const [view, setView] = useState(DEMO ? (DEMO_TAB.role === 'caregiver' ? 'requests' : 'dashboard') : 'chat');
   // `role` is chosen at registration and decides which of the two applications
   // this is: the family's, or the caregiver's. Switching means starting over:
   // reloading the page goes back to sign-in.
   const [user, setUser] = useState(DEMO ? demoAccount(DEMO_TAB.role, DEMO_TAB.market) : { name: '', email: '', role: 'family' });
+  // the caregiver's side: her own pages in the same shell (src/screens/caregiver)
+  const caregiverSide = user.role === 'caregiver';
   // The facts of the place (the emergency number) follow the country registered
   // with, or the demo's market.
   const market = DEMO ? DEMO_TAB.market : user.country === 'RS' ? 'sr' : 'fi';
@@ -515,12 +518,13 @@ export default function App() {
           {/* only where the pages carry one: Moja nega and a care plan
               (docs/patterns.md §4); the chat is the assistant itself, and the
               medical record has its own one action, "Prijavi promenu" */}
-          {view === 'dashboard' && <AskAssistant className="ml-auto" onClick={askAssistant} />}
+          {!caregiverSide && view === 'dashboard' && <AskAssistant className="ml-auto" onClick={askAssistant} />}
         </div>
       )}
 
       {phase === 'app' && !fullscreen && (
         <AppNav
+          role={user.role}
           view={view}
           onView={setView}
           user={user}
@@ -528,7 +532,11 @@ export default function App() {
           onHelp={() => setHelp(true)}
           onSim={() => setSim(true)}
           careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
-          requestsBadge={unseenAnswers(care)}
+          requestsBadge={
+            caregiverSide
+              ? care.requests.filter((r) => r.caregiverId === user.caregiverId && r.status === 'pending').length
+              : unseenAnswers(care)
+          }
           threads={conversationEntries}
           activeThread={conversation}
           onSelectThread={openConversation}
@@ -566,6 +574,8 @@ export default function App() {
             />
           </AnimatePresence>
         </AppPane>
+      ) : caregiverSide ? (
+        <CaregiverApp view={view} user={user} care={care} onCare={setCare} onSaveUser={saveUser} onFlash={say} />
       ) : (
         <>
           {/* Razgovor: once the plan exists, the assistant, for anything; before
@@ -705,10 +715,10 @@ export default function App() {
       )}
 
       <AnimatePresence>
-        {view === 'chat' && openPane && (
+        {!caregiverSide && view === 'chat' && openPane && (
           <ChatPane key="chat-pane" openId={openPane} ctx={chatCtx} onClose={() => setOpenPane(null)} />
         )}
-        {rightPanel === 'plan' && plan && (
+        {!caregiverSide && rightPanel === 'plan' && plan && (
           <CaregiverSidebar
             key="plan-panel"
             plan={plan}
@@ -721,7 +731,7 @@ export default function App() {
         )}
         {/* open stays open, but it is shown only on the pages it opens from;
             elsewhere it steps aside and is back on the way back */}
-        {rightPanel === 'copilot' && ASSISTANT_PAGES.includes(view) && (
+        {!caregiverSide && rightPanel === 'copilot' && ASSISTANT_PAGES.includes(view) && (
           <SidePanelFrame key="copilot-panel" onClose={() => setRightPanel(null)}>
             <KitAssistant id={conversation} ctx={chatCtx} title={t('Asistent')} actions={panelActions} className="chat-side" />
           </SidePanelFrame>
@@ -777,7 +787,7 @@ export default function App() {
 
       {/* The panes stay mounted while they close, so shadcn plays its own
           closing; `useKept` holds what they show until it has. */}
-      {shownDrawer && (
+      {!caregiverSide && shownDrawer && (
           <FamilyDrawer
             key={`${shownDrawer.kind}-${shownDrawer.caregiverId || shownDrawer.visitId}`}
             drawer={shownDrawer}
@@ -836,7 +846,7 @@ export default function App() {
           />
       )}
 
-      {shownSharing && plan && (
+      {!caregiverSide && shownSharing && plan && (
           <SharePlanModal
             open={sharing}
             plan={plan}
@@ -854,7 +864,8 @@ export default function App() {
           />
       )}
 
-      {conversations.map((c) => (
+      {!caregiverSide &&
+        conversations.map((c) => (
         <ChatSource key={c.id} id={c.id} ctx={chatCtx} onTitle={titleConversation} opener={c.opener} />
       ))}
       <Toast flash={flash} onDone={() => setFlash(null)} />
@@ -867,7 +878,7 @@ export default function App() {
         onClose={() => setHelp(false)}
       />
 
-      {shownPaywall && plan && (
+      {!caregiverSide && shownPaywall && plan && (
           <PaywallModal
             open={Boolean(paywall)}
             caregiver={shownPaywall.caregiver}

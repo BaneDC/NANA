@@ -133,7 +133,7 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
   );
 }
 
-export default function Settings({ unlocked, subscription, care, user, onCare, onSaveUser, onFlash, onSubscribe }) {
+export default function Settings({ payments = true, unlocked, subscription, care, user, onCare, onSaveUser, onFlash, onSubscribe }) {
   // kept on the account, as the language and the cookies are: they were only in
   // this page's state, so leaving it turned them back off. A switch saves as it
   // moves, and its moving says so: no toast.
@@ -191,7 +191,9 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
       <PageHeader>
         <PageHeaderText>
           <PageTitle>{t('Podešavanja')}</PageTitle>
-          <PageDescription>{t('Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.')}</PageDescription>
+          <PageDescription>
+            {payments ? t('Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.') : t('Nalog, bezbednost, jezik i obaveštenja, privatnost.')}
+          </PageDescription>
         </PageHeaderText>
       </PageHeader>
 
@@ -199,135 +201,138 @@ export default function Settings({ unlocked, subscription, care, user, onCare, o
         <AccountCard user={user} onSave={onSaveUser} />
       </PageSection>
 
-      <PageSection title={t('Plaćanje')}>
-        {/* Started and stopped from here. It used to be startable only from the
-            dialog on the care plan, which is where somebody runs into the
-            paywall — not where they go looking for what they pay for. */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('Pretplata')}</CardTitle>
-            <CardAction>
-              <Badge variant={!unlocked || cancelled ? 'secondary' : unpaid ? 'destructive' : 'success'}>
-                {!unlocked ? t('Niste pretplaćeni') : cancelled ? t('Otkazana') : unpaid ? t('Nije plaćena') : t('Aktivna')}
-              </Badge>
-            </CardAction>
-          </CardHeader>
-          {unlocked ? (
-            <>
-              <CardDescription>
-                {cancelled
-                  ? t('Otkazali ste pretplatu. Važi do {date}, a posle toga se ne obnavlja.', { date: until })
-                  : unpaid
-                    ? t('Naplata pretplate nije uspela. Promenite karticu da kontakti negovateljica ne bi bili zatvoreni.')
-                    : t('Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.')}
-                {!cancelled && nextPlan
-                  ? ' ' + t('Od {date} prelazite na {plan}.', { date: until, plan: nextPlan.name })
-                  : ''}
-              </CardDescription>
-              {/* which plan, what it costs and when the next charge comes, as
-                  every billing page puts it (docs/patterns.md §8) */}
-              <DataList className="mt-2">
-                <DataRow label={t('Paket')}>{plan.name}</DataRow>
-                <DataRow label={t('Cena')}>{planPrice(plan) + ' ' + planEvery(plan)}</DataRow>
-                {/* unpaid, the charge is due now, not on a date */}
-                {!cancelled && !unpaid && (
-                  <DataRow label={t('Sledeća naplata')}>
-                    {t('{amount} · {date}', { amount: planPrice(nextPlan || plan), date: until })}
-                  </DataRow>
-                )}
-              </DataList>
-              {/* What adds or changes something is primary; what switches
-                  something off or cancels it is not — orange is what we
-                  recommend, and we do not recommend this. It asks first. A
-                  declined charge has one thing to do about it, so that one is
-                  orange (§9). */}
-              <CardFooter>
-                {cancelled ? (
-                  <Button onClick={() => onSubscribe?.('resume')}>{t('Obnovi pretplatu')}</Button>
-                ) : (
-                  <>
-                    {unpaid && <Button onClick={() => setCardOpen(true)}>{t('Promeni karticu')}</Button>}
-                    {!unpaid && plans.length > 1 && (
-                      <Button variant="secondary" onClick={() => onSubscribe?.('change')}>
-                        {t('Promeni paket')}
-                      </Button>
-                    )}
-                    <Button variant="secondary" onClick={() => setCancelling(true)}>
-                      {t('Otkaži pretplatu')}
-                    </Button>
-                  </>
-                )}
-              </CardFooter>
-            </>
-          ) : (
-            <>
-              <CardDescription>
-                {t('Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.')}
-                {' '}
-                {priceLine(user?.country)}.
-              </CardDescription>
-              <CardFooter>
-                <Button onClick={onSubscribe}>{t('Pretplatite se')}</Button>
-              </CardFooter>
-            </>
-          )}
-        </Card>
-        {/* Set up once and then never thought about again, which is exactly why
-            it belongs here and not on the dashboard. */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('Način plaćanja')}</CardTitle>
-            <CardAction>
-              {payment.connected ? (
-                <Badge variant={trouble === 'expiring' ? 'warning' : trouble ? 'destructive' : 'success'}>
-                  {!trouble && <ShieldCheck size={12} strokeWidth={2} />}
-                  {payment.brand} ···· {payment.last4}
+      {/* a caregiver pays nothing here: her money comes in through Stripe */}
+      {payments && (
+        <PageSection title={t('Plaćanje')}>
+          {/* Started and stopped from here. It used to be startable only from the
+              dialog on the care plan, which is where somebody runs into the
+              paywall — not where they go looking for what they pay for. */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('Pretplata')}</CardTitle>
+              <CardAction>
+                <Badge variant={!unlocked || cancelled ? 'secondary' : unpaid ? 'destructive' : 'success'}>
+                  {!unlocked ? t('Niste pretplaćeni') : cancelled ? t('Otkazana') : unpaid ? t('Nije plaćena') : t('Aktivna')}
                 </Badge>
-              ) : (
-                <Badge variant="destructive">{t('Nije podešeno')}</Badge>
-              )}
-            </CardAction>
-          </CardHeader>
+              </CardAction>
+            </CardHeader>
+            {unlocked ? (
+              <>
+                <CardDescription>
+                  {cancelled
+                    ? t('Otkazali ste pretplatu. Važi do {date}, a posle toga se ne obnavlja.', { date: until })
+                    : unpaid
+                      ? t('Naplata pretplate nije uspela. Promenite karticu da kontakti negovateljica ne bi bili zatvoreni.')
+                      : t('Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.')}
+                  {!cancelled && nextPlan
+                    ? ' ' + t('Od {date} prelazite na {plan}.', { date: until, plan: nextPlan.name })
+                    : ''}
+                </CardDescription>
+                {/* which plan, what it costs and when the next charge comes, as
+                    every billing page puts it (docs/patterns.md §8) */}
+                <DataList className="mt-2">
+                  <DataRow label={t('Paket')}>{plan.name}</DataRow>
+                  <DataRow label={t('Cena')}>{planPrice(plan) + ' ' + planEvery(plan)}</DataRow>
+                  {/* unpaid, the charge is due now, not on a date */}
+                  {!cancelled && !unpaid && (
+                    <DataRow label={t('Sledeća naplata')}>
+                      {t('{amount} · {date}', { amount: planPrice(nextPlan || plan), date: until })}
+                    </DataRow>
+                  )}
+                </DataList>
+                {/* What adds or changes something is primary; what switches
+                    something off or cancels it is not — orange is what we
+                    recommend, and we do not recommend this. It asks first. A
+                    declined charge has one thing to do about it, so that one is
+                    orange (§9). */}
+                <CardFooter>
+                  {cancelled ? (
+                    <Button onClick={() => onSubscribe?.('resume')}>{t('Obnovi pretplatu')}</Button>
+                  ) : (
+                    <>
+                      {unpaid && <Button onClick={() => setCardOpen(true)}>{t('Promeni karticu')}</Button>}
+                      {!unpaid && plans.length > 1 && (
+                        <Button variant="secondary" onClick={() => onSubscribe?.('change')}>
+                          {t('Promeni paket')}
+                        </Button>
+                      )}
+                      <Button variant="secondary" onClick={() => setCancelling(true)}>
+                        {t('Otkaži pretplatu')}
+                      </Button>
+                    </>
+                  )}
+                </CardFooter>
+              </>
+            ) : (
+              <>
+                <CardDescription>
+                  {t('Otključava kontakte negovateljica i preglede i pomagala kod partnera, do 10% jeftinije.')}
+                  {' '}
+                  {priceLine(user?.country)}.
+                </CardDescription>
+                <CardFooter>
+                  <Button onClick={onSubscribe}>{t('Pretplatite se')}</Button>
+                </CardFooter>
+              </>
+            )}
+          </Card>
+          {/* Set up once and then never thought about again, which is exactly why
+              it belongs here and not on the dashboard. */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('Način plaćanja')}</CardTitle>
+              <CardAction>
+                {payment.connected ? (
+                  <Badge variant={trouble === 'expiring' ? 'warning' : trouble ? 'destructive' : 'success'}>
+                    {!trouble && <ShieldCheck size={12} strokeWidth={2} />}
+                    {payment.brand} ···· {payment.last4}
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive">{t('Nije podešeno')}</Badge>
+                )}
+              </CardAction>
+            </CardHeader>
 
-          {payment.connected ? (
-            <>
-              <CardDescription>
-                {trouble &&
-                  t(TROUBLE[trouble], { date: payment.expires }) + ' '}
-                {t(
-                  'Dodato {date}. Svaka poseta se naplaćuje 24 sata pošto negovateljica pošalje izveštaj - od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite sa stranice Moja nega.',
-                  { date: payment.connectedOn }
-                )}
-              </CardDescription>
-              <DataList className="mt-2">
-                {payment.expires && <DataRow label={t('Ističe')}>{payment.expires}</DataRow>}
-                <DataRow label={t('Rezervisano za zakazane posete')}>{money(heldNow(care))}</DataRow>
-                <DataRow label={t('Naplaćuje se sada')}>
-                  {charging
-                    ? t('{amount} · za {hours} h', { amount: money(visitCharge(charging)), hours: charging.chargesInHours })
-                    : t('Ništa')}
-                </DataRow>
-              </DataList>
-              <CardFooter>
-                <Button variant={trouble ? 'default' : 'secondary'} onClick={() => setCardOpen(true)}>
-                  {t('Promeni karticu')}
-                </Button>
-              </CardFooter>
-            </>
-          ) : (
-            <>
-              <CardDescription>
-                {t(
-                  'Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže. Dodaje se preko Stripe-a - mi nikad ne vidimo broj.'
-                )}
-              </CardDescription>
-              <CardFooter>
-                <Button onClick={() => setCardOpen(true)}>{t('Dodaj karticu')}</Button>
-              </CardFooter>
-            </>
-          )}
-        </Card>
-      </PageSection>
+            {payment.connected ? (
+              <>
+                <CardDescription>
+                  {trouble &&
+                    t(TROUBLE[trouble], { date: payment.expires }) + ' '}
+                  {t(
+                    'Dodato {date}. Svaka poseta se naplaćuje 24 sata pošto negovateljica pošalje izveštaj - od vas se ništa ne traži, a u tom roku naplatu možete da zaustavite sa stranice Moja nega.',
+                    { date: payment.connectedOn }
+                  )}
+                </CardDescription>
+                <DataList className="mt-2">
+                  {payment.expires && <DataRow label={t('Ističe')}>{payment.expires}</DataRow>}
+                  <DataRow label={t('Rezervisano za zakazane posete')}>{money(heldNow(care))}</DataRow>
+                  <DataRow label={t('Naplaćuje se sada')}>
+                    {charging
+                      ? t('{amount} · za {hours} h', { amount: money(visitCharge(charging)), hours: charging.chargesInHours })
+                      : t('Ništa')}
+                  </DataRow>
+                </DataList>
+                <CardFooter>
+                  <Button variant={trouble ? 'default' : 'secondary'} onClick={() => setCardOpen(true)}>
+                    {t('Promeni karticu')}
+                  </Button>
+                </CardFooter>
+              </>
+            ) : (
+              <>
+                <CardDescription>
+                  {t(
+                    'Posete se plaćaju automatski, pa kartica mora biti sačuvana pre nego što se ijedna zakaže. Dodaje se preko Stripe-a - mi nikad ne vidimo broj.'
+                  )}
+                </CardDescription>
+                <CardFooter>
+                  <Button onClick={() => setCardOpen(true)}>{t('Dodaj karticu')}</Button>
+                </CardFooter>
+              </>
+            )}
+          </Card>
+        </PageSection>
+      )}
 
       <PageSection title={t('Bezbednost')}>
         <Card>
