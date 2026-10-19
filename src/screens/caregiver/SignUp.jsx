@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Fact, Facts } from '@/components/data-list';
-import { PaneHint, Part } from '@/components/pane';
+import { PaneHint } from '@/components/pane';
 import { cn } from '@/lib/utils';
 import { Actions, Consent, FormCard, Welcome, column } from '../Register';
 import { Field, FieldError, FileField, Input, Password, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
@@ -30,9 +30,9 @@ const CHANNELS = [
   ['meet', msg('Google Meet ili Zoom')],
 ];
 
-function Chips({ label, value, onChange, options, multiple = true, error }) {
+function Chips({ label, value, onChange, options, multiple = true, required, error }) {
   return (
-    <Part label={label}>
+    <Field label={label} required={required}>
       <ToggleGroup
         type={multiple ? 'multiple' : 'single'}
         size="sm"
@@ -48,7 +48,7 @@ function Chips({ label, value, onChange, options, multiple = true, error }) {
         ))}
       </ToggleGroup>
       {error && <FieldError>{error}</FieldError>}
-    </Part>
+    </Field>
   );
 }
 
@@ -244,6 +244,7 @@ export default function CaregiverSignUp({ onDone, onBack }) {
         <FormCard>
           <Chips
             label={t('Klasifikacije')}
+            required
             value={f.classifications}
             onChange={(v) => set({ classifications: v })}
             options={CLASSIFICATIONS.map((c) => [c.id, c.id])}
@@ -299,6 +300,7 @@ export default function CaregiverSignUp({ onDone, onBack }) {
             <>
               <Chips
                 label={t('Angažman')}
+            required
                 value={f.engagement}
                 onChange={(v) => set({ engagement: v })}
                 options={[
@@ -310,8 +312,10 @@ export default function CaregiverSignUp({ onDone, onBack }) {
               {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
             </>
           )}
-          <Chips label={t('Dani')} value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
-          <Chips label={t('Doba dana')} value={f.slots} onChange={(v) => set({ slots: v })} options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])} error={show('slots')} />
+          <Chips label={t('Dani')}
+            required value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
+          <Chips label={t('Doba dana')}
+            required value={f.slots} onChange={(v) => set({ slots: v })} options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])} error={show('slots')} />
           {f.slots.length > 1 && <PaneHint>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</PaneHint>}
           {sr && <YesNo label={t('Rad u inostranstvu')} value={f.abroad} onChange={(v) => set({ abroad: v })} />}
           <Field label={t('Radijus')} required>
@@ -460,6 +464,7 @@ export default function CaregiverSignUp({ onDone, onBack }) {
         <FormCard>
           <Chips
             label={t('Kako vam je najlakše?')}
+            required
             multiple={false}
             value={f.channel}
             onChange={(v) => set({ channel: v })}

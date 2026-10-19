@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { PaneHint, Part } from '@/components/pane';
+import { PaneHint } from '@/components/pane';
 import Dialog from '../Dialog';
 import { Field, FieldError, Input, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { SLOTS } from '../../data/carePlan';
@@ -63,7 +63,7 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
       <Field label={t('Obrazovanje')} required error={check.show(errors.education)}>
         <Select value={education} onChange={setEducation} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
       </Field>
-      <Part label={t('Jezici')}>
+      <Field label={t('Jezici')}>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={languages} onValueChange={setLanguages} aria-label={t('Jezici')}>
           {LANGUAGES_OFFERED.map((l) => (
             <ToggleGroupItem key={l} value={l}>
@@ -71,7 +71,7 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </Part>
+      </Field>
       <Field label={t('O sebi')} required error={check.show(errors.bio)}>
         <TextArea value={bio} onChange={setBio} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
       </Field>
@@ -105,16 +105,16 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
   return (
     <Frame open={open} title={t('Dostupnost')} onClose={onClose} onSave={save}>
       {!fi && (
-        <Part label={t('Angažman')}>
+        <Field label={t('Angažman')} required>
           <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={engagement} onValueChange={setEngagement} aria-label={t('Angažman')}>
             <ToggleGroupItem value="daily">{t('Dnevne posete')}</ToggleGroupItem>
             <ToggleGroupItem value="shift24">{t('Smena 24 h')}</ToggleGroupItem>
           </ToggleGroup>
           <FieldError>{check.show(errors.engagement)}</FieldError>
           {engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
-        </Part>
+        </Field>
       )}
-      <Part label={t('Dani')}>
+      <Field label={t('Dani')} required>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={days} onValueChange={setDays} aria-label={t('Dani')}>
           {DAYS.map((d, i) => (
             <ToggleGroupItem key={i} value={String(i)}>
@@ -123,8 +123,8 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
           ))}
         </ToggleGroup>
         <FieldError>{check.show(errors.days)}</FieldError>
-      </Part>
-      <Part label={t('Doba dana')}>
+      </Field>
+      <Field label={t('Doba dana')} required>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={slots} onValueChange={setSlots} aria-label={t('Doba dana')}>
           {Object.entries(SLOTS).map(([id, s]) => (
             <ToggleGroupItem key={id} value={id}>
@@ -133,7 +133,7 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
           ))}
         </ToggleGroup>
         <FieldError>{check.show(errors.slots)}</FieldError>
-      </Part>
+      </Field>
       <Field label={t('Radijus')} required>
         <Select value={radius} onChange={setRadius} options={RADII.map((r) => ({ value: String(r), label: t('do {km} km', { km: r }) }))} />
       </Field>
@@ -159,12 +159,12 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
 
 function YesNo({ label, value, onChange }) {
   return (
-    <Part label={label}>
+    <Field label={label}>
       <ToggleGroup type="single" size="sm" value={value} onValueChange={(v) => v && onChange(v)} aria-label={label}>
         <ToggleGroupItem value="no">{t('Ne')}</ToggleGroupItem>
         <ToggleGroupItem value="yes">{t('Da')}</ToggleGroupItem>
       </ToggleGroup>
-    </Part>
+    </Field>
   );
 }
 
@@ -206,7 +206,7 @@ export function HealthForm({ open, profile, onClose, onSave }) {
       {HABITS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={habits[id] || 'no'} onChange={(v) => setHabits((h) => ({ ...h, [id]: v }))} />
       ))}
-      <Part label={t('Jezici')}>
+      <Field label={t('Jezici')}>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={languages} onValueChange={setLanguages} aria-label={t('Jezici')}>
           {LANGUAGES_OFFERED.map((l) => (
             <ToggleGroupItem key={l} value={l}>
@@ -214,11 +214,11 @@ export function HealthForm({ open, profile, onClose, onSave }) {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </Part>
+      </Field>
       {HEALTH_QUESTIONS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={health[id] || 'no'} onChange={(v) => setHealth((h) => ({ ...h, [id]: v }))} />
       ))}
-      <Part label={t('Spremnost za rad')}>
+      <Field label={t('Spremnost za rad')}>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={readiness} onValueChange={setReadiness} aria-label={t('Spremnost za rad')}>
           {READINESS.map(([id, label]) => (
             <ToggleGroupItem key={id} value={id}>
@@ -226,7 +226,7 @@ export function HealthForm({ open, profile, onClose, onSave }) {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </Part>
+      </Field>
       <Field label={t('Šta ne želite da radite')}>
         <TextArea value={unwilling} onChange={setUnwilling} rows={2} placeholder={t('Npr. menjanje pelena, kupanje, rad sa nepokretnim osobama.')} />
       </Field>

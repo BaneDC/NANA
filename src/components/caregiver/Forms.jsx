@@ -46,7 +46,7 @@ export function AgreementDialog({ open, care, caregiverId, onClose, onSend }) {
   return (
     <Dialog open={open} eyebrow={care.elder.name} title={act ? t('Nova verzija ugovora') : t('Ugovor o nezi')} wide onClose={onClose}>
       {act && <DialogDescription>{t('Verzija koja važi ostaje dok porodica ne prihvati novu. Nove posete čekaju do tada.')}</DialogDescription>}
-      <Part label={t('Usluge')}>
+      <Field label={t('Usluge')} required>
         {SERVICE_GROUPS.map((g) => (
           <div key={g.id} className="flex flex-col gap-2">
             <p className="text-small text-muted-foreground">{t(g.title)}</p>
@@ -67,7 +67,7 @@ export function AgreementDialog({ open, care, caregiverId, onClose, onSend }) {
           </div>
         ))}
         <FieldError>{check.show(errors.services)}</FieldError>
-      </Part>
+      </Field>
       <Field label={t('Cena po satu')} required hint={n >= MIN_RATE ? t('Porodica plaća ovu cenu, PDV uključen. Vi dobijate {net} / h.', { net: money(net(n)) }) : t('Porodica plaća ovu cenu, PDV uključen.')} error={check.show(errors.rate)}>
         <Input value={rate} onChange={setRate} inputMode="decimal" suffix="€/h" />
       </Field>
@@ -116,12 +116,12 @@ export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
   };
   return (
     <Dialog open={open} eyebrow={care.elder.name} title={t('Plan posete')} onClose={onClose}>
-      <Part label={t('Dan')}>
+      <Field label={t('Dan')}>
         <ToggleGroup type="single" size="sm" value={day} onValueChange={(v) => v && setDay(v)} aria-label={t('Dan')}>
           <ToggleGroupItem value="today">{t('Danas')}</ToggleGroupItem>
           <ToggleGroupItem value="tomorrow">{t('Sutra')}</ToggleGroupItem>
         </ToggleGroup>
-      </Part>
+      </Field>
       <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
         <Field label={t('Početak')} required error={check.show(errors.start)}>
           <Select value={start} onChange={setStart} options={starts.map((x) => ({ value: String(x), label: hourText(x) }))} />
@@ -164,7 +164,7 @@ const AMOUNT = [
 
 function Choice({ label, value, onChange, options }) {
   return (
-    <Part label={label}>
+    <Field label={label}>
       <ToggleGroup type="single" size="sm" className="flex-wrap" value={value} onValueChange={(v) => v && onChange(v)} aria-label={label}>
         {options.map(([id, text]) => (
           <ToggleGroupItem key={id} value={id}>
@@ -172,7 +172,7 @@ function Choice({ label, value, onChange, options }) {
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-    </Part>
+    </Field>
   );
 }
 
@@ -198,7 +198,7 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
         <Select value={hours} onChange={setHours} options={DURATIONS.map((x) => ({ value: String(x), label: hoursText(x) }))} />
       </Field>
       {h > visit.hours && <PaneHint>{t('Sat više porodica mora da odobri. Do tada se naplaćuje planirano.')}</PaneHint>}
-      <Part label={t('Urađeno')}>
+      <Field label={t('Urađeno')}>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={done} onValueChange={setDone} aria-label={t('Urađeno')}>
           {visit.services.map((id) => (
             <ToggleGroupItem key={id} value={id}>
@@ -206,7 +206,7 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </Part>
+      </Field>
       <Choice label={t('Raspoloženje')} value={mood} onChange={setMood} options={MOOD} />
       <Choice label={t('Ishrana')} value={eating} onChange={setEating} options={AMOUNT} />
       <Choice label={t('Kretanje')} value={moving} onChange={setMoving} options={AMOUNT} />
