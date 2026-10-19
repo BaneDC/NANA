@@ -17,6 +17,7 @@ import Modal from '../Modal';
 import Dialog from '../Dialog';
 import Tags, { Group, Groups } from '../Tags';
 import { groupServices } from '../../data/serviceCatalog';
+import { educationText } from '../../data/caregiverProfile';
 import CaregiverHead from '../CaregiverHead';
 import Rating from '../Rating';
 import { careSignals } from './VisitReport';
@@ -686,7 +687,7 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
 
       <PaneLabel>{t('Kvalifikacije')}</PaneLabel>
       <DataList className="mt-2">
-        <Line label={t('Obrazovanje')} value={t(c.education)} />
+        <Line label={t('Obrazovanje')} value={educationText(c.education, c.market === 'RS')} />
         {c.market === 'RS' && <Line label={t('Sertifikat negovateljice')} value={c.certificate ? t('Da') : t('Ne')} />}
         {c.market === 'RS' && c.courses && <Line label={t('Kursevi')} value={t(c.courses)} />}
         <Line label={t('Jezici')} value={c.languages.map((l) => t(l)).join(', ')} />
@@ -874,7 +875,7 @@ function Overview({ open = true, care, caregiverId, onClose }) {
       <Tags items={a.caregiver.classifications || c?.classifications || []} />
       {c?.education && (
         <DataList className="mt-2">
-          <Line label={t('Obrazovanje')} value={t(c.education)} />
+          <Line label={t('Obrazovanje')} value={educationText(c.education, c.market === 'RS')} />
         </DataList>
       )}
 

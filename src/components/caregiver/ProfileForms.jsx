@@ -7,7 +7,7 @@ import Dialog from '../Dialog';
 import { Combobox, Field, FieldError, Input, MultiCombobox, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
-import { DAYS, EDUCATION, EDUCATION_SR, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
+import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
 
 // The fields of her profile, each group in its own dialog: "Izmenite" on a card
@@ -183,7 +183,7 @@ export function QualificationsForm({ open, profile, onClose, onSave }) {
   return (
     <Frame open={open} title={t('Kvalifikacije')} onClose={onClose} onSave={save}>
       <Field label={t('Nivo obrazovanja')} required error={check.show(errors.education)}>
-        <Select value={education} onChange={setEducation} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION_SR.map((e) => ({ value: e, label: t(e) }))} />
+        <Select value={education} onChange={setEducation} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION_SR.map((e) => ({ value: e, label: educationText(e, true) }))} />
       </Field>
       <YesNo label={t('Sertifikat akreditovane škole za negovateljice')} value={certificate} onChange={setCertificate} />
       <Field label={t('Kursevi')}>

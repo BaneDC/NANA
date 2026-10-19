@@ -338,4 +338,6 @@ export default {
   "Opis radnog iskustva i veština": "Työkokemuksen ja taitojen kuvaus",
   "Unesite ime i prezime": "Kirjoita koko nimi",
   "Majka, otac, sestra i sl.": "Äiti, isä, sisko jne.",
+  "Osnovna škola (Srbija)": "Peruskoulu",
+  "Srednja škola (Srbija)": "Lukio",
 };

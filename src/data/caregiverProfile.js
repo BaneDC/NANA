@@ -1,4 +1,4 @@
-import { msg } from '../i18n';
+import { getLang, msg, t } from '../i18n';
 
 // What her profile asks, the same in "Moj profil" and in the sign-up (part 5).
 // Days are 0 (Monday) to 6, as on every caregiver record.
@@ -16,6 +16,11 @@ export const EDUCATION = [
 ];
 // Serbia's sign-up asks a shorter list (the live form, 19. 10.)
 export const EDUCATION_SR = [msg('Osnovna škola'), msg('Srednja škola'), msg('Fakultet'), msg('Master'), msg('Doktorat')];
+// The same school has another English name in Serbia than in Finland (the
+// live forms, 19. 10.), and a key has one translation: in Serbia these go
+// through keys of their own. In Serbian the name is the same either way.
+const SR_NAMES = { 'Osnovna škola': msg('Osnovna škola (Srbija)'), 'Srednja škola': msg('Srednja škola (Srbija)') }; // i18n-ignore
+export const educationText = (e, sr) => (sr && getLang() !== 'sr' && SR_NAMES[e] ? t(SR_NAMES[e]) : t(e));
 export const LANGUAGES_OFFERED = [msg('engleski'), msg('nemački'), msg('švedski'), msg('finski'), msg('norveški'), msg('srpski'), msg('drugi jezici')];
 
 // What the demo knows of her that the family's list does not show: kept on

@@ -10,7 +10,7 @@ import { useKept } from '@/hooks/use-kept';
 import Tags from '../../components/Tags';
 import { AvailabilityForm, EmergencyForm, HealthForm, PersonalForm, ProfessionForm, QualificationsForm } from '../../components/caregiver/ProfileForms';
 import { SLOTS, daysText, engagementText } from '../../data/carePlan';
-import { DOCUMENTS, HABITS, HEALTH_QUESTIONS, PERSONAL, READINESS } from '../../data/caregiverProfile';
+import { DOCUMENTS, HABITS, educationText, HEALTH_QUESTIONS, PERSONAL, READINESS } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
 
 // "Moj profil", laid out as Settings is: groups of cards, each saying what it
@@ -89,7 +89,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
       <PageSection title={t('Posao')}>
         {!fi && (
           <Group title={t('Kvalifikacije')} onEdit={() => setForm('qualifications')}>
-            <Fact label={t('Obrazovanje')}>{t(c.education)}</Fact>
+            <Fact label={t('Obrazovanje')}>{educationText(c.education, true)}</Fact>
             <Fact label={t('Sertifikat negovateljice')}>{c.certificate ? t('Da') : t('Ne')}</Fact>
             <Fact label={t('Kursevi')}>{c.courses ? t(c.courses) : '-'}</Fact>
             <Fact label={t('Opis radnog iskustva i veština')}>{t(c.bio)}</Fact>

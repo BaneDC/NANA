@@ -338,4 +338,6 @@ export default {
   "Opis radnog iskustva i veština": "Work experience and skills description",
   "Unesite ime i prezime": "Enter full name",
   "Majka, otac, sestra i sl.": "Mother, father, sister, etc.",
+  "Osnovna škola (Srbija)": "Primary school",
+  "Srednja škola (Srbija)": "High school",
 };
