@@ -85,7 +85,15 @@ function ToggleGroupItem({
       data-size={context.size || size}
       className={cn(toggleVariants({ size: context.size || size }), className)}
       {...props}>
-      {children}
+      {/* What is chosen is medium, which is wider: a hidden medium copy under
+          the words keeps the chip as wide either way, so choosing one does not
+          push the chips after it (docs/patterns.md §10). */}
+      <span className="inline-grid">
+        <span aria-hidden="true" className="invisible col-start-1 row-start-1 inline-flex items-center gap-2 font-medium">
+          {children}
+        </span>
+        <span className="col-start-1 row-start-1 inline-flex items-center justify-center gap-2">{children}</span>
+      </span>
     </ToggleGroupPrimitive.Item>
   );
 }
