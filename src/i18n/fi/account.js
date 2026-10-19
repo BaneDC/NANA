@@ -676,4 +676,12 @@ export default {
   "Kartica je dodata.": "Kortti on lisätty.",
   "Plan posete je primljen. Poseta je u „Predstoji\".": "Käyntisuunnitelma on vastaanotettu. Käynti on kohdassa ”Tulossa”.",
   "Preuzeto": "Ladattu",
+  "Ko ste?": "Kuka olet?",
+  "Porodica traži negu za nekoga. Negovateljica nudi negu.": "Perhe etsii hoitoa jollekulle. Hoitaja tarjoaa hoitoa.",
+  "Registracija negovateljica stiže uskoro": "Hoitajien rekisteröityminen tulee pian",
+  "Do tada možete da pogledate kako izgleda vaša strana, na demo nalogu.": "Siihen asti voit katsoa, miltä oma puolesi näyttää, demotilillä.",
+  "Otvori demo negovateljice": "Avaa hoitajan demo",
+  "Za demo: porodica": "Demoa varten: perhe",
+  "Za demo: negovateljica": "Demoa varten: hoitaja",
+  "Za demo: tržište": "Demoa varten: markkina",
 };

@@ -676,4 +676,12 @@ export default {
   "Kartica je dodata.": "The card has been added.",
   "Plan posete je primljen. Poseta je u „Predstoji\".": "Visit plan noted. The visit is under \"Coming up\".",
   "Preuzeto": "Downloaded",
+  "Ko ste?": "Who are you?",
+  "Porodica traži negu za nekoga. Negovateljica nudi negu.": "A family is looking for care for someone. A caregiver offers care.",
+  "Registracija negovateljica stiže uskoro": "Caregiver sign-up is coming soon",
+  "Do tada možete da pogledate kako izgleda vaša strana, na demo nalogu.": "Until then you can see what your side looks like, on a demo account.",
+  "Otvori demo negovateljice": "Open the caregiver demo",
+  "Za demo: porodica": "For the demo: family",
+  "Za demo: negovateljica": "For the demo: caregiver",
+  "Za demo: tržište": "For the demo: market",
 };

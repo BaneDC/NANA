@@ -10,6 +10,7 @@ import { Field, FieldError, Input, Password, Select, requiredError, useCheck } f
 import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
+import { session } from '../data/demo';
 import { LANGUAGES, msg, setLang, t, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
@@ -94,6 +95,9 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
   const [accuracy, setAccuracy] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
   const [busy, setBusy] = useState(false);
+  // who is signing up: a family goes on to the form below; a caregiver's own
+  // sign-up comes with part 5, so for now she is shown her side on the demo
+  const [who, setWho] = useState(null);
 
   const dial = COUNTRIES.find((c) => c.id === country);
   const check = useCheck();
@@ -128,6 +132,43 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
     await saveAccount(user, password);
     onContinue(user);
   };
+
+  if (who === null)
+    return (
+      <>
+        <Welcome title={t('Ko ste?')} sub={t('Porodica traži negu za nekoga. Negovateljica nudi negu.')} />
+        <Actions>
+          <Button size="lg" className="w-full" onClick={() => setWho('family')}>
+            {t('Porodica')}
+          </Button>
+          <Button variant="secondary" size="lg" className="w-full" onClick={() => setWho('caregiver')}>
+            {t('Negovateljica')}
+          </Button>
+          <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
+            {t('Već imate nalog? Prijavite se')}
+          </Button>
+          <DemoLink onDemo={onDemo} />
+        </Actions>
+      </>
+    );
+
+  if (who === 'caregiver')
+    return (
+      <>
+        <Welcome
+          title={t('Registracija negovateljica stiže uskoro')}
+          sub={t('Do tada možete da pogledate kako izgleda vaša strana, na demo nalogu.')}
+        />
+        <Actions>
+          <Button size="lg" className="w-full" onClick={() => onDemo('caregiver')}>
+            {t('Otvori demo negovateljice')}
+          </Button>
+          <Button variant="secondary" size="lg" className="w-full" onClick={() => setWho(null)}>
+            {t('Nazad')}
+          </Button>
+        </Actions>
+      </>
+    );
 
   return (
     <>
@@ -253,15 +294,48 @@ const demoLink =
 function DemoLink({ onDemo }) {
   return (
     <>
-      <button type="button" className={demoLink} onClick={onDemo}>
-        {t('Za testiranje: otvori demo sa gotovim planom')}
+      <button type="button" className={demoLink} onClick={() => onDemo('family')}>
+        {t('Za demo: porodica')}
+      </button>
+      <button type="button" className={demoLink} onClick={() => onDemo('caregiver')}>
+        {t('Za demo: negovateljica')}
       </button>
       {/* every card on one page (/?kartice), for comparing them */}
       <button type="button" className={demoLink} onClick={() => (window.location.href = '/?kartice')}>
         {t('Za pregled: sve kartice na jednoj stranici')}
       </button>
+      <DemoMarket />
       <DemoLanguage />
     </>
+  );
+}
+
+// Which market the demo opens on: the same row as the language, kept for this
+// tab (src/data/demo.js), so the two links above open on it.
+function DemoMarket() {
+  const [market, setMarket] = useState(() => session.read()?.market || 'fi');
+  const pick = (m) => {
+    setMarket(m);
+    session.write({ role: session.read()?.role || 'family', market: m });
+  };
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <span>{t('Za demo: tržište')}</span>
+      {[
+        ['fi', t('Finska')],
+        ['sr', t('Srbija')],
+      ].map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          aria-pressed={id === market}
+          className={id === market ? 'text-xs font-medium text-foreground' : demoLink}
+          onClick={() => pick(id)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
 

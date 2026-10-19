@@ -551,7 +551,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             <Register
               key="register"
-              onDemo={() => openDemo()}
+              onDemo={(role) => openDemo(role)}
               onContinue={(u) => {
                 setUser(u);
                 setCare(startCare(u));
