@@ -1,6 +1,18 @@
 # Strana za negovateljice i dva tržišta: pregled (19. 10. 2026.)
 
-Krovni dokument. Kaže šta pravimo, na koje delove je posao podeljen i kojim redom ide. Svaki deo dobija svoj spec, plan i implementaciju kad dođe na red. Detaljan je za sada samo spec dela 1 (`2026-10-19-temelj-design.md`).
+Krovni dokument. Kaže šta pravimo, na koje delove je posao podeljen i kojim redom ide.
+
+## Specovi i redosled izvršavanja
+
+Svi delovi su dizajnirani 19. 10. Izvršavaju se ovim redom, jer svaki stoji na prethodnim. Svaki dobija plan implementacije (`docs/superpowers/plans/`) kad na njega dođe red. Dizajner posle prolazi kroz sve.
+
+| # | Deo | Spec | Plan |
+|---|---|---|---|
+| 1 | Temelj | `2026-10-19-temelj-design.md` | `../plans/2026-10-19-temelj.md` |
+| 2 | Porodica u Srbiji | `2026-10-19-porodica-srbija-design.md` | — |
+| 3 | Negovateljica, Finska | `2026-10-19-negovateljica-finska-design.md` | — |
+| 4 | Negovateljica, Srbija | `2026-10-19-negovateljica-srbija-design.md` | — |
+| 5 | Registracija negovateljice | `2026-10-19-registracija-negovateljice-design.md` | — |
 
 ## Cilj
 
@@ -20,7 +32,7 @@ Prototip (bez servera, sve u pregledaču) dobija drugu stranu: negovateljica se 
 
 | | Finska | Srbija |
 |---|---|---|
-| Šta porodica plaća platformi | pretplata Basic / Premium | jednokratni paket (3 paketa, svaki važi 1 mesec, pa se kupuje ponovo) |
+| Šta porodica plaća platformi | pretplata Basic / Premium | jednokratni paket: mesečni (43 €) ili tromesečni (98 €), ne obnavlja se sam |
 | Novac za negu | ide preko platforme: rezervacija, radni nalog, naplata posle 24 h, isplata negovateljici (Stripe) | ne ide preko platforme; dogovaraju se telefonom |
 | Posle prihvaćenog upita | ugovor o nezi (verzije), plan posete, radni nalog, zarada | samo kontakt: porodica vidi telefon i e-mail negovateljice, negovateljica vidi profil klijenta sa kontaktom |
 | „Moja nega" porodice | plan nege, a posle prihvaćenog ugovora pregled (dashboard) | uvek samo plan nege |
@@ -68,8 +80,8 @@ Modeli plaćanja se menjaju dok se testira šta radi najbolje. Zato su paketi i 
 
 ## Čeka na korisnika
 
-- Tri srpska paketa: nazivi, cene, šta uključuju. Do tada izmišljen tekst, u `plans.js`.
-- 62 pitanja testa ličnosti.
+- 62 para testa ličnosti. Do tada su u `src/data/personalityTest.js` privremeni parovi (deo 5).
+- Paketi u Srbiji su sa `nanaprime.com/sr/pricing` (deo 2). Modeli se još testiraju, pa se menjaju samo u `plans.js`.
 
 ## Šta smo našli na slikama, a ne prenosimo
 
