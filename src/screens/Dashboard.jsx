@@ -540,7 +540,19 @@ export default function Dashboard({
         </Attention>
       )}
 
-      {asked && !yeses.length && !packageOver && (
+      {/* Serbia: she said yes, but without a package her contact stays closed */}
+      {marketHas('package') && !unlocked && !packageOver && care.requests.some((r) => r.status === 'accepted') && (
+        <Attention title={t('Prihvatila je')}>
+          <Card>
+            <CardDescription>{t('Negovateljica je prihvatila vaš upit. Njen telefon i e-mail vidite kad izaberete paket.')}</CardDescription>
+            <CardFooter>
+              <Button onClick={onUnlock}>{t('Izaberite paket')}</Button>
+            </CardFooter>
+          </Card>
+        </Attention>
+      )}
+
+      {asked && !yeses.length && !packageOver && !(marketHas('package') && care.requests.some((r) => r.status === 'accepted')) && (
         <Attention title={pendingNames.length ? t('Čeka se odgovor') : t('Stigli su odgovori')}>
           <Card>
             <CardDescription>

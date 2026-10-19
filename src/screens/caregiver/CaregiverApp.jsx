@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppPane } from '@/components/page';
-import CaregiverRequests from './CaregiverRequests';
+import RequestsRs from './RequestsRs';
+import ClientProfile from './ClientProfile';
 import Board from './Board';
 import ClientPage from './ClientPage';
 import Clients from './Clients';
@@ -32,7 +33,9 @@ export default function CaregiverApp({ view, onView, user, market, care, clients
   let page;
   if (view === 'settings') page = <Settings payments={false} user={user} care={care} onCare={onCare} onSaveUser={onSaveUser} onFlash={onFlash} />;
   else if (view === 'profile') page = <Profile caregiver={caregiverById(caregiverId)} user={user} market={market} onSaveProfile={onSaveProfile} />;
-  else if (!fi) page = <CaregiverRequests user={user} care={care} onCare={onCare} onFlash={onFlash} />;
+  // Serbia: the requests, and a family's profile (part 4)
+  else if (!fi && client) page = <ClientProfile client={client} onBack={() => onView('requests')} act={act} />;
+  else if (!fi) page = <RequestsRs user={user} clients={clients} onOpen={open} act={act} />;
   else if (client)
     page = <ClientPage client={client} caregiverId={caregiverId} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => onView(from === 'clients' ? 'clients' : 'board')} act={act} />;
   else if (view === 'clients') page = <Clients clients={clients} onOpen={open} />;

@@ -77,4 +77,6 @@ export default {
   "za {n} meseca · plaćate jednom, bez automatske obnove": "for {n} months · paid once, no automatic renewal",
   "{date} · {amount}": "{date} · {amount}",
   "{name} je prihvatila. Telefon i e-mail su u njenom profilu.": "{name} accepted. Her phone and e-mail are in her profile.",
+  "Prihvatila je": "She said yes",
+  "Negovateljica je prihvatila vaš upit. Njen telefon i e-mail vidite kad izaberete paket.": "The caregiver accepted your request. You see her phone and e-mail once you choose a package.",
 };

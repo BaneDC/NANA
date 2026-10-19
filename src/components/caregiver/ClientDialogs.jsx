@@ -17,6 +17,7 @@ import {
   withdrawTerms,
 } from '../../data/caregiverCare';
 import { findVisit, firstName } from '../../data/familyCare';
+import { market } from '../../data/market';
 import { t } from '@/i18n';
 
 // Every action she takes on a family, from the board or from the family's page:
@@ -34,7 +35,12 @@ export function useClientActions({ caregiverId, onClientCare, onFlash }) {
   const family = (client) => firstName(client.care.family.name || '') || t('Porodica');
 
   const act = (kind, client, extra = {}) => {
-    if (kind === 'accept') return run(client, answerRequest(caregiverId, true), t('Prihvatili ste. Sledeće su uslovi saradnje.'));
+    if (kind === 'accept')
+      return run(
+        client,
+        answerRequest(caregiverId, true),
+        market() === 'RS' ? t('Prihvatili ste. {name} vidi vaš telefon i e-mail.', { name: family(client) }) : t('Prihvatili ste. Sledeće su uslovi saradnje.')
+      );
     if (kind === 'withdraw') return run(client, withdrawTerms(caregiverId), t('Predlog je povučen.'));
     setOpen({ kind, client, ...extra });
   };

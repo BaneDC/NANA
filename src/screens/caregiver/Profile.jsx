@@ -8,9 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Fact, Facts } from '@/components/data-list';
 import { useKept } from '@/hooks/use-kept';
 import Tags from '../../components/Tags';
-import { AvailabilityForm, PersonalForm, ProfessionForm } from '../../components/caregiver/ProfileForms';
+import { AvailabilityForm, EmergencyForm, HealthForm, PersonalForm, ProfessionForm, QualificationsForm } from '../../components/caregiver/ProfileForms';
 import { SLOTS, daysText, engagementText } from '../../data/carePlan';
-import { DOCUMENTS, PERSONAL } from '../../data/caregiverProfile';
+import { DOCUMENTS, HABITS, HEALTH_QUESTIONS, PERSONAL, READINESS } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
 
 // "Moj profil", laid out as Settings is: groups of cards, each saying what it
@@ -87,6 +87,15 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
       </PageSection>
 
       <PageSection title={t('Posao')}>
+        {!fi && (
+          <Group title={t('Kvalifikacije')} onEdit={() => setForm('qualifications')}>
+            <Fact label={t('Obrazovanje')}>{t(c.education)}</Fact>
+            <Fact label={t('Sertifikat negovateljice')}>{c.certificate ? t('Da') : t('Ne')}</Fact>
+            <Fact label={t('Kursevi')}>{c.courses ? t(c.courses) : '-'}</Fact>
+            <Fact label={t('Iskustvo i veštine')}>{t(c.bio)}</Fact>
+          </Group>
+        )}
+        {fi && (
         <Group title={t('Profesija')} onEdit={() => setForm('profession')}>
           {c.classifications.length > 0 && (
             <Fact label={t('Klasifikacije')}>
@@ -97,13 +106,42 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
           <Fact label={t('Jezici')}>{c.languages.map((l) => t(l)).join(', ')}</Fact>
           <Fact label={t('O sebi')}>{t(c.bio)}</Fact>
         </Group>
+        )}
         <Group title={t('Dostupnost')} onEdit={() => setForm('availability')}>
           {c.engagement && <Fact label={t('Angažman')}>{engagementText(c).join(', ')}</Fact>}
           <Fact label={t('Dani')}>{daysText(c.days)}</Fact>
           <Fact label={t('Doba dana')}>{c.slots.map((s) => `${t(SLOTS[s].label).toLowerCase()} ${SLOTS[s].hours}`).join(', ')}</Fact>
           <Fact label={t('Radijus')}>{t('do {km} km', { km: c.radius })}</Fact>
           {fi && c.rate && <Fact label={t('Cena')}>{c.rate}</Fact>}
+          {!fi && <Fact label={t('Rad u inostranstvu')}>{c.abroad ? t('Da') : t('Ne')}</Fact>}
         </Group>
+        {!fi && (
+          <Group title={t('Zdravlje i navike')} onEdit={() => setForm('health')}>
+            {HABITS.map(([id, label]) => (
+              <Fact key={id} label={t(label)}>
+                {c.habits?.[id] ? t('Da') : t('Ne')}
+              </Fact>
+            ))}
+            <Fact label={t('Jezici')}>{c.languages.map((l) => t(l)).join(', ')}</Fact>
+            {HEALTH_QUESTIONS.map(([id, label]) => (
+              <Fact key={id} label={t(label)}>
+                {c.health?.[id] ? t('Da') : t('Ne')}
+              </Fact>
+            ))}
+            <Fact label={t('Spremnost za rad')}>
+              <Tags items={READINESS.filter(([id]) => c.readiness?.includes(id)).map(([, label]) => t(label))} />
+            </Fact>
+            <Fact label={t('Šta ne želite da radite')}>{c.unwilling || '-'}</Fact>
+          </Group>
+        )}
+        {!fi && (
+          <Group title={t('Kontakt za hitne slučajeve')} onEdit={() => setForm('emergency')}>
+            <Fact label={t('Ime i prezime')}>{c.emergency?.name || '-'}</Fact>
+            <Fact label={t('Srodstvo')}>{c.emergency?.relation ? t(c.emergency.relation) : '-'}</Fact>
+            <Fact label={t('Telefon')}>{c.emergency?.phone || '-'}</Fact>
+            <Fact label={t('Adresa')}>{c.emergency?.address || '-'}</Fact>
+          </Group>
+        )}
         {fi && c.classifications.some((k) => DOCUMENTS[k]) && (
           <Group title={t('Dokumenti')}>
             {c.classifications
@@ -122,6 +160,9 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
 
       {kept === 'personal' && <PersonalForm open={form === 'personal'} profile={c} onClose={close} onSave={save} />}
       {kept === 'profession' && <ProfessionForm open={form === 'profession'} profile={c} onClose={close} onSave={save} />}
+      {kept === 'qualifications' && <QualificationsForm open={form === 'qualifications'} profile={c} onClose={close} onSave={save} />}
+      {kept === 'health' && <HealthForm open={form === 'health'} profile={c} onClose={close} onSave={save} />}
+      {kept === 'emergency' && <EmergencyForm open={form === 'emergency'} profile={c} onClose={close} onSave={save} />}
       {kept === 'availability' && <AvailabilityForm open={form === 'availability'} profile={c} market={market} onClose={close} onSave={save} />}
     </Page>
   );

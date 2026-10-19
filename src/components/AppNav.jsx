@@ -296,7 +296,7 @@ export default function AppNav({
           {/* her side: for now one page, the requests sent to her; the board,
               her clients and her earnings come with part 3 */}
           {caregiver && market === 'sr' && (
-            <Place icon={Inbox} label={t('Upiti')} active={view === 'requests'} count={requestsBadge} onClick={go(() => onView('requests'))} />
+            <Place icon={Inbox} label={t('Upiti')} active={view === 'requests' || view === 'client'} count={requestsBadge} onClick={go(() => onView('requests'))} />
           )}
           {/* Finland: her board, her clients, her earnings (part 3) */}
           {caregiver && market !== 'sr' && (

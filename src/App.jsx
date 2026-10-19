@@ -234,7 +234,10 @@ export default function App() {
   // says is needed, so a request always carries the plan as it is now.
   // Answers received from another tab are a new object with the same content:
   // the care then stays as it is, or the two tabs would answer each other forever.
+  // Only the family's own tab does this: in hers, `user` is the caregiver, and
+  // the family's name and e-mail would become hers.
   useEffect(() => {
+    if (user.role === 'caregiver') return;
     setCare((c) => {
       const next = withAnswers(c, answers, user);
       const same = ['family', 'elder', 'need'].every((k) => JSON.stringify(next[k]) === JSON.stringify(c[k]));

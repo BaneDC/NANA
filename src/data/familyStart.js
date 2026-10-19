@@ -78,7 +78,13 @@ export function withAnswers(care, answers, user) {
   const you = answers['about-you']?.values || {};
   return {
     ...care,
-    family: { name: you['your-name'] || user?.name || care.family.name, relation: you.relation || care.family.relation },
+    // the e-mail too: in Serbia a caregiver who says yes sees it (part 4)
+    family: {
+      name: you['your-name'] || user?.name || care.family.name,
+      relation: you.relation || care.family.relation,
+      phone: you['your-phone'] || user?.phone || care.family.phone,
+      email: user?.email || care.family.email,
+    },
     elder: { name: person.name || care.elder.name, area: (person.city || care.elder.area).split(',')[0].trim() },
     need: needFrom(answers),
   };

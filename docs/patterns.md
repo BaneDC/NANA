@@ -704,7 +704,7 @@ Aplikacija je na srpskom, engleskom i finskom. Tržište ostaje finsko: imena lj
 - **Forme** (`src/components/caregiver/Forms.jsx`): ugovor, plan posete, radni nalog i modal sa razlogom (otkazivanje, poseta se nije desila, završetak saradnje). Gašenje i otkazivanje su `secondary` (§9).
 - **„Zarada":** njoj se zbir prikazuje (§8 važi za porodicu). „Klijenti": filter Sada / Završeno / Odbijeni.
 - **„Moj profil"** je složen kao Podešavanja: kartice sa `Facts` i „Izmenite" u glavi, koje otvara prozor (`src/components/caregiver/ProfileForms.jsx`, isti prozori služe i registraciji). Prekidač „Primam nove upite" je red-labela kao u Podešavanjima; isključen, porodice je ne vide na „Pronađi".
-
+- **Srbija (odlučeno 19. 10.):** početna je „Upiti": filter Čeka / Prihvaćeni / Odbijeni (`ToggleGroup scroll`, brojevi u čipovima, bez obojenih pločica iznad). Upit koji čeka ima „Prihvati" i „Odbij" i na telefonu (rade nešto drugo od otvaranja, kao „Pošalji poruku" na „Pronađi"). Prihvaćen upit pokazuje kontakt porodice (redovi telefon i e-mail). Ime otvara profil klijenta: sve iz odgovora i kartona porodice (osnovno, kada, usluge, zdravstveno stanje samo iz onoga što razgovor pita), a kontakt i kontakt za hitne slučajeve tek posle prihvatanja. „Moj profil" u Srbiji ima „Kvalifikacije", „Dostupnost" (angažman, rad u inostranstvu), „Zdravlje i navike" i „Kontakt za hitne slučajeve"; da / ne su dva čipa.
 
 ## 13. Provera — obavezno posle izmene interfejsa
 

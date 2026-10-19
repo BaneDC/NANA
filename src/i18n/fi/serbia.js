@@ -77,4 +77,6 @@ export default {
   "za {n} meseca · plaćate jednom, bez automatske obnove": "{n} kuukaudeksi · kertamaksu, ei automaattista uusintaa",
   "{date} · {amount}": "{date} · {amount}",
   "{name} je prihvatila. Telefon i e-mail su u njenom profilu.": "{name} hyväksyi. Hänen puhelinnumeronsa ja sähköpostinsa ovat hänen profiilissaan.",
+  "Prihvatila je": "Hän hyväksyi",
+  "Negovateljica je prihvatila vaš upit. Njen telefon i e-mail vidite kad izaberete paket.": "Hoitaja hyväksyi pyyntösi. Näet hänen puhelinnumeronsa ja sähköpostinsa, kun valitset paketin.",
 };

@@ -72,7 +72,9 @@ export function seedState(market, { filled }) {
   const answers = reconcile({}, { ...raw, 'family-goal': { values: { goal: t(raw['family-goal'].values.goal), worry: t(raw['family-goal'].values.worry) } } }).answers;
   const person = demoPerson(answers, demoNotes.map((n) => t(n)), user);
   return {
-    person: filled ? { ...person, care: fillCare(withAnswers(person.care, answers, user)) } : person,
+    // who she is and what she needs are on the care from the start, whichever
+    // side's tab makes the state first
+    person: { ...person, care: filled ? fillCare(withAnswers(person.care, answers, user)) : withAnswers(person.care, answers, user) },
     family: filled ? { unlocked: true, subscription: { planId: 'monthly', at: Date.now() } } : { unlocked: false, subscription: null },
     // Finland: the other families on Sanna's board (src/data/caregiverClients.js)
     clients: market === 'fi' ? caregiverClients() : [],
