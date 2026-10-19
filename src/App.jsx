@@ -10,7 +10,9 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import Logo from './components/Logo';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStage, chatStore } from './components/KitAssistant';
-import { demoAnswersNow, demoCountry, demoNotesNow, demoUser, wantsDemo } from './data/demoCase';
+import { demoAccount, demoEntry, go, seedState, session, toCountry } from './data/demo';
+import { store } from './data/store';
+import { useShared } from './hooks/use-shared';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { Plus, X } from 'lucide-react';
 import HelpDialog from './components/HelpDialog';
@@ -33,7 +35,6 @@ import { reconcile } from './data/dependencies';
 import { askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { declineCard } from './data/sim';
 import { requestSaid, startCare, withAnswers } from './data/familyStart';
-import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
 import { buildPlan, caregiverById, coordinator } from './data/carePlan';
@@ -41,19 +42,21 @@ import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { recordImpact, writeEvent, written } from './data/record';
 import { requestFoot, requestNote } from './data/firstSteps';
 import { changeEntry } from './data/planLog';
-import { demoPerson, newPerson, planOf, withPlan } from './data/person';
+import { newPerson, planOf, withPlan } from './data/person';
 import { localized, locale, msg, setLang, t, useKeepScroll, useLang } from './i18n';
 import { setMarket } from './data/market';
 import { renewalAt, renewsOn } from './data/plans';
 
 
-// /?demo opens past the onboarding, on a finished plan — for trying the chat and
-// everything after it without talking the conversation through each time.
-const DEMO = wantsDemo();
-const demoStart = DEMO ? reconcile({}, demoAnswersNow()).answers : null;
-// /?demo&puno opens it already a week into care (src/data/demoFill.js), so a
-// reload does not mean clicking through the simulation again.
-const FILLED = DEMO && new URLSearchParams(window.location.search).has('puno');
+// Who this tab is in the demo (src/data/demo.js): the address says it, or the
+// tab remembers it. A real account is not a demo, and keeps nothing shared.
+// The demo opens past the onboarding, on a finished plan.
+const ENTRY = demoEntry(window.location.search);
+const DEMO_TAB = ENTRY && (ENTRY.explicit || !session.read() ? { role: ENTRY.role, market: ENTRY.market } : session.read());
+if (DEMO_TAB) session.write(DEMO_TAB);
+const DEMO = Boolean(DEMO_TAB);
+// /?demo&puno: the week into care, every time it is opened, over what was kept
+if (ENTRY?.filled) store.save(DEMO_TAB.market, seedState(DEMO_TAB.market, { filled: true }));
 
 // What registration already told us about the person writing, as the answer the
 // onboarding would otherwise ask for, so Minna does not ask it again.
@@ -74,11 +77,11 @@ export default function App() {
   // `role` is chosen at registration and decides which of the two applications
   // this is: the family's, or the caregiver's. Switching means starting over:
   // reloading the page goes back to sign-in.
-  const [user, setUser] = useState(
-    DEMO ? { ...demoUser, country: demoCountry() } : { name: '', email: '', role: 'family' }
-  );
-  // The facts of the place (the emergency number) follow the country registered with.
-  setMarket(user.country);
+  const [user, setUser] = useState(DEMO ? demoAccount(DEMO_TAB.role, DEMO_TAB.market) : { name: '', email: '', role: 'family' });
+  // The facts of the place (the emergency number) follow the country registered
+  // with, or the demo's market.
+  const market = DEMO ? DEMO_TAB.market : user.country === 'RS' ? 'sr' : 'fi';
+  setMarket(DEMO ? toCountry(market) : user.country);
   // An account that chose a language in Settings opens in it.
   useEffect(() => {
     if (user.language) setLang(user.language);
@@ -86,15 +89,43 @@ export default function App() {
   // The one person this account cares for (src/data/person.js): her answers and
   // notes, the plan built from them, what changed in it, and the care around
   // her. Everything below reads her from here, so nothing has a second source.
-  const [person, setPerson] = useState(() => {
-    if (!DEMO) return newPerson();
-    const p = demoPerson(demoStart, demoNotesNow(), demoUser);
-    return FILLED ? { ...p, care: fillCare(withAnswers(p.care, demoStart, demoUser)) } : p;
-  });
+  // With her, what the family pays: shared with every tab on this market in a
+  // demo, this tab's own for a real account. A tab that receives them says the
+  // dates in its own language, and does not save that back.
+  const [shared, setShared] = useShared(
+    DEMO ? market : null,
+    () => (DEMO ? seedState(market, { filled: false }) : { person: newPerson(), family: { unlocked: false, subscription: null }, clients: [] }),
+    { onReceive: (s) => ({ ...s, person: { ...s.person, care: relanguage(s.person.care) } }) }
+  );
+  const person = shared.person;
+  // a change that changes nothing keeps the same state, so nothing is saved or sent
+  const setPerson = useCallback(
+    (next) =>
+      setShared((s) => {
+        const p = typeof next === 'function' ? next(s.person) : next;
+        return p === s.person ? s : { ...s, person: p };
+      }),
+    [setShared]
+  );
+  const { unlocked, subscription } = shared.family; // subscription: { planId, at }
+  const setFamily = useCallback(
+    (key) => (next) =>
+      setShared((s) => {
+        const v = typeof next === 'function' ? next(s.family[key]) : next;
+        return v === s.family[key] ? s : { ...s, family: { ...s.family, [key]: v } };
+      }),
+    [setShared]
+  );
+  const setUnlocked = useMemo(() => setFamily('unlocked'), [setFamily]);
+  const setSubscription = useMemo(() => setFamily('subscription'), [setFamily]);
   // a part of her set on its own, as a value or from the one before
   const setPart = useCallback(
-    (key) => (next) => setPerson((p) => ({ ...p, [key]: typeof next === 'function' ? next(p[key]) : next })),
-    []
+    (key) => (next) =>
+      setPerson((p) => {
+        const v = typeof next === 'function' ? next(p[key]) : next;
+        return v === p[key] ? p : { ...p, [key]: v };
+      }),
+    [setPerson]
   );
   const setAnswers = useMemo(() => setPart('answers'), [setPart]);
   const setNotes = useMemo(() => setPart('notes'), [setPart]);
@@ -112,9 +143,6 @@ export default function App() {
   // rebuilt when what it is built from changes, not on every change to her care
   const { planMade } = person;
   const plan = useMemo(() => planOf({ planMade, answers, notes }), [planMade, answers, notes, lang]);
-  const [unlocked, setUnlocked] = useState(FILLED);
-  // which plan they paid for and when, so settings can say what they are on
-  const [subscription, setSubscription] = useState(FILLED ? { planId: 'monthly', at: Date.now() } : null); // { planId, at }
   // one slot on the right: the care plan or the assistant, never both
   const [rightPanel, setRightPanel] = useState(null); // null | 'plan' | 'copilot'
   // null when closed, otherwise { caregiver } — a caregiver means the user tapped one
@@ -157,7 +185,7 @@ export default function App() {
 
   // The onboarding has made the plan: from now on it is built from her answers,
   // and its history starts. The plan it hands over is the same buildPlan.
-  const onPlan = useCallback(() => setPerson((p) => withPlan(p)), []);
+  const onPlan = useCallback(() => setPerson((p) => withPlan(p)), [setPerson]);
   const onNote = useCallback((note) => setNotes((n) => (n.includes(note) ? n : [...n, note])), []);
   // Answers are reconciled, not just merged: a changed frailty level retires the
   // branch questions it no longer asks, so the state can never hold an answer to a
@@ -185,8 +213,14 @@ export default function App() {
 
   // The care state follows the answers: who she is, where, and what the plan
   // says is needed, so a request always carries the plan as it is now.
+  // Answers received from another tab are a new object with the same content:
+  // the care then stays as it is, or the two tabs would answer each other forever.
   useEffect(() => {
-    setCare((c) => withAnswers(c, answers, user));
+    setCare((c) => {
+      const next = withAnswers(c, answers, user);
+      const same = ['family', 'elder', 'need'].every((k) => JSON.stringify(next[k]) === JSON.stringify(c[k]));
+      return same ? c : next;
+    });
   }, [answers, user]);
 
   // The caregivers' side of the story is not timed: whatever a caregiver or the
@@ -414,18 +448,13 @@ export default function App() {
     if (stage === 'empty' && draft && !chat.isStreaming) chat.submit(draft.id, t(CHANGE_OPENER));
   };
 
-  // The demo from the sign-in screen: the same finished case as /?demo.
-  const openDemo = () => {
-    const answersNow = reconcile({}, demoAnswersNow()).answers;
-    setUser({ ...demoUser, country: demoCountry() });
-    setPerson(demoPerson(answersNow, demoNotesNow(), demoUser));
-    setView('dashboard');
-    setPhase('app');
-  };
+  // The demo from the sign-in screen: this tab becomes the demo's family or
+  // caregiver on the market chosen there.
+  const openDemo = (role = 'family', demoMarket = session.read()?.market || 'fi') => go({ role, market: demoMarket });
 
   // What the account has got to, kept so signing in again resumes it.
   useEffect(() => {
-    if (phase !== 'app' || !user.email || user === demoUser) return;
+    if (phase !== 'app' || !user.email || DEMO) return;
     saveProgress(user.email, { answers, notes, planDone: Boolean(plan), planLog });
   }, [phase, user, answers, notes, plan, planLog]);
 
@@ -514,7 +543,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             <Register
               key="register"
-              onDemo={openDemo}
+              onDemo={() => openDemo()}
               onContinue={(u) => {
                 setUser(u);
                 setCare(startCare(u));
@@ -777,9 +806,7 @@ export default function App() {
             onFlash={say}
             // the whole example in one go, with the subscription it needs
             onFill={() => {
-              setCare(fillCare);
-              setUnlocked(true);
-              setSubscription((x) => x || { planId: 'monthly', at: Date.now() });
+              setShared(seedState(market, { filled: true }));
               setDrawer(null);
               setView('dashboard');
               setSim(false);
