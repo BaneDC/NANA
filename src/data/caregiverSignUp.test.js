@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { PAIRS } from './personalityTest';
-import { afterSteps, emptyForm, recordFrom, stepErrors } from './caregiverSignUp';
+import { adult, afterSteps, emptyForm, recordFrom, stepErrors } from './caregiverSignUp';
 
 const filled = (market) => ({
   ...emptyForm(market),
   firstName: 'Ana',
   lastName: 'Lind',
-  birth: '1.1.1990.',
+  birth: new Date(1990, 0, 1).getTime(),
   address: 'Ulica 1',
   area: 'Helsinki',
-  phone: '+358 40 123 4567',
+  phone: '40 123 4567',
   classifications: ['Lähihoitaja'],
   education: 'Srednja škola', // i18n-ignore
   bio: 'Iskustvo.',
@@ -47,5 +47,17 @@ describe('sign-up steps', () => {
   it('makes a record in the shape of the others, waiting for the interview', () => {
     const r = recordFrom(filled('fi'), 'reg-1');
     expect(r).toMatchObject({ id: 'reg-1', market: 'FI', status: 'interview', name: 'Ana Lind', rateMin: 15, rateMax: 20, days: [0, 1] });
+  });
+});
+
+describe('date of birth', () => {
+  it('18 today is old enough, a day short is not', () => {
+    const now = new Date(2026, 9, 19);
+    expect(adult(new Date(2008, 9, 19), now)).toBe(true);
+    expect(adult(new Date(2008, 9, 20), now)).toBe(false);
+  });
+  it('someone under 18 is told so under the field', () => {
+    const f = { ...emptyForm('fi'), birth: Date.now() };
+    expect(stepErrors('basic', f).birth).toBe('Morate imati najmanje 18 godina.');
   });
 });

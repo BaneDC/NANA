@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -7,10 +7,13 @@ import { Fact, Facts } from '@/components/data-list';
 import { PaneHint } from '@/components/pane';
 import { cn } from '@/lib/utils';
 import { Actions, Consent, FormCard, Welcome, column } from '../Register';
-import { Field, FieldError, FileField, Input, Password, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
+import { Radius } from '../../components/caregiver/ProfileForms';
+import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Password, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
 import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
-import { DAYS, EDUCATION, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS } from '../../data/caregiverProfile';
+import { DAYS, EDUCATION, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { PAIRS, TRAITS, traitOf } from '../../data/personalityTest';
 import { SLOTS, daysText } from '../../data/carePlan';
 import { msg, t } from '@/i18n';
@@ -72,7 +75,7 @@ function Progress({ at, of }) {
   );
 }
 
-export default function CaregiverSignUp({ onDone, onBack }) {
+export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const [screen, setScreen] = useState('country');
   const [market, setMarket] = useState(null);
   const [f, setF] = useState(null);
@@ -83,6 +86,11 @@ export default function CaregiverSignUp({ onDone, onBack }) {
   const [busy, setBusy] = useState(false);
   const check = useCheck();
   const set = (patch) => setF((x) => ({ ...x, ...patch }));
+  // past the country and the account it is a form: the page drops its photos
+  useEffect(() => {
+    onForm?.(!['country', 'account'].includes(screen));
+    return () => onForm?.(false);
+  }, [screen, onForm]);
   const steps = market ? STEPS[market] : [];
   const stepAt = steps.findIndex((s) => s.id === screen);
   const errors = f ? stepErrors(screen, f) : {};
@@ -213,25 +221,40 @@ export default function CaregiverSignUp({ onDone, onBack }) {
         {head}
         <FormCard>
           <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
-            <Field label={t('Ime')} required error={show('firstName')}>
-              <Input value={f.firstName} onChange={(v) => set({ firstName: v })} autoComplete="given-name" />
+            <Field label={t('Vaše ime')} required error={show('firstName')}>
+              <Input value={f.firstName} onChange={(v) => set({ firstName: v })} placeholder="Sarah" autoComplete="given-name" />
             </Field>
-            <Field label={t('Prezime')} required error={show('lastName')}>
-              <Input value={f.lastName} onChange={(v) => set({ lastName: v })} autoComplete="family-name" />
+            <Field label={t('Vaše prezime')} required error={show('lastName')}>
+              <Input value={f.lastName} onChange={(v) => set({ lastName: v })} placeholder="Doe" autoComplete="family-name" />
             </Field>
           </div>
           <Field label={t('Datum rođenja')} required error={show('birth')}>
-            <Input value={f.birth} onChange={(v) => set({ birth: v })} placeholder={t('npr. 4. 7. 1988.')} />
+            {/* years back: month and year as dropdowns in the calendar */}
+            {/* opens on today; someone under 18 is told so under the field
+                (docs/patterns.md §10), the days are not switched off */}
+            <DateInput
+              value={f.birth ? new Date(f.birth) : null}
+              onChange={(d) => set({ birth: d.getTime() })}
+              from={new Date(1920, 0, 1)}
+              to={new Date()}
+              today={new Date()}
+              pickYear
+              placeholder={t('Izaberite datum rođenja')}
+            />
           </Field>
-          <Field label={t('Adresa')} required hint={t('Adresa iz lične karte.')} error={show('address')}>
-            <Input value={f.address} onChange={(v) => set({ address: v })} />
+          <Field label={t('Prebivalište')} required error={show('address')}>
+            <Input value={f.address} onChange={(v) => set({ address: v })} placeholder={t('Unesite adresu iz lične karte')} />
           </Field>
           <Field label={t('Opština')} required error={show('area')}>
-            <Input value={f.area} onChange={(v) => set({ area: v })} placeholder={sr ? t('npr. Vračar, Beograd') : t('npr. Kallio, Helsinki')} />
+            <Combobox value={f.area} onChange={(v) => set({ area: v })} groups={municipalityGroups(market)} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
           </Field>
-          <Field label={t('Telefon')} required error={show('phone')}>
-            <Input value={f.phone} onChange={(v) => set({ phone: v })} type="tel" autoComplete="tel" />
+          <Field label={t('Broj telefona')} required labelId="su-phone" error={show('phone')}>
+            <Phone country={f.phoneCountry} onCountry={(v) => set({ phoneCountry: v })} value={f.phone} onChange={(v) => set({ phone: v })} labelledBy="su-phone" />
           </Field>
+          {/* what she gave on the step before, shown, not asked again */}
+          <Facts>
+            <Fact label={t('Email')}>{account.email}</Fact>
+          </Facts>
         </FormCard>
         {footer()}
       </>
@@ -242,28 +265,34 @@ export default function CaregiverSignUp({ onDone, onBack }) {
       <>
         {head}
         <FormCard>
-          <Chips
-            label={t('Klasifikacije')}
-            required
-            value={f.classifications}
-            onChange={(v) => set({ classifications: v })}
-            options={CLASSIFICATIONS.map((c) => [c.id, c.id])}
-            error={show('classifications')}
-          />
-          {/* what each is, and which ask for a document */}
-          <ul className="flex flex-col gap-1 text-small text-muted-foreground">
-            {CLASSIFICATIONS.map((c) => (
-              <li key={c.id}>
-                {c.id}: {t(c.text)} · {c.document ? t('treba dokument') : t('ne treba dokument')}
-              </li>
-            ))}
-          </ul>
-          {documentsNeeded(f).length > 0 && <PaneHint>{t('Dokumente za označene klasifikacije šaljete posle prijave.')}</PaneHint>}
-          <Field label={t('Obrazovanje')} required error={show('education')}>
-            <Select value={f.education} onChange={(v) => set({ education: v })} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
+          {/* each classification with what it is and whether it needs a
+              document, together: a box per row (new, for the designer) */}
+          <Field label={t('Klasifikacije')} required hint={t('Izaberite sve koje važe. Za neke klasifikacije treba priložiti sertifikat.')} error={show('classifications')}>
+            <div className="flex flex-col gap-2">
+              {CLASSIFICATIONS.map((c) => (
+                <label key={c.id} className="flex cursor-pointer items-start gap-3 rounded-lg bg-card p-3">
+                  <Checkbox
+                    checked={f.classifications.includes(c.id)}
+                    onCheckedChange={(on) => set({ classifications: on ? [...f.classifications, c.id] : f.classifications.filter((x) => x !== c.id) })}
+                    className="mt-0.5"
+                  />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-xs font-medium text-foreground">{c.id}</span>
+                    <span className="text-xs leading-body text-muted-foreground">{t(c.text)}</span>
+                  </span>
+                  <Badge variant={c.document ? 'warning' : 'secondary'}>{c.document ? t('Potreban sertifikat') : t('Bez dokumenta')}</Badge>
+                </label>
+              ))}
+            </div>
           </Field>
-          <Chips label={t('Jezici')} value={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => [l, t(l)])} />
-          <Field label={t('O sebi')} required error={show('bio')}>
+          {documentsNeeded(f).length > 0 && <PaneHint>{t('Sertifikate za označene klasifikacije prilažete u sledećem delu prijave.')}</PaneHint>}
+          <Field label={t('Nivo obrazovanja')} required error={show('education')}>
+            <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
+          </Field>
+          <Field label={t('Jezici koje govorite')}>
+            <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
+          </Field>
+          <Field label={t('Biografija')} required error={show('bio')}>
             <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
           </Field>
         </FormCard>
@@ -276,8 +305,8 @@ export default function CaregiverSignUp({ onDone, onBack }) {
       <>
         {head}
         <FormCard>
-          <Field label={t('Obrazovanje')} required error={show('education')}>
-            <Select value={f.education} onChange={(v) => set({ education: v })} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
+          <Field label={t('Nivo obrazovanja')} required error={show('education')}>
+            <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
           </Field>
           <YesNo label={t('Sertifikat akreditovane škole za negovateljice')} value={f.certificate} onChange={(v) => set({ certificate: v })} />
           <Field label={t('Kursevi')}>
@@ -312,22 +341,20 @@ export default function CaregiverSignUp({ onDone, onBack }) {
               {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
             </>
           )}
-          <Chips label={t('Dani')}
+          <Chips label={t('Koje dane želite da radite?')}
             required value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
-          <Chips label={t('Doba dana')}
+          <Chips label={t('Izaberite raspored koji vam najviše odgovara')}
             required value={f.slots} onChange={(v) => set({ slots: v })} options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])} error={show('slots')} />
           {f.slots.length > 1 && <PaneHint>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</PaneHint>}
           {sr && <YesNo label={t('Rad u inostranstvu')} value={f.abroad} onChange={(v) => set({ abroad: v })} />}
-          <Field label={t('Radijus')} required>
-            <Select value={String(f.radius)} onChange={(v) => set({ radius: Number(v) })} options={[5, 10, 20, 30, 50].map((r) => ({ value: String(r), label: t('do {km} km', { km: r }) }))} />
-          </Field>
+          <Radius value={f.radius} onChange={(v) => set({ radius: v })} />
           {sr ? (
             <PaneHint>{t('Tržišna cena je oko 1.000 RSD na sat i oko 6.000 RSD za 24 sata.')}</PaneHint>
           ) : (
-            <Field label={t('Cena po satu, od - do')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={show('rate')}>
+            <Field label={t('Cena koju naplaćujete za negu starijih (EUR/sat)')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={show('rate')}>
               <div className="grid grid-cols-2 gap-3">
-                <Input value={f.rateMin} onChange={(v) => set({ rateMin: v })} inputMode="decimal" suffix="€/h" aria-label={t('Od')} />
-                <Input value={f.rateMax} onChange={(v) => set({ rateMax: v })} inputMode="decimal" suffix="€/h" aria-label={t('Do')} />
+                <Input value={f.rateMin} onChange={(v) => set({ rateMin: v })} inputMode="decimal" suffix="€/h" placeholder="15" aria-label={t('Od')} />
+                <Input value={f.rateMax} onChange={(v) => set({ rateMax: v })} inputMode="decimal" suffix="€/h" placeholder="25" aria-label={t('Do')} />
               </div>
             </Field>
           )}
@@ -344,7 +371,9 @@ export default function CaregiverSignUp({ onDone, onBack }) {
           {HABITS.map(([id, label]) => (
             <YesNo key={id} label={t(label)} value={f.habits[id]} onChange={(v) => set({ habits: { ...f.habits, [id]: v } })} />
           ))}
-          <Chips label={t('Jezici')} value={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => [l, t(l)])} />
+          <Field label={t('Jezici koje govorite')}>
+            <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
+          </Field>
           {HEALTH_QUESTIONS.map(([id, label]) => (
             <YesNo key={id} label={t(label)} value={f.health[id]} onChange={(v) => set({ health: { ...f.health, [id]: v } })} />
           ))}
@@ -371,8 +400,8 @@ export default function CaregiverSignUp({ onDone, onBack }) {
           <Field label={t('Srodstvo')} required error={show('emergencyRelation')}>
             <Select value={e.relation} onChange={(v) => setE({ relation: v })} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
           </Field>
-          <Field label={t('Telefon')} required error={show('emergencyPhone')}>
-            <Input value={e.phone} onChange={(v) => setE({ phone: v })} type="tel" />
+          <Field label={t('Broj telefona')} required labelId="su-e-phone" error={show('emergencyPhone')}>
+            <Phone country={e.phoneCountry} onCountry={(v) => setE({ phoneCountry: v })} value={e.phone} onChange={(v) => setE({ phone: v })} labelledBy="su-e-phone" />
           </Field>
           <Field label={t('Adresa')} required error={show('emergencyAddress')}>
             <Input value={e.address} onChange={(v) => setE({ address: v })} />

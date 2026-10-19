@@ -4,9 +4,10 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint } from '@/components/pane';
 import Dialog from '../Dialog';
-import { Field, FieldError, Input, Select, TextArea, requiredError, useCheck } from '../TextField';
+import { Combobox, Field, FieldError, Input, MultiCombobox, Select, TextArea, requiredError, useCheck } from '../TextField';
+import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
-import { DAYS, EDUCATION, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS } from '../../data/caregiverProfile';
+import { DAYS, EDUCATION, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
 
 // The fields of her profile, each group in its own dialog: "Izmenite" on a card
@@ -37,11 +38,11 @@ export function PersonalForm({ open, profile, onClose, onSave }) {
   const save = () => check.check(Object.values(errors)) && onSave({ address: address.trim(), area: area.trim(), phone: phone.trim() });
   return (
     <Frame open={open} title={t('Lični podaci')} onClose={onClose} onSave={save}>
-      <Field label={t('Adresa')} required hint={t('Adresa iz lične karte.')} error={check.show(errors.address)}>
+      <Field label={t('Prebivalište')} required error={check.show(errors.address)}>
         <Input value={address} onChange={setAddress} />
       </Field>
       <Field label={t('Opština')} required error={check.show(errors.area)}>
-        <Input value={area} onChange={setArea} />
+        <Combobox value={area} onChange={setArea} groups={municipalityGroups(profile.market === 'RS' ? 'sr' : 'fi')} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
       </Field>
       <Field label={t('Telefon')} required error={check.show(errors.phone)}>
         <Input value={phone} onChange={setPhone} type="tel" />
@@ -60,26 +61,31 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
   return (
     <Frame open={open} title={t('Profesija')} onClose={onClose} onSave={save}>
       {profile.classifications?.length > 0 && <PaneHint>{t('Klasifikacije se menjaju preko koordinatorke, zbog dokumenata.')}</PaneHint>}
-      <Field label={t('Obrazovanje')} required error={check.show(errors.education)}>
-        <Select value={education} onChange={setEducation} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
+      <Field label={t('Nivo obrazovanja')} required error={check.show(errors.education)}>
+        <Select value={education} onChange={setEducation} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
       </Field>
-      <Field label={t('Jezici')}>
-        <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={languages} onValueChange={setLanguages} aria-label={t('Jezici')}>
-          {LANGUAGES_OFFERED.map((l) => (
-            <ToggleGroupItem key={l} value={l}>
-              {t(l)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+      <Field label={t('Jezici koje govorite')}>
+        <MultiCombobox values={languages} onChange={setLanguages} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
       </Field>
-      <Field label={t('O sebi')} required error={check.show(errors.bio)}>
+      <Field label={t('Biografija')} required error={check.show(errors.bio)}>
         <TextArea value={bio} onChange={setBio} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
       </Field>
     </Frame>
   );
 }
 
-const RADII = [5, 10, 20, 30, 50];
+// how far she will go: a line she drags, the distance beside its label
+export function Radius({ value, onChange }) {
+  return (
+    <Field label={t('Gde želite da radite? (radijus)')}>
+      <div className="flex items-center gap-3">
+        <Slider value={[value]} min={1} max={100} step={1} onValueChange={([v]) => onChange(v)} aria-label={t('Radijus')} className="flex-1" />
+        <span className="w-14 shrink-0 text-right text-xs font-medium text-foreground tabular-nums">{t('{km} km', { km: value })}</span>
+      </div>
+    </Field>
+  );
+}
+
 
 export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
   const [days, setDays] = useState((profile.days || []).map(String));
@@ -134,9 +140,7 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
         </ToggleGroup>
         <FieldError>{check.show(errors.slots)}</FieldError>
       </Field>
-      <Field label={t('Radijus')} required>
-        <Select value={radius} onChange={setRadius} options={RADII.map((r) => ({ value: String(r), label: t('do {km} km', { km: r }) }))} />
-      </Field>
+      <Radius value={Number(radius)} onChange={(v) => setRadius(String(v))} />
       {slots.length > 1 && (
         <PaneHint>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</PaneHint>
       )}
@@ -206,14 +210,8 @@ export function HealthForm({ open, profile, onClose, onSave }) {
       {HABITS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={habits[id] || 'no'} onChange={(v) => setHabits((h) => ({ ...h, [id]: v }))} />
       ))}
-      <Field label={t('Jezici')}>
-        <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={languages} onValueChange={setLanguages} aria-label={t('Jezici')}>
-          {LANGUAGES_OFFERED.map((l) => (
-            <ToggleGroupItem key={l} value={l}>
-              {t(l)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+      <Field label={t('Jezici koje govorite')}>
+        <MultiCombobox values={languages} onChange={setLanguages} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
       </Field>
       {HEALTH_QUESTIONS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={health[id] || 'no'} onChange={(v) => setHealth((h) => ({ ...h, [id]: v }))} />

@@ -77,7 +77,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
         <Group title={t('Lični podaci')} onEdit={() => setForm('personal')}>
           <Fact label={t('Ime')}>{c.name}</Fact>
           <Fact label={t('Datum rođenja')}>{c.birth || '-'}</Fact>
-          <Fact label={t('Adresa')}>{c.address || '-'}</Fact>
+          <Fact label={t('Prebivalište')}>{c.address || '-'}</Fact>
           <Fact label={t('Opština')}>{c.area}</Fact>
           <Fact label={t('Telefon')}>{c.phone}</Fact>
           <Fact label={t('E-mail')} note={t('Menja se preko koordinatorke, jer je to vaše ime za prijavu.')}>
@@ -104,7 +104,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
           )}
           <Fact label={t('Obrazovanje')}>{t(c.education)}</Fact>
           <Fact label={t('Jezici')}>{c.languages.map((l) => t(l)).join(', ')}</Fact>
-          <Fact label={t('O sebi')}>{t(c.bio)}</Fact>
+          <Fact label={t('Biografija')}>{t(c.bio)}</Fact>
         </Group>
         )}
         <Group title={t('Dostupnost')} onEdit={() => setForm('availability')}>

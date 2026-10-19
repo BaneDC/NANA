@@ -289,7 +289,7 @@ export default {
   "nijedna nije zakazana": "none booked",
   "zajedno": "together",
   "Skriven posle kraja saradnje": 'Hidden after the arrangement ended',
-  "Opština": "Area",
+  "Opština": "Municipality",
   "Ako nešto nije u redu tokom posete, prvo pozovite negovateljicu. Sve oko novca rešava koordinatorka.": "If something is wrong during a visit, call the caregiver first. Anything about money is for the coordinator.",
   "Dogovorena nega": "Agreed care",
   "Ugovor koji važi": "Contract in force",

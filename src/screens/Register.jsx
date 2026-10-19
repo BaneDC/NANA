@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
-import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
-import { Field, FieldError, Input, Password, Select, requiredError, useCheck } from '../components/TextField';
+import { Field, FieldError, Input, Password, Phone, Select, requiredError, useCheck } from '../components/TextField';
+import { COUNTRIES } from '../data/countries';
 import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
@@ -20,18 +20,6 @@ import { CodeInput } from '../components/TwoFactorSetup';
 // account and handed to the rest of the app, so nothing the family has already
 // said is asked again: their name and number go straight into the onboarding.
 
-const COUNTRIES = [
-  { id: 'FI', name: msg('Finska'), flag: '🇫🇮', code: '+358' },
-  { id: 'RS', name: msg('Srbija'), flag: '🇷🇸', code: '+381' },
-  { id: 'HR', name: msg('Hrvatska'), flag: '🇭🇷', code: '+385' },
-  { id: 'BA', name: msg('Bosna i Hercegovina'), flag: '🇧🇦', code: '+387' },
-  { id: 'ME', name: msg('Crna Gora'), flag: '🇲🇪', code: '+382' },
-  { id: 'MK', name: msg('Severna Makedonija'), flag: '🇲🇰', code: '+389' },
-  { id: 'SI', name: msg('Slovenija'), flag: '🇸🇮', code: '+386' },
-  { id: 'DE', name: msg('Nemačka'), flag: '🇩🇪', code: '+49' },
-  { id: 'AT', name: msg('Austrija'), flag: '🇦🇹', code: '+43' },
-  { id: 'CH', name: msg('Švajcarska'), flag: '🇨🇭', code: '+41' },
-];
 
 const SOURCES = [
   msg('Preko prijatelja ili porodice'),
@@ -44,14 +32,6 @@ const SOURCES = [
 
 // the list shows where the code is from; the closed field only needs the code.
 // Built when shown, so the names are in the language of the moment.
-const countryOptions = () =>
-  COUNTRIES.map((c) => ({
-    value: c.id,
-    label: t(c.name),
-    icon: c.flag,
-    meta: c.code,
-    display: c.flag + ' ' + c.code,
-  }));
 // the answer is kept as its Serbian key; only the label is translated
 const sourceOptions = () => SOURCES.map((s) => ({ value: s, label: t(s) }));
 
@@ -84,7 +64,7 @@ const passwordError = (password) =>
 export const column = 'w-[480px] max-w-full shrink-0';
 
 
-function SignUp({ onContinue, onSignIn, onDemo }) {
+function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -154,7 +134,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
     );
 
   // her own sign-up (part 5), in this same frame
-  if (who === 'caregiver') return <CaregiverSignUp onBack={() => setWho(null)} onDone={(u, record) => onContinue(u, { record })} />;
+  if (who === 'caregiver') return <CaregiverSignUp onBack={() => setWho(null)} onForm={onForm} onDone={(u, record) => onContinue(u, { record })} />;
 
   return (
     <>
@@ -175,25 +155,8 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
             <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
           <Field label={t('Broj telefona')} required as="div" labelId="reg-phone" error={show('phone')}>
-            {/* the country's code in front, behind a line, then the number */}
-            <InputGroup>
-              <Select
-                bare
-                value={country}
-                onChange={setCountry}
-                ariaLabel={t('Pozivni broj države')}
-                options={countryOptions()}
-              />
-              <InputGroupInput
-                type="tel"
-                value={phone}
-                placeholder="40 123 4567"
-                autoComplete="tel-national"
-                aria-labelledby="reg-phone"
-                aria-invalid={show('phone') ? true : undefined}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </InputGroup>
+            {/* the country's code in front, behind a line, then the number (TextField's Phone) */}
+            <Phone country={country} onCountry={setCountry} value={phone} onChange={setPhone} labelledBy="reg-phone" />
           </Field>
           <Field
             label={t('Lozinka')}
@@ -518,6 +481,8 @@ function TwoFactorStep({ user, onContinue, onBack }) {
 
 export default function Register({ onContinue, onDemo }) {
   const [mode, setMode] = useState('sign-up');
+  // a caregiver's sign-up past her account: a form, no photos over it
+  const [form, setForm] = useState(false);
   return (
     // the whole screen, its column centred and scrolling (safe: a tall form is
     // not cut off at the top)
@@ -528,9 +493,10 @@ export default function Register({ onContinue, onDemo }) {
       exit={{ opacity: 0, y: -16, transition: { duration: 0.2, ease: 'easeIn' } }}
     >
       <Logo width={150} />
-      <PhotoCarousel />
+      {/* the photos on the sign-in and sign-up pages only, not over a form's steps */}
+      {!form && <PhotoCarousel />}
       {mode === 'sign-up' ? (
-        <SignUp onContinue={onContinue} onSignIn={() => setMode('sign-in')} onDemo={onDemo} />
+        <SignUp onContinue={onContinue} onSignIn={() => setMode('sign-in')} onDemo={onDemo} onForm={setForm} />
       ) : (
         <SignIn onContinue={onContinue} onSignUp={() => setMode('sign-up')} onDemo={onDemo} />
       )}

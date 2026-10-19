@@ -1,6 +1,7 @@
 import { requiredError } from '../components/TextField';
 import { DOCUMENTS } from './caregiverProfile';
-import { msg, t } from '../i18n';
+import { dialOf } from './countries';
+import { locale, msg, t } from '../i18n';
 
 // The caregiver's sign-up, per market (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // which steps, what each one requires, and the caregiver record it makes. The
@@ -35,10 +36,11 @@ export const emptyForm = (market) => ({
   market,
   firstName: '',
   lastName: '',
-  birth: '',
+  birth: null,
   address: '',
   area: '',
-  phone: market === 'sr' ? '+381 ' : '+358 ',
+  phoneCountry: market === 'sr' ? 'RS' : 'FI',
+  phone: '',
   classifications: [],
   education: '',
   languages: [],
@@ -56,14 +58,20 @@ export const emptyForm = (market) => ({
   health: { allergies: false, limits: false, problems: false, convicted: false },
   readiness: [],
   unwilling: '',
-  emergency: { name: '', relation: '', phone: market === 'sr' ? '+381 ' : '+358 ', address: '' },
+  emergency: { name: '', relation: '', phoneCountry: market === 'sr' ? 'RS' : 'FI', phone: '', address: '' },
   documents: {},
   test: {},
   channel: '',
 });
 
+// 18 or older today
+export const adult = (birth, now = new Date()) => {
+  const b = new Date(birth);
+  const eighteen = new Date(b.getFullYear() + 18, b.getMonth(), b.getDate());
+  return eighteen <= now;
+};
 const blank = (v) => !String(v ?? '').trim();
-const phoneShort = (v) => String(v || '').replace(/\D/g, '').length < 8;
+const phoneShort = (v) => String(v || '').replace(/\D/g, '').length < 6;
 
 // What is wrong in a step, field by field; an empty object when it is right.
 export function stepErrors(step, f) {
@@ -74,7 +82,8 @@ export function stepErrors(step, f) {
   if (step === 'basic') {
     need('firstName', !blank(f.firstName));
     need('lastName', !blank(f.lastName));
-    need('birth', !blank(f.birth));
+    if (!f.birth) e.birth = requiredError();
+    else if (!adult(f.birth)) e.birth = t('Morate imati najmanje 18 godina.');
     need('address', !blank(f.address));
     need('area', !blank(f.area));
     if (phoneShort(f.phone)) e.phone = blank(f.phone) ? requiredError() : t('Unesite ceo broj telefona.');
@@ -147,7 +156,7 @@ export function recordFrom(f, id, email = '') {
     reviews: 0,
     area: f.area.trim(),
     radius: Number(f.radius),
-    phone: f.phone.trim(),
+    phone: `${dialOf(f.phoneCountry)} ${f.phone.trim()}`,
     email,
     bio: f.bio.trim(),
     education: f.education,
@@ -156,9 +165,9 @@ export function recordFrom(f, id, email = '') {
     slots: f.slots,
     classifications: sr ? [] : f.classifications,
     address: f.address.trim(),
-    birth: f.birth,
+    birth: f.birth ? new Date(f.birth).toLocaleDateString(locale()) : '',
     ...(sr
-      ? { certificate: f.certificate, courses: f.courses.trim(), engagement: f.engagement, abroad: f.abroad, habits: f.habits, health: f.health, readiness: f.readiness, unwilling: f.unwilling.trim(), emergency: f.emergency }
+      ? { certificate: f.certificate, courses: f.courses.trim(), engagement: f.engagement, abroad: f.abroad, habits: f.habits, health: f.health, readiness: f.readiness, unwilling: f.unwilling.trim(), emergency: { ...f.emergency, phone: `${dialOf(f.emergency.phoneCountry)} ${f.emergency.phone.trim()}` } }
       : { rateMin: Number(String(f.rateMin).replace(',', '.')), rateMax: Number(String(f.rateMax).replace(',', '.')) }),
   };
 }

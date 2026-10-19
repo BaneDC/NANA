@@ -1,5 +1,5 @@
 import { createContext, useContext, useId, useRef, useState } from 'react';
-import { CalendarDays, Eye, EyeOff } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronsUpDown, Eye, EyeOff } from 'lucide-react';
 import { FieldDescription, FieldError as FieldErrorRoot, FieldLabel, Field as FieldRoot } from '@/components/ui/field';
 import { Input as InputBox } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
@@ -15,6 +15,9 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { countryOptions } from '../data/countries';
 import { longDate } from '../data/familyCare';
 import { t } from '../i18n';
 
@@ -213,7 +216,8 @@ export function Select({ value, onChange, options, placeholder = t('Izaberite'),
 // chosen or the first that can be. `from` and `to` are the first and last days that can be chosen (Dates); `today` is the day marked as
 // today (the prototype's own, which is not the clock's), `from` if not given.
 // Picking a day closes it.
-export function DateInput({ value, onChange, from, to, today = from, placeholder = t('Izaberite datum'), ariaLabel, autoFocus, className }) {
+// `pickYear`: month and year as dropdowns, for a date years back (a date of birth)
+export function DateInput({ value, onChange, from, to, today = from, pickYear, placeholder = t('Izaberite datum'), ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
@@ -240,8 +244,9 @@ export function DateInput({ value, onChange, from, to, today = from, placeholder
       <PopoverContent align="end">
         <Calendar
           mode="single"
+          captionLayout={pickYear ? 'dropdown' : undefined}
           selected={value ?? undefined}
-          defaultMonth={value ?? from}
+          defaultMonth={value ?? today ?? from}
           today={today}
           disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
           startMonth={from}
@@ -296,5 +301,123 @@ export function FileField({ value, onChange, accept = '.pdf,.jpg,.jpeg,.png', ar
         </Button>
       )}
     </div>
+  );
+}
+
+// A phone number: the country (flag and code) in front, behind a line, then the
+// number, as one field (docs/provera-pravila.md, 5). The family's sign-up and
+// the caregiver's use it.
+export function Phone({ country, onCountry, value, onChange, labelledBy, placeholder = '40 123 4567' }) {
+  const state = useContext(FieldState);
+  const id = useContext(FieldId);
+  return (
+    <InputGroup>
+      <Select bare value={country} onChange={onCountry} ariaLabel={t('Pozivni broj države')} options={countryOptions()} />
+      <InputGroupInput
+        id={id}
+        type="tel"
+        value={value}
+        placeholder={placeholder}
+        autoComplete="tel-national"
+        aria-labelledby={labelledBy}
+        {...invalidOf(state)}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </InputGroup>
+  );
+}
+
+// The trigger every list-field here has: as tall and as drawn as a Select.
+const listTrigger =
+  'flex h-(--input-size) w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-left text-xs text-foreground transition-[border-color] duration-180 outline-none focus-visible:border-primary data-[placeholder]:text-muted-foreground data-[state=open]:border-primary aria-invalid:border-destructive pointer-coarse:text-[16px] pointer-coarse:leading-6';
+
+// One from a long list, with a search on top: shadcn's combobox (a Popover
+// with a Command). `groups`: [{ label, options: [{ value, label }] }].
+export function Combobox({ value, onChange, groups, placeholder = t('Izaberite'), searchPlaceholder = t('Pretraga'), empty = t('Nema rezultata.') }) {
+  const id = useContext(FieldId);
+  const state = useContext(FieldState);
+  const [open, setOpen] = useState(false);
+  const chosen = groups.flatMap((g) => g.options).find((o) => o.value === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button type="button" id={id} role="combobox" aria-expanded={open} data-placeholder={chosen ? undefined : ''} {...invalidOf(state)} className={listTrigger}>
+          <span className="min-w-0 flex-1 truncate">{chosen ? chosen.label : placeholder}</span>
+          <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList>
+            <CommandEmpty>{empty}</CommandEmpty>
+            {groups.map((g) => (
+              <CommandGroup key={g.label || 'all'} heading={g.label} className="p-0">
+                {g.options.map((o) => (
+                  <CommandItem
+                    key={o.value}
+                    value={o.label}
+                    onSelect={() => {
+                      onChange(o.value);
+                      setOpen(false);
+                    }}
+                  >
+                    <span className="flex-1">{o.label}</span>
+                    {o.value === value && <Check className="size-3.5 text-primary" strokeWidth={2} />}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ))}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Several from a list, with a search, "Izaberi sve" and "Zatvori", as the
+// platform's own languages field: a box beside each, the chosen named in the
+// field. Kept in this file with the other fields (docs/patterns.md §10).
+export function MultiCombobox({ values, onChange, options, placeholder = t('Izaberite'), searchPlaceholder = t('Pretraga'), empty = t('Nema rezultata.') }) {
+  const id = useContext(FieldId);
+  const state = useContext(FieldState);
+  const [open, setOpen] = useState(false);
+  const all = values.length === options.length;
+  const toggle = (v) => onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  const shown = options.filter((o) => values.includes(o.value)).map((o) => o.label);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button type="button" id={id} role="combobox" aria-expanded={open} data-placeholder={shown.length ? undefined : ''} {...invalidOf(state)} className={listTrigger}>
+          <span className="min-w-0 flex-1 truncate">{shown.length ? shown.join(', ') : placeholder}</span>
+          <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList>
+            <CommandEmpty>{empty}</CommandEmpty>
+            <CommandGroup className="p-0">
+              <CommandItem value={t('Izaberi sve')} onSelect={() => onChange(all ? [] : options.map((o) => o.value))}>
+                <Checkbox checked={all} tabIndex={-1} className="pointer-events-none" />
+                {t('Izaberi sve')}
+              </CommandItem>
+              {options.map((o) => (
+                <CommandItem key={o.value} value={o.label} onSelect={() => toggle(o.value)}>
+                  <Checkbox checked={values.includes(o.value)} tabIndex={-1} className="pointer-events-none" />
+                  {o.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+        <div className="mt-2 border-t pt-2">
+          <Button type="button" variant="ghost" className="w-full" onClick={() => setOpen(false)}>
+            {t('Zatvori')}
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
