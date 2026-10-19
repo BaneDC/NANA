@@ -4,6 +4,7 @@ import { demoPerson } from './person';
 import { fillCare } from './demoFill';
 import { withAnswers } from './familyStart';
 import { reconcile } from './dependencies';
+import { caregiverClients } from './caregiverClients';
 import { t } from '../i18n';
 
 // Who this tab is in the demo, and on which market. The address says it first
@@ -73,6 +74,7 @@ export function seedState(market, { filled }) {
   return {
     person: filled ? { ...person, care: fillCare(withAnswers(person.care, answers, user)) } : person,
     family: filled ? { unlocked: true, subscription: { planId: 'monthly', at: Date.now() } } : { unlocked: false, subscription: null },
-    clients: [],
+    // Finland: the other families on Sanna's board (src/data/caregiverClients.js)
+    clients: market === 'fi' ? caregiverClients() : [],
   };
 }

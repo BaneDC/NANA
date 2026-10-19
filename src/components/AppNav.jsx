@@ -5,6 +5,8 @@ import {
   ChevronDown,
   CircleHelp,
   Inbox,
+  Users,
+  Wallet,
   FlaskConical,
   LayoutDashboard,
   MessageSquare,
@@ -158,6 +160,8 @@ function Place({ icon: Icon, label, active, count, onClick }) {
 
 export default function AppNav({
   role = 'family',
+  market = 'fi',
+  boardBadge = 0,
   view,
   onView,
   user,
@@ -291,8 +295,16 @@ export default function AppNav({
           )}
           {/* her side: for now one page, the requests sent to her; the board,
               her clients and her earnings come with part 3 */}
-          {caregiver && (
+          {caregiver && market === 'sr' && (
             <Place icon={Inbox} label={t('Upiti')} active={view === 'requests'} count={requestsBadge} onClick={go(() => onView('requests'))} />
+          )}
+          {/* Finland: her board, her clients, her earnings (part 3) */}
+          {caregiver && market !== 'sr' && (
+            <>
+              <Place icon={LayoutDashboard} label={t('Tabla')} active={view === 'board'} count={boardBadge} onClick={go(() => onView('board'))} />
+              <Place icon={Users} label={t('Klijenti')} active={view === 'clients' || view === 'client'} onClick={go(() => onView('clients'))} />
+              <Place icon={Wallet} label={t('Zarada')} active={view === 'earnings'} onClick={go(() => onView('earnings'))} />
+            </>
           )}
 
           {/* The care plan has no place here: before anyone comes it is
@@ -321,10 +333,10 @@ export default function AppNav({
             open, as a card that opens something is. */}
         <button
           type="button"
-          onClick={go(() => onView(caregiver ? 'settings' : 'record'))}
-          aria-current={view === (caregiver ? 'settings' : 'record') ? 'page' : undefined}
-          aria-label={caregiver ? t('Podešavanja') : recordOf ? t('Medicinski karton: {name}', { name: recordOf }) : t('Medicinski karton')}
-          title={caregiver ? t('Podešavanja') : t('Medicinski karton')}
+          onClick={go(() => onView(caregiver ? 'profile' : 'record'))}
+          aria-current={view === (caregiver ? 'profile' : 'record') ? 'page' : undefined}
+          aria-label={caregiver ? t('Moj profil') : recordOf ? t('Medicinski karton: {name}', { name: recordOf }) : t('Medicinski karton')}
+          title={caregiver ? t('Moj profil') : t('Medicinski karton')}
           className="group/me flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:px-0 pointer-coarse:menu-folded:pl-1 transition-[padding,background-color,border-radius,box-shadow] duration-200 ease-out outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:shadow-none! menu-folded:focus-visible:ring-0 [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
         >
           <Avatar className="transition-shadow duration-200 ease-out menu-folded:group-hover/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-aria-[current=page]/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-focus-visible/me:ring-[3px] menu-folded:group-focus-visible/me:ring-ring/50">

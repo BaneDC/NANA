@@ -4,6 +4,8 @@ import { PaneHint, PaneLabel } from '@/components/pane';
 import {
   agreeTerms,
   allVisits,
+  answerExtra,
+  confirmVisit,
   arrangementOf,
   askCaregiver,
   callOffVisit,
@@ -94,6 +96,19 @@ export default function SimForCaregiver({ care, caregiverId, onCare, onFlash }) 
           <Fragment key={v.id}>
             <PaneHint>{t('Radni nalog za {date}:', { date: lowerDate(v.date) })}</PaneHint>
             <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => run(confirmVisit(v.id), t('Porodica je potvrdila radni nalog. Naplaćeno je.'))}>
+                {t('Porodica potvrdi')}
+              </Button>
+              {v.extra?.status === 'asked' && (
+                <>
+                  <Button variant="secondary" onClick={() => run(answerExtra(v.id, true), t('Porodica je odobrila dodatni sat.'))}>
+                    {t('Odobri dodatni sat')}
+                  </Button>
+                  <Button variant="secondary" onClick={() => run(answerExtra(v.id, false), t('Porodica je odbila dodatni sat.'))}>
+                    {t('Odbij dodatni sat')}
+                  </Button>
+                </>
+              )}
               <Button variant="secondary" onClick={() => run(queryVisit(v.id, msg('Sati nisu tačni')), t('Porodica je prijavila da nešto nije u redu.'))}>
                 {t('Nešto nije u redu')}
               </Button>

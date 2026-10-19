@@ -9,10 +9,13 @@ import { t } from '@/i18n';
 // her page.
 
 // who did it, as the line under it says
-const byText = (care, e) =>
-  e.by === 'you' ? t('vi') : e.by === 'coordinator' ? t('koordinatorka') : e.caregiverId ? firstName(nameOf(care, e.caregiverId)) : t('negovateljica');
+// (from her side, she is "vi" and the family is named)
+const byText = (care, e, side) =>
+  side === 'caregiver'
+    ? e.by === 'caregiver' ? t('vi') : e.by === 'coordinator' ? t('koordinatorka') : firstName(care.family.name || '') || t('porodica')
+    : e.by === 'you' ? t('vi') : e.by === 'coordinator' ? t('koordinatorka') : e.caregiverId ? firstName(nameOf(care, e.caregiverId)) : t('negovateljica');
 
-export function ActivityRows({ care, entries, showWho }) {
+export function ActivityRows({ care, entries, showWho, side }) {
   return (
     <ItemGroup>
       {entries.map((e) => (
@@ -23,7 +26,7 @@ export function ActivityRows({ care, entries, showWho }) {
               {[
                 showWho && e.caregiverId && nameOf(care, e.caregiverId),
                 // her own name once is enough
-                !(showWho && e.by === 'caregiver' && e.caregiverId) && byText(care, e),
+                !(showWho && e.by === 'caregiver' && e.caregiverId) && byText(care, e, side),
                 whenText(e.at, care.now),
               ]
                 .filter(Boolean)

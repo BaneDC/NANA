@@ -267,7 +267,16 @@ export const caregivers = CAREGIVERS.map((c) =>
 // Anyone a request or a cooperation can name, on either market: the lists the
 // family browses stay per market, but a name is looked up here, so a request
 // to a Serbian caregiver reads like any other.
-export const caregiverById = (id) => caregivers.find((c) => c.id === id) || caregiversRs.find((c) => c.id === id);
+// What a caregiver changed on her own profile in the demo (her side, part 3),
+// laid over her record wherever she is shown, so the family's tab sees it too.
+// Set by the app from the shared state; `available: false` takes her off the
+// lists families browse.
+let profiles = {};
+export const setProfiles = (next) => {
+  profiles = next || {};
+};
+const withProfile = (c) => (c && profiles[c.id] ? { ...c, ...profiles[c.id] } : c);
+export const caregiverById = (id) => withProfile(caregivers.find((c) => c.id === id) || caregiversRs.find((c) => c.id === id));
 
 // her languages as one line, in the language being read: "finski, engleski"
 export const languagesText = (c) => c.languages.map((l) => t(l)).join(', ');
@@ -330,7 +339,7 @@ export const maskedEmail = (c) => (c?.market === 'RS' ? '********@*****.rs' : MA
 // the plan is unlocked, so it never sits in the DOM waiting to be read out.
 // The caregivers a family in this market can find and write to: the Finnish list
 // or the Serbian one. Lookups by id go through caregiverById, which knows both.
-export const caregiversIn = (m = market()) => (m === 'RS' ? caregiversRs : caregivers);
+export const caregiversIn = (m = market()) => (m === 'RS' ? caregiversRs : caregivers).map(withProfile).filter((c) => c.available !== false);
 
 export function caregiversFor(unlocked) {
   return caregiversIn().map(({ phone, ...rest }) => (unlocked ? { ...rest, phone } : rest));

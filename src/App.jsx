@@ -38,8 +38,9 @@ import { declineCard } from './data/sim';
 import { requestSaid, startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
+import { myClients } from './data/caregiverView';
 import { useKept } from './hooks/use-kept';
-import { buildPlan, caregiverById, coordinator } from './data/carePlan';
+import { buildPlan, caregiverById, coordinator, setProfiles } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { recordImpact, writeEvent, written } from './data/record';
 import { requestFoot, requestNote } from './data/firstSteps';
@@ -75,7 +76,7 @@ export default function App() {
   const lang = useLang();
   useKeepScroll(lang);
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
-  const [view, setView] = useState(DEMO ? (DEMO_TAB.role === 'caregiver' ? 'requests' : 'dashboard') : 'chat');
+  const [view, setView] = useState(DEMO ? (DEMO_TAB.role === 'caregiver' ? (DEMO_TAB.market === 'sr' ? 'requests' : 'board') : 'dashboard') : 'chat');
   // `role` is chosen at registration and decides which of the two applications
   // this is: the family's, or the caregiver's. Switching means starting over:
   // reloading the page goes back to sign-in.
@@ -112,6 +113,15 @@ export default function App() {
     [setShared]
   );
   const { subscription } = shared.family; // subscription: { planId, at }
+  // her side: what she changed on her profile, laid over her record wherever
+  // she is shown, in this tab and the family's (src/data/carePlan.js)
+  setProfiles(shared.profiles);
+  // her clients: the demo family and the others the demo gives her (part 3)
+  const myClientsNow = user.role === 'caregiver' ? myClients(shared, user.caregiverId) : [];
+  const onClientCare = (id, fn) =>
+    id === 'family'
+      ? setCare(fn)
+      : setShared((s) => ({ ...s, clients: s.clients.map((c) => (c.id === id ? { ...c, person: { ...c.person, care: fn(c.person.care) } } : c)) }));
   // a package (Serbia) holds for its months and then is over: what it opened
   // closes again until another is chosen (part 2 spec)
   const unlocked = shared.family.unlocked && !packageOver(user.country, subscription);
@@ -538,11 +548,13 @@ export default function App() {
           onHelp={() => setHelp(true)}
           onSim={() => setSim(true)}
           careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
+          market={market}
           requestsBadge={
             caregiverSide
               ? care.requests.filter((r) => r.caregiverId === user.caregiverId && r.status === 'pending').length
               : unseenAnswers(care)
           }
+          boardBadge={caregiverSide ? myClientsNow.filter((c) => c.stage === 'request' || c.stage === 'work-order').length : 0}
           threads={conversationEntries}
           activeThread={conversation}
           onSelectThread={openConversation}
@@ -581,7 +593,27 @@ export default function App() {
           </AnimatePresence>
         </AppPane>
       ) : caregiverSide ? (
-        <CaregiverApp view={view} user={user} care={care} onCare={setCare} onSaveUser={saveUser} onFlash={say} />
+        <CaregiverApp
+          view={view}
+          onView={setView}
+          user={user}
+          market={market}
+          care={care}
+          clients={myClientsNow}
+          payouts={shared.payouts !== false}
+          onPayouts={() => {
+            setShared((s) => ({ ...s, payouts: true }));
+            say(t('Isplate su pokrenute.'));
+          }}
+          onClientCare={onClientCare}
+          onCare={setCare}
+          onSaveUser={saveUser}
+          onSaveProfile={(patch) => {
+            setShared((s) => ({ ...s, profiles: { ...s.profiles, [user.caregiverId]: { ...s.profiles?.[user.caregiverId], ...patch } } }));
+            say(t('Profil je sačuvan.'));
+          }}
+          onFlash={say}
+        />
       ) : (
         <>
           {/* Razgovor: once the plan exists, the assistant, for anything; before
@@ -917,6 +949,7 @@ export default function App() {
 
       <HelpDialog
         open={help}
+        caregiver={caregiverSide}
         coordinator={plan?.coordinator || coordinator}
         // a prototype: the message goes nowhere, the family is told who reads it
         onSend={() => say(t('Poruka je poslata. {name} će vam se javiti danas.', { name: firstName((plan?.coordinator || coordinator).name) }))}

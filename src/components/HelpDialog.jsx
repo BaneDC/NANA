@@ -6,6 +6,21 @@ import Dialog from './Dialog';
 import { CoordinatorRows } from './PlanFooterBlocks';
 import { Field, TextArea, requiredError, useCheck } from './TextField';
 import { t } from '@/i18n';
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemLink, ItemTitle } from '@/components/ui/item';
+import { CODE, CODE_INTRO } from '../data/codeOfConduct';
+
+// her side: the code she works by, one row under the coordinator's contact
+function CodeDialog({ open, onClose }) {
+  return (
+    <Dialog title={t('Kodeks ponašanja za negovateljice')} description={t(CODE_INTRO)} wide open={open} onClose={onClose}>
+      <ul className="flex list-disc flex-col gap-2 pl-5 text-xs leading-body text-foreground">
+        {CODE.map((line) => (
+          <li key={line}>{t(line)}</li>
+        ))}
+      </ul>
+    </Dialog>
+  );
+}
 
 // "Pomoć" in the menu (docs/patterns.md §4): not a page, a dialog with how to
 // reach the coordinator, from wherever the family is. First the same three
@@ -13,7 +28,8 @@ import { t } from '@/i18n';
 // not call, a message to her in their own words: a question, a worry, praise
 // or a complaint. "Pošalji poruku" with nothing written says so under the
 // field; sent, the dialog closes and says who reads it.
-export default function HelpDialog({ open = true, coordinator, onSend, onClose }) {
+export default function HelpDialog({ open = true, coordinator, caregiver = false, onSend, onClose }) {
+  const [code, setCode] = useState(false);
   const [text, setText] = useState('');
   const first = coordinator.name.split(' ')[0];
   const check = useCheck();
@@ -40,6 +56,20 @@ export default function HelpDialog({ open = true, coordinator, onSend, onClose }
         <Part label={t('Pozovite ili pišite')}>
           <CoordinatorRows coordinator={coordinator} />
         </Part>
+        {caregiver && (
+          <Part label={t('Pravila rada')}>
+            <ItemGroup>
+              <Item>
+                <ItemContent>
+                  <ItemTitle>
+                    <ItemLink onClick={() => setCode(true)}>{t('Kodeks ponašanja')}</ItemLink>
+                  </ItemTitle>
+                  <ItemDescription>{t('Šta se od vas očekuje kod korisnika.')}</ItemDescription>
+                </ItemContent>
+              </Item>
+            </ItemGroup>
+          </Part>
+        )}
         {/* the one field: its part's name and the placeholder say what goes in,
             so no label of its own (docs/patterns.md §10) */}
         <Part label={t('Ili joj ostavite poruku')}>
@@ -60,6 +90,7 @@ export default function HelpDialog({ open = true, coordinator, onSend, onClose }
           {t('Pošalji poruku')}
         </Button>
       </DialogFooter>
+      {caregiver && <CodeDialog open={code} onClose={() => setCode(false)} />}
     </Dialog>
   );
 }

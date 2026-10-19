@@ -6,7 +6,8 @@
 // Without storage (a private window) it all still works in one tab, unkept
 // (docs/superpowers/specs/2026-10-19-temelj-design.md).
 
-export const VERSION = 1;
+// 2: Finland's state carries the caregiver's other clients (part 3)
+export const VERSION = 2;
 const key = (market) => `nana.demo.${market}`;
 const CHANNEL = 'nana.demo';
 

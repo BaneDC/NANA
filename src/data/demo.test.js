@@ -29,7 +29,8 @@ describe('seedState', () => {
     expect(s.person.planMade).toBe(true);
     expect(s.person.care.requests).toEqual([]);
     expect(s.family).toEqual({ unlocked: false, subscription: null });
-    expect(s.clients).toEqual([]);
+    expect(s.clients.length).toBeGreaterThan(0);
+    expect(seedState('sr', { filled: false }).clients).toEqual([]);
   });
   it('filled is a week into care, paid', () => {
     const s = seedState('fi', { filled: true });

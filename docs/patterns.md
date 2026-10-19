@@ -453,7 +453,7 @@ Vrsta vrednosti određuje raspored:
 - **Jedini izuzetak je cenovnik partnera** (u `RecommendationCard`): naziv levo, redovna i Minnina cena u koloni desno.
 - **Dva broja na vrhu pregleda** (`Stats` › `Stat`, `src/components/pane.jsx`): broj 24 / 32 medium kao cena na kartici plana, ispod oznaka i napomena, dva stupca, bez kutije oko njih. U pregledu negovateljice i na početnoj (§4a), gde stoje u kartici.
 - **PDV u radnom nalogu** (odlučeno 6. 10.): cena koju porodica vidi već sadrži PDV (25,5%, finski), pa se ništa ne dodaje. Ispod ukupnog iznosa radnog naloga i ispod rezervisanog iznosa u planu posete stoji red „Od toga PDV (25,5%)" sa iznosom, kao na računu (`vatIn`, `vatText`). Cena po satu svuda gde se prikazuje ugovor (kartica „Ugovor o nezi", novi uslovi, pregled, sve verzije) kaže „18 € / h, PDV uključen" (`rateText`). Sve je u `src/data/familyCare.js`. Kod otkazane posete i iznosa 0 reda sa PDV-om nema.
-- **Nikad zbir plaćenog** (odlučeno 5. 10.): porodici se ne prikazuje koliko je ukupno platila, ni do sada, ni po mesecu, ni po negovateljici. Iznos stoji samo uz pojedinačnu posetu (rezervisano, biće naplaćeno, naplaćeno) i uz ono što se sada dešava („Rezervisano za zakazane posete", „Naplaćuje se sada" u Podešavanjima). Broj poseta je u redu, zbir novca nije.
+- **Nikad zbir plaćenog** (odlučeno 5. 10.; važi za porodicu, negovateljici „Zarada" pokazuje zbir, 19. 10.): porodici se ne prikazuje koliko je ukupno platila, ni do sada, ni po mesecu, ni po negovateljici. Iznos stoji samo uz pojedinačnu posetu (rezervisano, biće naplaćeno, naplaćeno) i uz ono što se sada dešava („Rezervisano za zakazane posete", „Naplaćuje se sada" u Podešavanjima). Broj poseta je u redu, zbir novca nije.
 
 ### Negovateljica: šta se o njoj prikazuje
 
@@ -696,9 +696,15 @@ Aplikacija je na srpskom, engleskom i finskom. Tržište ostaje finsko: imena lj
 ## 12c. Negovateljica (odlučeno 19. 10.; predlog, čeka dizajnera)
 
 - Uloga dolazi sa nalogom (`user.role`), ne bira se u aplikaciji. Strana negovateljice je ista ljuska (bočni meni, `Page`, kartica naloga, „Pomoć", Podešavanja bez grupe „Plaćanje") i iste komponente kao porodica (`src/screens/caregiver/`).
-- Meni za sada: „Upiti", „Pomoć", „Podešavanja"; kartica naloga otvara Podešavanja. Tabla, klijenti i zarada (Finska) i puna stranica upita (Srbija) dolaze posle (`docs/superpowers/specs/2026-10-19-negovateljice-pregled.md`).
+- Meni: u Finskoj „Tabla", „Klijenti", „Zarada"; u Srbiji „Upiti" (puna stranica dolazi u delu 4). Zatim „Pomoć" (sa „Kodeksom ponašanja") i „Podešavanja". Kartica naloga otvara „Moj profil".
 - **Upit** je kartica koja ne otvara ništa: ko je osoba (avatar, ime, značka stanja), red ispod (porodica · opština · kada je stigao), pa „Šta je potrebno" (oznake), „Kada" i „Poruka porodice". Upit koji čeka ima u `CardFooter` „Prihvati" (`default`) i „Odbij" (`secondary`, otvara modal sa razlogom kao čipovima i „Odbij upit", `default` jer ništa ne briše).
 - **Registracija:** „Napravi nalog" prvo pita „Ko ste?" (porodica ili negovateljica), u obliku same registracije: naslov i dugmad preko cele širine, bez kartice u ploči. Za negovateljicu je za sada kartica „uskoro" sa demo nalogom.
+- **Tabla (Finska):** četiri `StatCard` (`src/components/StatCard.jsx`, isti kao na početnoj porodice), pa četiri kolone: „Novi upiti", „Ugovor o nezi", „Aktivno", „Radni nalozi". Porodica je u tačno jednoj koloni, onoj koja kaže šta joj ona sledeće duguje (`stageOf`, `src/data/caregiverView.js`). Kolona je siva podloga oko belih kartica, r32 i p8 oko r24, kao narandžasti deo (§5); naslov kolone je kao naslov grupe, sa brojem. Kartica: avatar, ime (`CardLink` na stranicu klijenta), značka, redovi `DataList`, jedno dugme u `CardFooter`. Stranica table je šira od 720 (`*:max-w-none`). Na telefonu kolone postaju jedan red čipova (`ToggleGroup scroll`), a ispod su kartice izabrane kolone.
+- **Stranica klijenta:** ogledalo porodičine „njene stranice": „Nazad", `PagePerson`, ikonice „Pregled" i „Šta se desilo" (u njemu je ona „vi"), narandžasto ono što duguje, kartice „Sledeća poseta", „Ugovor o nezi" („Vi dobijate" i „Porodica plaća"), „Posete" po mesecima.
+- **Forme** (`src/components/caregiver/Forms.jsx`): ugovor, plan posete, radni nalog i modal sa razlogom (otkazivanje, poseta se nije desila, završetak saradnje). Gašenje i otkazivanje su `secondary` (§9).
+- **„Zarada":** njoj se zbir prikazuje (§8 važi za porodicu). „Klijenti": filter Sada / Završeno / Odbijeni.
+- **„Moj profil"** je složen kao Podešavanja: kartice sa `Facts` i „Izmenite" u glavi, koje otvara prozor (`src/components/caregiver/ProfileForms.jsx`, isti prozori služe i registraciji). Prekidač „Primam nove upite" je red-labela kao u Podešavanjima; isključen, porodice je ne vide na „Pronađi".
+
 
 ## 13. Provera — obavezno posle izmene interfejsa
 

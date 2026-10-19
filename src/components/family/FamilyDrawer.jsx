@@ -750,7 +750,8 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
 // Everything that has happened, newest first, by month, with a filter by kind:
 // one caregiver's from her page, everyone's from Moja nega. A step at a time,
 // "Prikaži još" adding the next (docs/patterns.md §8a).
-function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
+// `side`: 'caregiver' when she reads it about a family (her page): she is "vi"
+export function ActivityDrawer({ open = true, care, caregiverId, side = 'family', onClose }) {
   const [kind, setKind] = useState('all');
   const all = (care.log || []).filter((e) => !caregiverId || e.caregiverId === caregiverId);
   const kinds = LOG_KINDS.filter((k) => all.some((e) => e.kind === k.id));
@@ -765,7 +766,7 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
     if (last && last.day === day) last.entries.push(e);
     else days.push({ day, entries: [e] });
   }
-  const who = caregiverId ? nameOf(care, caregiverId) : care.elder.name || t('Vaša nega');
+  const who = side === 'caregiver' ? care.elder.name : caregiverId ? nameOf(care, caregiverId) : care.elder.name || t('Vaša nega');
   return (
     <Modal eyebrow={who} title={t('Šta se desilo')} wide open={open} onClose={onClose}>
       {/* a filter: on a phone one row that scrolls sideways (docs/patterns.md §12) */}
@@ -792,7 +793,7 @@ function ActivityDrawer({ open = true, care, caregiverId, onClose }) {
               {d.entries.length}
             </Badge>
           </div>
-          <ActivityRows care={care} entries={d.entries} showWho={!caregiverId} />
+          <ActivityRows care={care} entries={d.entries} showWho={!caregiverId} side={side} />
         </Fragment>
       ))}
       <ShowMore list={list} />

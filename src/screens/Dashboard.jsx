@@ -53,6 +53,7 @@ import { amountOf } from '../components/family/VisitRow';
 import PlanChangeBanner from '../components/PlanChangeBanner';
 import RecommendationCard from '../components/RecommendationCard';
 import { CoordinatorContact, PersonRows } from '../components/PlanFooterBlocks';
+import StatCard from '../components/StatCard';
 import { marketHas } from '../data/market';
 import { getLang, t, tn } from '../i18n';
 
@@ -181,17 +182,6 @@ function Letter({ letter, changed, changeKey, accordion = false, onOpen }) {
 // One number of the overview, a card of its own: the number (24 / 32, as a
 // price on a plan's card), what it counts and a note under it. One that has
 // more behind it opens it from anywhere on the card.
-function StatCard({ value, label, note, onOpen, className }) {
-  return (
-    <Card className={className}>
-      <div>
-        <p className="text-[24px] leading-8 font-medium text-foreground">{value}</p>
-        <p className="text-small text-muted-foreground">{onOpen ? <CardLink onClick={onOpen}>{label}</CardLink> : label}</p>
-        <p className="text-small text-muted-foreground">{note}</p>
-      </div>
-    </Card>
-  );
-}
 
 // The same, as a card of its own in the tinted tray of what waits on the
 // family: white like every card, its title the size of a row's title in the
