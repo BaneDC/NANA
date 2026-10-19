@@ -7,6 +7,7 @@ import {
   arrangementOf,
   askCaregiver,
   callOffVisit,
+  canAsk,
   declineTerms,
   latestRequest,
   linkCard,
@@ -46,11 +47,11 @@ export default function SimForCaregiver({ care, caregiverId, onCare, onFlash }) 
           <Button variant="secondary" onClick={() => run(withdrawRequest(caregiverId), t('Porodica je otkazala upit.'))}>
             {t('Otkaži upit')}
           </Button>
-        ) : (
+        ) : canAsk(care, caregiverId) ? (
           <Button variant="secondary" onClick={() => run(askCaregiver(caregiverId, requestSaid(care)), t('Stigao je upit.'))}>
             {t('Pošalji upit')}
           </Button>
-        )}
+        ) : null}
         {!rs && pending && (
           <>
             <Button variant="secondary" onClick={() => run(agreeTerms(caregiverId), t('Porodica je prihvatila uslove.'))}>
@@ -67,6 +68,11 @@ export default function SimForCaregiver({ care, caregiverId, onCare, onFlash }) 
           </Button>
         )}
       </div>
+      {/* why the family cannot write to her again, instead of a button that
+          would do nothing (docs/patterns.md §12a) */}
+      {r?.status !== 'pending' && !canAsk(care, caregiverId) && (
+        <PaneHint>{rs ? t('Porodica je već u kontaktu sa vama.') : t('Saradnja traje, pa porodica ne šalje nov upit.')}</PaneHint>
+      )}
 
       {!rs &&
         planned.map((v) => (

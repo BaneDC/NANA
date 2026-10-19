@@ -125,10 +125,10 @@ export default function SimPanel({
         </Button>
       </div>
 
-      {/* Stripe's side of the card and the subscription: what the family
-          sees in Settings when a charge fails or the card runs out */}
       {caregiver && <SimForCaregiver care={care} caregiverId={caregiverId} onCare={onCare} onFlash={onFlash} />}
 
+      {/* Stripe's side of the card and the subscription: what the family
+          sees in Settings when a charge fails or the card runs out */}
       {!caregiver && !rs && (care.payment?.connected || onRenew) && (
         <>
           <PaneLabel>{t('Kartica i pretplata')}</PaneLabel>

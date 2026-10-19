@@ -43,7 +43,10 @@ export default function CaregiverRequests({ user, care, onCare, onFlash }) {
   const elder = care.elder.name || t('Bez imena');
   const family = firstName(care.family.name || '');
 
+  // the other tab may have taken the request back meanwhile: then nothing is said
+  const waiting = () => care.requests.some((r) => r.caregiverId === user.caregiverId && r.status === 'pending');
   const accept = () => {
+    if (!waiting()) return;
     onCare(answerRequest(user.caregiverId, true));
     onFlash(
       market() === 'RS'
@@ -52,8 +55,9 @@ export default function CaregiverRequests({ user, care, onCare, onFlash }) {
     );
   };
   const decline = () => {
-    onCare(answerRequest(user.caregiverId, false, reason));
     setDeclining(null);
+    if (!waiting()) return;
+    onCare(answerRequest(user.caregiverId, false, reason));
     onFlash(t('Upit je odbijen. {name} je obaveštena.', { name: family }));
   };
 

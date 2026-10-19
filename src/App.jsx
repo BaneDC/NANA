@@ -12,6 +12,7 @@ import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStage, chatStore } from './components/KitAssistant';
 import { demoAccount, demoEntry, go, seedState, session, toCountry } from './data/demo';
 import { store } from './data/store';
+import { fillCare } from './data/demoFill';
 import { useShared } from './hooks/use-shared';
 import { loadProgress, saveProgress, updateAccount } from './lib/account';
 import { Plus, X } from 'lucide-react';
@@ -210,7 +211,9 @@ export default function App() {
   const saveUser = (patch, { quiet } = {}) => {
     const next = { ...user, ...patch, name: patch.name ?? user.name };
     setUser(next);
-    updateAccount(next);
+    // a demo account is not the one kept in this browser: saving it there
+    // would overwrite the real one
+    if (!DEMO) updateAccount(next);
     if (!quiet) say(t('Podaci su sačuvani.'));
   };
 
@@ -819,13 +822,28 @@ export default function App() {
             onFlash={say}
             // the whole example in one go, with the subscription it needs;
             // Finland's for now (Serbia's comes with part 2)
-            onFill={market === 'fi' ? () => {
-              setShared(seedState(market, { filled: true }));
-              setDrawer(null);
-              setView('dashboard');
-              setSim(false);
-              say(t('Primer je popunjen: dve negovateljice, posete, i dve stvari koje čekaju na vas.'));
-            } : undefined}
+            onFill={
+              market === 'fi'
+                ? () => {
+                    // the demo's family a week into care; a real account keeps
+                    // who it is and only its care is filled, as before
+                    if (DEMO) setShared(seedState(market, { filled: true }));
+                    else {
+                      setCare(fillCare);
+                      setUnlocked(true);
+                      setSubscription((x) => x || { planId: 'monthly', at: Date.now() });
+                    }
+                    setDrawer(null);
+                    setView(caregiverSide ? 'requests' : 'dashboard');
+                    setSim(false);
+                    say(
+                      caregiverSide
+                        ? t('Primer je popunjen: nedelju dana nege sa porodicom.')
+                        : t('Primer je popunjen: dve negovateljice, posete, i dve stvari koje čekaju na vas.')
+                    );
+                  }
+                : undefined
+            }
             // The renewal, from Stripe's side. The subscription keeps real
             // dates and the simulation a clock of its own, so the day it
             // renews is a button rather than days passing.

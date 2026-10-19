@@ -34,4 +34,7 @@ export default {
   "Pređi na porodicu": "Vaihda perheeseen",
   "Pređi na negovateljicu": "Vaihda hoitajaan",
   "Počni ispočetka": "Aloita alusta",
+  "Primer je popunjen: nedelju dana nege sa porodicom.": "Esimerkki on täytetty: viikko hoitoa perheen kanssa.",
+  "Porodica je već u kontaktu sa vama.": "Perhe on jo yhteydessä sinuun.",
+  "Saradnja traje, pa porodica ne šalje nov upit.": "Yhteistyö on käynnissä, joten perhe ei lähetä uutta pyyntöä.",
 };

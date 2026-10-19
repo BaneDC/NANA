@@ -34,4 +34,7 @@ export default {
   "Pređi na porodicu": "Switch to the family",
   "Pređi na negovateljicu": "Switch to the caregiver",
   "Počni ispočetka": "Start over",
+  "Primer je popunjen: nedelju dana nege sa porodicom.": "The example is filled in: a week of care with the family.",
+  "Porodica je već u kontaktu sa vama.": "The family is already in touch with you.",
+  "Saradnja traje, pa porodica ne šalje nov upit.": "You already work together, so the family sends no new request.",
 };
