@@ -289,4 +289,9 @@ export default {
   "Stripe nalog je aktivan": "Stripe-tili on aktiivinen",
   "Stripe": "Stripe",
   "Čeka proveru": "Odottaa tarkistusta",
+  "Adresu i kontakt porodice vidite kad prihvatite upit.": "Näet perheen osoitteen ja yhteystiedot, kun hyväksyt pyynnön.",
+  "Gde": "Missä",
+  "Nov upit": "Uusi pyyntö",
+  "Zašto pitaju": "Miksi he kysyvät",
+  "Šta traže": "Mitä he pyytävät",
 };

@@ -289,4 +289,9 @@ export default {
   "Stripe nalog je aktivan": "The Stripe account is active",
   "Stripe": "Stripe",
   "Čeka proveru": "Waiting to be checked",
+  "Adresu i kontakt porodice vidite kad prihvatite upit.": "You see the family's address and contact once you accept the request.",
+  "Gde": "Where",
+  "Nov upit": "New request",
+  "Zašto pitaju": "Why they are asking",
+  "Šta traže": "What they are asking for",
 };

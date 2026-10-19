@@ -69,7 +69,8 @@ function BoardCard({ client, caregiverId, onOpen, act }) {
           </Avatar>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="-mb-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">
-              <CardLink onClick={() => onOpen(client.id)}>{care.elder.name}</CardLink>
+              {/* a new request opens its details; every other card, the family's page */}
+              <CardLink onClick={() => (stage === 'request' ? act('request', client) : onOpen(client.id))}>{care.elder.name}</CardLink>
               {badge && <span className="my-[calc((var(--text-xs-leading)-20px)/2)]">{badge}</span>}
             </p>
             <p className="text-xs leading-body text-muted-foreground">
