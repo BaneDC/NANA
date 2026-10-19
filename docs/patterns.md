@@ -622,7 +622,7 @@ Ručni prozori su uklonjeni 11. 10.: `RecordChangeDialog` (ispravka dela, dva ko
 - **Zapažanje sa posete** (`VisitNote` u `MedicalRecord.jsx`): kako je bila je jedan red, prvo ono što nije u redu (loše raspoloženje, jede ili se kreće manje nego obično) bojom upozorenja i medium (`text-warning`), pa ostalo, a isto se kaže jednom za sve („Ishrana i kretanje: kao i obično", ne tri puta „kao i obično"). Ispod toga njena briga tamnim tekstom, medium, pa njena beleška sivo.
 - **Čipovi filtera su u redu sa tabovima** (odlučeno 14. 10., `HISTORY_FILTERS`, `HistoryFilters` u `MedicalRecord.jsx`): tabovi levo, čipovi desno, poravnati sa desnom ivicom kartica, dok je stubac stranice širok bar 672 (`@container`, isto kao mreža na početnoj); uže od toga (telefon, ili asistent otvoren pored) čipovi su ispod tabova, na ivici kao tabovi. Čipovi postoje samo dok je izabrana „Istorija". **Kad se izabere „Istorija", ulaze:** svaki iz providnog i 6 levo, 200 ms, `ease-out-strong`, 40 ms posle prethodnog (CSS `@starting-style`, Tailwind `starting:`), da se vidi da su došli sa tabom, a da to ne bude predstava. Zakašnjenje važi samo za providnost i pomeranje, pa boja čipa na klik odgovara odmah; klik na čip ih ne pokreće ponovo. Sa smanjenim pokretima samo se pojave iz providnog. Izlaz nema animaciju, kao ni sadržaj taba. Čipovi: „Sve", „Sa poseta", „Promene stanja" (i zaključeno), „Ispravke" (i poništeno), „Upisano" (i otvaranje), svaki sa brojem, i samo oni kojih ima; kad ima samo jedne vrste, čipova nema. Izabran filter menja opis kartice u „N od M · najnovije prvo".
 
-Prototip: karton se ne čuva između prijava (osim onoga što je u odgovorima); obaveštenje negovateljici i poziv koordinatorke su samo rečenice; privremena promena menja plan kao i trajna (ne vraća se sama kad istekne). Asistent radi sa API ključem (`.env.local`).
+Prototip: u demou se sve, i karton, pamti po tržištu dok se u Simulaciji ne izabere „Počni ispočetka" (odlučeno 19. 10.); pravi nalog čuva samo odgovore; obaveštenje negovateljici i poziv koordinatorke su samo rečenice; privremena promena menja plan kao i trajna (ne vraća se sama kad istekne). Asistent radi sa API ključem (`.env.local`).
 
 ---
 
@@ -659,7 +659,10 @@ Prototip: karton se ne čuva između prijava (osim onoga što je u odgovorima); 
 
 ## 12a. Simulacija (samo demo)
 
-Ova aplikacija je samo porodična, pa sve što bi uradile negovateljice i koordinatorka radi skriveni drawer **„Simulacija"** (`src/components/family/SimPanel.jsx`, funkcije u `src/data/sim.js`). Otvara se i zatvara sa **Ctrl+H** (na Mac-u takođe Ctrl, ne Cmd). Ništa se ne dešava samo od sebe: nema više automatskog odgovora posle 6 s ni prve posete posle 5 s.
+Aplikacija ima stranu porodice i stranu negovateljice, a koordinatorka se samo simulira. Ono što bi uradila druga strana i koordinatorka radi skriveni drawer **„Simulacija"** (`src/components/family/SimPanel.jsx`; radnje negovateljice su u `src/data/caregiverCare.js`, sat i koordinatorka u `src/data/sim.js`). Otvara se i zatvara sa **Ctrl+H** (na Mac-u takođe Ctrl, ne Cmd). Ništa se ne dešava samo od sebe: nema više automatskog odgovora posle 6 s ni prve posete posle 5 s.
+
+- **Na obe strane** (odlučeno 19. 10.): na vrhu panela su tržište (Finska / Srbija), „Pređi na negovateljicu" ili „Pređi na porodicu" i „Počni ispočetka". Ispod je ono što bi uradila druga strana: sa porodične negovateljica i koordinatorka, sa strane negovateljice porodica i koordinatorka (`src/components/SimForCaregiver.jsx`). Na Srbiji ostaju samo upiti (pošalji, otkaži, prihvati, odbij), jer se ostalo dogovara telefonom. „Popuni primer nege" je za sada samo za Finsku.
+- **Dve kartice:** stanje demoa je u pregledaču po tržištu (`src/data/store.js`, `nana.demo.fi` i `nana.demo.sr`) i svaka promena se odmah vidi u drugoj otvorenoj kartici: porodica u jednoj, negovateljica u drugoj. Ko je kartica i na kom je tržištu kaže adresa (`?demo`, `?demo=negovateljica`, `&trziste=sr`, `?demo=rs`, `&puno`) ili, posle toga, sama kartica (`src/data/demo.js`).
 
 - **Vreme:** „Prođe sat" i „Prođe dan". Stanje ima svoj sat (`care.now`, počinje 11. 8. 2026. u 08:00). Iz njega se računaju „Danas / Sutra / Juče", koliko je do posete (kasno otkazivanje u poslednjem satu) i koliko je ostalo od 24 sata. Kad dođe vreme posete, ona čeka radni nalog; radni nalog koji niko ne prijavi za 24 sata se naplati.
 - **Negovateljica:** prihvati ili odbij upit (sa razlogom), pošalji ugovor ili nove uslove, povuci predlog, plan posete za sutra ili za pola sata, radni nalog kako je planirano / sat manje / sat više, poseta se nije desila, otkaže posetu, završi saradnju.
@@ -684,6 +687,13 @@ Aplikacija je na srpskom, engleskom i finskom. Tržište ostaje finsko: imena lj
 - Engleski bez velikih početnih slova u naslovima („Care plan", ne „Care Plan"); i u prevodu bez duge crte.
 
 ---
+
+## 12c. Negovateljica (odlučeno 19. 10.; predlog, čeka dizajnera)
+
+- Uloga dolazi sa nalogom (`user.role`), ne bira se u aplikaciji. Strana negovateljice je ista ljuska (bočni meni, `Page`, kartica naloga, „Pomoć", Podešavanja bez grupe „Plaćanje") i iste komponente kao porodica (`src/screens/caregiver/`).
+- Meni za sada: „Upiti", „Pomoć", „Podešavanja"; kartica naloga otvara Podešavanja. Tabla, klijenti i zarada (Finska) i puna stranica upita (Srbija) dolaze posle (`docs/superpowers/specs/2026-10-19-negovateljice-pregled.md`).
+- **Upit** je kartica koja ne otvara ništa: ko je osoba (avatar, ime, značka stanja), red ispod (porodica · opština · kada je stigao), pa „Šta je potrebno" (oznake), „Kada" i „Poruka porodice". Upit koji čeka ima u `CardFooter` „Prihvati" (`default`) i „Odbij" (`secondary`, otvara modal sa razlogom kao čipovima i „Odbij upit", `default` jer ništa ne briše).
+- **Registracija:** „Napravi nalog" prvo pita „Ko ste?" (porodica ili negovateljica), u obliku same registracije: naslov i dugmad preko cele širine, bez kartice u ploči. Za negovateljicu je za sada kartica „uskoro" sa demo nalogom.
 
 ## 13. Provera — obavezno posle izmene interfejsa
 

@@ -1,6 +1,6 @@
 # NANA Prime — uputstvo za agente
 
-React 18 + Vite prototip, samo strana porodice. Ono što rade negovateljice i koordinatorka se samo simulira (panel „Simulacija", `src/components/family/SimPanel.jsx`); aplikacije negovateljice u ovom repou nema (uklonjena 17. 10.). Na njemu rade dvoje ljudi i njihovi agenti. Ovaj fajl važi za oba.
+React 18 + Vite prototip sa dve strane, porodicom i negovateljicom, na dva tržišta (Finska, Srbija). Ono što radi koordinatorka se samo simulira (panel „Simulacija", `src/components/family/SimPanel.jsx`), a sa obe strane i ono što bi uradila druga. Plan: `docs/superpowers/specs/2026-10-19-negovateljice-pregled.md`. Na njemu rade dvoje ljudi i njihovi agenti. Ovaj fajl važi za oba.
 
 ## Interfejs: `docs/patterns.md` je obavezan
 
