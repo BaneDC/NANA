@@ -92,7 +92,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
             <Fact label={t('Obrazovanje')}>{t(c.education)}</Fact>
             <Fact label={t('Sertifikat negovateljice')}>{c.certificate ? t('Da') : t('Ne')}</Fact>
             <Fact label={t('Kursevi')}>{c.courses ? t(c.courses) : '-'}</Fact>
-            <Fact label={t('Iskustvo i veštine')}>{t(c.bio)}</Fact>
+            <Fact label={t('Opis radnog iskustva i veština')}>{t(c.bio)}</Fact>
           </Group>
         )}
         {fi && (

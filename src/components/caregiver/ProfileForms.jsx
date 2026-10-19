@@ -7,7 +7,7 @@ import Dialog from '../Dialog';
 import { Combobox, Field, FieldError, Input, MultiCombobox, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
-import { DAYS, EDUCATION, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
+import { DAYS, EDUCATION, EDUCATION_SR, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
 
 // The fields of her profile, each group in its own dialog: "Izmenite" on a card
@@ -182,14 +182,14 @@ export function QualificationsForm({ open, profile, onClose, onSave }) {
   const save = () => check.check(Object.values(errors)) && onSave({ education, certificate: certificate === 'yes', courses: courses.trim(), bio: bio.trim() });
   return (
     <Frame open={open} title={t('Kvalifikacije')} onClose={onClose} onSave={save}>
-      <Field label={t('Obrazovanje')} required error={check.show(errors.education)}>
-        <Select value={education} onChange={setEducation} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
+      <Field label={t('Nivo obrazovanja')} required error={check.show(errors.education)}>
+        <Select value={education} onChange={setEducation} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION_SR.map((e) => ({ value: e, label: t(e) }))} />
       </Field>
       <YesNo label={t('Sertifikat akreditovane škole za negovateljice')} value={certificate} onChange={setCertificate} />
       <Field label={t('Kursevi')}>
         <Input value={courses} onChange={setCourses} placeholder={t('Naziv završenog kursa')} />
       </Field>
-      <Field label={t('Iskustvo i veštine')} required error={check.show(errors.bio)}>
+      <Field label={t('Opis radnog iskustva i veština')} required error={check.show(errors.bio)}>
         <TextArea value={bio} onChange={setBio} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
       </Field>
     </Frame>
@@ -245,10 +245,10 @@ export function EmergencyForm({ open, profile, onClose, onSave }) {
     <Frame open={open} title={t('Kontakt za hitne slučajeve')} onClose={onClose} onSave={save}>
       <PaneHint>{t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.')}</PaneHint>
       <Field label={t('Ime i prezime')} required error={check.show(errors.name)}>
-        <Input value={name} onChange={setName} />
+        <Input value={name} onChange={setName} placeholder={t('Unesite ime i prezime')} />
       </Field>
       <Field label={t('Srodstvo')} required error={check.show(errors.relation)}>
-        <Select value={relation} onChange={setRelation} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
+        <Select value={relation} onChange={setRelation} placeholder={t('Majka, otac, sestra i sl.')} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
       </Field>
       <Field label={t('Telefon')} required error={check.show(errors.phone)}>
         <Input value={phone} onChange={setPhone} type="tel" />

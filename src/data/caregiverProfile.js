@@ -14,6 +14,8 @@ export const EDUCATION = [
   msg('Master'),
   msg('Doktorat'),
 ];
+// Serbia's sign-up asks a shorter list (the live form, 19. 10.)
+export const EDUCATION_SR = [msg('Osnovna škola'), msg('Srednja škola'), msg('Fakultet'), msg('Master'), msg('Doktorat')];
 export const LANGUAGES_OFFERED = [msg('engleski'), msg('nemački'), msg('švedski'), msg('finski'), msg('norveški'), msg('srpski'), msg('drugi jezici')];
 
 // What the demo knows of her that the family's list does not show: kept on
@@ -28,7 +30,7 @@ export const PERSONAL = {
     health: { allergies: false, limits: false, problems: false, convicted: false },
     readiness: ['dementia', 'semi-mobile', 'bathing'],
     unwilling: '',
-    emergency: { name: 'Jovan Jovanović', relation: msg('Brat'), phone: '+381 64 777 1122', address: 'Njegoševa 14, Beograd' }, // i18n-ignore
+    emergency: { name: 'Jovan Jovanović', relation: msg('Brat ili sestra'), phone: '+381 64 777 1122', address: 'Njegoševa 14, Beograd' }, // i18n-ignore
   },
 };
 
@@ -58,7 +60,8 @@ export const READINESS = [
   ['bathing', msg('Pomoć pri kupanju')],
   ['live-in', msg('Život sa starijom osobom')],
 ];
-export const RELATIONS = [msg('Majka'), msg('Otac'), msg('Brat'), msg('Sestra'), msg('Supružnik'), msg('Dete'), msg('Prijatelj')];
+// the live form's list (19. 10.)
+export const RELATIONS = [msg('Supružnik'), msg('Roditelj'), msg('Brat ili sestra'), msg('Prijatelj'), msg('Komšija'), msg('Drugo')];
 
 // Where she lives, as the platform's list has it: by city, searched as typed.
 // Places are names and are not translated.

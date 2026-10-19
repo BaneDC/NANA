@@ -332,4 +332,10 @@ export default {
   "finski": "Finnish",
   "Morate imati najmanje 18 godina.": "You must be at least 18 years old.",
   "Adresa sa kojom ste napravili nalog.": "The address you created your account with.",
+  "Roditelj": "Parent",
+  "Brat ili sestra": "Sibling",
+  "Komšija": "Neighbor",
+  "Opis radnog iskustva i veština": "Work experience and skills description",
+  "Unesite ime i prezime": "Enter full name",
+  "Majka, otac, sestra i sl.": "Mother, father, sister, etc.",
 };

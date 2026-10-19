@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
 import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
-import { DAYS, EDUCATION, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
+import { DAYS, EDUCATION, EDUCATION_SR, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { PAIRS, TRAITS, traitOf } from '../../data/personalityTest';
 import { SLOTS, daysText } from '../../data/carePlan';
 import { msg, t } from '@/i18n';
@@ -306,13 +306,13 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         {head}
         <FormCard>
           <Field label={t('Nivo obrazovanja')} required error={show('education')}>
-            <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
+            <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION_SR.map((e) => ({ value: e, label: t(e) }))} />
           </Field>
           <YesNo label={t('Sertifikat akreditovane škole za negovateljice')} value={f.certificate} onChange={(v) => set({ certificate: v })} />
           <Field label={t('Kursevi')}>
             <Input value={f.courses} onChange={(v) => set({ courses: v })} placeholder={t('Naziv završenog kursa')} />
           </Field>
-          <Field label={t('Iskustvo i veštine')} required error={show('bio')}>
+          <Field label={t('Opis radnog iskustva i veština')} required error={show('bio')}>
             <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
           </Field>
         </FormCard>
@@ -395,10 +395,10 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         <FormCard>
           <PaneHint>{t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.')}</PaneHint>
           <Field label={t('Ime i prezime')} required error={show('emergencyName')}>
-            <Input value={e.name} onChange={(v) => setE({ name: v })} />
+            <Input value={e.name} onChange={(v) => setE({ name: v })} placeholder={t('Unesite ime i prezime')} />
           </Field>
           <Field label={t('Srodstvo')} required error={show('emergencyRelation')}>
-            <Select value={e.relation} onChange={(v) => setE({ relation: v })} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
+            <Select value={e.relation} onChange={(v) => setE({ relation: v })} placeholder={t('Majka, otac, sestra i sl.')} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
           </Field>
           <Field label={t('Broj telefona')} required labelId="su-e-phone" error={show('emergencyPhone')}>
             <Phone country={e.phoneCountry} onCountry={(v) => setE({ phoneCountry: v })} value={e.phone} onChange={(v) => setE({ phone: v })} labelledBy="su-e-phone" />
@@ -444,7 +444,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           [t('Telefon'), f.phone],
         ])}
         {sr
-          ? card(t('Kvalifikacije'), 'qualifications', [[t('Obrazovanje'), t(f.education)], [t('Sertifikat negovateljice'), f.certificate ? t('Da') : t('Ne')], [t('Kursevi'), f.courses], [t('Iskustvo i veštine'), f.bio]])
+          ? card(t('Kvalifikacije'), 'qualifications', [[t('Nivo obrazovanja'), t(f.education)], [t('Sertifikat negovateljice'), f.certificate ? t('Da') : t('Ne')], [t('Kursevi'), f.courses], [t('Opis radnog iskustva i veština'), f.bio]])
           : card(t('Profesija'), 'profession', [[t('Klasifikacije'), f.classifications.join(', ')], [t('Obrazovanje'), t(f.education)], [t('Jezici'), f.languages.map((l) => t(l)).join(', ')], [t('O sebi'), f.bio]])}
         {card(t('Dostupnost'), 'availability', [
           sr && [t('Angažman'), f.engagement.map((e) => (e === 'daily' ? t('Dnevne posete') : t('Smena 24 h'))).join(', ')],
