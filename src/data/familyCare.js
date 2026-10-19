@@ -359,6 +359,15 @@ export const askCaregiver = (caregiverId, message) => (c) => {
   );
 };
 
+// The family takes back a request nobody has answered yet: it goes from the
+// list, and the log keeps that it was sent and taken back. One that has an
+// answer stays as it is.
+export const withdrawRequest = (caregiverId) => (c) => {
+  const r = latestRequest(c, caregiverId);
+  if (r?.status !== 'pending') return c;
+  return logged({ ...c, requests: c.requests.filter((x) => x !== r) }, { kind: 'request', caregiverId, by: 'you', title: msg('Otkazali ste upit') });
+};
+
 // A new card replaces the old one whole, so a declined or expiring one leaves
 // nothing behind. Stripe gives back the brand, the last four and when it
 // expires (month/year); the number never reaches us.

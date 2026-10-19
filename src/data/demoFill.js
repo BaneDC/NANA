@@ -1,6 +1,7 @@
 import { agreeTerms, allVisits, askCaregiver, confirmPlan, confirmVisit, linkCard, seeAnswers } from './familyCare';
 import { requestSaid, startCare } from './familyStart';
-import { answerRequest, passTime, planVisit, sendTerms, sendWorkOrder } from './sim';
+import { answerRequest, planVisit, sendTerms, sendWorkOrder } from './caregiverCare';
+import { passTime } from './sim';
 
 // The demo, filled in one go (the button in the simulation panel, and
 // /?demo&puno): a family a week into care, so the home and everything behind
