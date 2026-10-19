@@ -151,7 +151,7 @@ export default function Board({ user, clients, caregiverId, onOpen, act }) {
 
       <div className="grid grid-cols-4 gap-3 @max-[672px]:grid-cols-2">
         <StatCard value={requests.length} label={t('Za odgovor')} note={requests.length ? t('Najstariji: {n} d', { n: oldest }) : t('Ništa ne čeka')} />
-        <StatCard value={of('agreement').filter((c) => !pendingVersion(c.arrangement)).length} label={t('Ugovori za slanje')} note={of('agreement').length ? t('Blokira svaku posetu') : t('Sve poslato')} />
+        <StatCard value={of('agreement').filter((c) => !pendingVersion(c.arrangement)).length} label={t('Ugovori za slanje')} note={of('agreement').filter((c) => !pendingVersion(c.arrangement)).length ? t('Blokira svaku posetu') : t('Sve poslato')} />
         <StatCard value={of('work-order').length} label={t('Neposlati radni nalozi')} note={of('work-order').length ? t('{amount} nefakturisano', { amount: money(unbilled) }) : t('Sve poslato')} />
         <StatCard value={money(e.paidThisMonth)} label={t('Isplaćeno vam u {month}', { month })} note={t('{amount} u obradi', { amount: money(e.processing) })} />
       </div>

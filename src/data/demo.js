@@ -67,6 +67,8 @@ export function demoAccount(role, market) {
 }
 
 export function seedState(market, { filled }) {
+  // Serbia has no agreements or visits to fill a week of care with (part 2)
+  filled = filled && market !== 'sr';
   const user = demoAccount('family', market);
   const raw = market === 'sr' ? demoAnswersRs : demoAnswers;
   const answers = reconcile({}, { ...raw, 'family-goal': { values: { goal: t(raw['family-goal'].values.goal), worry: t(raw['family-goal'].values.worry) } } }).answers;

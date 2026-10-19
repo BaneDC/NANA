@@ -150,7 +150,8 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
                 <Fact key={k} label={k}>
                   <span className="flex flex-wrap items-center gap-2">
                     {DOCUMENTS[k]}
-                    <Badge variant="success">{t('Provereno')}</Badge>
+                    {/* the coordinator checks them at the talk after sign-up */}
+                    {c.status === 'interview' ? <Badge variant="warning">{t('Čeka proveru')}</Badge> : <Badge variant="success">{t('Provereno')}</Badge>}
                   </span>
                 </Fact>
               ))}

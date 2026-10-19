@@ -91,8 +91,8 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
   const [to, setTo] = useState(String(profile.rateMax ?? ''));
   const check = useCheck();
   const fi = market !== 'sr';
-  const a = Number(from);
-  const b = Number(to);
+  const a = Number(String(from).replace(',', '.'));
+  const b = Number(String(to).replace(',', '.'));
   const errors = {
     days: !days.length && t('Izaberite bar jedan dan.'),
     slots: !slots.length && t('Izaberite bar jedno doba dana.'),

@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { marketHas, setMarket } from './market';
 import { packageOver, plansFor, renewalAt } from './plans';
+import { caregiversIn, matchReasons, setRegistered } from './carePlan';
+import { requestNote } from './firstSteps';
+import { seedState } from './demo';
 
 describe('market', () => {
   afterEach(() => setMarket('FI'));
@@ -41,4 +44,40 @@ describe('a package runs out', () => {
     expect(packageOver('FI', { planId: 'monthly', at }, at + 400 * 864e5)).toBe(false);
   });
   it('nothing bought is not over', () => expect(packageOver('RS', null)).toBe(false));
+});
+
+describe('Serbia on the family side', () => {
+  afterEach(() => setMarket('FI'));
+
+  it('lists Serbian caregivers, with no price and no classifications', () => {
+    const list = caregiversIn('RS');
+    expect(list.length).toBe(12);
+    expect(list.every((c) => c.market === 'RS' && !c.rateMin && c.classifications.length === 0)).toBe(true);
+    expect(caregiversIn('FI').some((c) => c.market === 'RS')).toBe(false);
+  });
+
+  it('says why one fits from her own fields', () => {
+    expect(matchReasons(caregiversIn('RS')[0])).toContain('Isti grad');
+  });
+
+  it('a request is part of the package, said in euros paid once', () => {
+    expect(requestNote(false, 'RS')).toMatch(/paketa/);
+    expect(requestNote(false, 'FI')).toMatch(/pretplate/);
+  });
+
+  it('a filled Serbian demo is not filled with Finnish care', () => {
+    expect(seedState('sr', { filled: true }).person.care.arrangements).toEqual([]);
+  });
+});
+
+describe('a caregiver who signed up', () => {
+  afterEach(() => setRegistered([]));
+  const her = { id: 'reg-1', market: 'FI', status: 'interview', name: 'Ana Lind', classifications: [], days: [0], slots: ['morning'], languages: [], radius: 10, area: 'Kallio' };
+
+  it('is on the families\' list only once the coordinator activates her', () => {
+    setRegistered([her]);
+    expect(caregiversIn('FI').some((c) => c.id === 'reg-1')).toBe(false);
+    setRegistered([{ ...her, status: 'active' }]);
+    expect(caregiversIn('FI').some((c) => c.id === 'reg-1')).toBe(true);
+  });
 });

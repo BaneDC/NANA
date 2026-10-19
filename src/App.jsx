@@ -48,7 +48,7 @@ import { changeEntry } from './data/planLog';
 import { newPerson, planOf, withPlan } from './data/person';
 import { localized, locale, msg, setLang, t, useKeepScroll, useLang } from './i18n';
 import { marketHas, setMarket } from './data/market';
-import { packageOver, renewalAt, renewsOn } from './data/plans';
+import { packageOver, plansFor, renewalAt, renewsOn } from './data/plans';
 
 
 // Who this tab is in the demo (src/data/demo.js): the address says it, or the
@@ -582,9 +582,12 @@ export default function App() {
                 // side opens (part 5)
                 if (u.role === 'caregiver') {
                   const m = u.country === 'RS' ? 'sr' : 'fi';
-                  if (record) {
-                    const st = store.load(m) || seedState(m, { filled: false });
-                    store.save(m, { ...st, registered: [...(st.registered || []).filter((r) => r.id !== record.id), record] });
+                  // on sign-up, and again on signing in when the demo's state
+                  // was started over and lost her
+                  const rec = record || u.record;
+                  const st = store.load(m) || seedState(m, { filled: false });
+                  if (rec && !(st.registered || []).some((r) => r.id === rec.id)) {
+                    store.save(m, { ...st, registered: [...(st.registered || []), { ...rec, status: u.status || rec.status }] });
                   }
                   setUser(u);
                   setView(m === 'sr' ? 'requests' : 'board');
@@ -620,9 +623,9 @@ export default function App() {
           market={market}
           care={care}
           clients={myClientsNow}
-          payouts={shared.payouts !== false}
+          payouts={!user.status || (shared.payouts || []).includes(user.caregiverId)}
           onPayouts={() => {
-            setShared((s) => ({ ...s, payouts: true }));
+            setShared((s) => ({ ...s, payouts: [...(s.payouts || []), user.caregiverId] }));
             say(t('Isplate su pokrenute.'));
           }}
           onClientCare={onClientCare}
@@ -880,7 +883,7 @@ export default function App() {
             // the whole example in one go, with the subscription it needs;
             // Finland's for now (Serbia's comes with part 2)
             onFill={
-              market === 'fi'
+              market === 'fi' && (DEMO || !caregiverSide)
                 ? () => {
                     // the demo's family a week into care; a real account keeps
                     // who it is and only its care is filled, as before
@@ -891,7 +894,7 @@ export default function App() {
                       setSubscription((x) => x || { planId: 'monthly', at: Date.now() });
                     }
                     setDrawer(null);
-                    setView(caregiverSide ? 'requests' : 'dashboard');
+                    setView(caregiverSide ? 'board' : 'dashboard');
                     setSim(false);
                     say(
                       caregiverSide
@@ -908,7 +911,15 @@ export default function App() {
             onExpirePackage={
               !caregiverSide && marketHas('package') && subscription && unlocked
                 ? () => {
-                    setSubscription((x) => ({ ...x, at: x.at - (renewalAt(user.country, x.planId, x.at) - x.at) }));
+                    // bought its months and a day ago, so it ran out yesterday
+                    // whatever the month (a month back is not as long as one ahead)
+                    setSubscription((x) => {
+                      const months = plansFor(user.country).find((p) => p.id === x.planId)?.months;
+                      const d = new Date();
+                      d.setMonth(d.getMonth() - (months || 1));
+                      d.setDate(d.getDate() - 1);
+                      return { ...x, at: d.getTime() };
+                    });
                     say(t('Paket je istekao.'));
                   }
                 : undefined
@@ -935,6 +946,14 @@ export default function App() {
             // or the same as it started (src/data/demo.js)
             onMarket={DEMO ? (m) => go({ role: user.role, market: m }) : undefined}
             // a caregiver who signed up waits for the coordinator's talk
+            onPayouts={
+              caregiverSide && user.status && !(shared.payouts || []).includes(user.caregiverId)
+                ? () => {
+                    setShared((s) => ({ ...s, payouts: [...(s.payouts || []), user.caregiverId] }));
+                    say(t('Isplate su pokrenute.'));
+                  }
+                : undefined
+            }
             onActivate={
               caregiverSide && user.status && user.status !== 'active'
                 ? () => {

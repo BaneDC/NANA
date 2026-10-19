@@ -241,7 +241,7 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
 export const CALL_OFF_REASONS = [msg('Porodica je otkazala'), msg('Bolesna sam'), msg('Hitan slučaj u porodici'), msg('Nešto drugo')];
 export const NO_VISIT_REASONS = [msg('Niko nije bio kod kuće'), msg('Porodica je otkazala istog dana'), msg('Nisam mogla da dođem'), msg('Bila sam bolesna')];
 
-export function ReasonDialog({ open, eyebrow, title, text, reasons, action, onConfirm, onClose }) {
+export function ReasonDialog({ open, eyebrow, title, text, reasons, action, back, onConfirm, onClose }) {
   const [reason, setReason] = useState(reasons?.[0]);
   return (
     <Dialog open={open} eyebrow={eyebrow} title={title} onClose={onClose}>
@@ -259,7 +259,7 @@ export function ReasonDialog({ open, eyebrow, title, text, reasons, action, onCo
       )}
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
-          {t('Nazad')}
+          {back || t('Nazad')}
         </Button>
         {/* calling off or ending switches something off: secondary (§9) */}
         <Button variant="secondary" onClick={() => onConfirm(reason)}>

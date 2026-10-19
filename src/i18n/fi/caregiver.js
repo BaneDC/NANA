@@ -284,4 +284,9 @@ export default {
   "treba dokument": "vaatii asiakirjan",
   "{n} parova osobina": "{n} ominaisuusparia",
   "Često je neraspoložena, tmurna i razočarana.": "Usein huonolla tuulella, synkkä ja pettynyt.",
+  "Nastavi saradnju": "Jatka yhteistyötä",
+  "Saradnja se završava kad su sve posete izmirene.": "Yhteistyö voi päättyä, kun kaikki käynnit on selvitetty.",
+  "Stripe nalog je aktivan": "Stripe-tili on aktiivinen",
+  "Stripe": "Stripe",
+  "Čeka proveru": "Odottaa tarkistusta",
 };

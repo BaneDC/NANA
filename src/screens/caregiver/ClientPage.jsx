@@ -17,7 +17,7 @@ import Modal from '../../components/Modal';
 import FrailtyScale from '../../components/FrailtyScale';
 import Tags from '../../components/Tags';
 import { ActivityDrawer, ServiceChips } from '../../components/family/FamilyDrawer';
-import { activeVersion, firstName, money, monthOfDay, pendingVersion, rateText } from '../../data/familyCare';
+import { activeVersion, firstName, money, monthOfDay, pendingVersion, rateText, unsettled } from '../../data/familyCare';
 import { cannotPlan } from '../../data/caregiverCare';
 import { netOf, owes, plannedNet } from '../../data/caregiverView';
 import { RECORD_PARTS, alertsOf, partRows } from '../../data/record';
@@ -211,6 +211,9 @@ export default function ClientPage({ client, caregiverId, backLabel, onBack, act
             </DataList>
           )}
           <ServiceChips ids={(act0 || pen).services} grouped />
+          {!a.endedOn && unsettled(a).length > 0 && (
+            <p className="text-xs leading-body text-muted-foreground">{t('Saradnja se završava kad su sve posete izmirene.')}</p>
+          )}
           {!a.endedOn && (
             <CardFooter>
               {pen ? (
@@ -222,9 +225,12 @@ export default function ClientPage({ client, caregiverId, backLabel, onBack, act
                   {t('Predloži izmene')}
                 </Button>
               )}
-              <Button variant="secondary" onClick={() => act('end', client)}>
-                {t('Završi saradnju')}
-              </Button>
+              {/* only once nothing is owed either way; otherwise it says why (caregiverEnds) */}
+              {!unsettled(a).length && (
+                <Button variant="secondary" onClick={() => act('end', client)}>
+                  {t('Završi saradnju')}
+                </Button>
+              )}
             </CardFooter>
           )}
         </Card>

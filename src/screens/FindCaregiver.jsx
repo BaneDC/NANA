@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Phone } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,8 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
   const [page, setPage] = useState(1);
 
   // best match first, as the recommendation it is
-  const results = useMemo(() => [...caregiversIn()].sort((a, b) => b.match - a.match), []);
+  // read every time: a caregiver activated or gone quiet in another tab shows at once
+  const results = [...caregiversIn()].sort((a, b) => b.match - a.match);
 
   const pages = Math.max(1, Math.ceil(results.length / PER_PAGE));
   const shown = results.slice((page - 1) * PER_PAGE, page * PER_PAGE);

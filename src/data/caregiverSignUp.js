@@ -133,7 +133,7 @@ export const afterSteps = (f) => [...(f.market === 'sr' ? ['test'] : documentsNe
 
 // The caregiver record her sign-up makes, in the shape of every other one
 // (carePlan.js, caregiversRs.js), new and not yet active.
-export function recordFrom(f, id) {
+export function recordFrom(f, id, email = '') {
   const name = `${f.firstName.trim()} ${f.lastName.trim()}`;
   const sr = f.market === 'sr';
   return {
@@ -148,6 +148,7 @@ export function recordFrom(f, id) {
     area: f.area.trim(),
     radius: Number(f.radius),
     phone: f.phone.trim(),
+    email,
     bio: f.bio.trim(),
     education: f.education,
     languages: f.languages,

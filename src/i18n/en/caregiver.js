@@ -284,4 +284,9 @@ export default {
   "treba dokument": "document needed",
   "{n} parova osobina": "{n} pairs of traits",
   "Često je neraspoložena, tmurna i razočarana.": "Often in a bad mood, gloomy and disappointed.",
+  "Nastavi saradnju": "Keep it going",
+  "Saradnja se završava kad su sve posete izmirene.": "The cooperation can end once every visit is settled.",
+  "Stripe nalog je aktivan": "The Stripe account is active",
+  "Stripe": "Stripe",
+  "Čeka proveru": "Waiting to be checked",
 };

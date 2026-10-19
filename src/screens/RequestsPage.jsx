@@ -110,7 +110,7 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
                         </Badge>
                       </p>
                       <p className="text-xs leading-body text-muted-foreground">
-                        {cg.area} · {cg.rate} · {r.again ? t('ponovni upit poslat {when}', { when: r.requested }) : t('upit poslat {when}', { when: r.requested })}
+                        {cg.area} · {cg.rate && `${cg.rate} · `}{r.again ? t('ponovni upit poslat {when}', { when: r.requested }) : t('upit poslat {when}', { when: r.requested })}
                       </p>
                       <Groups className="mt-2">
                         {r.message && <Group label={t('Vaša poruka')} text={t(r.message)} />}
@@ -135,7 +135,7 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
                     {/* its one action top right, level with her name; on a
                         phone under what the card says, in its column */}
                     {/* one that waits can be taken back: it goes from the list */}
-                    {r.status === 'pending' && (
+                    {r.status === 'pending' && cg.market === 'RS' && (
                       <div className="flex shrink-0 gap-2 phone:mt-1 phone:ml-[calc(var(--avatar)+var(--spacing-3))] phone:w-[calc(100%-var(--avatar)-var(--spacing-3))] phone:*:flex-auto">
                         <Button
                           variant="secondary"

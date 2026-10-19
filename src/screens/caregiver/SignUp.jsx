@@ -77,6 +77,10 @@ export default function CaregiverSignUp({ onDone, onBack }) {
   const [market, setMarket] = useState(null);
   const [f, setF] = useState(null);
   const [account, setAccount] = useState({ email: '', password: '', processing: false, accuracy: false });
+  // the application, saved on "Zakaži razgovor": kept even if the tab closes on
+  // the thanks; a second press does not make a second one
+  const [sent, setSent] = useState(null);
+  const [busy, setBusy] = useState(false);
   const check = useCheck();
   const set = (patch) => setF((x) => ({ ...x, ...patch }));
   const steps = market ? STEPS[market] : [];
@@ -104,9 +108,12 @@ export default function CaregiverSignUp({ onDone, onBack }) {
     const i = order.indexOf(screen);
     setScreen(i > 0 ? order[i - 1] : 'country');
   };
-  const finish = async () => {
+  const submit = async () => {
+    if (busy || sent) return;
+    if (!check.check(Object.values(errors))) return;
+    setBusy(true);
     const id = `reg-${Date.now()}`;
-    const record = recordFrom(f, id);
+    const record = recordFrom(f, id, account.email.trim());
     const user = {
       role: 'caregiver',
       caregiverId: id,
@@ -119,9 +126,14 @@ export default function CaregiverSignUp({ onDone, onBack }) {
       phone: f.phone.trim(),
       country: record.market,
       registeredAt: new Date().toISOString(),
+      // her record too, so signing in again puts it back where families look
+      record,
     };
     await saveAccount(user, account.password);
-    onDone(user, record);
+    setSent({ user, record });
+    setBusy(false);
+    check.reset();
+    setScreen('thanks');
   };
 
   const footer = (label = t('Dalje'), onNext = next) => (
@@ -456,7 +468,7 @@ export default function CaregiverSignUp({ onDone, onBack }) {
           />
           {f.channel && <PaneHint>{t('Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.', { channel: t(CHANNELS.find(([id]) => id === f.channel)[1]) })}</PaneHint>}
         </FormCard>
-        {footer(t('Zakaži razgovor'))}
+        {footer(t('Zakaži razgovor'), submit)}
       </>
     );
 
@@ -472,7 +484,7 @@ export default function CaregiverSignUp({ onDone, onBack }) {
         </p>
       </FormCard>
       <Actions>
-        <Button size="lg" className="w-full" onClick={finish}>
+        <Button size="lg" className="w-full" onClick={() => sent && onDone(sent.user, sent.record)}>
           {t('Na početnu')}
         </Button>
       </Actions>

@@ -54,7 +54,7 @@ export default function CaregiverApp({ view, onView, user, market, care, clients
       </Page>
     );
   else if (view === 'settings') page = <Settings payments={false} user={user} care={care} onCare={onCare} onSaveUser={onSaveUser} onFlash={onFlash} />;
-  else if (view === 'profile') page = <Profile caregiver={caregiverById(caregiverId)} user={user} market={market} onSaveProfile={onSaveProfile} />;
+  else if (view === 'profile') page = <Profile caregiver={caregiverById(caregiverId) || user.record} user={user} market={market} onSaveProfile={onSaveProfile} />;
   // Serbia: the requests, and a family's profile (part 4)
   else if (!fi && client) page = <ClientProfile client={client} onBack={() => onView('requests')} act={act} />;
   else if (!fi) page = <RequestsRs user={user} clients={clients} onOpen={open} act={act} />;

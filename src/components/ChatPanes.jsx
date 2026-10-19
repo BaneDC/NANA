@@ -163,7 +163,7 @@ function CaregiversPane({ care, onContact }) {
             }
           >
             <p className={body}>
-              <Rating caregiver={c} /> · {c.rate} · {t('{area}, do {km} km', { area: c.area, km: c.radius })}
+              <Rating caregiver={c} /> · {c.rate && `${c.rate} · `}{t('{area}, do {km} km', { area: c.area, km: c.radius })}
             </p>
           </Row>
         );

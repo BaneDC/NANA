@@ -67,7 +67,7 @@ export function useClientActions({ caregiverId, onClientCare, onFlash }) {
     else if (kind === 'no-visit' && visit)
       dialog = <ReasonDialog open={shown} eyebrow={`${visit.date} · ${visit.time}`} title={t('Poseta se nije desila')} text={t('Rezervacija se vraća porodici i ništa se ne naplaćuje.')} reasons={NO_VISIT_REASONS} action={t('Potvrdi')} onClose={close} onConfirm={(r) => done(visitNotHappened(visit.id, r), t('Zabeleženo je da se poseta nije desila.'))} />;
     else if (kind === 'end')
-      dialog = <ReasonDialog open={shown} eyebrow={client.care.elder.name} title={t('Završiti saradnju?')} text={t('Zakazane posete se otkazuju i rezervacije vraćaju. Obavljene posete ostaju u evidenciji. Poseta koja je u toku mora prvo da se završi.')} action={t('Završi saradnju')} onClose={close} onConfirm={() => done(caregiverEnds(caregiverId), t('Saradnja je završena.'))} />;
+      dialog = <ReasonDialog open={shown} eyebrow={client.care.elder.name} title={t('Završiti saradnju?')} text={t('Zakazane posete se otkazuju i rezervacije vraćaju. Obavljene posete ostaju u evidenciji. Poseta koja je u toku mora prvo da se završi.')} action={t('Završi saradnju')} back={t('Nastavi saradnju')} onClose={close} onConfirm={() => done(caregiverEnds(caregiverId), t('Saradnja je završena.'))} />;
   }
   return { act, dialog };
 }
