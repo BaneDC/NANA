@@ -7,7 +7,7 @@ import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
 import { SideFrame } from './SidePanel';
 import { describeChanges } from '../data/planEdits';
 import { healthRows } from '../data/record';
-import { caregivers } from '../data/carePlan';
+import { caregiverById } from '../data/carePlan';
 import { chatLabels } from '../data/chatLabels.sr';
 import { getLang, msg, t } from '../i18n';
 import { Button } from '@/components/ui/button';
@@ -350,7 +350,7 @@ function SendRequestCard({ data, foot, onSend, onOpen }) {
     <KitCard title={t('Upit sa planom nege')} foot={foot}>
       <ul className="kc-rows">
         {data.ids.map((id) => {
-          const c = caregivers.find((x) => x.id === id);
+          const c = caregiverById(id);
           if (!c) return null;
           const sent = data.sent.includes(id);
           return (

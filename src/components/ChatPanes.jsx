@@ -6,7 +6,7 @@ import { SheetDescription } from '@/components/ui/sheet';
 import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
 import { DataList, DataRow } from '@/components/data-list';
 import { PaneLabel } from '@/components/pane';
-import { caregivers, daysText, slotsText } from '../data/carePlan';
+import { caregiverById, caregivers, daysText, slotsText } from '../data/carePlan';
 import { allVisits, firstName, money, pendingVersion, services, standingWith, waitingOnYou } from '../data/familyCare';
 import { priceLine } from '../data/plans';
 import PlanContents from './PlanContents';
@@ -63,7 +63,7 @@ function RequestsPane({ care }) {
   return (
     <ItemGroup>
       {care.requests.map((r) => {
-        const c = caregivers.find((x) => x.id === r.caregiverId);
+        const c = caregiverById(r.caregiverId);
         return (
           <Row key={r.caregiverId} initials={c?.initials} title={c?.name} end={<Badge variant={BADGE[r.status]}>{t(STATUS[r.status])}</Badge>}>
             <p className={body}>{t(r.detail)}</p>
@@ -222,7 +222,7 @@ export function paneFor(openId, ctx) {
     case 'settings':
       return { title: t('Pretplata i plaćanje'), children: <Pane><SettingsPane care={care} unlocked={unlocked} country={ctx.user?.country} onUnlock={onUnlock} /></Pane> };
     case 'caregiver': {
-      const c = caregivers.find((x) => x.id === id);
+      const c = caregiverById(id);
       if (!c) return null;
       const asked = care.requests.find((r) => r.caregiverId === c.id);
       return {
@@ -281,7 +281,7 @@ export function previewFor(kind, { plan, care }) {
         title: t('Moji upiti'),
         meta: `${care.requests.length}`,
         content: care.requests.length
-          ? care.requests.map((r) => `${caregivers.find((c) => c.id === r.caregiverId)?.name} · ${t(STATUS[r.status])}`).join('\n')
+          ? care.requests.map((r) => `${caregiverById(r.caregiverId)?.name} · ${t(STATUS[r.status])}`).join('\n')
           : t('Još nijedan upit'),
       };
     case 'visits': {

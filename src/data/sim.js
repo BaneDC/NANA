@@ -1,4 +1,4 @@
-import { caregivers } from './carePlan';
+import { caregiverById } from './carePlan';
 import { needFrom } from './familyStart';
 import {
   START_HOUR,
@@ -38,7 +38,7 @@ import { msg, say, t } from '../i18n';
 // orders not yet charged.
 
 const nowOf = (c) => c.now ?? START_HOUR;
-const pick = (id) => caregivers.find((c) => c.id === id);
+const pick = caregiverById;
 
 // She names a range on her profile; the terms she sends start in its middle,
 // in whole euros, so the family has room either way.

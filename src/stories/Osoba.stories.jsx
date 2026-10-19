@@ -1,4 +1,4 @@
-import { caregivers } from '@/data/carePlan';
+import { caregiverById, caregivers } from '@/data/carePlan';
 import { herVisits, standingWith } from '@/data/familyCare';
 import { sampleCare } from '@/screens/CardGallery';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,7 @@ export default { title: 'Osoba i poseta' };
 
 const care = sampleCare();
 const noop = () => {};
-const pick = (id) => caregivers.find((c) => c.id === id);
+const pick = caregiverById;
 
 // a select of the sample's caregivers, by name
 const caregiverControl = {

@@ -32,5 +32,7 @@ export default defineConfig(({ command, mode }) => {
       // next free port instead of dying because a second copy is already up.
       strictPort: Boolean(process.env.PORT),
     },
+    // pure functions only (src/data, src/lib): no browser, no React
+    test: { environment: 'node', include: ['src/**/*.test.js'] },
   };
 });

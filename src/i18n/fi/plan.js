@@ -6,6 +6,10 @@ export default {
   'Visoka strukovna škola': 'Ammattikorkeakoulu',
   finski: 'suomi',
   engleski: 'englanti',
+  srpski: 'serbia',
+  'Srednja medicinska škola': 'Lääkintäalan toisen asteen koulu',
+  'Šest godina radim sa starijima, najviše sa osobama sa demencijom. Strpljiva sam i volim da se dogovorim sa porodicom oko svega.':
+    'Olen työskennellyt kuusi vuotta vanhusten parissa, enimmäkseen muistisairaiden kanssa. Olen kärsivällinen ja sovin mielelläni kaikesta perheen kanssa.',
   'Petnaest godina u kućnoj nezi, uključujući oporavak posle šloga. Kuva, vodi pisani dnevnik i svake večeri javlja porodici kako je prošao dan.':
     'Viisitoista vuotta kotihoidossa, myös aivohalvauksesta toipuvien kanssa. Hän laittaa ruokaa, pitää kirjallista päiväkirjaa ja kertoo omaisille joka ilta, miten päivä meni.',
   'Stručna škola': 'Ammattikoulu',

@@ -7,7 +7,7 @@ import { Item, ItemAction, ItemContent, ItemGroup, ItemLink } from '@/components
 import { DataList, DataRow } from '@/components/data-list';
 import Tags, { Group, Groups } from '@/components/Tags';
 import Rating from '@/components/Rating';
-import { caregivers, matchReasons } from '@/data/carePlan';
+import { caregiverById, matchReasons } from '@/data/carePlan';
 
 // One card: r24, 16 padding, 8 between its parts, the card shadow (docs/patterns.md §5).
 // Inside it, rows (`Item`), never boxes (§6). A card or a row with details of
@@ -16,7 +16,7 @@ import { caregivers, matchReasons } from '@/data/carePlan';
 export default { title: 'Kartica' };
 
 const noop = () => {};
-const sanna = caregivers.find((c) => c.id === 'sanna');
+const sanna = caregiverById('sanna');
 
 export const Osnovna = {
   render: () => (

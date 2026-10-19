@@ -36,7 +36,7 @@ import { requestSaid, startCare, withAnswers } from './data/familyStart';
 import { fillCare } from './data/demoFill';
 import SimPanel from './components/family/SimPanel';
 import { useKept } from './hooks/use-kept';
-import { buildPlan, caregivers, coordinator } from './data/carePlan';
+import { buildPlan, caregiverById, coordinator } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { recordImpact, writeEvent, written } from './data/record';
 import { requestFoot, requestNote } from './data/firstSteps';
@@ -333,7 +333,7 @@ export default function App() {
   // it went out now, so the assistant's card can say so.
   const contactCaregiver = (c) => setPaywall({ caregiver: c });
   const assistantAsk = (id) => {
-    const c = caregivers.find((x) => x.id === id);
+    const c = caregiverById(id);
     if (!unlocked) {
       contactCaregiver(c);
       return false;

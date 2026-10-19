@@ -8,7 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import Attention from '../components/Attention';
 import { Group, Groups } from '../components/Tags';
-import { caregivers } from '../data/carePlan';
+import { caregiverById } from '../data/carePlan';
 import { arrangementOf, canAsk, firstName, latestRequest, seeAnswers } from '../data/familyCare';
 import { USUAL_ANSWER } from '../data/firstSteps';
 import { msg, t } from '../i18n';
@@ -81,7 +81,7 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
 
           <div className="flex flex-col gap-2">
             {picked.map((r) => {
-              const cg = caregivers.find((c) => c.id === r.caregiverId);
+              const cg = caregiverById(r.caregiverId);
               if (!cg) return null;
               const Icon = ICON[r.status];
               const linked = r.status === 'accepted' && arrangementOf(care, r.caregiverId);

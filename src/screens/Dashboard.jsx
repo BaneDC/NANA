@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Clock, Lock, Search, Send } from 'lucide-react';
-import { caregivers } from '../data/carePlan';
+import { caregiverById } from '../data/carePlan';
 import {
   activeVersion,
   allVisits,
@@ -267,7 +267,7 @@ export default function Dashboard({
   const latest = care.requests.filter((r, i, all) => all.findIndex((x) => x.caregiverId === r.caregiverId) === i);
   const pendingNames = latest
     .filter((r) => r.status === 'pending')
-    .map((r) => caregivers.find((c) => c.id === r.caregiverId)?.name)
+    .map((r) => caregiverById(r.caregiverId)?.name)
     .filter(Boolean);
 
   // the overview's own numbers: visits that have been, the next one, money moving
@@ -516,7 +516,7 @@ export default function Dashboard({
                 : pendingNames.length > 1
                   ? t('Čeka se odgovor od {count}. {usual} Javićemo vam čim stigne, a svi upiti i odgovori su na stranici „Moji upiti".', { count: tn(pendingNames.length, 'negovateljice', 'negovateljice', 'negovateljica'), usual: t(USUAL_ANSWER) })
                   : latest.length === 1
-                    ? t('{name} ne može da preuzme. Na stranici „Moji upiti" piše zašto.', { name: caregivers.find((c) => c.id === latest[0].caregiverId)?.name || t('Negovateljica') })
+                    ? t('{name} ne može da preuzme. Na stranici „Moji upiti" piše zašto.', { name: caregiverById(latest[0].caregiverId)?.name || t('Negovateljica') })
                     : t('Negovateljice kojima ste pisali ne mogu da preuzmu. Na stranici „Moji upiti" piše zašto.')}
             </CardDescription>
             <CardFooter>

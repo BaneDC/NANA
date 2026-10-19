@@ -1,4 +1,4 @@
-import { caregivers } from './carePlan';
+import { caregiverById } from './carePlan';
 import { SERVICE_FEE, totalsFor } from './fees';
 import { serviceTitle } from './serviceCatalog';
 import { eur as money } from '../lib/money';
@@ -172,7 +172,7 @@ export const servicesSaid = (n) => ({ $fmt: 'services', value: n });
 
 export const firstName = (name) => name.split(' ')[0];
 export const nameOf = (c, caregiverId) =>
-  arrangementOf(c, caregiverId)?.caregiver.name || caregivers.find((x) => x.id === caregiverId)?.name || '';
+  arrangementOf(c, caregiverId)?.caregiver.name || caregiverById(caregiverId)?.name || '';
 
 // A count with its noun in the right form: 1 usluga, 3 usluge, 5 usluga. The
 // same as `tn`, which says it in the language of the moment.

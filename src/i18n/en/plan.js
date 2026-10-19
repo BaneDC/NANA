@@ -6,6 +6,10 @@ export default {
   'Visoka strukovna škola': 'University of applied sciences',
   finski: 'Finnish',
   engleski: 'English',
+  srpski: 'Serbian',
+  'Srednja medicinska škola': 'Secondary medical school',
+  'Šest godina radim sa starijima, najviše sa osobama sa demencijom. Strpljiva sam i volim da se dogovorim sa porodicom oko svega.':
+    'Six years working with older people, mostly with people with dementia. I am patient and like to agree everything with the family.',
   'Petnaest godina u kućnoj nezi, uključujući oporavak posle šloga. Kuva, vodi pisani dnevnik i svake večeri javlja porodici kako je prošao dan.':
     'Fifteen years in home care, including recovery after a stroke. She cooks, keeps a written diary and tells the family every evening how the day went.',
   'Stručna škola': 'Vocational school',

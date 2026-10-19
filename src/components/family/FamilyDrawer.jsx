@@ -8,7 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataList, DataRow } from '@/components/data-list';
 import { Callout, Concern, PaneHint, PaneLabel, ReportRow, ReportRows, Stat, Stats, Total } from '@/components/pane';
 import { statusVariant } from '../Standing';
-import { MASKED_EMAIL, MASKED_PHONE, caregivers, daysText, SLOTS } from '../../data/carePlan';
+import { MASKED_EMAIL, MASKED_PHONE, caregiverById, daysText, SLOTS } from '../../data/carePlan';
 import ShowMore from '../ShowMore';
 import VisitsDrawer from './VisitsDrawer';
 import { CaregiversDrawer, ComingDrawer, LetterDrawer, OfferDrawer, OffersDrawer } from './HomeDrawers';
@@ -658,7 +658,7 @@ function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen 
 // ── someone they might ask ──────────────────────────────────────────────────
 
 function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact, onCaregiver, onClose }) {
-  const c = caregivers.find((x) => x.id === caregiverId);
+  const c = caregiverById(caregiverId);
   if (!c) return null;
   // where the family stands with her is said at the top, under who she is,
   // not in the footer where it read as a disabled button
@@ -804,7 +804,7 @@ function together(a, today) {
 function Overview({ open = true, care, caregiverId, onClose }) {
   const a = arrangementOf(care, caregiverId);
   if (!a) return null;
-  const c = caregivers.find((x) => x.id === caregiverId);
+  const c = caregiverById(caregiverId);
   const first = firstName(a.caregiver.name);
   const act = activeVersion(a);
   const agreed = act && !pendingVersion(a) && !a.endedOn;

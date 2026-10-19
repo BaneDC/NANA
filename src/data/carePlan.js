@@ -4,6 +4,7 @@ import { CFS_SR, srOptionTitles } from './flow.sr';
 import { aidsFor, visitsFor } from './partners';
 import { eurRange } from '../lib/money';
 import { getLang, msg, t } from '../i18n';
+import { caregiversRs } from './caregiversRs';
 
 // Matched caregivers. `match` is the fake relevance score the assistant "computed"
 // from the questionnaire — it exists to sell the AI framing in the prototype.
@@ -261,6 +262,11 @@ const CAREGIVERS = [
 export const caregivers = CAREGIVERS.map((c) =>
   Object.defineProperty({ ...c }, 'rate', { get: () => eurRange(c.rateMin, c.rateMax, '/h'), enumerable: true })
 );
+
+// Anyone a request or a cooperation can name, on either market: the lists the
+// family browses stay per market, but a name is looked up here, so a request
+// to a Serbian caregiver reads like any other.
+export const caregiverById = (id) => caregivers.find((c) => c.id === id) || caregiversRs.find((c) => c.id === id);
 
 // her languages as one line, in the language being read: "finski, engleski"
 export const languagesText = (c) => c.languages.map((l) => t(l)).join(', ');
