@@ -216,13 +216,30 @@ export function Select({ value, onChange, options, placeholder = t('Izaberite'),
 // chosen or the first that can be. `from` and `to` are the first and last days that can be chosen (Dates); `today` is the day marked as
 // today (the prototype's own, which is not the clock's), `from` if not given.
 // Picking a day closes it.
-// `pickYear`: month and year as dropdowns, for a date years back (a date of birth)
+// `pickYear`: month and year as dropdowns, for a date years back (a date of
+// birth). People pick the day first, then the month and the year, so a day
+// only marks the date and does not close: the day marked goes along when the
+// month or year changes, and nothing is kept until "Potvrdi" (docs/patterns.md §10).
 export function DateInput({ value, onChange, from, to, today = from, pickYear, placeholder = t('Izaberite datum'), ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(null);
+  const [month, setMonth] = useState(null);
+  const toggle = (on) => {
+    if (on) {
+      setDraft(value ?? null);
+      setMonth(value ?? today ?? from);
+    }
+    setOpen(on);
+  };
+  // the same day in the month now shown, or its last if it has fewer
+  const moveTo = (m) => {
+    setMonth(m);
+    if (draft) setDraft(new Date(m.getFullYear(), m.getMonth(), Math.min(draft.getDate(), new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate())));
+  };
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={toggle}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -242,22 +259,52 @@ export function DateInput({ value, onChange, from, to, today = from, pickYear, p
         </button>
       </PopoverTrigger>
       <PopoverContent align="end">
-        <Calendar
-          mode="single"
-          captionLayout={pickYear ? 'dropdown' : undefined}
-          selected={value ?? undefined}
-          defaultMonth={value ?? today ?? from}
-          today={today}
-          disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
-          startMonth={from}
-          endMonth={to}
-          onSelect={(d) => {
-            if (!d) return;
-            onChange(d);
-            setOpen(false);
-          }}
-          autoFocus
-        />
+        {pickYear ? (
+          <>
+            <Calendar
+              mode="single"
+              captionLayout="dropdown"
+              selected={draft ?? undefined}
+              month={month ?? undefined}
+              onMonthChange={moveTo}
+              today={today}
+              disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
+              startMonth={from}
+              endMonth={to}
+              onSelect={(d) => d && setDraft(d)}
+              autoFocus
+            />
+            <div className="flex gap-2 p-1 pt-2 [&>*]:flex-1">
+              <Button
+                onClick={() => {
+                  if (draft) onChange(draft);
+                  setOpen(false);
+                }}
+              >
+                {t('Potvrdi')}
+              </Button>
+              <Button variant="secondary" onClick={() => setOpen(false)}>
+                {t('Otkaži')}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Calendar
+            mode="single"
+            selected={value ?? undefined}
+            defaultMonth={value ?? today ?? from}
+            today={today}
+            disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
+            startMonth={from}
+            endMonth={to}
+            onSelect={(d) => {
+              if (!d) return;
+              onChange(d);
+              setOpen(false);
+            }}
+            autoFocus
+          />
+        )}
       </PopoverContent>
     </Popover>
   );
