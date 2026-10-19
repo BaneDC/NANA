@@ -11,8 +11,8 @@ import { t } from '@/i18n';
 // reach the coordinator, from wherever the family is. First the same three
 // rows as her card on the home, each a link; then, for whoever would rather
 // not call, a message to her in their own words: a question, a worry, praise
-// or a complaint. "Pošalji poruku" waits for something to be written; sent,
-// the dialog closes and says who reads it.
+// or a complaint. "Pošalji poruku" with nothing written says so under the
+// field; sent, the dialog closes and says who reads it.
 export default function HelpDialog({ open = true, coordinator, onSend, onClose }) {
   const [text, setText] = useState('');
   const first = coordinator.name.split(' ')[0];
