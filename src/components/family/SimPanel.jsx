@@ -4,6 +4,7 @@ import { SheetDescription } from '@/components/ui/sheet';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint, PaneLabel } from '@/components/pane';
 import Modal from '../Modal';
+import SimForCaregiver from '../SimForCaregiver';
 import { useIsPhone } from '@/hooks/use-phone';
 import {
   activeVersion,
@@ -40,7 +41,24 @@ import {
 // send terms, plan a visit, send a work order, settle a query, and let time
 // pass. Hidden: Ctrl+H opens it, and nothing in it runs on its own.
 
-export default function SimPanel({ open = true, care, onCare, onFlash, onFill, onRenew, onClose }) {
+export default function SimPanel({
+  open = true,
+  role = 'family',
+  market = 'fi',
+  caregiverId,
+  care,
+  onCare,
+  onFlash,
+  onFill,
+  onRenew,
+  onMarket,
+  onSwitch,
+  onReset,
+  onClose,
+}) {
+  // from her side it is the family and the coordinator; in Serbia only requests
+  const caregiver = role === 'caregiver';
+  const rs = market === 'sr';
   // a phone has no Ctrl: it opens from the menu there (AppNav)
   const phone = useIsPhone();
   const [reason, setReason] = useState(DECLINE_REASONS[0]);
@@ -55,8 +73,29 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
   return (
     <Modal eyebrow={phone ? t('Samo za demo') : t('Samo za demo · Ctrl+H')} title={t('Simulacija')} wide open={open} onClose={onClose}>
       <SheetDescription>
-        {t('Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.')}
+        {caregiver
+          ? t('Ono što bi uradile porodica i koordinatorka, ručno. Ništa se ne dešava samo od sebe.')
+          : t('Ono što bi uradile negovateljice i koordinatorka, ručno. Ništa se ne dešava samo od sebe.')}
       </SheetDescription>
+
+      {/* the same on either side: which market, the other side, a fresh start */}
+      {onMarket && (
+        <>
+          <PaneLabel>{t('Tržište')}</PaneLabel>
+          <ToggleGroup type="single" size="sm" value={market} onValueChange={(m) => m && m !== market && onMarket(m)} aria-label={t('Tržište')}>
+            <ToggleGroupItem value="fi">{t('Finska')}</ToggleGroupItem>
+            <ToggleGroupItem value="sr">{t('Srbija')}</ToggleGroupItem>
+          </ToggleGroup>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={onSwitch}>
+              {caregiver ? t('Pređi na porodicu') : t('Pređi na negovateljicu')}
+            </Button>
+            <Button variant="secondary" onClick={onReset}>
+              {t('Počni ispočetka')}
+            </Button>
+          </div>
+        </>
+      )}
 
       {/* the whole example at once, for when clicking through it is not the point */}
       {onFill && (
@@ -88,7 +127,9 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
 
       {/* Stripe's side of the card and the subscription: what the family
           sees in Settings when a charge fails or the card runs out */}
-      {(care.payment?.connected || onRenew) && (
+      {caregiver && <SimForCaregiver care={care} caregiverId={caregiverId} onCare={onCare} onFlash={onFlash} />}
+
+      {!caregiver && !rs && (care.payment?.connected || onRenew) && (
         <>
           <PaneLabel>{t('Kartica i pretplata')}</PaneLabel>
           <div className="flex flex-wrap gap-2">
@@ -114,7 +155,7 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
         </>
       )}
 
-      {pending.length > 0 && (
+      {!caregiver && pending.length > 0 && (
         <>
           <PaneLabel>{t('Upiti koji čekaju')}</PaneLabel>
           <PaneHint>{t('Razlog ako odbije:')}</PaneHint>
@@ -141,7 +182,7 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
         </>
       )}
 
-      {live.map((a) => {
+      {!caregiver && !rs && live.map((a) => {
         const id = a.caregiver.id;
         const first = firstName(a.caregiver.name);
         const act = activeVersion(a);
@@ -229,7 +270,7 @@ export default function SimPanel({ open = true, care, onCare, onFlash, onFill, o
         );
       })}
 
-      {!pending.length && !live.length && (
+      {!caregiver && !pending.length && !live.length && (
         <PaneHint>{t('Još nema ničega za simulaciju. Pošaljite upit nekoj negovateljici.')}</PaneHint>
       )}
     </Modal>

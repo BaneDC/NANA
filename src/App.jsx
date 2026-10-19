@@ -811,21 +811,26 @@ export default function App() {
       {shownSim && (
           <SimPanel
             open={sim && phase === 'app'}
+            role={user.role}
+            market={market}
+            caregiverId={user.caregiverId}
             care={care}
             onCare={setCare}
             onFlash={say}
-            // the whole example in one go, with the subscription it needs
-            onFill={() => {
+            // the whole example in one go, with the subscription it needs;
+            // Finland's for now (Serbia's comes with part 2)
+            onFill={market === 'fi' ? () => {
               setShared(seedState(market, { filled: true }));
               setDrawer(null);
               setView('dashboard');
               setSim(false);
               say(t('Primer je popunjen: dve negovateljice, posete, i dve stvari koje čekaju na vas.'));
-            }}
+            } : undefined}
             // The renewal, from Stripe's side. The subscription keeps real
             // dates and the simulation a clock of its own, so the day it
             // renews is a button rather than days passing.
             onRenew={
+              !caregiverSide &&
               subscription &&
               (() => {
                 if (subscription.cancelled) {
@@ -842,6 +847,14 @@ export default function App() {
                 renewSubscription();
               })
             }
+            // a demo tab becomes someone else: the market, the other side,
+            // or the same as it started (src/data/demo.js)
+            onMarket={DEMO ? (m) => go({ role: user.role, market: m }) : undefined}
+            onSwitch={() => go({ role: caregiverSide ? 'family' : 'caregiver', market })}
+            onReset={() => {
+              store.reset(market);
+              go({ role: user.role, market });
+            }}
             onClose={() => setSim(false)}
           />
       )}
