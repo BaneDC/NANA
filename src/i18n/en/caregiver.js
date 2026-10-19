@@ -331,4 +331,5 @@ export default {
   "švedski": "Swedish",
   "finski": "Finnish",
   "Morate imati najmanje 18 godina.": "You must be at least 18 years old.",
+  "Adresa sa kojom ste napravili nalog.": "The address you created your account with.",
 };

@@ -331,4 +331,5 @@ export default {
   "švedski": "ruotsi",
   "finski": "suomi",
   "Morate imati najmanje 18 godina.": "Sinun on oltava vähintään 18-vuotias.",
+  "Adresa sa kojom ste napravili nalog.": "Osoite, jolla loit tilisi.",
 };

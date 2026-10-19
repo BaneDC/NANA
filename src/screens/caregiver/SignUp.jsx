@@ -251,10 +251,10 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <Field label={t('Broj telefona')} required labelId="su-phone" error={show('phone')}>
             <Phone country={f.phoneCountry} onCountry={(v) => set({ phoneCountry: v })} value={f.phone} onChange={(v) => set({ phone: v })} labelledBy="su-phone" />
           </Field>
-          {/* what she gave on the step before, shown, not asked again */}
-          <Facts>
-            <Fact label={t('Email')}>{account.email}</Fact>
-          </Facts>
+          {/* what she gave on the step before: a field like the others, but off (docs/patterns.md §10) */}
+          <Field label={t('Email')} hint={t('Adresa sa kojom ste napravili nalog.')}>
+            <Input value={account.email} onChange={() => {}} disabled />
+          </Field>
         </FormCard>
         {footer()}
       </>
