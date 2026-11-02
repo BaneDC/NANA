@@ -22,10 +22,14 @@ describe('market', () => {
 });
 
 describe('Serbian packages', () => {
-  it('are two, paid once, as on the site', () => {
-    const [m, q] = plansFor('RS');
-    expect([m.price, m.months, m.once]).toEqual([43, 1, true]);
-    expect([q.price, q.months, q.was, q.once, q.recommended]).toEqual([98, 3, 129, true, true]);
+  it('are three, a month each, paid once, as on the site', () => {
+    const plans = plansFor('RS');
+    expect(plans.map((p) => [p.id, p.price, p.months, p.once])).toEqual([
+      ['starter', 9, 1, true],
+      ['guided', 25, 1, true],
+      ['premium', 49, 1, true],
+    ]);
+    expect(plans.filter((p) => p.recommended).map((p) => p.id)).toEqual(['premium']);
   });
 
   it('Finland still subscribes', () => {
@@ -36,9 +40,9 @@ describe('Serbian packages', () => {
 describe('a package runs out', () => {
   const at = new Date(2026, 9, 19).getTime();
   it('is valid until its months have passed, then over', () => {
-    const sub = { planId: 'monthly', at };
+    const sub = { planId: 'starter', at };
     expect(packageOver('RS', sub, at + 1000)).toBe(false);
-    expect(packageOver('RS', sub, renewalAt('RS', 'monthly', at))).toBe(true);
+    expect(packageOver('RS', sub, renewalAt('RS', 'starter', at))).toBe(true);
   });
   it('a Finnish subscription is never over this way', () => {
     expect(packageOver('FI', { planId: 'monthly', at }, at + 400 * 864e5)).toBe(false);

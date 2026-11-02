@@ -3,16 +3,14 @@ import { getLang, locale, msg, t } from '../i18n';
 
 // What the subscription costs, per market.
 //
-// Serbia has one plan and always will: a family deciding whether to pay at all
-// should not also be deciding between two ways to pay. Finland has two, because
-// paying for three at once is how that market expects to be offered a discount.
+// Serbia has three one-month packages, told apart by how much of the team's
+// help they include. Finland has two subscriptions, because paying for three
+// months at once is how that market expects to be offered a discount.
 //
 // Which market a family is in comes from the country they registered with, not
 // from the language they read in.
 //
-// Everything is in euros now, the demo being prepared for Finland. Serbia's
-// one plan is its dinar price converted (1.490 RSD at ~117 RSD to the euro),
-// until its own euro price and options are decided.
+// Everything is in euros, in both markets.
 //
 // Finland has two subscriptions: Basic, 9,99 € a month, and Premium, 17,99 €
 // for three months. Every line below is the live platform's plan picker
@@ -50,42 +48,53 @@ const QUARTERLY = {
   ],
 };
 
-// Serbia's two packages, word for word from nanaprime.com/sr/pricing (19. 10.).
-// Paid once, never renewed: `once`. Models are still being tried, so what a
-// package is lives only here (docs/superpowers/specs/2026-10-19-porodica-srbija-design.md).
-const RS_MONTHLY = {
-  name: msg('Mesečni paket'),
-  tagline: msg('Fleksibilnost kada vam je potrebna'),
-  description: msg('Za porodice koje žele brzo da pronađu pouzdanu negovateljicu, bez dugoročnih obaveza.'),
+// Serbia's three packages, word for word from nanaprime.com/sr/pricing (2. 11.).
+// Each is paid once and lasts a month, never renewed: `once`. Models are still
+// being tried, so what a package is lives only here
+// (docs/superpowers/specs/2026-10-19-porodica-srbija-design.md).
+const RS_STARTER = {
+  name: msg('Početni paket'),
+  tagline: msg('Podrška putem mejla'),
+  description: msg('Za porodice koje žele same da pronađu negovateljicu i kojima je dovoljna pisana podrška našeg tima.'),
+  lead: msg('Uključeno:'),
   benefits: [
-    msg('Pristup bazi proverenih negovateljica'),
-    msg('Pomoć pri pronalaženju odgovarajuće negovateljice'),
-    msg('Besplatan uvodni razgovor od 30 minuta sa koordinatorom'),
-    msg('Direktna komunikacija sa negovateljicama'),
-    msg('Zamena negovateljice u hitnim slučajevima, bez dodatnih troškova'),
-    msg('Bez posrednika i skrivenih troškova'),
-    msg('14-dnevna garancija povraćaja novca - ako ne pronađete odgovarajuću negovateljicu, vraćamo vam 100% novca'),
+    msg('Pristup preporučenim negovateljicama: Pregledate profile i sami birate sa kim želite da ostvarite saradnju.'),
+    msg('Procena potrebe za negom putem mejla (na zahtev): Na osnovu upitnika koji ste popunili, šaljemo vam procenu potrebe za negom i preporuku najpogodnijeg vida nege (negovatelj u kući, dom za stare ili medicinska/bolnička nega).'),
+    msg('Podrška putem mejla: Na vaša pitanja odgovaramo pisanim putem.'),
   ],
+  footnote: msg('Napomena: Komunikacija u ovom paketu odvija se isključivo putem mejla. Razgovor sa koordinatorom nege nije uključen.'),
 };
-const RS_QUARTERLY = {
-  name: msg('Tromesečni paket'),
-  tagline: msg('Više podrške. Više sigurnosti. Manje brige.'),
-  description: msg('Naš najpopularniji paket za porodice koje žele sigurnost, kontinuitet i ličnu podršku tokom dugoročnog zbrinjavanja.'),
-  lead: msg('Sve iz Mesečnog paketa, plus:'),
+const RS_GUIDED = {
+  name: msg('Vođeni paket'),
+  tagline: msg('Jedan razgovor sa koordinatorom + podrška putem mejla'),
+  description: msg('Za porodice koje žele same da izaberu negovateljicu, ali uz jedan razgovor sa stručnjakom kako bi od početka napravile pravi izbor.'),
+  lead: msg('Sve iz Početnog paketa, plus:'),
   benefits: [
-    msg('Prioritet pri pronalaženju negovateljice'),
-    msg('Personalizovani plan nege prilagođen potrebama vaše porodice'),
-    msg('Prioritetna podrška koordinatora kada vam je potrebna pomoć'),
-    msg('Kontinuirana podrška u planiranju dugoročne nege'),
-    msg('Pomoć pri organizaciji dodatnih usluga, kao što su lekar ili rehabilitacija'),
-    msg('Personalizovani vodič za kućnu negu'),
+    msg('Jedan razgovor sa koordinatorom nege: Opišete situaciju člana porodice, dobijete više informacija o negovateljicama i objašnjenje kako ceo proces funkcioniše.'),
+    msg('Praktični saveti iz oblasti nege putem mejla (na zahtev): Na osnovu upitnika o starijem članu porodice šaljemo vam konkretne savete za negu.'),
+    msg('Predlog rešenja prema vašem budžetu (na zahtev): Putem mejla dobijate preporuku koja vrsta nege i angažovanja vam najviše odgovara za budžet kojim raspolažete.'),
+  ],
+  footnote: msg('Napomena: Paket uključuje jedan razgovor sa koordinatorom; dalja komunikacija odvija se putem mejla. Stalna podrška koordinatora, personalizovani plan nege i garancija povraćaja novca dostupni su isključivo u Premium paketu.'),
+};
+const RS_PREMIUM = {
+  name: msg('Premium paket'),
+  tagline: msg('Puna podrška koordinatora tokom celog meseca'),
+  description: msg('Za porodice koje žele potpunu podršku i bezbrižnost, uz posvećenog koordinatora tokom celog procesa.'),
+  lead: msg('Sve iz Vođenog paketa, plus:'),
+  benefits: [
+    msg('Posvećeni koordinator nege tokom celog meseca: Dostupan vam je za razgovore i pitanja tokom celog trajanja paketa.'),
+    msg('Personalizovani plan nege (na zahtev, putem mejla): Plan prilagođen dnevnoj rutini i stanju vašeg člana porodice.'),
+    msg('Konkretna pomoć pri izboru negovateljice: Učestvujemo u razgovorima sa kandidatkinjama i pomažemo pri uvođenju izabrane negovateljice u posao.'),
+    msg('Prioritetni odgovor našeg tima.'),
+    msg('Garancija povraćaja novca u roku od 14 dana: Ako ne pronađemo odgovarajuću negovateljicu, vraćamo vam 100% uplaćenog iznosa.'),
   ],
 };
 
 const PLANS = {
   RS: [
-    { id: 'monthly', months: 1, price: 43, currency: 'EUR', once: true, ...RS_MONTHLY },
-    { id: 'quarterly', months: 3, price: 98, was: 129, currency: 'EUR', once: true, recommended: true, badge: msg('Najpopularnije'), ...RS_QUARTERLY },
+    { id: 'starter', months: 1, price: 9, currency: 'EUR', once: true, ...RS_STARTER },
+    { id: 'guided', months: 1, price: 25, currency: 'EUR', once: true, ...RS_GUIDED },
+    { id: 'premium', months: 1, price: 49, currency: 'EUR', once: true, recommended: true, badge: msg('Preporučeno'), ...RS_PREMIUM },
   ],
   FI: [
     { id: 'monthly', months: 1, price: 9.99, currency: 'EUR', ...MONTHLY },

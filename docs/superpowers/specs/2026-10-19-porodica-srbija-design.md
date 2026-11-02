@@ -36,6 +36,8 @@ Ekrani pitaju:
 
 ## Paketi
 
+> **Izmena 2. 11. 2026.:** dva paketa ispod zamenjena su sa tri jednomesečna, kao na `nanaprime.com/sr/pricing`: `starter` „Početni paket" 9 €, `guided` „Vođeni paket" 25 €, `premium` „Premium paket" 49 € (značka „Preporučeno"). Svaki se plaća jednom i ne obnavlja se. Tekst je u `src/data/plans.js`; tabela ispod je istorija.
+
 U `src/data/plans.js`, umesto današnjeg srpskog plana (12,7 € mesečno):
 
 | | `monthly` | `quarterly` |

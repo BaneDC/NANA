@@ -18,7 +18,9 @@ import { t } from '../i18n';
 // than by a price and a name. The one we would rather sell is ringed and says
 // so; its button is the primary one, and on a phone it comes first. The buttons
 // sit at the foot of each card, full width, so they line up however long the
-// lists are (docs/patterns.md §5).
+// lists are (docs/patterns.md §5). The cards side by side share their rows
+// (subgrid, five parts each), so a line that wraps in one card moves that part
+// down in all of them, and prices, descriptions and lists line up.
 //
 // Changing plans (`current`): the plan they are on, or already moving to, has
 // no button to press, only "Vaš paket"; the other one says where it takes them.
@@ -26,7 +28,7 @@ function PlanCard({ plan, plans, current, onChoose }) {
   const mine = current === plan.id;
   const saving = planSaving(plan, plans);
   return (
-    <Card className={cn('gap-3', plan.recommended && 'shadow-[0_0_0_1px_var(--primary),var(--shadow-card)] phone:-order-1')}>
+    <Card className={cn('row-span-5 grid grid-rows-subgrid gap-3', plan.recommended && 'shadow-[0_0_0_1px_var(--primary),var(--shadow-card)] phone:-order-1')}>
       <CardHeader>
         <CardTitle>{t(plan.name)}</CardTitle>
         {plan.recommended && (
@@ -72,6 +74,8 @@ function PlanCard({ plan, plans, current, onChoose }) {
             </li>
           ))}
         </CheckList>
+        {/* what the package leaves out, as the site says it under the list */}
+        {plan.footnote && <p className="pt-2 text-small leading-body text-muted-foreground">{t(plan.footnote)}</p>}
       </div>
 
       <CardFooter className="mt-auto pt-2">
@@ -102,7 +106,7 @@ function PlanCard({ plan, plans, current, onChoose }) {
 // The message is a dialog like any other (docs/patterns.md §7): its action row
 // held on the floor while a long message scrolls, so the field can never push
 // the buttons off the screen. The plans are the same dialog, wider (880, 480
-// with one plan), 16 between its parts. On a phone both are a bottom sheet.
+// with one plan, 1120 with three), 16 between its parts. On a phone both are a bottom sheet.
 //
 // From Settings it also changes the plan (`current`, `startsOn`): the same
 // cards, and the new plan starts at the next renewal, so nothing is charged
@@ -121,7 +125,7 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
       <Dialog
         open={open}
         onClose={onClose}
-        className={cn('gap-4', plans.length === 1 ? 'max-w-[480px]' : 'max-w-[880px]')}
+        className={cn('gap-4', plans.length === 1 ? 'max-w-[480px]' : plans.length === 2 ? 'max-w-[880px]' : 'max-w-[1120px]')}
         closeClassName="top-4"
         header={(Title) => (
           <div className="flex flex-col gap-1 pr-8 phone:pt-2 phone:pr-12">
@@ -142,7 +146,10 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
           </div>
         )}
       >
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
+        {/* two plans sit side by side while each has 280, else one under the
+            other; three are a row of three, or one under the other below 900,
+            never two and then one */}
+        <div className={cn('grid gap-4', plans.length > 2 ? 'grid-cols-3 narrow:grid-cols-1' : 'grid-cols-[repeat(auto-fit,minmax(280px,1fr))]')}>
           {plans.map((p) => (
             <PlanCard key={p.id} plan={p} plans={plans} current={current} onChoose={onPay} />
           ))}

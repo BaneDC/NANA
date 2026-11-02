@@ -32,7 +32,7 @@ Prototip (bez servera, sve u pregledaču) dobija drugu stranu: negovateljica se 
 
 | | Finska | Srbija |
 |---|---|---|
-| Šta porodica plaća platformi | pretplata Basic / Premium | jednokratni paket: mesečni (43 €) ili tromesečni (98 €), ne obnavlja se sam |
+| Šta porodica plaća platformi | pretplata Basic / Premium | jednokratni paket od mesec dana: Početni (9 €), Vođeni (25 €) ili Premium (49 €), ne obnavlja se sam |
 | Novac za negu | ide preko platforme: rezervacija, radni nalog, naplata posle 24 h, isplata negovateljici (Stripe) | ne ide preko platforme; dogovaraju se telefonom |
 | Posle prihvaćenog upita | ugovor o nezi (verzije), plan posete, radni nalog, zarada | samo kontakt: porodica vidi telefon i e-mail negovateljice, negovateljica vidi profil klijenta sa kontaktom |
 | „Moja nega" porodice | plan nege, a posle prihvaćenog ugovora pregled (dashboard) | uvek samo plan nege |

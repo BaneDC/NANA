@@ -100,20 +100,33 @@ export default function Dialog({
         wide={wide}
         className={cn(FIELD_OUT, className)}
         tabIndex={-1}
-        showCloseButton={dismissible && Boolean(header)}
+        showCloseButton={false}
         onOpenAutoFocus={focusPane}
         onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
         onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
       >
-        {head(
-          DialogTitle,
-          dismissible && (
-            <DialogClose className={cn(paneCloseClass, 'shrink-0')}>
+        {/* the head stays while a long body scrolls under it, as the footer
+            does at the bottom and as a sheet's head does on a phone; its 12
+            underneath covers what passes beneath it, and gives back the gap */}
+        <div data-slot="dialog-sticky-head" className="sticky -top-6 z-2 -mx-6 -mt-6 -mb-3 bg-card px-6 pt-6 pb-3">
+          {head(
+            DialogTitle,
+            dismissible && !header && (
+              <DialogClose className={cn(paneCloseClass, 'shrink-0')}>
+                <X className="size-4" strokeWidth={1.75} />
+                <span className="sr-only">{t('Zatvori')}</span>
+              </DialogClose>
+            )
+          )}
+          {/* a head of its own keeps the close in the corner, inside the part
+              that stays */}
+          {dismissible && header && (
+            <DialogClose className={cn(paneCloseClass, 'absolute top-3 right-3')}>
               <X className="size-4" strokeWidth={1.75} />
               <span className="sr-only">{t('Zatvori')}</span>
             </DialogClose>
-          )
-        )}
+          )}
+        </div>
         {children}
       </DialogContent>
     </DialogRoot>
