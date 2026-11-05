@@ -32,13 +32,15 @@ const CHANNELS = [
   ['meet', msg('Google Meet ili Zoom')],
 ];
 
-function Chips({ label, value, onChange, options, multiple = true, required, error }) {
+// cols: the chips in a grid, each as wide as its cell (docs/patterns.md §10),
+// for short answers; long ones keep wrapping
+function Chips({ label, value, onChange, options, multiple = true, required, error, cols }) {
   return (
     <Field label={label} required={required}>
       <ToggleGroup
         type={multiple ? 'multiple' : 'single'}
         size="sm"
-        className="flex-wrap"
+        className={cols ? `grid *:w-full ${cols}` : 'flex-wrap'}
         value={value}
         onValueChange={(v) => (multiple ? onChange(v) : v && onChange(v))}
         aria-label={label}
@@ -58,8 +60,9 @@ const yesNo = [
   ['no', msg('Ne')],
   ['yes', msg('Da')],
 ];
+// two answers, so two equal columns, wherever it is in the form
 function YesNo({ label, value, onChange }) {
-  return <Chips label={label} multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
+  return <Chips label={label} cols="grid-cols-2" multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
 }
 
 export default function CaregiverSignUp({ onDone, onBack, onForm }) {
@@ -338,6 +341,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             <Chips
               label={t('Angažman')}
               required
+              cols="grid-cols-2"
               value={f.engagement}
               onChange={(v) => set({ engagement: v })}
               options={[
@@ -349,11 +353,12 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
           </div>
         )}
-        <Chips label={t('Koje dane želite da radite?')} required value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
+        <Chips label={t('Koje dane želite da radite?')} required cols="grid-cols-7 phone:grid-cols-4" value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
         <div className="flex flex-col gap-3">
           <Chips
             label={t('Izaberite raspored koji vam najviše odgovara')}
             required
+            cols="grid-cols-2"
             value={f.slots}
             onChange={(v) => set({ slots: v })}
             options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])}

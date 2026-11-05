@@ -117,7 +117,7 @@ function FieldLabel({
     <Label
       data-slot="field-label"
       className={cn(
-        "group/field-label peer/field-label flex w-fit gap-2 px-3 group-data-[disabled=true]/field:opacity-50",
+        "group/field-label peer/field-label flex w-fit gap-2 group-data-[disabled=true]/field:opacity-50",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
         "has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 dark:has-data-[state=checked]:bg-primary/10",
         className
@@ -149,7 +149,7 @@ function FieldDescription({
     <p
       data-slot="field-description"
       className={cn(
-        "px-3 text-small font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance",
+        "text-small font-normal text-muted-foreground group-has-[[data-orientation=horizontal]]/field:text-balance",
                 "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className
       )}
@@ -222,7 +222,7 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("px-3 text-xs font-normal text-destructive", className)}
+      className={cn("text-xs font-normal text-destructive", className)}
       {...props}>
       {content}
     </div>

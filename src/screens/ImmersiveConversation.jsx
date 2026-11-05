@@ -235,7 +235,7 @@ function Cards({ question, onPick, onSend, sr }) {
   // "Dalje" pressed with nothing chosen: it says so above itself, and goes as
   // soon as something is (docs/patterns.md §9, §10)
   const [tried, setTried] = useState(false);
-  const missing = (none) => tried && none && <FieldError className="basis-full pb-2 text-right">{requiredError()}</FieldError>;
+  const missing = (none) => tried && none && <FieldError className="basis-full px-3 pb-2 text-right">{requiredError()}</FieldError>;
 
   const label = (o) => t(sr.options?.[o.id] || o.title);
   const none = sr.empty ? t(sr.empty) : t('Ništa od toga');

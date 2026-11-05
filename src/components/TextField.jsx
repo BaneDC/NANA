@@ -26,8 +26,8 @@ import { t } from '../i18n';
 // the profile, the caregiver's forms, sign-up — so a field looks and behaves
 // the same wherever someone meets it.
 //
-// `Field` is the label over the control and the hint under it, both in 12 from
-// the edge, where the text in the field starts. The control inside takes the
+// `Field` is the label over the control and the hint under it, both at the
+// control's left edge (docs/patterns.md §10). The control inside takes the
 // field's id, so the label points at it. `onChange` hands back the value, not
 // the event.
 //
