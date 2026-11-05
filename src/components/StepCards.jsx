@@ -125,7 +125,9 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
                   {sub && <p className="text-xs leading-body text-muted-foreground">{sub}</p>}
                 </div>
               </div>
-              <div ref={fields} className="flex flex-col gap-4">
+              {/* a question a row: 16, a line, 16, as rows in a card (§6);
+                  a note goes with its question, in one child */}
+              <div ref={fields} className="flex flex-col gap-4 [&>*+*]:border-t [&>*+*]:border-border [&>*+*]:pt-4">
                 {children}
               </div>
               <div className="flex justify-end phone:*:flex-1">

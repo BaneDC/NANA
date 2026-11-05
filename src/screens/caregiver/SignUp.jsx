@@ -283,26 +283,29 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     profession: (
       <>
         {/* each classification with what it is and whether it needs a
-            document, together: a grey row each in the white card */}
-        <Field label={t('Klasifikacije')} required hint={t('Izaberite sve koje važe. Za neke klasifikacije treba priložiti sertifikat.')} error={show('classifications')}>
-          <div className="flex flex-col gap-2">
-            {CLASSIFICATIONS.map((c) => (
-              <label key={c.id} className="flex cursor-pointer items-start gap-3 rounded-lg bg-muted p-3">
-                <Checkbox
-                  checked={f.classifications.includes(c.id)}
-                  onCheckedChange={(on) => set({ classifications: on ? [...f.classifications, c.id] : f.classifications.filter((x) => x !== c.id) })}
-                  className="mt-0.5"
-                />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-xs font-medium text-foreground">{c.id}</span>
-                  <span className="text-xs leading-body text-muted-foreground">{t(c.text)}</span>
-                </span>
-                <Badge variant={c.document ? 'warning' : 'secondary'}>{c.document ? t('Potreban sertifikat') : t('Bez dokumenta')}</Badge>
-              </label>
-            ))}
-          </div>
-        </Field>
-        {documentsNeeded(f).length > 0 && <PaneHint>{t('Sertifikate za označene klasifikacije prilažete u sledećem delu prijave.')}</PaneHint>}
+            document, together: a grey row each in the white card; the hint
+            on documents goes with them, under the same line */}
+        <div className="flex flex-col gap-3">
+          <Field label={t('Klasifikacije')} required hint={t('Izaberite sve koje važe. Za neke klasifikacije treba priložiti sertifikat.')} error={show('classifications')}>
+            <div className="flex flex-col gap-2">
+              {CLASSIFICATIONS.map((c) => (
+                <label key={c.id} className="flex cursor-pointer items-start gap-3 rounded-lg bg-muted p-3">
+                  <Checkbox
+                    checked={f.classifications.includes(c.id)}
+                    onCheckedChange={(on) => set({ classifications: on ? [...f.classifications, c.id] : f.classifications.filter((x) => x !== c.id) })}
+                    className="mt-0.5"
+                  />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-xs font-medium text-foreground">{c.id}</span>
+                    <span className="text-xs leading-body text-muted-foreground">{t(c.text)}</span>
+                  </span>
+                  <Badge variant={c.document ? 'warning' : 'secondary'}>{c.document ? t('Potreban sertifikat') : t('Bez dokumenta')}</Badge>
+                </label>
+              ))}
+            </div>
+          </Field>
+          {documentsNeeded(f).length > 0 && <PaneHint>{t('Sertifikate za označene klasifikacije prilažete u sledećem delu prijave.')}</PaneHint>}
+        </div>
         <Field label={t('Nivo obrazovanja')} required error={show('education')}>
           <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
         </Field>
@@ -331,7 +334,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     availability: (
       <>
         {sr && (
-          <>
+          <div className="flex flex-col gap-3">
             <Chips
               label={t('Angažman')}
               required
@@ -344,19 +347,21 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
               error={show('engagement')}
             />
             {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
-          </>
+          </div>
         )}
         <Chips label={t('Koje dane želite da radite?')} required value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
-        <Chips
-          label={t('Izaberite raspored koji vam najviše odgovara')}
-          required
-          value={f.slots}
-          onChange={(v) => set({ slots: v })}
-          options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])}
-          error={show('slots')}
-        />
-        {/* easy to miss as small grey text, and it changes what the choice means */}
-        {f.slots.length > 1 && <Note>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</Note>}
+        <div className="flex flex-col gap-3">
+          <Chips
+            label={t('Izaberite raspored koji vam najviše odgovara')}
+            required
+            value={f.slots}
+            onChange={(v) => set({ slots: v })}
+            options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])}
+            error={show('slots')}
+          />
+          {/* easy to miss as small grey text, and it changes what the choice means */}
+          {f.slots.length > 1 && <Note>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</Note>}
+        </div>
         {sr && <YesNo label={t('Rad u inostranstvu')} value={f.abroad} onChange={(v) => set({ abroad: v })} />}
         <Radius value={f.radius} onChange={(v) => set({ radius: v })} />
         {sr ? (
