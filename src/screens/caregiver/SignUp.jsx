@@ -1,11 +1,11 @@
-import { Fragment, useEffect, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Fact, Facts } from '@/components/data-list';
 import { PaneHint } from '@/components/pane';
-import { cn } from '@/lib/utils';
+import Tray from '@/components/Tray';
+import PersonalityTest from './PersonalityTest';
 import { Actions, Consent, FormCard, Welcome, column } from '../Register';
 import { Radius } from '../../components/caregiver/ProfileForms';
 import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Password, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
@@ -14,9 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
 import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
-import { PAIRS, TRAITS, traitOf } from '../../data/personalityTest';
 import { SLOTS, daysText } from '../../data/carePlan';
-import { msg, t } from '@/i18n';
+import { locale, msg, t } from '@/i18n';
 
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // where she wants to work, her account, the steps of the form for that market,
@@ -414,31 +413,38 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   if (screen === 'review') {
     const go = (id) => setScreen(id);
+    // a tray per step: its title and Izmenite on the grey, what was filled in
+    // on a white card (docs/patterns.md §5)
     const card = (title, id, rows) => (
-      <FormCard key={id}>
-        <div className="flex items-center gap-2">
-          <p className="flex-1 text-sm font-medium text-foreground">{title}</p>
+      <Tray
+        key={id}
+        className={column}
+        title={title}
+        action={
           <Button variant="secondary" onClick={() => go(id)}>
             {t('Izmenite')}
           </Button>
-        </div>
-        <Facts>
-          {rows
-            .filter(Boolean)
-            .map(([label, value]) => (
-              <Fact key={label} label={label}>
-                {value || '-'}
-              </Fact>
-            ))}
-        </Facts>
-      </FormCard>
+        }
+      >
+        <Card>
+          <Facts>
+            {rows
+              .filter(Boolean)
+              .map(([label, value]) => (
+                <Fact key={label} label={label}>
+                  {value || '-'}
+                </Fact>
+              ))}
+          </Facts>
+        </Card>
+      </Tray>
     );
     return (
       <>
         {head}
         {card(t('Osnovni podaci'), 'basic', [
           [t('Ime i prezime'), `${f.firstName} ${f.lastName}`],
-          [t('Datum rođenja'), f.birth],
+          [t('Datum rođenja'), f.birth && new Date(f.birth).toLocaleDateString(locale())],
           [t('Adresa'), f.address],
           [t('Opština'), f.area],
           [t('Telefon'), f.phone],
@@ -484,7 +490,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     );
 
   if (screen === 'test')
-    return <TestScreen f={f} set={set} show={show} footer={footer} />;
+    return <PersonalityTest f={f} set={set} onBack={back} onSend={next} />;
 
   if (screen === 'interview')
     return (
@@ -522,57 +528,6 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           {t('Na početnu')}
         </Button>
       </Actions>
-    </>
-  );
-}
-
-// The personality test, all on one page for now (B); one pair a screen (A) is
-// the designer's other option (§ Registracija negovateljice in patterns.md).
-function TestScreen({ f, set, show, footer }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <Welcome title={t('Test ličnosti')} sub={t('{n} parova osobina', { n: PAIRS.length })} />
-      <FormCard>
-        <p className="text-xs leading-body text-foreground">
-          {t('U svakom paru izaberite osobinu koja vas bolje opisuje. Pre toga pročitajte šta koja znači. Svaki par gledajte za sebe: normalno je da istu osobinu ne birate uvek.')}
-        </p>
-        <Collapsible open={open} onOpenChange={setOpen}>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="-ml-3 self-start" aria-expanded={open}>
-              {t('Definicije osobina')}
-              <ChevronDown size={14} strokeWidth={1.75} className={cn('transition-transform duration-200', open && 'rotate-180')} />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2">
-            <Facts>
-              {TRAITS.map((x) => (
-                <Fact key={x.id} label={t(x.name)}>
-                  {t(x.text)}
-                </Fact>
-              ))}
-            </Facts>
-          </CollapsibleContent>
-        </Collapsible>
-      </FormCard>
-      <FormCard>
-        {PAIRS.map(([a, b], i) => (
-          <Fragment key={i}>
-            <Chips
-              label={t('Par {n}', { n: i + 1 })}
-              multiple={false}
-              value={f.test[i] == null ? '' : String(f.test[i])}
-              onChange={(v) => set({ test: { ...f.test, [i]: Number(v) } })}
-              options={[
-                ['0', t(traitOf(a).name)],
-                ['1', t(traitOf(b).name)],
-              ]}
-            />
-          </Fragment>
-        ))}
-        {show('test') && <FieldError>{show('test')}</FieldError>}
-      </FormCard>
-      {footer(t('Pošalji test'))}
     </>
   );
 }

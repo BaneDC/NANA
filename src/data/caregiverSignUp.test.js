@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PAIRS } from './personalityTest';
+import { PAIRS, traitOf } from './personalityTest';
 import { adult, afterSteps, emptyForm, recordFrom, stepErrors } from './caregiverSignUp';
 
 const filled = (market) => ({
@@ -20,11 +20,12 @@ const filled = (market) => ({
 });
 
 describe('personality test', () => {
-  it('has 62 pairs, none twice, the first six as on the screenshot', () => {
+  it('has the live platform 62 pairs, none twice, each of the twelve traits', () => {
     expect(PAIRS.length).toBe(62);
     expect(new Set(PAIRS.map((p) => [...p].sort().join())).size).toBe(62);
     expect(PAIRS[0]).toEqual(['warm', 'adventurous']);
-    expect(PAIRS[5]).toEqual(['brooding', 'careful']);
+    expect(PAIRS[61]).toEqual(['obedient', 'sociable']);
+    expect(PAIRS.flat().every(traitOf)).toBe(true);
   });
 });
 

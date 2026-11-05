@@ -1,6 +1,7 @@
 import * as React from "react"
 // shadcn's slider, dressed to docs/patterns.md: a 4-tall track (the 4 grid),
-// token colours, and on a touch screen a 44-tall row and a bigger handle (§9).
+// token colours (the track on --input, as a field's line, so it shows on a
+// grey card too), and on a touch screen a 44-tall row and a bigger handle (§9).
 // The handle is round, as a switch's is; the "never a full pill" rule is for
 // chips and badges.
 import { cn } from "@/lib/utils"
@@ -40,7 +41,7 @@ function Slider({
       <SliderPrimitive.Track
         data-slot="slider-track"
         className={cn(
-          "relative grow overflow-hidden rounded-sm bg-muted data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1"
+          "relative grow overflow-hidden rounded-sm bg-input data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1"
         )}
       >
         <SliderPrimitive.Range

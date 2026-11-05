@@ -1453,3 +1453,93 @@
   position: relative;
   z-index: 1;
 }
+
+/* The caregiver's personality test (docs/patterns.md §12d): this language, one
+   pair a screen. Under the app's dialogs and sheets (z-20), which it opens. */
+.immersive.is-test {
+  z-index: 10;
+}
+
+/* words, on a phone too: there is room here, and a glyph would not say which */
+.imm-ctl.is-text {
+  width: auto;
+  padding: 0 var(--spacing-3);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  white-space: nowrap;
+}
+
+.imm-test-bar {
+  width: 100%;
+  max-width: 240px;
+  height: 4px;
+  margin-bottom: var(--spacing-4);
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: rgba(122, 92, 70, 0.13);
+}
+
+.imm-test-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.imm-options.is-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* one height for every pair, so the cards stay under the finger */
+.imm-option.is-trait {
+  align-items: flex-start;
+  min-height: 112px;
+}
+
+.imm-option.is-trait .imm-option-title {
+  font-size: var(--text-base-size);
+  line-height: var(--text-base-leading);
+}
+
+.imm-option-sub {
+  margin-top: var(--spacing-1);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-body-leading);
+  color: #6d5c4e;
+}
+
+/* lands under the buttons it points at, once */
+.imm-nudge {
+  position: absolute;
+  top: calc(100% + var(--spacing-2));
+  right: 0;
+  width: max-content;
+  max-width: 240px;
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius-lg);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.24);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-leading);
+  text-align: left;
+}
+
+.imm-nudge::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: var(--spacing-6);
+  width: 12px;
+  height: 6px;
+  background: inherit;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+@media (max-width: 640px) {
+  .imm-options.is-pair {
+    grid-template-columns: 1fr;
+  }
+}

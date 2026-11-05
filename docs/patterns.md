@@ -251,6 +251,7 @@ Nema vođene ture, tooltipova preko ekrana ni koraka „Dalje". Tura se preskač
 - **Deo je površine na kojoj stoji**, ne lebdi preko nje: rečenica na stranici (`FirstTime`, `src/components/FirstTime.jsx`: tekst kartice, sivo, u liniji sa tekstom u karticama), prazno stanje razgovora, tekst u prozoru. Nema strelice, tačke koja pulsira ni isticanja dugmeta.
 - **Ono što važi uvek i tiče se novca ne ide u „Prvi put"**, nego je stalan tekst: šta košta upit, kad se naplaćuje poseta, do kada se otkazuje bez naplate.
 - **Gde je sada:** prvo otvaranje asistenta (prazno stanje kaže čemu služi i da se ništa ne menja bez potvrde; posle prvog poslatog pitanja je kratko „Kako mogu da pomognem?"), i medicinski karton (rečenica da se ne menja ručno, dok porodica ne prijavi prvu promenu; §10a).
+- **Jedini izuzetak je test ličnosti** (§12d; odlučeno 5. 11.): prozor sa „Dalje" i oblačić sa strelicom. Prozor je deo zadatka, jer klijent traži da se uputstvo i definicije pročitaju pre izbora. Oblačić se pokazuje jednom. I tu se „prvi put" čita iz stanja: nijedan par još nije izabran.
 - **Šta košta upit kaže se isto svuda** (`requestNote` u `src/data/firstSteps.js`): bez pretplate „Slanje upita je deo pretplate (od 9,99 € mesečno). Sam upit nikoga ne obavezuje…", sa pretplatom bez cene. Nigde više ne piše da upit „ništa ne košta".
 
 ---
@@ -294,6 +295,17 @@ Nema vođene ture, tooltipova preko ekrana ni koraka „Dalje". Tura se preskač
 - Glava može biti i nešto drugo (`head`): Minnino pismo ima avatar i „Sakrij poruku", izmena plana ikonicu.
 - **Prazna stranica je isto ovo** (odlučeno 6. 10.): svaka prazna stranica izgleda kao „Sledeći korak" na Mojoj nezi. Naslov kaže šta nedostaje („Još niste poslali nijedan upit", „Nema aktivnog plana", „Ovde još nema ničega"), a bela kartica ispod rečenicu šta da se uradi i jedno dugme levo u `CardFooter`. Prazno bez akcije je ista stvar bez dugmeta (kao „Ništa ne čeka"). Siva ploča `Empty` je uklonjena iz projekta (6. 10.) i ne vraća se.
 - Samo za: ono što čeka na porodicu („Čeka na vas"), obaveštenje gde su stvari (sledeći korak na njenoj stranici **uvek, i kad nema dugmeta** — „Ništa ne čeka", „Prihvatila je", „Uslovi su odbijeni"…; „Ništa ne čeka" na Mojoj nezi; „Čeka se odgovor" i „Stigli su odgovori"), „Sledeći korak" pre prvog upita, „Upoznavanje nije završeno", Minnino pismo i izmenu plana. Obaveštenje bez dugmeta je i dalje narandžasti deo sa belom karticom, a ne bela kartica sama. Nema druge narandžaste kartice.
+
+**Siva ploča (odlučeno 29. 10.):** `Tray` (`src/components/Tray.jsx`). Isti oblik kao narandžasti deo, ali na sivom (`bg-muted`), za grupu koja ne traži pažnju. Na ploči je samo glava: naslov (16, `text-foreground`) i, ako ga ima, jedno dugme desno. Sve ostalo su obične bele `Card` sa senkom.
+
+```jsx
+<Tray title="Osnovni podaci" action={<Button variant="secondary">Izmenite</Button>}>
+  <Card><Facts>…</Facts></Card>
+</Tray>
+```
+
+- Mere su kao kod `Attention`: r32, padding 8, kartica r24 (32 = 24 + 8), 8 između kartica; naslov 24 od leve ivice i 12 iznad prve kartice. Dugme u glavi je 16 od vrha i 16 od desne ivice, a naslov stoji u sredini njegove visine.
+- Koristi se za pregled pre slanja u registraciji negovateljice (§12d). Kolone table negovateljice (§12c) su isti oblik, ali još imaju svoju funkciju `Column` u `Board.jsx`.
 
 **Grupa kartica** se koristi samo kad stranica ima više od jedne grupe:
 
@@ -716,13 +728,17 @@ Aplikacija je na srpskom, engleskom i finskom. Tržište ostaje finsko: imena lj
 
 ## 12d. Registracija negovateljice (odlučeno 19. 10.; ceo deo je predlog, čeka dizajnera)
 
-- **Tok:** „Ko ste?" › „Negovateljica" › „Gde želite da radite?" (Srbija / Finska, dugmad preko cele širine) › nalog (e-mail, lozinka, dve saglasnosti) › koraci forme › posle slanja: dokumenti (Finska, samo za klasifikacije koje ih traže) ili test ličnosti (Srbija) › razgovor sa koordinatorkom (kanal: WhatsApp, Viber, Google Meet ili Zoom) › „Hvala". Sve je u okviru same registracije (`Register.jsx`: naslov, sive ploče sa poljima, dugmad ispod), bez kartica u pločama (§6).
-- **Koraci:** Finska 4 (osnovni podaci, profesija, dostupnost, pregled), Srbija 6 (osnovni podaci, kvalifikacije, dostupnost, zdravlje i navike, kontakt za hitne slučajeve, pregled). Iznad je sitan tekst „Korak n od m" i traka napretka (visina 4, r4, popunjeno `bg-primary`). Dole „Dalje" (`default`, `lg`, preko cele širine) i „Nazad" (`secondary`). Greške se pokazuju na „Dalje" (§10). Pregled ima po jednu ploču za svaki korak, sa „Izmenite" koje vraća na korak.
+- **Tok:** „Ko ste?" › „Negovateljica" › „Gde želite da radite?" (Srbija / Finska, dugmad preko cele širine) › nalog (e-mail, lozinka, dve saglasnosti) › koraci forme › posle slanja: dokumenti (Finska, samo za klasifikacije koje ih traže) ili test ličnosti (Srbija) › razgovor sa koordinatorkom (kanal: WhatsApp, Viber, Google Meet ili Zoom) › „Hvala". Sve osim testa ličnosti je u okviru same registracije (`Register.jsx`: naslov, sive ploče sa poljima, dugmad ispod), bez kartica u pločama (§6).
+- **Koraci:** Finska 4 (osnovni podaci, profesija, dostupnost, pregled), Srbija 6 (osnovni podaci, kvalifikacije, dostupnost, zdravlje i navike, kontakt za hitne slučajeve, pregled). Iznad je sitan tekst „Korak n od m" i traka napretka (visina 4, r4, popunjeno `bg-primary`). Dole „Dalje" (`default`, `lg`, preko cele širine) i „Nazad" (`secondary`). Greške se pokazuju na „Dalje" (§10). Pregled ima po jednu sivu ploču (`Tray`, §5) za svaki korak: naslov i „Izmenite" (vraća na korak) stoje na sivom, a podaci su u beloj `Card` (odlučeno 29. 10.).
 - **Klasifikacije** su red po klasifikaciji: kvačica (`Checkbox`), naziv i opis jedno ispod drugog, a desno značka „Potreban sertifikat" (`warning`) ili „Bez dokumenta" (`secondary`); red je bela podloga r8 sa p12 u sivoj ploči, ceo red je labela. Predlog, čeka dizajnera.
 - **Fotografije (vrteška) su samo na prijavi i registraciji**, ne preko koraka forme.
 - **Izbor u formi** (angažman, dani, doba dana, da / ne, kanal) su čipovi koji se lome u redove (§12), a ne kartice-izbori kao u postojećoj aplikaciji: kartica u sivoj ploči bila bi kutija u kutiji.
 - **Polje za fajl** je `FileField` u `TextField.jsx`: skriveno polje pregledača i naše dugme „Izaberite fajl"; kad je izabran, ime fajla, „Promeni" (`secondary`) i „Ukloni" (`ghost`).
-- **Test ličnosti** je za sada sve na jednoj stranici: uputstvo, „Definicije osobina" koje se rasklapaju, pa 62 para, svaki ime para i dva čipa. Druga mogućnost je jedan par po ekranu sa „12 od 62". Odlučuje dizajner. Pitanja su privremena dok ne stignu prava (`src/data/personalityTest.js`).
+- **Test ličnosti** (odlučeno 5. 11.; `src/screens/caregiver/PersonalityTest.jsx`) je jedan par po ekranu, preko cele strane, u jeziku onboardinga (`imm-*`: pozadina, „12 od 62" sa trakom, naslov, staklene kartice), bez ičega od razgovora. Forma se vraća na ekranu „Zakažite razgovor". Parovi i definicije su sa žive platforme, njenim redom (`src/data/personalityTest.js`).
+  - **Par:** dve kartice sa brojem 1 i 2, ime 16 medium, definicija 12 ispod. Jedna pored druge, a na telefonu jedna ispod druge. Iste su visine za svaki par, da stoje na istom mestu dok se ide kroz test.
+  - **Izbor vodi dalje sam:** kartica ostaje izabrana 250 ms, pa dolazi sledeći par. Nema „Dalje", jer bi to bila 124 dodira za 62 para. To je izuzetak od onboardinga, gde se bira pa šalje. Pogrešan dodir se ispravlja sa „Nazad" (`secondary`). Na poslednjem paru se ne ide dalje sam, nego se pojavljuje „Pošalji test".
+  - **Uputstvo:** kad još nijedan par nije izabran, otvara se prozor (`Dialog`): „Uputstvo za rad" sa „Dalje", pa „Definicije osobina" sa „Nazad" i „Započni test". Definicije su jedna ispod druge (12 razmaka), i na desktopu, jer se u dve kolone oko lomi pri čitanju. Gore desno su stalno dva tekstualna dugmeta (`imm-ctl is-text`, 32, na dodir 44), „Uputstvo" i „Definicije osobina", koja otvaraju te iste korake, ali bez footera: tada se samo pročita i zatvori (X). „Dalje", „Nazad" i „Započni test" postoje samo prvi put.
+  - **Oblačić:** posle prvog zatvaranja prozora ispod ta dva dugmeta sleti oblačić sa strelicom (`imm-nudge`, `primary`, 12): „Uputstvo i definicije možete da otvorite kad god vam zatrebaju." Sleti odozgo, dva puta se blago pomeri i stane; nema petlje. Nestaje posle 8 s, na dodir ili na prvi izbor. Sa `prefers-reduced-motion` se samo pojavi.
 - **Posle prijave:** nalog čeka razgovor; njena početna kaže „Profil se aktivira posle razgovora", a porodice je ne vide na „Pronađi" dok je koordinatorka ne aktivira (u Simulaciji „Koordinatorka aktivira profil").
 
 ## 13. Provera — obavezno posle izmene interfejsa

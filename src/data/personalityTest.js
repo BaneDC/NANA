@@ -1,38 +1,85 @@
 import { msg } from '../i18n';
 
 // The personality test of the Serbian sign-up: in each pair of traits she
-// picks the one that describes her better. The twelve traits and their
-// definitions are the live platform's (a screenshot, 19. 10.). The real 62
-// pairs are still to come from the team: until then the first six are the ones
-// the screenshot shows and the rest are the other pairs of the same twelve, in
-// a fixed order (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md).
+// picks the one that suits her better. The twelve traits, their definitions and
+// the 62 pairs are the live platform's, in its order (screenshots, 5. 11.).
 export const TRAITS = [
-  { id: 'warm', name: msg('srdačna osoba'), text: msg('Neposredna, lako izražava svoju simpatiju prema drugima.') },
-  { id: 'adventurous', name: msg('sklona pustolovini'), text: msg('Uživa u promenama. Privlači je sve što je novo i uzbudljivo.') },
-  { id: 'resentful', name: msg('ozlojeđena'), text: msg('Razdražljiva, naprasita, prgava, lako plane. Lako izražava osećanje besa.') },
-  { id: 'shy', name: msg('stidljiva'), text: msg('Bojažljiva je u prisustvu novih ljudi i u novim situacijama.') },
-  { id: 'impulsive', name: msg('nagla'), text: msg('Reaguje trenutno, ne razmišljajući o posledicama. Lako izražava svoja osećanja.') },
-  { id: 'gloomy', name: msg('potištena'), text: msg('Često je neraspoložena, tmurna i razočarana.') },
-  { id: 'careful', name: msg('oprezna'), text: msg('Vodi računa o svom ponašanju, jer se boji da joj se ne dogodi nešto nepredviđeno i neprijatno.') },
-  { id: 'brooding', name: msg('grize se u sebi'), text: msg('Muči je nezadovoljstvo, a ne može da ga otvoreno izrazi. Često je mrzovoljna.') },
-  { id: 'sociable', name: msg('društvena'), text: msg('Prijatno joj je sa drugim ljudima. Voli da bude u društvu.') },
-  { id: 'argumentative', name: msg('sklona prepirci'), text: msg('Skoro uvek traži dokaze, pa to izaziva raspravljanje.') },
-  { id: 'obedient', name: msg('poslušna'), text: msg('Najčešće bez protivljenja učini ono što se od nje traži.') },
-  { id: 'insecure', name: msg('nesigurna u sebe'), text: msg('Od silne brige kakav će utisak ostaviti može da bude neuspešna, a sobom nezadovoljna.') },
+  { id: 'warm', name: msg('Srdačna osoba'), text: msg('Neposredna, lako izražava svoju simpatiju prema drugima.') },
+  { id: 'adventurous', name: msg('Sklona pustolovini'), text: msg('Uživa u promenama. Privlači je sve što je novo i uzbudljivo.') },
+  { id: 'resentful', name: msg('Ozlojeđena'), text: msg('Razdražljiva, naprasita, prgava, lako plane. Lako izražava osećanje besa (ljutnje).') },
+  { id: 'shy', name: msg('Stidljiva'), text: msg('Bojažljiva je u prisustvu novih ljudi i u novim situacijama.') },
+  { id: 'impulsive', name: msg('Nagla'), text: msg('Reaguje trenutno ne razmišljajući o posledicama, plahovita. Lako izražava svoja osećanja.') },
+  { id: 'gloomy', name: msg('Potištena'), text: msg('Često je neraspoložena, tmurna i razočarana.') },
+  { id: 'careful', name: msg('Oprezna'), text: msg('Vodi računa o svom ponašanju zato što se boji da joj se ne dogodi nešto nepredviđeno i neprijatno.') },
+  { id: 'brooding', name: msg('Grize se u sebi'), text: msg('Muči je nezadovoljstvo, a ne može da ga otvoreno izrazi. Često je mrzovoljna.') },
+  { id: 'sociable', name: msg('Društvena'), text: msg('Prijatno joj je sa drugim ljudima. Voli da bude u društvu drugih ljudi.') },
+  { id: 'argumentative', name: msg('Sklona prepirci'), text: msg('Skoro uvek traži dokaze, pa to izaziva raspravljanje.') },
+  { id: 'obedient', name: msg('Poslušna'), text: msg('Najčešće će bez protivljenja učiniti ono što se od nje traži.') },
+  { id: 'insecure', name: msg('Nesigurna u sebe'), text: msg('Od silne brige kakav će utisak ostaviti na druge može da bude neuspešna, a sobom nezadovoljna.') },
 ];
 
-const FIRST = [
+export const PAIRS = [
   ['warm', 'adventurous'],
   ['resentful', 'shy'],
   ['impulsive', 'adventurous'],
   ['gloomy', 'resentful'],
   ['impulsive', 'careful'],
   ['brooding', 'careful'],
+  ['adventurous', 'sociable'],
+  ['warm', 'impulsive'],
+  ['adventurous', 'gloomy'],
+  ['careful', 'resentful'],
+  ['argumentative', 'obedient'],
+  ['obedient', 'shy'],
+  ['sociable', 'insecure'],
+  ['adventurous', 'resentful'],
+  ['insecure', 'resentful'],
+  ['insecure', 'argumentative'],
+  ['argumentative', 'warm'],
+  ['obedient', 'adventurous'],
+  ['impulsive', 'insecure'],
+  ['insecure', 'gloomy'],
+  ['sociable', 'gloomy'],
+  ['adventurous', 'argumentative'],
+  ['brooding', 'impulsive'],
+  ['obedient', 'brooding'],
+  ['brooding', 'sociable'],
+  ['brooding', 'adventurous'],
+  ['shy', 'impulsive'],
+  ['careful', 'gloomy'],
+  ['resentful', 'warm'],
+  ['shy', 'insecure'],
+  ['careful', 'insecure'],
+  ['sociable', 'argumentative'],
+  ['argumentative', 'shy'],
+  ['impulsive', 'sociable'],
+  ['adventurous', 'careful'],
+  ['shy', 'brooding'],
+  ['sociable', 'careful'],
+  ['resentful', 'obedient'],
+  ['insecure', 'obedient'],
+  ['careful', 'warm'],
+  ['brooding', 'insecure'],
+  ['warm', 'shy'],
+  ['gloomy', 'argumentative'],
+  ['gloomy', 'warm'],
+  ['careful', 'argumentative'],
+  ['warm', 'obedient'],
+  ['adventurous', 'insecure'],
+  ['gloomy', 'obedient'],
+  ['impulsive', 'gloomy'],
+  ['resentful', 'impulsive'],
+  ['insecure', 'warm'],
+  ['warm', 'brooding'],
+  ['shy', 'adventurous'],
+  ['impulsive', 'argumentative'],
+  ['gloomy', 'shy'],
+  ['shy', 'sociable'],
+  ['obedient', 'careful'],
+  ['sociable', 'resentful'],
+  ['argumentative', 'brooding'],
+  ['resentful', 'brooding'],
+  ['obedient', 'impulsive'],
+  ['obedient', 'sociable'],
 ];
-const key = ([a, b]) => [a, b].sort().join('|');
-const seen = new Set(FIRST.map(key));
-const REST = [];
-TRAITS.forEach((a, i) => TRAITS.slice(i + 1).forEach((b) => !seen.has(key([a.id, b.id])) && REST.push([a.id, b.id])));
-
-export const PAIRS = [...FIRST, ...REST].slice(0, 62);
 export const traitOf = (id) => TRAITS.find((x) => x.id === id);

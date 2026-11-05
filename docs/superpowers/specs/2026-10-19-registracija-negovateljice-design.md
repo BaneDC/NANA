@@ -122,6 +122,8 @@ Svaki ekran je u istom okviru kao registracija porodice (`Register.jsx`: logo, k
 
 ### Test ličnosti (Srbija)
 
+**Odlučeno 5. 11.: jedan par po ekranu (A), sa pravim parovima sa žive platforme. Važi `docs/patterns.md` §12d; ostatak ovog odeljka je prvobitni plan.**
+
 **Za početak sve na jednoj stranici (B).** Dizajner odlučuje da li ostaje tako ili ide jedan par po ekranu (A).
 
 - „Test ličnosti", „62 para osobina".
