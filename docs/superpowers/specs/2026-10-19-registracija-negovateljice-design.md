@@ -1,5 +1,7 @@
 # Deo 5: registracija negovateljice (19. 10. 2026.)
 
+**Izmenjeno 5. 11.:** koraci forme više nisu ekrani jedan za drugim, nego delovi na jednoj strani (`StepCards`, `docs/patterns.md` §10 i §12d), bez „Korak n od m" i bez ekrana „Pregled". Gde se ovaj plan razlikuje, važi `patterns.md`.
+
 Deo 5 od 5 iz `2026-10-19-negovateljice-pregled.md`. Stoji na delovima 1–4:
 - „Ko ste?" i demo (deo 1);
 - srpske i finske negovateljice, `caregiverById` (delovi 1 i 2);

@@ -21,7 +21,8 @@ function Checkbox({
       )}
       {...props}>
       <CheckboxPrimitive.Indicator data-slot="checkbox-indicator" className="flex items-center justify-center">
-        <CheckIcon size={12} strokeWidth={2.5} />
+        {/* its own size and ink, so a list's rule for icons (CommandItem) does not take it */}
+        <CheckIcon className="size-3 text-primary-foreground" strokeWidth={2.5} />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );

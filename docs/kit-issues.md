@@ -63,3 +63,18 @@ Kit crta svoja dugmad (`Button` iz kita: `primary` je staklo, `secondary` je pro
 **Predlog:** meriti posle animacije bubble-a (`onAnimationComplete` ili `ResizeObserver` na `editorWrap`), ili ponovo izmeriti kad se širina promeni i skinuti masku i „Prikaži više" ako poruka više nije dugačka.
 
 **Kod nas:** ništa, čeka se popravka u kitu. Zaobilaženje je moguće (fiksni odgovori u `src/components/KitAssistant.jsx` da čekaju 400 ms pre nego što se vrate, dok se bubble ne razvije); provereno je da radi, ali je namerno vraćeno.
+
+## QuestionCard i QuestionGroup ne primaju prava polja forme (0.61.1)
+
+**Šta:** registracija negovateljice treba da bude niz kartica kao `QuestionGroup`: jedna otvorena, popunjena se sklopi u red sa odgovorom, a klik na red je ponovo otvori. Kit to ima, ali samo za tri oblika pitanja (`inputs`, `single`, `multi`), a forma ima kalendar (datum rođenja), pretragu opština, telefon sa zemljom, padajući izbor, klizač (radijus), čipove i više polja u jednom redu (ime i prezime).
+
+**Gde:**
+1. `Question` je zatvoren tip: `inputs` je samo `QuestionField` (`label`, `placeholder`, `optional`), a polje je kitov `<input>` (`QuestionFieldRow`), pa ne može da bude `DateInput`, `Combobox`, `Phone`, `Select` ili `Slider` hosta.
+2. `QuestionShell` prima `children`, ali nema stanja `upcoming` / `active` / `collapsed` ni morfovanje između njih. To ima samo `QuestionCard`, a on ne prima `children`.
+3. Nema greške ispod polja: „Dalje" je isključen dok nešto nije popunjeno (`disabled`). Kod nas dugme nikad nije isključeno zbog nečega što nedostaje (`patterns.md` §10), nego pokaže grešku ispod polja i fokusira prvo pogrešno.
+4. Sažetak u sklopljenom redu (`answerChips`) se pravi iz `Answer`, pa ne može da se zada za sopstvena polja (npr. „Zorka Petrović", „Zvezdara").
+5. Dugme u footeru je kitovo „Next"; nema načina da se kaže da je to naš `Button` sa našim tekstom („Dalje"), osim kroz `labels`.
+
+**Predlog:** `QuestionCard` (ili nova `FormStep`) sa `children` umesto `question`: host daje polja, `summary` (niz čipova ili `ReactNode`) za sklopljeni red, `onNext` koji vraća da li može dalje (host sam pokaže greške), `footer` za sopstveno dugme. Stanja, morfovanje, fokus na prvo polje posle otvaranja i „Izmeni odgovor: …" ostaju kitova. `QuestionGroup` isto, sa nizom takvih koraka.
+
+**Kod nas:** napravljena je naša kartica po uzoru na kit (`src/components/StepCards.jsx`), sa našim tokenima i poljima. Kad kit dobije ovo, prelazimo na kitovu.

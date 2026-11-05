@@ -230,7 +230,6 @@ export default {
   "Koordinatorka je aktivirala profil. Porodice vas sada vide na „Pronađi\".": "Koordinaattori aktivoi profiilisi. Perheet näkevät sinut nyt Etsi-sivulla.",
   "Koordinatorka vam se javlja preko kanala koji ste izabrali. Posle razgovora porodice vas vide na „Pronađi\" i mogu da vam pišu. Do tada možete da dopunite profil.": "Koordinattori ottaa yhteyttä valitsemaasi kanavaa pitkin. Keskustelun jälkeen perheet näkevät sinut Etsi-sivulla ja voivat kirjoittaa sinulle. Siihen asti voit täydentää profiiliasi.",
   "Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.": "Koordinaattori ottaa yhteyttä kanavalla {channel} sopiakseen ajan.",
-  "Korak {n} od {m}": "Vaihe {n}/{m}",
   "Kratak video razgovor sa koordinatorkom je poslednji korak prijave.": "Lyhyt videopuhelu koordinaattorin kanssa on hakemuksen viimeinen vaihe.",
   "Muči je nezadovoljstvo, a ne može da ga otvoreno izrazi. Često je mrzovoljna.": "Häntä vaivaa tyytymättömyys, jota hän ei voi sanoa ääneen. Usein nyrpeä.",
   "Na početnu": "Alkuun",
@@ -328,7 +327,6 @@ export default {
   "švedski": "ruotsi",
   "finski": "suomi",
   "Morate imati najmanje 18 godina.": "Sinun on oltava vähintään 18-vuotias.",
-  "Adresa sa kojom ste napravili nalog.": "Osoite, jolla loit tilisi.",
   "Roditelj": "Vanhempi",
   "Brat ili sestra": "Sisarus",
   "Komšija": "Naapuri",
@@ -346,4 +344,6 @@ export default {
   "Najvažnije je da u svakom paru osobina (kojih ima ukupno {n}) izaberete samo jednu.": "Tärkeintä on, että valitset jokaisesta parista (niitä on yhteensä {n}) vain yhden ominaisuuden.",
   "Svaki par osobina posmatrajte odvojeno, nezavisno od svih ostalih (koje ste već birali ili tek treba da birate). Dakle, normalno je da ne morate uvek da odaberete jednu te istu osobinu kada na nju naiđete.": "Katso jokaista paria erikseen, muista riippumatta (niistä, jotka olet jo valinnut tai jotka ovat vielä edessä). On siis normaalia, ettet aina valitse samaa ominaisuutta, kun se tulee vastaan.",
   "Uputstvo i definicije možete da otvorite kad god vam zatrebaju.": "Voit avata ohjeet ja määritelmät aina kun tarvitset niitä.",
+  "Vaši podaci": "Tietosi",
+  "Izmenite: {title}": "Muokkaa: {title}",
 };

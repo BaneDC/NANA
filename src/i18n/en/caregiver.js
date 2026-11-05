@@ -230,7 +230,6 @@ export default {
   "Koordinatorka je aktivirala profil. Porodice vas sada vide na „Pronađi\".": "The coordinator activated your profile. Families now see you on \"Find\".",
   "Koordinatorka vam se javlja preko kanala koji ste izabrali. Posle razgovora porodice vas vide na „Pronađi\" i mogu da vam pišu. Do tada možete da dopunite profil.": "The coordinator will reach you on the channel you chose. After the talk, families see you on \"Find\" and can write to you. Until then you can complete your profile.",
   "Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.": "The coordinator will reach you on {channel} to agree a time.",
-  "Korak {n} od {m}": "Step {n} of {m}",
   "Kratak video razgovor sa koordinatorkom je poslednji korak prijave.": "A short video call with the coordinator is the last step of applying.",
   "Muči je nezadovoljstvo, a ne može da ga otvoreno izrazi. Često je mrzovoljna.": "Troubled by discontent she cannot say openly. Often sullen.",
   "Na početnu": "To the start",
@@ -328,7 +327,6 @@ export default {
   "švedski": "Swedish",
   "finski": "Finnish",
   "Morate imati najmanje 18 godina.": "You must be at least 18 years old.",
-  "Adresa sa kojom ste napravili nalog.": "The address you created your account with.",
   "Roditelj": "Parent",
   "Brat ili sestra": "Sibling",
   "Komšija": "Neighbor",
@@ -346,4 +344,6 @@ export default {
   "Najvažnije je da u svakom paru osobina (kojih ima ukupno {n}) izaberete samo jednu.": "Most importantly, choose only one trait in each pair (there are {n} in all).",
   "Svaki par osobina posmatrajte odvojeno, nezavisno od svih ostalih (koje ste već birali ili tek treba da birate). Dakle, normalno je da ne morate uvek da odaberete jednu te istu osobinu kada na nju naiđete.": "Look at each pair on its own, apart from all the others (those you have already chosen or have yet to choose). So it is normal not to always pick the same trait when you come across it.",
   "Uputstvo i definicije možete da otvorite kad god vam zatrebaju.": "You can open the instructions and definitions whenever you need them.",
+  "Vaši podaci": "Your details",
+  "Izmenite: {title}": "Edit: {title}",
 };

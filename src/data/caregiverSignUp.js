@@ -12,7 +12,6 @@ export const STEPS = {
     { id: 'basic', title: msg('Osnovni podaci') },
     { id: 'profession', title: msg('Profesija') },
     { id: 'availability', title: msg('Dostupnost') },
-    { id: 'review', title: msg('Pregled') },
   ],
   sr: [
     { id: 'basic', title: msg('Osnovni podaci') },
@@ -20,7 +19,6 @@ export const STEPS = {
     { id: 'availability', title: msg('Dostupnost') },
     { id: 'health', title: msg('Zdravlje i navike') },
     { id: 'emergency', title: msg('Kontakt za hitne slučajeve') },
-    { id: 'review', title: msg('Pregled') },
   ],
 };
 

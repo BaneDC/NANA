@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Fact, Facts } from '@/components/data-list';
-import { PaneHint } from '@/components/pane';
-import Tray from '@/components/Tray';
+import { Note, PaneHint } from '@/components/pane';
+import { StepCard, StepCards } from '@/components/StepCards';
 import PersonalityTest from './PersonalityTest';
 import { Actions, Consent, FormCard, Welcome, column } from '../Register';
 import { Radius } from '../../components/caregiver/ProfileForms';
@@ -12,18 +10,20 @@ import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
+import { dialOf } from '../../data/countries';
 import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
 import { locale, msg, t } from '@/i18n';
 
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
-// where she wants to work, her account, the steps of the form for that market,
-// then her documents (Finland) or the personality test (Serbia), the channel
-// for the talk with the coordinator, and thanks. Every screen is in the
-// sign-up's own frame (Register.jsx): a title, grey panels with the fields,
-// the buttons under them. Errors show on "Dalje", the first wrong field takes
-// the focus (§10). This whole part waits for the designer.
+// where she wants to work, her account, the parts of the form for that market
+// on one page, then her documents (Finland) or the personality test (Serbia),
+// the channel for the talk with the coordinator, and thanks. Every screen is in
+// the sign-up's own frame (Register.jsx): a title, grey panels with the fields,
+// the buttons under them. The form's parts are step cards (docs/patterns.md
+// §10): one open, the ones done folded into a row with their answers. Errors
+// show on "Dalje", the first wrong field takes the focus (§10).
 
 const emailError = (v) => (!v.trim() ? requiredError() : /^\S+@\S+\.\S+$/.test(v.trim()) ? null : t('Unesite ispravnu email adresu.'));
 const CHANNELS = [
@@ -62,18 +62,6 @@ function YesNo({ label, value, onChange }) {
   return <Chips label={label} multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
 }
 
-function Progress({ at, of }) {
-  return (
-    <div className={`${column} flex flex-col gap-2 px-4`}>
-      <p className="text-small text-muted-foreground">{t('Korak {n} od {m}', { n: at + 1, m: of })}</p>
-      {/* a bar, 4 tall: new, a proposal for the designer */}
-      <div className="h-1 w-full overflow-hidden rounded-sm bg-muted">
-        <div className="h-full rounded-sm bg-primary transition-[width] duration-300" style={{ width: `${((at + 1) / of) * 100}%` }} />
-      </div>
-    </div>
-  );
-}
-
 export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const [screen, setScreen] = useState('country');
   const [market, setMarket] = useState(null);
@@ -90,30 +78,76 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     onForm?.(!['country', 'account'].includes(screen));
     return () => onForm?.(false);
   }, [screen, onForm]);
-  const steps = market ? STEPS[market] : [];
-  const stepAt = steps.findIndex((s) => s.id === screen);
-  const errors = f ? stepErrors(screen, f) : {};
+  // the form's parts, which one is open, and the ones done
+  const parts = market ? STEPS[market] : [];
+  const [open, setOpen] = useState(0);
+  const [done, setDone] = useState([]);
+  const at = screen === 'form' ? parts[open]?.id : screen;
+  const errors = f ? stepErrors(at, f) : {};
   const show = (k) => check.show(errors[k]);
+  const wrong = (id) => Object.values(stepErrors(id, f)).some(Boolean);
+  const setE = (patch) => set({ emergency: { ...f.emergency, ...patch } });
 
   const next = () => {
     if (screen === 'account') {
       const e = [emailError(account.email), account.password.length < 8 && t('Kratka je - treba najmanje 8 karaktera.'), !account.processing && requiredError(), !account.accuracy && requiredError()];
       if (!check.check(e)) return;
       check.reset();
-      return setScreen(steps[0].id);
+      setOpen(done.length ? null : 0);
+      return setScreen('form');
     }
     if (!check.check(Object.values(errors))) return;
     check.reset();
-    const order = [...steps.map((s) => s.id), ...afterSteps(f)];
+    const order = ['form', ...afterSteps(f)];
     const i = order.indexOf(screen);
     setScreen(order[i + 1]);
     window.scrollTo?.(0, 0);
   };
   const back = () => {
     check.reset();
-    const order = ['account', ...steps.map((s) => s.id), ...afterSteps(f || {})];
+    const order = ['account', 'form', ...afterSteps(f || {})];
     const i = order.indexOf(screen);
     setScreen(i > 0 ? order[i - 1] : 'country');
+  };
+  // "Dalje" in a part: only that part is checked; then it folds, and the next
+  // one not done yet opens
+  const partNext = (i) => {
+    if (!check.check(Object.values(stepErrors(parts[i].id, f)))) return;
+    check.reset();
+    const now = done.includes(parts[i].id) ? done : [...done, parts[i].id];
+    setDone(now);
+    const after = parts.findIndex((p, j) => j > i && !now.includes(p.id));
+    const first = parts.findIndex((p) => !now.includes(p.id));
+    setOpen(after >= 0 ? after : first >= 0 ? first : null);
+  };
+  // the part left open folds as done when it is right, and as not done when
+  // it is not, whichever way it was left
+  const leave = (now = done) => {
+    const was = parts[open]?.id;
+    if (!was) return now;
+    return wrong(was) ? now.filter((x) => x !== was) : now.includes(was) ? now : [...now, was];
+  };
+  // a row opens its part again
+  const openPart = (i) => {
+    check.reset();
+    setDone(leave());
+    setOpen(i);
+  };
+  // the page's button: on, or the first part that is not right opens with its
+  // errors, and every part that is right folds as done
+  const sendForm = () => {
+    const bad = parts.findIndex((p) => wrong(p.id));
+    const right = parts.filter((p) => !wrong(p.id)).map((p) => p.id);
+    setDone(right);
+    if (bad < 0) {
+      check.reset();
+      setOpen(null);
+      setScreen(afterSteps(f)[0]);
+      window.scrollTo?.(0, 0);
+      return;
+    }
+    setOpen(bad);
+    check.check(Object.values(stepErrors(parts[bad].id, f)));
   };
   const submit = async () => {
     if (busy || sent) return;
@@ -206,272 +240,212 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       </>
     );
 
-  const head = stepAt >= 0 && (
-    <>
-      <Welcome title={t(steps[stepAt].title)} sub={stepAt === 0 ? t('Za popunjavanje treba 10 do 20 minuta.') : ''} />
-      <Progress at={stepAt} of={steps.length} />
-    </>
-  );
   const sr = market === 'sr';
+  const n = (id) => parts.findIndex((p) => p.id === id) + 1;
 
-  if (screen === 'basic')
-    return (
+  // what each part holds, in the open card
+  const body = {
+    basic: (
       <>
-        {head}
-        <FormCard>
-          <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
-            <Field label={t('Vaše ime')} required error={show('firstName')}>
-              <Input value={f.firstName} onChange={(v) => set({ firstName: v })} placeholder="Sarah" autoComplete="given-name" />
-            </Field>
-            <Field label={t('Vaše prezime')} required error={show('lastName')}>
-              <Input value={f.lastName} onChange={(v) => set({ lastName: v })} placeholder="Doe" autoComplete="family-name" />
-            </Field>
-          </div>
-          <Field label={t('Datum rođenja')} required error={show('birth')}>
-            {/* years back: month and year as dropdowns in the calendar */}
-            {/* opens on today; someone under 18 is told so under the field
-                (docs/patterns.md §10), the days are not switched off */}
-            <DateInput
-              value={f.birth ? new Date(f.birth) : null}
-              onChange={(d) => set({ birth: d.getTime() })}
-              from={new Date(1920, 0, 1)}
-              to={new Date()}
-              today={new Date()}
-              pickYear
-              placeholder={t('Izaberite datum rođenja')}
-            />
+        <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+          <Field label={t('Vaše ime')} required error={show('firstName')}>
+            <Input value={f.firstName} onChange={(v) => set({ firstName: v })} placeholder="Sarah" autoComplete="given-name" />
           </Field>
-          <Field label={t('Prebivalište')} required error={show('address')}>
-            <Input value={f.address} onChange={(v) => set({ address: v })} placeholder={t('Unesite adresu iz lične karte')} />
+          <Field label={t('Vaše prezime')} required error={show('lastName')}>
+            <Input value={f.lastName} onChange={(v) => set({ lastName: v })} placeholder="Doe" autoComplete="family-name" />
           </Field>
-          <Field label={t('Opština')} required error={show('area')}>
-            <Combobox value={f.area} onChange={(v) => set({ area: v })} groups={municipalityGroups(market)} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
-          </Field>
-          <Field label={t('Broj telefona')} required labelId="su-phone" error={show('phone')}>
-            <Phone country={f.phoneCountry} onCountry={(v) => set({ phoneCountry: v })} value={f.phone} onChange={(v) => set({ phone: v })} labelledBy="su-phone" />
-          </Field>
-          {/* what she gave on the step before: a field like the others, but off (docs/patterns.md §10) */}
-          <Field label={t('Email')} hint={t('Adresa sa kojom ste napravili nalog.')}>
-            <Input value={account.email} onChange={() => {}} disabled />
-          </Field>
-        </FormCard>
-        {footer()}
+        </div>
+        <Field label={t('Datum rođenja')} required error={show('birth')}>
+          {/* years back: month and year as dropdowns in the calendar */}
+          {/* opens on today; someone under 18 is told so under the field
+              (docs/patterns.md §10), the days are not switched off */}
+          <DateInput
+            value={f.birth ? new Date(f.birth) : null}
+            onChange={(d) => set({ birth: d.getTime() })}
+            from={new Date(1920, 0, 1)}
+            to={new Date()}
+            today={new Date()}
+            pickYear
+            placeholder={t('Izaberite datum rođenja')}
+          />
+        </Field>
+        <Field label={t('Prebivalište')} required error={show('address')}>
+          <Input value={f.address} onChange={(v) => set({ address: v })} placeholder={t('Unesite adresu iz lične karte')} />
+        </Field>
+        <Field label={t('Opština')} required error={show('area')}>
+          <Combobox value={f.area} onChange={(v) => set({ area: v })} groups={municipalityGroups(market)} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
+        </Field>
+        <Field label={t('Broj telefona')} required labelId="su-phone" error={show('phone')}>
+          <Phone country={f.phoneCountry} onCountry={(v) => set({ phoneCountry: v })} value={f.phone} onChange={(v) => set({ phone: v })} labelledBy="su-phone" />
+        </Field>
       </>
-    );
-
-  if (screen === 'profession')
-    return (
+    ),
+    profession: (
       <>
-        {head}
-        <FormCard>
-          {/* each classification with what it is and whether it needs a
-              document, together: a box per row (new, for the designer) */}
-          <Field label={t('Klasifikacije')} required hint={t('Izaberite sve koje važe. Za neke klasifikacije treba priložiti sertifikat.')} error={show('classifications')}>
-            <div className="flex flex-col gap-2">
-              {CLASSIFICATIONS.map((c) => (
-                <label key={c.id} className="flex cursor-pointer items-start gap-3 rounded-lg bg-card p-3">
-                  <Checkbox
-                    checked={f.classifications.includes(c.id)}
-                    onCheckedChange={(on) => set({ classifications: on ? [...f.classifications, c.id] : f.classifications.filter((x) => x !== c.id) })}
-                    className="mt-0.5"
-                  />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-xs font-medium text-foreground">{c.id}</span>
-                    <span className="text-xs leading-body text-muted-foreground">{t(c.text)}</span>
-                  </span>
-                  <Badge variant={c.document ? 'warning' : 'secondary'}>{c.document ? t('Potreban sertifikat') : t('Bez dokumenta')}</Badge>
-                </label>
-              ))}
+        {/* each classification with what it is and whether it needs a
+            document, together: a grey row each in the white card */}
+        <Field label={t('Klasifikacije')} required hint={t('Izaberite sve koje važe. Za neke klasifikacije treba priložiti sertifikat.')} error={show('classifications')}>
+          <div className="flex flex-col gap-2">
+            {CLASSIFICATIONS.map((c) => (
+              <label key={c.id} className="flex cursor-pointer items-start gap-3 rounded-lg bg-muted p-3">
+                <Checkbox
+                  checked={f.classifications.includes(c.id)}
+                  onCheckedChange={(on) => set({ classifications: on ? [...f.classifications, c.id] : f.classifications.filter((x) => x !== c.id) })}
+                  className="mt-0.5"
+                />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-xs font-medium text-foreground">{c.id}</span>
+                  <span className="text-xs leading-body text-muted-foreground">{t(c.text)}</span>
+                </span>
+                <Badge variant={c.document ? 'warning' : 'secondary'}>{c.document ? t('Potreban sertifikat') : t('Bez dokumenta')}</Badge>
+              </label>
+            ))}
+          </div>
+        </Field>
+        {documentsNeeded(f).length > 0 && <PaneHint>{t('Sertifikate za označene klasifikacije prilažete u sledećem delu prijave.')}</PaneHint>}
+        <Field label={t('Nivo obrazovanja')} required error={show('education')}>
+          <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
+        </Field>
+        <Field label={t('Jezici koje govorite')}>
+          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
+        </Field>
+        <Field label={t('Biografija')} required error={show('bio')}>
+          <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
+        </Field>
+      </>
+    ),
+    qualifications: (
+      <>
+        <Field label={t('Nivo obrazovanja')} required error={show('education')}>
+          <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION_SR.map((e) => ({ value: e, label: educationText(e, true) }))} />
+        </Field>
+        <YesNo label={t('Sertifikat akreditovane škole za negovateljice')} value={f.certificate} onChange={(v) => set({ certificate: v })} />
+        <Field label={t('Kursevi')}>
+          <Input value={f.courses} onChange={(v) => set({ courses: v })} placeholder={t('Naziv završenog kursa')} />
+        </Field>
+        <Field label={t('Opis radnog iskustva i veština')} required error={show('bio')}>
+          <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
+        </Field>
+      </>
+    ),
+    availability: (
+      <>
+        {sr && (
+          <>
+            <Chips
+              label={t('Angažman')}
+              required
+              value={f.engagement}
+              onChange={(v) => set({ engagement: v })}
+              options={[
+                ['daily', t('Dnevne posete')],
+                ['shift24', t('Smena 24 h')],
+              ]}
+              error={show('engagement')}
+            />
+            {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
+          </>
+        )}
+        <Chips label={t('Koje dane želite da radite?')} required value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
+        <Chips
+          label={t('Izaberite raspored koji vam najviše odgovara')}
+          required
+          value={f.slots}
+          onChange={(v) => set({ slots: v })}
+          options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])}
+          error={show('slots')}
+        />
+        {/* easy to miss as small grey text, and it changes what the choice means */}
+        {f.slots.length > 1 && <Note>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</Note>}
+        {sr && <YesNo label={t('Rad u inostranstvu')} value={f.abroad} onChange={(v) => set({ abroad: v })} />}
+        <Radius value={f.radius} onChange={(v) => set({ radius: v })} />
+        {sr ? (
+          <PaneHint>{t('Tržišna cena je oko 1.000 RSD na sat i oko 6.000 RSD za 24 sata.')}</PaneHint>
+        ) : (
+          <Field label={t('Cena koju naplaćujete za negu starijih (EUR/sat)')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={show('rate')}>
+            <div className="grid grid-cols-2 gap-3">
+              <Input value={f.rateMin} onChange={(v) => set({ rateMin: v })} inputMode="decimal" suffix="€/h" placeholder="15" aria-label={t('Od')} />
+              <Input value={f.rateMax} onChange={(v) => set({ rateMax: v })} inputMode="decimal" suffix="€/h" placeholder="25" aria-label={t('Do')} />
             </div>
           </Field>
-          {documentsNeeded(f).length > 0 && <PaneHint>{t('Sertifikate za označene klasifikacije prilažete u sledećem delu prijave.')}</PaneHint>}
-          <Field label={t('Nivo obrazovanja')} required error={show('education')}>
-            <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
-          </Field>
-          <Field label={t('Jezici koje govorite')}>
-            <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
-          </Field>
-          <Field label={t('Biografija')} required error={show('bio')}>
-            <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
-          </Field>
-        </FormCard>
-        {footer()}
+        )}
       </>
-    );
+    ),
+    health: (
+      <>
+        {HABITS.map(([id, label]) => (
+          <YesNo key={id} label={t(label)} value={f.habits[id]} onChange={(v) => set({ habits: { ...f.habits, [id]: v } })} />
+        ))}
+        <Field label={t('Jezici koje govorite')}>
+          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
+        </Field>
+        {HEALTH_QUESTIONS.map(([id, label]) => (
+          <YesNo key={id} label={t(label)} value={f.health[id]} onChange={(v) => set({ health: { ...f.health, [id]: v } })} />
+        ))}
+        <Chips label={t('Spremnost za rad')} value={f.readiness} onChange={(v) => set({ readiness: v })} options={READINESS.map(([id, l]) => [id, t(l)])} />
+        <Field label={t('Šta ne želite da radite')}>
+          <TextArea value={f.unwilling} onChange={(v) => set({ unwilling: v })} rows={2} placeholder={t('Npr. menjanje pelena, kupanje, rad sa nepokretnim osobama.')} />
+        </Field>
+      </>
+    ),
+    emergency: (
+      <>
+        <Field label={t('Ime i prezime')} required error={show('emergencyName')}>
+          <Input value={f.emergency.name} onChange={(v) => setE({ name: v })} placeholder={t('Unesite ime i prezime')} />
+        </Field>
+        <Field label={t('Srodstvo')} required error={show('emergencyRelation')}>
+          <Select value={f.emergency.relation} onChange={(v) => setE({ relation: v })} placeholder={t('Majka, otac, sestra i sl.')} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
+        </Field>
+        <Field label={t('Broj telefona')} required labelId="su-e-phone" error={show('emergencyPhone')}>
+          <Phone country={f.emergency.phoneCountry} onCountry={(v) => setE({ phoneCountry: v })} value={f.emergency.phone} onChange={(v) => setE({ phone: v })} labelledBy="su-e-phone" />
+        </Field>
+        <Field label={t('Adresa')} required error={show('emergencyAddress')}>
+          <Input value={f.emergency.address} onChange={(v) => setE({ address: v })} />
+        </Field>
+      </>
+    ),
+  };
+  // what a part folded into its row says it holds
+  const summary = {
+    basic: [`${f.firstName} ${f.lastName}`.trim(), f.area, f.phone && `${dialOf(f.phoneCountry)} ${f.phone}`, f.birth && new Date(f.birth).toLocaleDateString(locale()), f.address],
+    profession: [...f.classifications, f.education && t(f.education)],
+    qualifications: [f.education && educationText(f.education, true), f.certificate && t('Sertifikat negovateljice'), f.courses],
+    availability: [
+      ...(sr ? f.engagement.map((e) => (e === 'daily' ? t('Dnevne posete') : t('Smena 24 h'))) : []),
+      f.days.length > 0 && daysText(f.days.map(Number).sort()),
+      ...f.slots.map((s) => t(SLOTS[s].label)),
+      t('do {km} km', { km: f.radius }),
+    ],
+    health: [...f.languages.map((l) => t(l)), ...READINESS.filter(([id]) => f.readiness.includes(id)).map(([, l]) => t(l))],
+    emergency: [f.emergency.name, f.emergency.relation && t(f.emergency.relation)],
+  };
+  const sub = {
+    emergency: t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.'),
+  };
 
-  if (screen === 'qualifications')
+  if (screen === 'form')
     return (
       <>
-        {head}
-        <FormCard>
-          <Field label={t('Nivo obrazovanja')} required error={show('education')}>
-            <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION_SR.map((e) => ({ value: e, label: educationText(e, true) }))} />
-          </Field>
-          <YesNo label={t('Sertifikat akreditovane škole za negovateljice')} value={f.certificate} onChange={(v) => set({ certificate: v })} />
-          <Field label={t('Kursevi')}>
-            <Input value={f.courses} onChange={(v) => set({ courses: v })} placeholder={t('Naziv završenog kursa')} />
-          </Field>
-          <Field label={t('Opis radnog iskustva i veština')} required error={show('bio')}>
-            <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
-          </Field>
-        </FormCard>
-        {footer()}
-      </>
-    );
-
-  if (screen === 'availability')
-    return (
-      <>
-        {head}
-        <FormCard>
-          {sr && (
-            <>
-              <Chips
-                label={t('Angažman')}
-            required
-                value={f.engagement}
-                onChange={(v) => set({ engagement: v })}
-                options={[
-                  ['daily', t('Dnevne posete')],
-                  ['shift24', t('Smena 24 h')],
-                ]}
-                error={show('engagement')}
-              />
-              {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
-            </>
-          )}
-          <Chips label={t('Koje dane želite da radite?')}
-            required value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
-          <Chips label={t('Izaberite raspored koji vam najviše odgovara')}
-            required value={f.slots} onChange={(v) => set({ slots: v })} options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])} error={show('slots')} />
-          {f.slots.length > 1 && <PaneHint>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</PaneHint>}
-          {sr && <YesNo label={t('Rad u inostranstvu')} value={f.abroad} onChange={(v) => set({ abroad: v })} />}
-          <Radius value={f.radius} onChange={(v) => set({ radius: v })} />
-          {sr ? (
-            <PaneHint>{t('Tržišna cena je oko 1.000 RSD na sat i oko 6.000 RSD za 24 sata.')}</PaneHint>
-          ) : (
-            <Field label={t('Cena koju naplaćujete za negu starijih (EUR/sat)')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={show('rate')}>
-              <div className="grid grid-cols-2 gap-3">
-                <Input value={f.rateMin} onChange={(v) => set({ rateMin: v })} inputMode="decimal" suffix="€/h" placeholder="15" aria-label={t('Od')} />
-                <Input value={f.rateMax} onChange={(v) => set({ rateMax: v })} inputMode="decimal" suffix="€/h" placeholder="25" aria-label={t('Do')} />
-              </div>
-            </Field>
-          )}
-        </FormCard>
-        {footer()}
-      </>
-    );
-
-  if (screen === 'health')
-    return (
-      <>
-        {head}
-        <FormCard>
-          {HABITS.map(([id, label]) => (
-            <YesNo key={id} label={t(label)} value={f.habits[id]} onChange={(v) => set({ habits: { ...f.habits, [id]: v } })} />
+        <Welcome title={t('Vaši podaci')} sub={t('Za popunjavanje treba 10 do 20 minuta.')} />
+        <StepCards className={column}>
+          {parts.map((p, i) => (
+            <StepCard
+              key={p.id}
+              n={n(p.id)}
+              title={t(p.title)}
+              sub={sub[p.id]}
+              state={i === open ? 'active' : done.includes(p.id) ? 'done' : 'upcoming'}
+              summary={summary[p.id]}
+              onOpen={() => openPart(i)}
+              onNext={() => partNext(i)}
+            >
+              {i === open && body[p.id]}
+            </StepCard>
           ))}
-          <Field label={t('Jezici koje govorite')}>
-            <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
-          </Field>
-          {HEALTH_QUESTIONS.map(([id, label]) => (
-            <YesNo key={id} label={t(label)} value={f.health[id]} onChange={(v) => set({ health: { ...f.health, [id]: v } })} />
-          ))}
-          <Chips label={t('Spremnost za rad')} value={f.readiness} onChange={(v) => set({ readiness: v })} options={READINESS.map(([id, l]) => [id, t(l)])} />
-          <Field label={t('Šta ne želite da radite')}>
-            <TextArea value={f.unwilling} onChange={(v) => set({ unwilling: v })} rows={2} placeholder={t('Npr. menjanje pelena, kupanje, rad sa nepokretnim osobama.')} />
-          </Field>
-        </FormCard>
-        {footer()}
+        </StepCards>
+        {footer(t('Pošalji prijavu'), sendForm)}
       </>
     );
-
-  if (screen === 'emergency') {
-    const e = f.emergency;
-    const setE = (patch) => set({ emergency: { ...e, ...patch } });
-    return (
-      <>
-        {head}
-        <FormCard>
-          <PaneHint>{t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.')}</PaneHint>
-          <Field label={t('Ime i prezime')} required error={show('emergencyName')}>
-            <Input value={e.name} onChange={(v) => setE({ name: v })} placeholder={t('Unesite ime i prezime')} />
-          </Field>
-          <Field label={t('Srodstvo')} required error={show('emergencyRelation')}>
-            <Select value={e.relation} onChange={(v) => setE({ relation: v })} placeholder={t('Majka, otac, sestra i sl.')} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
-          </Field>
-          <Field label={t('Broj telefona')} required labelId="su-e-phone" error={show('emergencyPhone')}>
-            <Phone country={e.phoneCountry} onCountry={(v) => setE({ phoneCountry: v })} value={e.phone} onChange={(v) => setE({ phone: v })} labelledBy="su-e-phone" />
-          </Field>
-          <Field label={t('Adresa')} required error={show('emergencyAddress')}>
-            <Input value={e.address} onChange={(v) => setE({ address: v })} />
-          </Field>
-        </FormCard>
-        {footer()}
-      </>
-    );
-  }
-
-  if (screen === 'review') {
-    const go = (id) => setScreen(id);
-    // a tray per step: its title and Izmenite on the grey, what was filled in
-    // on a white card (docs/patterns.md §5)
-    const card = (title, id, rows) => (
-      <Tray
-        key={id}
-        className={column}
-        title={title}
-        action={
-          <Button variant="secondary" onClick={() => go(id)}>
-            {t('Izmenite')}
-          </Button>
-        }
-      >
-        <Card>
-          <Facts>
-            {rows
-              .filter(Boolean)
-              .map(([label, value]) => (
-                <Fact key={label} label={label}>
-                  {value || '-'}
-                </Fact>
-              ))}
-          </Facts>
-        </Card>
-      </Tray>
-    );
-    return (
-      <>
-        {head}
-        {card(t('Osnovni podaci'), 'basic', [
-          [t('Ime i prezime'), `${f.firstName} ${f.lastName}`],
-          [t('Datum rođenja'), f.birth && new Date(f.birth).toLocaleDateString(locale())],
-          [t('Adresa'), f.address],
-          [t('Opština'), f.area],
-          [t('Telefon'), f.phone],
-        ])}
-        {sr
-          ? card(t('Kvalifikacije'), 'qualifications', [[t('Nivo obrazovanja'), educationText(f.education, true)], [t('Sertifikat negovateljice'), f.certificate ? t('Da') : t('Ne')], [t('Kursevi'), f.courses], [t('Opis radnog iskustva i veština'), f.bio]])
-          : card(t('Profesija'), 'profession', [[t('Klasifikacije'), f.classifications.join(', ')], [t('Obrazovanje'), t(f.education)], [t('Jezici'), f.languages.map((l) => t(l)).join(', ')], [t('O sebi'), f.bio]])}
-        {card(t('Dostupnost'), 'availability', [
-          sr && [t('Angažman'), f.engagement.map((e) => (e === 'daily' ? t('Dnevne posete') : t('Smena 24 h'))).join(', ')],
-          [t('Dani'), daysText(f.days.map(Number).sort())],
-          [t('Doba dana'), f.slots.map((s) => t(SLOTS[s].label).toLowerCase()).join(', ')],
-          [t('Radijus'), t('do {km} km', { km: f.radius })],
-          !sr && [t('Cena'), `${f.rateMin}–${f.rateMax} €/h`],
-          sr && [t('Rad u inostranstvu'), f.abroad ? t('Da') : t('Ne')],
-        ])}
-        {sr &&
-          card(t('Zdravlje i navike'), 'health', [
-            ...HABITS.map(([id, l]) => [t(l), f.habits[id] ? t('Da') : t('Ne')]),
-            [t('Jezici'), f.languages.map((l) => t(l)).join(', ')],
-            ...HEALTH_QUESTIONS.map(([id, l]) => [t(l), f.health[id] ? t('Da') : t('Ne')]),
-            [t('Spremnost za rad'), READINESS.filter(([id]) => f.readiness.includes(id)).map(([, l]) => t(l)).join(', ')],
-          ])}
-        {sr && card(t('Kontakt za hitne slučajeve'), 'emergency', [[t('Ime i prezime'), f.emergency.name], [t('Srodstvo'), f.emergency.relation && t(f.emergency.relation)], [t('Telefon'), f.emergency.phone], [t('Adresa'), f.emergency.address]])}
-        {footer(t('Pošalji prijavu'))}
-      </>
-    );
-  }
 
   if (screen === 'documents')
     return (

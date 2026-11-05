@@ -43,7 +43,8 @@ export function Consent({ checked, onChange, children, required, error }) {
   return (
     <div className="flex flex-col gap-1">
       <label className="flex cursor-pointer items-start gap-2 text-xs text-foreground">
-        <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} aria-invalid={error ? true : undefined} />
+        {/* 2 down, on the middle of the sentence's first line */}
+        <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} aria-invalid={error ? true : undefined} className="mt-0.5" />
         <span>
           {children}
           {required && <span className="text-primary-600"> *</span>}

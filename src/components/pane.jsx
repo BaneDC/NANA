@@ -65,6 +65,12 @@ export function ReportRow({ label, children }) {
   );
 }
 
+// A sentence a choice in a form brings with it, easy to miss as small grey text
+// (docs/patterns.md §10): the grey ground in a white card, 14, the text's ink.
+export function Note({ className, ...props }) {
+  return <p data-slot="note" className={cn('rounded-2xl bg-muted p-3 text-xs leading-body text-foreground', className)} {...props} />;
+}
+
 // What the caregiver flagged: red on its pale ground.
 export function Concern({ className, ...props }) {
   return (
