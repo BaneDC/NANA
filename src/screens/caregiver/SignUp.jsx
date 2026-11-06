@@ -89,6 +89,13 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const errors = f ? stepErrors(at, f) : {};
   const show = (k) => check.show(errors[k]);
   const wrong = (id) => Object.values(stepErrors(id, f)).some(Boolean);
+  // the parts go in order: a part opens, or shows as done, only when every
+  // part before it is done; the next one is the first not done
+  const reached = (i, list = done) => parts.slice(0, i).every((p) => list.includes(p.id));
+  const firstOpen = (list = done) => {
+    const i = parts.findIndex((p) => !list.includes(p.id));
+    return i >= 0 ? i : null;
+  };
   const setE = (patch) => set({ emergency: { ...f.emergency, ...patch } });
 
   const next = () => {
@@ -96,7 +103,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       const e = [emailError(account.email), account.password.length < 8 && t('Kratka je - treba najmanje 8 karaktera.'), !account.processing && requiredError(), !account.accuracy && requiredError()];
       if (!check.check(e)) return;
       check.reset();
-      setOpen(done.length ? null : 0);
+      setOpen(firstOpen());
       return setScreen('form');
     }
     if (!check.check(Object.values(errors))) return;
@@ -119,9 +126,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     check.reset();
     const now = done.includes(parts[i].id) ? done : [...done, parts[i].id];
     setDone(now);
-    const after = parts.findIndex((p, j) => j > i && !now.includes(p.id));
-    const first = parts.findIndex((p) => !now.includes(p.id));
-    setOpen(after >= 0 ? after : first >= 0 ? first : null);
+    setOpen(firstOpen(now));
   };
   // the part left open folds as done when it is right, and as not done when
   // it is not, whichever way it was left
@@ -130,10 +135,18 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     if (!was) return now;
     return wrong(was) ? now.filter((x) => x !== was) : now.includes(was) ? now : [...now, was];
   };
-  // a row opens its part again
+  // a row opens its part again: back to any part, and on only past parts that
+  // are done; the part open, when it is not right, keeps you with its errors
   const openPart = (i) => {
+    const was = parts[open]?.id;
+    if (was && i > open && wrong(was)) {
+      check.check(Object.values(stepErrors(was, f)));
+      return;
+    }
+    const now = leave();
+    if (!reached(i, now)) return;
     check.reset();
-    setDone(leave());
+    setDone(now);
     setOpen(i);
   };
   // the page's button: on, or the first part that is not right opens with its
@@ -444,7 +457,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
               n={n(p.id)}
               title={t(p.title)}
               sub={sub[p.id]}
-              state={i === open ? 'active' : done.includes(p.id) ? 'done' : 'upcoming'}
+              state={i === open ? 'active' : done.includes(p.id) && reached(i) ? 'done' : 'upcoming'}
               summary={summary[p.id]}
               onOpen={() => openPart(i)}
               onNext={() => partNext(i)}
