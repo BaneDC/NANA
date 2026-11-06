@@ -30,7 +30,12 @@ describe('seedState', () => {
     expect(s.person.care.requests).toEqual([]);
     expect(s.family).toEqual({ unlocked: false, subscription: null });
     expect(s.clients.length).toBeGreaterThan(0);
-    expect(seedState('sr', { filled: false }).clients).toEqual([]);
+  });
+  it('gives Milica in Serbia requests to answer and some she declined', () => {
+    const status = seedState('sr', { filled: false }).clients.map((c) => c.person.care.requests[0]);
+    expect(status.every((r) => r.caregiverId === 'milica')).toBe(true);
+    expect(status.filter((r) => r.status === 'pending')).toHaveLength(2);
+    expect(status.filter((r) => r.status === 'declined')).toHaveLength(3);
   });
   it('filled is a week into care, paid', () => {
     const s = seedState('fi', { filled: true });

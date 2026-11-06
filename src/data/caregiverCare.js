@@ -57,11 +57,15 @@ const person = (c) => ({
 // ── requests ────────────────────────────────────────────────────────────────
 
 // Serbian keys: stored as they are and shown through t()
+// the last chip of every list of reasons: picked, a field asks for it in her
+// own words, and what she writes is the reason (docs/patterns.md §10)
+export const OTHER_REASON = msg('Nešto drugo');
 export const DECLINE_REASONS = [
   msg('Predaleko mi je'),
   msg('Ne uklapa se u moj raspored'),
   msg('To je van mojih kvalifikacija'),
   msg('Trenutno sam popunjena'),
+  OTHER_REASON,
 ];
 
 // A yes opens a cooperation with no terms yet; she sends them next. A yes to a
@@ -75,7 +79,8 @@ export const answerRequest = (caregiverId, accept, reason = DECLINE_REASONS[0]) 
   const rs = market() === 'RS';
   const said = rs ? msg('Prihvatila je. Njen telefon i e-mail su u njenom profilu.') : msg('Prihvatila je. Uslove šalje uskoro.');
   const requests = c.requests.map((x) =>
-    x === r ? (accept ? { ...x, status: 'accepted', detail: said } : { ...x, status: 'declined', detail: reason }) : x
+    // the day she answered, so a declined request can say when (said on the day it is read)
+    x === r ? (accept ? { ...x, status: 'accepted', detail: said, answeredDay: todayOf(c) } : { ...x, status: 'declined', detail: reason, answeredDay: todayOf(c) }) : x
   );
   let next = { ...c, requests };
   if (accept && !rs && !arrangementOf(c, caregiverId)) {

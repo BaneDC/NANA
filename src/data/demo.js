@@ -4,7 +4,7 @@ import { demoPerson } from './person';
 import { fillCare } from './demoFill';
 import { withAnswers } from './familyStart';
 import { reconcile } from './dependencies';
-import { caregiverClients } from './caregiverClients';
+import { caregiverClients, caregiverClientsRs } from './caregiverClients';
 import { t } from '../i18n';
 
 // Who this tab is in the demo, and on which market. The address says it first
@@ -78,7 +78,8 @@ export function seedState(market, { filled }) {
     // side's tab makes the state first
     person: { ...person, care: filled ? fillCare(withAnswers(person.care, answers, user)) : withAnswers(person.care, answers, user) },
     family: filled ? { unlocked: true, subscription: { planId: 'monthly', at: Date.now() } } : { unlocked: false, subscription: null },
-    // Finland: the other families on Sanna's board (src/data/caregiverClients.js)
-    clients: market === 'fi' ? caregiverClients() : [],
+    // the other families who wrote to her (src/data/caregiverClients.js): on
+    // Sanna's board in Finland, in Milica's "Upiti" in Serbia
+    clients: market === 'fi' ? caregiverClients() : caregiverClientsRs(),
   };
 }

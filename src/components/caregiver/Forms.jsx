@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -11,7 +11,7 @@ import Dialog from '../Dialog';
 import { Field, FieldError, Input, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { SERVICE_GROUPS, serviceTitle } from '../../data/serviceCatalog';
 import { activeVersion, arrangementOf, chargedFor, hourText, money, todayOf } from '../../data/familyCare';
-import { nowOf } from '../../data/caregiverCare';
+import { OTHER_REASON, nowOf } from '../../data/caregiverCare';
 import { SERVICE_FEE } from '../../data/fees';
 import { msg, t } from '@/i18n';
 
@@ -238,11 +238,31 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
 
 // ── small dialogs: a reason, then one action ────────────────────────────────
 
-export const CALL_OFF_REASONS = [msg('Porodica je otkazala'), msg('Bolesna sam'), msg('Hitan slučaj u porodici'), msg('Nešto drugo')];
+export const CALL_OFF_REASONS = [msg('Porodica je otkazala'), msg('Bolesna sam'), msg('Hitan slučaj u porodici'), OTHER_REASON];
 export const NO_VISIT_REASONS = [msg('Niko nije bio kod kuće'), msg('Porodica je otkazala istog dana'), msg('Nisam mogla da dođem'), msg('Bila sam bolesna')];
 
-export function ReasonDialog({ open, eyebrow, title, text, reasons, action, back, onConfirm, onClose }) {
+// `primary`: the action sets something going rather than switching it off
+// (declining a request: nothing is lost, §9). With "Nešto drugo" among the
+// reasons, picking it opens a field for her own words, as on the family's
+// side (calling off a visit), and those words are what is sent.
+export function ReasonDialog({ open, eyebrow, title, text, reasons, action, back, primary, onConfirm, onClose }) {
   const [reason, setReason] = useState(reasons?.[0]);
+  const [other, setOther] = useState('');
+  const check = useCheck();
+  const { reset } = check;
+  // opened again, it starts as new
+  useEffect(() => {
+    if (!open) return;
+    setReason(reasons?.[0]);
+    setOther('');
+    reset();
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  const own = reason === OTHER_REASON;
+  const otherError = own && !other.trim() && requiredError();
+  const confirm = () => {
+    if (!check.check([otherError])) return;
+    onConfirm(own ? other.trim() : reason);
+  };
   return (
     <Dialog open={open} eyebrow={eyebrow} title={title} onClose={onClose}>
       {text && <DialogDescription>{text}</DialogDescription>}
@@ -255,14 +275,20 @@ export function ReasonDialog({ open, eyebrow, title, text, reasons, action, back
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
+          {own && (
+            <Field error={check.show(otherError)}>
+              <TextArea rows={2} value={other} autoFocus placeholder={t('U par reči')} aria-label={t('Drugi razlog')} onChange={setOther} />
+            </Field>
+          )}
         </Part>
       )}
       <DialogFooter>
         <Button variant="secondary" onClick={onClose}>
           {back || t('Nazad')}
         </Button>
-        {/* calling off or ending switches something off: secondary (§9) */}
-        <Button variant="secondary" onClick={() => onConfirm(reason)}>
+        {/* calling off or ending switches something off: secondary; declining
+            a request loses nothing: default (§9) */}
+        <Button variant={primary ? 'default' : 'secondary'} onClick={confirm}>
           {action}
         </Button>
       </DialogFooter>

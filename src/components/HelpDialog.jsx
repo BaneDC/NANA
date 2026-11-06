@@ -7,12 +7,12 @@ import { CoordinatorRows } from './PlanFooterBlocks';
 import { Field, TextArea, requiredError, useCheck } from './TextField';
 import { t } from '@/i18n';
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemLink, ItemTitle } from '@/components/ui/item';
-import { CODE, CODE_INTRO } from '../data/codeOfConduct';
+import { CODE, CODE_INTRO, CODE_TITLE } from '../data/codeOfConduct';
 
 // her side: the code she works by, one row under the coordinator's contact
 function CodeDialog({ open, onClose }) {
   return (
-    <Dialog title={t('Kodeks ponašanja za negovateljice')} description={t(CODE_INTRO)} wide open={open} onClose={onClose}>
+    <Dialog title={t(CODE_TITLE)} description={t(CODE_INTRO)} wide open={open} onClose={onClose}>
       <ul className="flex list-disc flex-col gap-2 pl-5 text-xs leading-body text-foreground">
         {CODE.map((line) => (
           <li key={line}>{t(line)}</li>

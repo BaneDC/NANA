@@ -11,6 +11,7 @@ import Logo from './components/Logo';
 import CaregiverSidebar from './components/CaregiverSidebar';
 import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStage, chatStore } from './components/KitAssistant';
 import { demoAccount, demoEntry, go, seedState, session, toCountry } from './data/demo';
+import { caregiverClientsRs } from './data/caregiverClients';
 import { store } from './data/store';
 import { fillCare } from './data/demoFill';
 import { useShared } from './hooks/use-shared';
@@ -105,6 +106,11 @@ export default function App() {
     () => (sharedTab ? seedState(market, { filled: false }) : { person: newPerson(), family: { unlocked: false, subscription: null }, clients: [] }),
     { onReceive: (s) => ({ ...s, person: { ...s.person, care: relanguage(s.person.care) } }) }
   );
+  // Serbia's demo state saved before Milica had other families (6. 11.) gets
+  // them once, so a tab kept from before does not need "Počni ispočetka"
+  useEffect(() => {
+    if (sharedTab && market === 'sr' && !shared.clients?.length) setShared((s) => (s.clients?.length ? s : { ...s, clients: caregiverClientsRs() }));
+  }, [sharedTab, market, shared.clients, setShared]);
   const person = shared.person;
   // a change that changes nothing keeps the same state, so nothing is saved or sent
   const setPerson = useCallback(

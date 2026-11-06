@@ -455,12 +455,17 @@ export default function Settings({ payments = true, unlocked, subscription, care
         <Card>
           <CardTitle>{t('Obaveštenja')}</CardTitle>
           <div className="flex flex-col">
-            <Toggle
-              label={t('Mesečni pregled')}
-              hint={t('Jednom mesečno, kratak pregled poseta tog meseca')}
-              on={prefs.digest}
-              onChange={set('digest')}
-            />
+            {/* the month's visits, for a family whose visits go through us: in
+                Finland, not in Serbia (agreed by phone), and not for a
+                caregiver (`payments` is off on her side) */}
+            {payments && marketHas('visits') && (
+              <Toggle
+                label={t('Mesečni pregled')}
+                hint={t('Jednom mesečno, kratak pregled poseta tog meseca')}
+                on={prefs.digest}
+                onChange={set('digest')}
+              />
+            )}
             <Toggle
               label={t('Novosti')}
               hint={t('Povremene vesti o NANA Prime')}

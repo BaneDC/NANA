@@ -1,4 +1,4 @@
-import { Page, PageDescription, PageHeader, PageHeaderText, PagePerson, PageTitle } from '@/components/page';
+import { Page, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -6,18 +6,23 @@ import { Fact, Facts } from '@/components/data-list';
 import BackButton from '../../components/BackButton';
 import Attention from '../../components/Attention';
 import FrailtyScale from '../../components/FrailtyScale';
-import Tags from '../../components/Tags';
+import { Group, Groups } from '../../components/Tags';
 import { PersonRows } from '../../components/PlanFooterBlocks';
 import { ServiceChips } from '../../components/family/FamilyDrawer';
-import { firstName } from '../../data/familyCare';
+import { dayLabel, firstName, lowerDate, todayOf } from '../../data/familyCare';
 import { scheduleText } from '../../data/familyStart';
-import { RECORD_PARTS, alertsOf, partRows } from '../../data/record';
+import { planOverview } from '../../data/carePlan.sr';
+import { srShort } from '../../data/flow.sr';
+import { STEP_TITLE, answerText, planQuestions } from '../../data/planEdits';
+import { HEALTH } from '../../data/record';
 import { t } from '@/i18n';
 
 // A family from her side in Serbia (docs/superpowers/specs/2026-10-19-negovateljica-srbija-design.md):
-// who the person is and what she needs, read from the family's answers and
-// their medical record, nothing written twice. Their contact shows once she
-// has said yes; until then the request waits at the top.
+// the overview the family got at the end of their conversation, told to her,
+// then what is needed and when, the health their record holds, and every
+// answer they gave, nothing written twice. One column, as the family's own
+// overview: two columns of cards of unequal height left holes. Their contact
+// shows once she has said yes; until then the request waits at the top.
 const initials = (name) =>
   (name || '')
     .split(' ')
@@ -42,14 +47,23 @@ export default function ClientProfile({ client, onBack, act }) {
   const { person, care, request: r } = client;
   const answers = person.answers || {};
   const yes = r?.status === 'accepted';
+  // A declined request opens the same page, contact hidden (decided 6. 11.,
+  // as production does). TODO(pravnik): ask the lawyer whether she may still
+  // see the family's health and answers once she has said no: they were
+  // shared for her to decide, and that purpose is over (GDPR, purpose
+  // limitation; Finland in particular). If not, a declined request shows
+  // only "Ukratko" and "Šta je potrebno" without "Zdravstveno stanje", or
+  // opens nothing again. Also in docs/patterns.md §12c.
+  const no = r?.status === 'declined';
   const age = answers['about-person']?.values?.age;
-  const rows = (part) =>
-    partRows(part, answers).rows.map((x) => (
-      <Fact key={x.key} label={t(x.label)}>
-        {x.value}
-      </Fact>
-    ));
-  const contact = partRows(RECORD_PARTS.contact, answers).rows;
+  const o = planOverview(answers, person.notes || [], { to: 'caregiver' });
+  const health = HEALTH.filter((h) => person.record?.health?.[h.id]?.length);
+  // the family's contact shows with "Kontakt porodice", after a yes; their
+  // goal and worry are already in "Ukratko", told to her
+  const own = ['about-you', 'family-goal'];
+  const steps = planQuestions(answers)
+    .map((s) => ({ ...s, questions: s.questions.filter(({ q }) => !own.includes(q.id)) }))
+    .filter((s) => s.questions.length);
 
   return (
     <Page>
@@ -80,51 +94,100 @@ export default function ClientProfile({ client, onBack, act }) {
         </Attention>
       )}
 
-      <div className="@container">
-        <div className="grid grid-cols-2 items-start gap-3 @max-[672px]:grid-cols-1">
-          <Part title={t('Osnovno')}>
-            <Facts>{rows(RECORD_PARTS.person)}</Facts>
-          </Part>
-          <Part title={t('Kada je potrebna pomoć')}>
+      {no && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('Odbili ste ovaj upit')}</CardTitle>
+          </CardHeader>
+          <Facts>
+            <Fact label={t('Razlog')}>{t(r.detail)}</Fact>
+            {r.answeredDay != null && <Fact label={t('Kada')}>{dayLabel(r.answeredDay, todayOf(care))}</Fact>}
+          </Facts>
+        </Card>
+      )}
+
+      <PageSection title={t('Ukratko')}>
+        <Card>
+          <p className="text-sm text-foreground">{o.lead}</p>
+          {o.story.map((p) => (
+            <CardDescription key={p}>{p}</CardDescription>
+          ))}
+        </Card>
+        <FrailtyScale answers={answers} note={t('Procena je iz odgovora porodice. Nije dijagnoza i ne zamenjuje lekara.')} />
+        {(o.risks.length > 0 || o.goal || o.notes.length > 0 || r?.message) && (
+          <Card>
+            <Groups>
+              {o.risks.length > 0 && (
+                <Group label={t('Na šta najviše treba paziti')}>
+                  <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-body text-foreground">
+                    {o.risks.map((x) => (
+                      <li key={x}>{x}</li>
+                    ))}
+                  </ul>
+                </Group>
+              )}
+              {o.goal && <Group label={t('Porodici je najvažnije')} text={o.goal} />}
+              {o.worry && <Group label={t('Porodicu najviše brine')} text={o.worry} />}
+              {o.notes.length > 0 && <Group label={t('Porodica je usput rekla')} text={o.notes.join(' ')} />}
+              {r?.message && <Group label={t('Poruka porodice')} text={t(r.message)} />}
+            </Groups>
+          </Card>
+        )}
+      </PageSection>
+
+      <PageSection title={t('Šta je potrebno')}>
+        <Part title={t('Kada je potrebna pomoć')}>
+          <Facts>
+            <Fact label={t('Raspored')}>{care.need?.schedule ? scheduleText(care.need.schedule) : '-'}</Fact>
+            <Fact label={t('Sati')}>{care.need?.hours ? t('{hours} h nedeljno', { hours: care.need.hours }) : '-'}</Fact>
+          </Facts>
+        </Part>
+        <Part title={t('Potrebne usluge')}>
+          <ServiceChips ids={care.need?.services || []} grouped />
+        </Part>
+        {health.length > 0 && (
+          <Part title={t('Zdravstveno stanje')}>
             <Facts>
-              <Fact label={t('Raspored')}>{care.need?.schedule ? scheduleText(care.need.schedule) : '-'}</Fact>
-              <Fact label={t('Sati')}>{care.need?.hours ? t('{hours} h nedeljno', { hours: care.need.hours }) : '-'}</Fact>
+              {health.map((h) => (
+                <Fact key={h.id} label={t(h.title)}>
+                  {person.record.health[h.id].map((e) => t(e.name)).join(', ')}
+                </Fact>
+              ))}
             </Facts>
           </Part>
-          <Part title={t('Potrebne usluge')}>
-            <ServiceChips ids={care.need?.services || []} grouped />
+        )}
+      </PageSection>
+
+      {/* every answer, in the order the conversation asked them, as the family reads them */}
+      <PageSection title={t('Odgovori porodice')}>
+        {steps.map((s) => (
+          <Part key={s.id} title={STEP_TITLE[s.id] ? t(STEP_TITLE[s.id]) : s.title}>
+            <Facts>
+              {s.questions.map(({ q, answer }) => (
+                <Fact key={q.id} label={srShort(q)}>
+                  {answerText(q, answer)}
+                </Fact>
+              ))}
+            </Facts>
           </Part>
-          <Part title={t('Zdravstveno stanje')}>
-            <Tags items={alertsOf(answers, person.record)} />
-            <FrailtyScale answers={answers} />
-            <Facts>{rows(RECORD_PARTS.daily)}</Facts>
-          </Part>
-          <Part title={t('Kontakt porodice')}>
-            {yes ? (
-              <>
-                <Facts>
-                  <Fact label={t('Ime')}>{care.family.name}</Fact>
-                  <Fact label={t('Adresa')}>{answers['about-person']?.values?.city || care.elder.area}</Fact>
-                </Facts>
-                {care.family.phone && <PersonRows phone={care.family.phone} email={care.family.email || ''} />}
-              </>
-            ) : (
-              <CardDescription>{t('Kontakt vidite kad prihvatite upit.')}</CardDescription>
-            )}
-          </Part>
-          {yes && (
-            <Part title={t('Kontakt za hitne slučajeve')}>
+        ))}
+      </PageSection>
+
+      <PageSection title={t('Kontakt porodice')}>
+        <Card>
+          {yes ? (
+            <>
               <Facts>
-                {contact.map((x) => (
-                  <Fact key={x.key} label={t(x.label)}>
-                    {x.value}
-                  </Fact>
-                ))}
+                <Fact label={t('Ime')}>{care.family.name}</Fact>
+                {care.family.relation && <Fact label={t('Srodstvo')}>{t(care.family.relation)}</Fact>}
               </Facts>
-            </Part>
+              {care.family.phone && <PersonRows phone={care.family.phone} email={care.family.email || ''} />}
+            </>
+          ) : (
+            <CardDescription>{no ? t('Upit je odbijen, pa se kontakt ne prikazuje.') : t('Kontakt vidite kad prihvatite upit.')}</CardDescription>
           )}
-        </div>
-      </div>
+        </Card>
+      </PageSection>
     </Page>
   );
 }

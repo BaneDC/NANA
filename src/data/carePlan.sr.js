@@ -46,6 +46,19 @@ const REASON = {
   'daily-living': msg('Javili ste nam se jer svakodnevica traži podršku'),
 };
 
+// the same, told to the caregiver a family wrote to: the family is "they"
+const REASON_THEY = {
+  fall: msg('Porodica se javila posle pada'),
+  memory: msg('Porodica se javila zbog promena u pamćenju'),
+  discharge: msg('Porodica se javila jer se vraća kući iz bolnice'),
+  loneliness: msg('Porodica se javila jer je previše sama'),
+  medication: msg('Porodica se javila jer je praćenje lekova postalo teško'),
+  diagnosis: msg('Porodica se javila zbog dijagnoze'),
+  'home-help': msg('Porodica se javila jer joj je kuća postala prevelika'),
+  respite: msg('Porodica se javila jer joj je potreban predah'),
+  'daily-living': msg('Porodica se javila jer svakodnevica traži podršku'),
+};
+
 // "it began", never the reason itself: after "a fall", "it came on suddenly" says
 // the fall did — and "promena" would repeat itself after "promena u pamćenju"
 const ONSET = {
@@ -98,7 +111,10 @@ const ROLE_DOES = {
 const bare = (text) => (text || '').trim().replace(/^["„“”']+|[.!?"„“”']+$/g, '').trim();
 const sentence = (text) => (/[.!?]$/.test(text.trim()) ? text.trim() : `${text.trim()}.`);
 
-export function planOverview(answers, notes = []) {
+// `to`: 'family' (the plan's own overview) or 'caregiver' (the same overview on
+// a request she was sent, where the family is spoken of, not to)
+export function planOverview(answers, notes = [], { to = 'family' } = {}) {
+  const reasons = to === 'caregiver' ? REASON_THEY : REASON;
   const person = answers['about-person']?.values || {};
   const name = person.name?.trim();
   const details = [person.age?.trim(), person.city?.trim()].filter(Boolean);
@@ -119,7 +135,7 @@ export function planOverview(answers, notes = []) {
   const story = [];
   if (reasonId) {
     story.push(
-      `${t(REASON[reasonId] || REASON['daily-living'])}, ${t(
+      `${t(reasons[reasonId] || reasons['daily-living'])}, ${t(
         ONSET[answers.onset?.optionId] || msg('traje već neko vreme')
       )}.${t(HOSPITAL[answers.hospitalisation?.optionId] || '')}`
     );

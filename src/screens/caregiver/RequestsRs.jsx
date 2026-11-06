@@ -10,7 +10,7 @@ import ShowMore from '../../components/ShowMore';
 import Attention from '../../components/Attention';
 import Tags, { Group, Groups } from '../../components/Tags';
 import { PersonRows } from '../../components/PlanFooterBlocks';
-import { firstName } from '../../data/familyCare';
+import { dayLabel, firstName, lowerDate, todayOf } from '../../data/familyCare';
 import { scheduleText } from '../../data/familyStart';
 import { serviceTitle } from '../../data/serviceCatalog';
 import { msg, t } from '@/i18n';
@@ -80,15 +80,17 @@ export default function RequestsRs({ user, clients, onOpen, act }) {
                     </Avatar>
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                       <p className="-mb-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">
-                        {/* a declined request opens nothing */}
-                        {r.status === 'declined' ? care.elder.name : <CardLink onClick={() => onOpen(c.id)}>{care.elder.name}</CardLink>}
+                        {/* every request opens her page, a declined one too (§7: the card opens its details) */}
+                        <CardLink onClick={() => onOpen(c.id)}>{care.elder.name}</CardLink>
                         <Badge variant={variant} className="my-[calc((var(--text-xs-leading)-20px)/2)]">
                           {t(label)}
                         </Badge>
                       </p>
                       <p className="text-xs leading-body text-muted-foreground">
                         {r.status === 'declined'
-                          ? t('Odbili ste: {reason}', { reason: t(r.detail) })
+                          ? r.answeredDay != null
+                            ? t('Odbili ste {when}: {reason}', { when: lowerDate(dayLabel(r.answeredDay, todayOf(care))), reason: t(r.detail) })
+                            : t('Odbili ste: {reason}', { reason: t(r.detail) })
                           : [age && t('{n} godina', { n: age }), care.elder.area, t('upit {when}', { when: r.requested })].filter(Boolean).join(' · ')}
                       </p>
                       {r.status !== 'declined' && (

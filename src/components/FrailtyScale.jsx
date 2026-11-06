@@ -9,7 +9,8 @@ import { t } from '../i18n';
 // tinted, what the level means, and that it is an estimate, not a diagnosis.
 // The same card in the plan's overview and in the medical record. Nothing when
 // too little is answered to tell.
-export default function FrailtyScale({ answers = {} }) {
+// `note`: the line under it, said to whoever reads it (the family by default)
+export default function FrailtyScale({ answers = {}, note }) {
   const level = frailtyOf(answers)?.level;
   const cfs = level ? CFS_SR[level] : null;
   if (!cfs) return null;
@@ -45,7 +46,7 @@ export default function FrailtyScale({ answers = {} }) {
       </p>
       <CardDescription>{cfs.blurb}</CardDescription>
       <p className="text-small text-disabled">
-        {t('Procena je iz vaših odgovora i služi da uskladimo podršku. Nije dijagnoza i ne zamenjuje lekara.')}
+        {note || t('Procena je iz vaših odgovora i služi da uskladimo podršku. Nije dijagnoza i ne zamenjuje lekara.')}
       </p>
     </Card>
   );

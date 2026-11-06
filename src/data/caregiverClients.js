@@ -1,8 +1,8 @@
-import { demoAnswers, demoNotes, demoUser } from './demoCase';
+import { demoAnswers, demoAnswersRs, demoNotes, demoUser, demoUserRs } from './demoCase';
 import { demoPerson } from './person';
 import { withAnswers, requestSaid } from './familyStart';
 import { agreeTerms, allVisits, askCaregiver, confirmPlan, confirmVisit, endArrangement, linkCard } from './familyCare';
-import { answerRequest, planVisit, sendTerms, sendWorkOrder } from './caregiverCare';
+import { DECLINE_REASONS, answerRequest, planVisit, sendTerms, sendWorkOrder } from './caregiverCare';
 import { passTime } from './sim';
 import { reconcile } from './dependencies';
 import { msg, t } from '../i18n';
@@ -60,5 +60,123 @@ export function caregiverClients() {
     run(family('heikkinen', 'Pentti Heikkinen', '81', 'Vallila, Helsinki', 'Anne Heikkinen'), ...agreed, paidVisit, visitDone), // i18n-ignore
     run(family('laine', 'Helmi Laine', '90', 'Munkkiniemi, Helsinki', 'Petri Laine'), ...agreed, paidVisit, endArrangement(CAREGIVER)), // i18n-ignore
     run(family('nieminen', 'Toivo Nieminen', '76', 'Espoo', 'Sari Nieminen'), asked, answerRequest(CAREGIVER, false)), // i18n-ignore
+  ];
+}
+
+// Serbia: the requests other families sent Milica, so "Upiti" has some in each
+// chip and not only the demo family's. Nothing is agreed through the platform
+// there, so a request is all there is: asked, then a yes or a no. What each
+// family says differs, so their pages do; what they typed stays as typed.
+const MILICA = 'milica';
+
+const familyRs = (id, { elder, age, city, relative, relation, phone, email, goal, worry, ...rest }) => {
+  const answers = reconcile(
+    {},
+    {
+      ...demoAnswersRs,
+      ...rest,
+      'about-person': { values: { name: elder, age, city } },
+      'about-you': { values: { 'your-name': relative, relation, 'your-phone': phone } },
+      'family-goal': { values: { goal, worry } },
+    }
+  ).answers;
+  const user = { ...demoUserRs, name: relative, phone, email };
+  const p = demoPerson(answers, [], user);
+  return { id, person: { ...p, care: withAnswers(p.care, answers, user) } };
+};
+
+const askedRs = (c) => askCaregiver(MILICA, requestSaid(c))(c);
+
+// names, places and what the families typed are Serbian on purpose
+const RS_FAMILIES = {
+  markovic: {
+    elder: 'Ljubica Marković', // i18n-ignore
+    age: '79',
+    city: 'Zemun, Beograd', // i18n-ignore
+    relative: 'Nenad Marković', // i18n-ignore
+    relation: msg('Sin'),
+    phone: '+381 63 222 1876',
+    email: 'nenad.markovic@mail.rs',
+    household: { optionId: 'partner' },
+    mobility: { optionId: 'independent' },
+    'going-out': { optionId: 'accompanied' },
+    falls: { optionId: 'none' },
+    'reason-for-contact': { optionId: 'memory' },
+    onset: { optionId: 'gradual' },
+    hospitalisation: { optionId: 'none' },
+    goal: 'Da ne zaboravlja lekove i da ima društvo dok smo na poslu.', // i18n-ignore
+    worry: 'Da ne izađe iz stana i ne zna da se vrati.', // i18n-ignore
+  },
+  stojanovic: {
+    elder: 'Vera Stojanović', // i18n-ignore
+    age: '86',
+    city: 'Novi Beograd, Beograd', // i18n-ignore
+    relative: 'Ana Stojanović', // i18n-ignore
+    relation: msg('Ćerka'),
+    phone: '+381 64 318 4402',
+    email: 'ana.stojanovic@mail.rs',
+    mobility: { optionId: 'walker' },
+    'daily-help': { optionId: 'several-times' },
+    falls: { optionId: 'once' },
+    overall: { optionId: 'most-help' },
+    'who-helps-now': { optionId: 'nobody' },
+    'reason-for-contact': { optionId: 'discharge' },
+    onset: { optionId: 'sudden' },
+    hospitalisation: { optionId: 'recent' },
+    goal: 'Da se posle operacije kuka oporavi i ponovo hoda sama.', // i18n-ignore
+    worry: 'Noći, kad je sama i treba da ustane.', // i18n-ignore
+  },
+  ilic: {
+    elder: 'Radmila Ilić', // i18n-ignore
+    age: '91',
+    city: 'Zvezdara, Beograd', // i18n-ignore
+    relative: 'Marko Ilić', // i18n-ignore
+    relation: msg('Sin'),
+    phone: '+381 65 410 2290',
+    email: 'marko.ilic@mail.rs',
+    mobility: { optionId: 'wheelchair' },
+    'reason-for-contact': { optionId: 'respite' },
+    onset: { optionId: 'long-standing' },
+    goal: 'Da imamo nekoga na koga možemo da se oslonimo.', // i18n-ignore
+    worry: 'Da mi se mama ne razboli dok ja radim.', // i18n-ignore
+  },
+  djordjevic: {
+    elder: 'Smiljana Đorđević', // i18n-ignore
+    age: '77',
+    city: 'Voždovac, Beograd', // i18n-ignore
+    relative: 'Ivana Đorđević', // i18n-ignore
+    relation: msg('Ćerka'),
+    phone: '+381 62 775 1043',
+    email: 'ivana.djordjevic@mail.rs',
+    mobility: { optionId: 'independent' },
+    falls: { optionId: 'none' },
+    'reason-for-contact': { optionId: 'loneliness' },
+    onset: { optionId: 'long-standing' },
+    goal: 'Da ima s kim da popije kafu i prošeta.', // i18n-ignore
+    worry: 'Što je po ceo dan sama.', // i18n-ignore
+  },
+  pavlovic: {
+    elder: 'Desanka Pavlović', // i18n-ignore
+    age: '84',
+    city: 'Palilula, Beograd', // i18n-ignore
+    relative: 'Dragan Pavlović', // i18n-ignore
+    relation: msg('Sin'),
+    phone: '+381 60 128 9931',
+    email: 'dragan.pavlovic@mail.rs',
+    'reason-for-contact': { optionId: 'home-help' },
+    onset: { optionId: 'gradual' },
+    goal: 'Da kuća bude sređena i da jede topao obrok.', // i18n-ignore
+    worry: 'Što se umara i kad samo opere sudove.', // i18n-ignore
+  },
+};
+
+export function caregiverClientsRs() {
+  const f = (id) => familyRs(id, RS_FAMILIES[id]);
+  return [
+    run(f('markovic'), askedRs),
+    run(f('stojanovic'), askedRs),
+    run(f('ilic'), askedRs, answerRequest(MILICA, false, DECLINE_REASONS[0])),
+    run(f('djordjevic'), askedRs, answerRequest(MILICA, false, DECLINE_REASONS[1])),
+    run(f('pavlovic'), askedRs, answerRequest(MILICA, false, DECLINE_REASONS[3])),
   ];
 }

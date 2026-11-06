@@ -64,7 +64,7 @@ U Srbiji se preko platforme ne dogovara ništa osim upita: negovateljica prihvat
 | „Kontakt porodice" | ime i srodstvo, telefon, e-mail, adresa (redovi su linkovi). Pre prihvatanja: „Kontakt vidite kad prihvatite upit." |
 | „Kontakt za hitne slučajeve" | iz kartona (kontakt osoba). Pre prihvatanja se ne prikazuje |
 
-- **Odbijen upit** ne otvara profil: kartica na „Upitima" nema link.
+- **Odbijen upit** (izmenjeno 6. 11.: otvara se ista stranica, sa karticom „Odbili ste ovaj upit" na vrhu i bez kontakta; čeka pravnika, vidi `patterns.md` §12c). Do 6. 11.: ne otvara profil: kartica na „Upitima" nema link.
 
 ## „Moj profil"
 

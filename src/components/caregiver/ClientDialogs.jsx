@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
-import { Part } from '@/components/pane';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useKept } from '@/hooks/use-kept';
-import Dialog from '../Dialog';
 import Modal from '../Modal';
 import { SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { DataList, DataRow } from '@/components/data-list';
@@ -110,28 +106,10 @@ export function useClientActions({ caregiverId, onClientCare, onFlash }) {
   return { act, dialog };
 }
 
+// the reasons she can pick, or her own words under "Nešto drugo"; nothing is
+// deleted, so the action is default, not destructive (§9)
 function DeclineDialog({ open, name, onClose, onConfirm }) {
-  const [reason, setReason] = useState(DECLINE_REASONS[0]);
-  return (
-    <Dialog open={open} eyebrow={name} title={t('Odbiti upit?')} onClose={onClose}>
-      <Part label={t('Zašto')}>
-        <ToggleGroup type="single" size="sm" className="flex-wrap" value={reason} onValueChange={(v) => v && setReason(v)} aria-label={t('Zašto')}>
-          {DECLINE_REASONS.map((x) => (
-            <ToggleGroupItem key={x} value={x}>
-              {t(x)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </Part>
-      <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Nazad')}
-        </Button>
-        {/* nothing is deleted: default, not destructive (§9) */}
-        <Button onClick={() => onConfirm(reason)}>{t('Odbij upit')}</Button>
-      </DialogFooter>
-    </Dialog>
-  );
+  return <ReasonDialog open={open} eyebrow={name} title={t('Odbiti upit?')} reasons={DECLINE_REASONS} action={t('Odbij upit')} primary onClose={onClose} onConfirm={onConfirm} />;
 }
 
 // A new request, opened from its card on the board: who asks, why and what for,

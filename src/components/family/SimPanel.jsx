@@ -20,6 +20,7 @@ import {
 import { msg, t } from '@/i18n';
 import {
   DECLINE_REASONS,
+  OTHER_REASON,
   RESOLUTIONS,
   answerRequest,
   canSendTerms,
@@ -196,7 +197,8 @@ export default function SimPanel({
           <PaneLabel>{t('Upiti koji čekaju')}</PaneLabel>
           <PaneHint>{t('Razlog ako odbije:')}</PaneHint>
           <ToggleGroup type="single" size="sm" value={reason} onValueChange={(v) => v && setReason(v)} aria-label={t('Razlog ako odbije')}>
-            {DECLINE_REASONS.map((r) => (
+            {/* the simulation picks one of hers, never her own words */}
+            {DECLINE_REASONS.filter((r) => r !== OTHER_REASON).map((r) => (
               <ToggleGroupItem key={r} value={r}>
                 {t(r)}
               </ToggleGroupItem>
