@@ -6,38 +6,57 @@ import { Button } from '@/components/ui/button';
 import { useIsPhone } from '@/hooks/use-phone';
 import { cn } from '@/lib/utils';
 import { t } from '@/i18n';
+import GradientBackground from '@/components/immersive/GradientBackground';
 
 // A form in parts on one page (docs/patterns.md §10), as the chat kit's
 // QuestionGroup until the kit's card takes a host's own fields
-// (docs/kit-issues.md). The parts are on a grey tray, as in `Tray`: the one
-// open is a white card with its fields and "Dalje", a part done is a row with
-// what was given in it and opens again on a press, a part still to come is a
-// dim row.
+// (docs/kit-issues.md), in the personality test's look (§12d): the page over
+// the screen on the onboarding's sky, the parts glass cards as the test's
+// choices. The one open has its fields and "Dalje", a part done is a row with
+// what was given in it and opens again on a press, a part still to come is
+// paler glass.
+
+// The page: the sky, the test's title and its line, the parts 32 under them
+// and the page's buttons 32 under the parts; it scrolls as one, and what is
+// short sits in the middle.
+export function StepPage({ title, sub, actions, children }) {
+  return (
+    <div data-slot="step-page" className="fixed inset-0 z-10 overflow-hidden">
+      <GradientBackground />
+      <div className="absolute inset-0 overflow-y-auto">
+        <div className="flex min-h-full flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8">
+          <div className="flex w-[560px] max-w-full flex-col gap-8">
+            <header className="flex flex-col gap-2 text-center">
+              <h1 className="imm-title">{title}</h1>
+              {sub && <p className="imm-subtitle my-0">{sub}</p>}
+            </header>
+            {children}
+            {actions}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function StepCards({ className, children }) {
-  return <div data-slot="step-cards" className={cn('flex flex-col gap-2 rounded-4xl bg-muted p-2', className)}>{children}</div>;
+  return <div data-slot="step-cards" className={cn('flex flex-col gap-2', className)}>{children}</div>;
 }
 
 const EASE = [0.23, 1, 0.32, 1];
 
-// the number: the primary on the part open, grey on a white card, white and
-// dim on the tray for a part still to come
+// the number, the test's square: the primary on the part open, its brown
+// otherwise, paler on a part still to come
 function Num({ on, upcoming, children }) {
   return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'flex size-6 shrink-0 items-center justify-center rounded-lg text-small font-medium',
-        on ? 'bg-primary text-primary-foreground' : upcoming ? 'bg-card text-muted-foreground' : 'bg-muted text-foreground'
-      )}
-    >
+    <span aria-hidden="true" className={cn('imm-letter', on && 'is-on', upcoming && 'is-off')}>
       {children}
     </span>
   );
 }
 
 // two answers at most (one on a phone), then how many more: a row that wraps
-// is no summary
+// is no summary. White tags: the grey one is too faint on the glass
 function Summary({ items }) {
   const phone = useIsPhone();
   const shown = items.filter(Boolean);
@@ -46,11 +65,15 @@ function Summary({ items }) {
   return (
     <span className="flex min-w-0 flex-1 justify-end gap-1 overflow-hidden">
       {shown.slice(0, fit).map((x, i) => (
-        <Badge key={i} variant="tag" className="min-w-0 shrink">
+        <Badge key={i} variant="tag" className="min-w-0 shrink bg-card">
           <span className="truncate">{x}</span>
         </Badge>
       ))}
-      {rest > 0 && <Badge variant="tag">+{rest}</Badge>}
+      {rest > 0 && (
+        <Badge variant="tag" className="bg-card">
+          +{rest}
+        </Badge>
+      )}
     </span>
   );
 }
@@ -106,12 +129,8 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
       transition={still ? { duration: 0 } : { duration: 0.25, ease: EASE }}
       onAnimationStart={() => setMoving(true)}
       onAnimationComplete={settle}
-      className={cn(
-        'rounded-3xl transition-[background-color,box-shadow] duration-200',
-        state !== 'upcoming' && 'bg-card shadow-card',
-        // a part done opens again from anywhere on it: ringed on hover, as a card that opens something (§7)
-        state === 'done' && 'hover:shadow-[0_0_0_1px_var(--color-primary-300),var(--shadow-card)]'
-      )}
+      // a part done opens again from anywhere on it: whiter on hover, as a choice in the test
+      className={cn('imm-step', open ? 'is-open' : state === 'done' ? 'is-done' : 'is-upcoming')}
       style={{ overflow: moving ? 'hidden' : 'visible' }}
     >
       <div ref={inner}>
@@ -120,9 +139,9 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
             <motion.div key="open" {...fade} className="flex flex-col gap-4 p-4">
               <div className="flex items-start gap-3">
                 <Num on>{n}</Num>
-                <div className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
-                  <h2 className="text-sm font-medium text-foreground">{title}</h2>
-                  {sub && <p className="text-xs leading-body text-muted-foreground">{sub}</p>}
+                <div className="flex min-w-0 flex-1 flex-col pt-0.5">
+                  <h2 className="imm-option-title">{title}</h2>
+                  {sub && <p className="imm-option-sub">{sub}</p>}
                 </div>
               </div>
               {/* the questions 24 apart, no line between them; a note goes
@@ -144,14 +163,14 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
               className="group/step flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-3xl px-4 py-2 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <Num>{n}</Num>
-              <span className="shrink-0 text-sm text-foreground">{title}</span>
+              <span className="imm-option-title shrink-0">{title}</span>
               <Summary items={summary} />
               <Pencil aria-hidden="true" className="size-4 shrink-0 text-muted-foreground transition-colors duration-150 group-hover/step:text-foreground" />
             </motion.button>
           ) : (
             <motion.div key="upcoming" {...fade} className="flex min-h-14 items-center gap-3 px-4 py-2">
               <Num upcoming>{n}</Num>
-              <span className="text-sm text-muted-foreground">{title}</span>
+              <span className="imm-option-title">{title}</span>
             </motion.div>
           )}
         </AnimatePresence>

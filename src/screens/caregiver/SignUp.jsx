@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Note, PaneHint } from '@/components/pane';
-import { StepCard, StepCards } from '@/components/StepCards';
+import { StepCard, StepCards, StepPage } from '@/components/StepCards';
 import PersonalityTest from './PersonalityTest';
-import { Actions, Consent, FormCard, Welcome, column } from '../Register';
+import { Actions, Consent, FormCard, Welcome } from '../Register';
 import { Radius } from '../../components/caregiver/ProfileForms';
 import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Password, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -448,9 +448,22 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   if (screen === 'form')
     return (
-      <>
-        <Welcome title={t('Vaši podaci')} sub={t('Za popunjavanje treba 10 do 20 minuta.')} />
-        <StepCards className={column}>
+      <StepPage
+        title={t('Vaši podaci')}
+        sub={t('Za popunjavanje treba 10 do 20 minuta.')}
+        // as the test's: back, then send, side by side; on a phone a column, send on top
+        actions={
+          <div className="flex justify-center gap-2 phone:flex-col-reverse phone:*:w-full">
+            <Button variant="secondary" size="lg" onClick={back}>
+              {t('Nazad')}
+            </Button>
+            <Button size="lg" onClick={sendForm}>
+              {t('Pošalji prijavu')}
+            </Button>
+          </div>
+        }
+      >
+        <StepCards>
           {parts.map((p, i) => (
             <StepCard
               key={p.id}
@@ -466,8 +479,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             </StepCard>
           ))}
         </StepCards>
-        {footer(t('Pošalji prijavu'), sendForm)}
-      </>
+      </StepPage>
     );
 
   if (screen === 'documents')

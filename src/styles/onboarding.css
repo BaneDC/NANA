@@ -1543,3 +1543,45 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* The caregiver's form in this language (docs/patterns.md §10, "Forma u
+   delovima"): each part a glass card as the test's choices, 24 round since
+   fields sit 16 in. Open, almost white, for the fields; still to come, paler
+   and flat. */
+.imm-step {
+  border-radius: var(--radius-3xl);
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 8px 32px rgba(122, 92, 70, 0.08);
+  transition: background 0.25s ease;
+}
+
+.imm-step.is-open {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.imm-step.is-done:hover {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.imm-step.is-upcoming {
+  background: rgba(255, 255, 255, 0.32);
+  box-shadow: none;
+}
+
+.imm-letter.is-on {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.imm-letter.is-off {
+  background: rgba(122, 92, 70, 0.08);
+  color: #8a7a6d;
+}
+
+.imm-step.is-upcoming .imm-option-title {
+  color: #8a7a6d;
+  font-weight: var(--font-normal);
+}
