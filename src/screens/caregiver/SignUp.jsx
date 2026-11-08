@@ -451,9 +451,9 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       <StepPage
         title={t('Vaši podaci')}
         sub={t('Za popunjavanje treba 10 do 20 minuta.')}
-        // as the test's: back, then send, side by side; on a phone a column, send on top
+        // back at the left edge of the parts, send at the right; on a phone a column, send on top
         actions={
-          <div className="flex justify-center gap-2 phone:flex-col-reverse phone:*:w-full">
+          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
             <Button variant="secondary" size="lg" onClick={back}>
               {t('Nazad')}
             </Button>
