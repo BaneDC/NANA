@@ -149,7 +149,8 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
               <div ref={fields} className="flex flex-col gap-6">
                 {children}
               </div>
-              <div className="flex justify-end phone:*:flex-1">
+              {/* 24 under the last question, as the questions are apart */}
+              <div className="mt-2 flex justify-end phone:*:flex-1">
                 <Button onClick={onNext}>{nextLabel || t('Dalje')}</Button>
               </div>
             </motion.div>

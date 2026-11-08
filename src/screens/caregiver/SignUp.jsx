@@ -263,7 +263,8 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const body = {
     basic: (
       <>
-        <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+        {/* one under the other on a phone, 24 apart as every question */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 max-[480px]:grid-cols-1">
           <Field label={t('Vaše ime')} required error={show('firstName')}>
             <Input value={f.firstName} onChange={(v) => set({ firstName: v })} placeholder="Sarah" autoComplete="given-name" />
           </Field>
@@ -457,7 +458,9 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             <Button variant="secondary" size="lg" onClick={back}>
               {t('Nazad')}
             </Button>
-            <Button size="lg" onClick={sendForm}>
+            {/* off until every part is right: an exception to §9, decided
+                8. 11.; the numbers and the pale parts say what is left */}
+            <Button size="lg" onClick={sendForm} disabled={parts.some((p) => wrong(p.id))}>
               {t('Pošalji prijavu')}
             </Button>
           </div>
