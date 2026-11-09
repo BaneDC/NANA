@@ -32,7 +32,10 @@ export function StepPage({ eyebrow, title, sub, start, actions, children }) {
     <div data-slot="step-page" className="fixed inset-0 z-10 overflow-hidden">
       <GradientBackground />
       <div ref={scroller} className="absolute inset-0 overflow-y-auto">
-        <div className="flex min-h-full flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8">
+        {/* with buttons the bar's own 16 is the page's foot: the page's
+            padding under it let the buttons, held 16 over the screen's edge,
+            ride up by that much more once the page's end was reached */}
+        <div className={cn('flex min-h-full flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8', actions && 'pb-0 phone:pb-0')}>
           <div className="flex w-[560px] max-w-full flex-col gap-8">
             <header className={cn('flex flex-col gap-2', start ? 'text-left' : 'text-center')}>
               {eyebrow && <p className="imm-count my-0">{eyebrow}</p>}
@@ -143,7 +146,10 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
     if (open && focusOnOpen.current) {
       focusOnOpen.current = false;
       fields.current?.querySelector('input:not([type=hidden]), textarea, button')?.focus({ preventScroll: true });
-      inner.current?.scrollIntoView?.({ block: 'nearest', behavior: still ? 'auto' : 'smooth' });
+      // its top at the top of the screen, whatever its height (decided 9. 11.,
+      // Branislav): "nearest" left a part taller than a phone's screen where it
+      // was, its top out of sight above
+      inner.current?.scrollIntoView?.({ block: 'start', behavior: still ? 'auto' : 'smooth' });
     }
   };
   const fade = still
