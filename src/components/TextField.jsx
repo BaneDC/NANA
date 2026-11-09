@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, useRef, useState } from 'react';
+import { cloneElement, createContext, useContext, useId, useRef, useState } from 'react';
 import { CalendarDays, Check, ChevronDown, ChevronsUpDown, Eye, EyeOff } from 'lucide-react';
 import { FieldDescription, FieldError as FieldErrorRoot, FieldLabel, Field as FieldRoot } from '@/components/ui/field';
 import { Input as InputBox } from '@/components/ui/input';
@@ -6,6 +6,8 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { useIsPhone } from '@/hooks/use-phone';
 import {
   Select as SelectRoot,
   SelectContent,
@@ -38,6 +40,8 @@ import { t } from '../i18n';
 
 const FieldId = createContext(undefined);
 const FieldState = createContext({ invalid: false, describedBy: undefined });
+// the field's label, which heads the sheet a list or a calendar opens in on a phone
+const FieldTitle = createContext(undefined);
 
 // what every control in a field takes from it
 const invalidOf = (state) => (state.invalid ? { 'aria-invalid': true, 'aria-describedby': state.describedBy } : {});
@@ -55,9 +59,11 @@ export function Field({ label, required, hint, error, className, labelId, childr
           </span>
         </FieldLabel>
       )}
-      <FieldId.Provider value={id}>
-        <FieldState.Provider value={{ invalid: Boolean(error), describedBy: error ? errorId : undefined }}>{children}</FieldState.Provider>
-      </FieldId.Provider>
+      <FieldTitle.Provider value={typeof label === 'string' ? label : undefined}>
+        <FieldId.Provider value={id}>
+          <FieldState.Provider value={{ invalid: Boolean(error), describedBy: error ? errorId : undefined }}>{children}</FieldState.Provider>
+        </FieldId.Provider>
+      </FieldTitle.Provider>
       {error ? <FieldError id={errorId}>{error}</FieldError> : hint && <FieldDescription>{hint}</FieldDescription>}
     </FieldRoot>
   );
@@ -210,6 +216,39 @@ export function Select({ value, onChange, options, placeholder = t('Izaberite'),
   );
 }
 
+// What a field opens (a calendar, a list with a search): by the field with a
+// mouse, a Popover; on a phone a bottom sheet, as every pane there is
+// (docs/patterns.md §10, decided 9. 11.). By the field it ran off the screen
+// on a phone, and the keyboard a search brings up left a list two rows. The
+// sheet is headed by the field's label (or `title`); `tall` keeps it at its
+// full height, so it does not jump while a search narrows the list.
+function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, popover, children }) {
+  const phone = useIsPhone();
+  const label = useContext(FieldTitle);
+  if (phone)
+    return (
+      <>
+        {cloneElement(trigger, { onClick: () => onOpenChange(true), 'data-state': open ? 'open' : 'closed' })}
+        <Drawer open={open} onOpenChange={onOpenChange}>
+          <DrawerContent
+            kind="dialog"
+            head={<DrawerTitle>{title || label || fallback}</DrawerTitle>}
+            className={tall ? 'h-[calc(100%-48px-env(safe-area-inset-top,0px))]' : undefined}
+            bodyClassName={tall ? 'min-h-0 flex-1 overflow-hidden' : undefined}
+          >
+            {children}
+          </DrawerContent>
+        </Drawer>
+      </>
+    );
+  return (
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent {...popover}>{children}</PopoverContent>
+    </Popover>
+  );
+}
+
 // A day, picked from a calendar rather than typed: the field shows it as it is
 // said ("1. novembra 2026") with the calendar at its end, and opens a month
 // under its right end, where the calendar icon is, half its width, on the day
@@ -220,7 +259,8 @@ export function Select({ value, onChange, options, placeholder = t('Izaberite'),
 // birth). People pick the day first, then the month and the year, so a day
 // only marks the date and does not close: the day marked goes along when the
 // month or year changes, and nothing is kept until "Potvrdi" (docs/patterns.md §10).
-export function DateInput({ value, onChange, from, to, today = from, pickYear, placeholder = t('Izaberite datum'), ariaLabel, autoFocus, className }) {
+// On a phone the month opens in a bottom sheet (FieldPane).
+export function DateInput({ value, onChange, from, to, today = from, pickYear, placeholder = t('Izaberite datum'), title, ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
@@ -238,75 +278,78 @@ export function DateInput({ value, onChange, from, to, today = from, pickYear, p
     setMonth(m);
     if (draft) setDraft(new Date(m.getFullYear(), m.getMonth(), Math.min(draft.getDate(), new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate())));
   };
-  return (
-    <Popover open={open} onOpenChange={toggle}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          id={id}
-          aria-label={ariaLabel}
-          autoFocus={autoFocus}
-          data-autofocus={autoFocus || undefined}
-          data-placeholder={value ? undefined : ''}
-          {...invalidOf(state)}
-          className={cn(
-            'flex h-(--input-size) w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-left text-xs text-foreground transition-[border-color] duration-180 outline-none focus-visible:border-primary data-[placeholder]:text-muted-foreground data-[state=open]:border-primary aria-invalid:border-destructive pointer-coarse:text-[16px] pointer-coarse:leading-6',
-            className
-          )}
-        >
-          <span className="min-w-0 flex-1 truncate">{value ? longDate(value) : placeholder}</span>
-          <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end">
-        {pickYear ? (
-          <>
-            <Calendar
-              mode="single"
-              captionLayout="dropdown"
-              selected={draft ?? undefined}
-              month={month ?? undefined}
-              onMonthChange={moveTo}
-              today={today}
-              disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
-              startMonth={from}
-              endMonth={to}
-              onSelect={(d) => d && setDraft(d)}
-              autoFocus
-            />
-            <div className="flex gap-2 p-1 pt-2 [&>*]:flex-1">
-              <Button
-                onClick={() => {
-                  if (draft) onChange(draft);
-                  setOpen(false);
-                }}
-              >
-                {t('Potvrdi')}
-              </Button>
-              <Button variant="secondary" onClick={() => setOpen(false)}>
-                {t('Otkaži')}
-              </Button>
-            </div>
-          </>
-        ) : (
+  const trigger = (
+    <button
+      type="button"
+      id={id}
+      aria-label={ariaLabel}
+      autoFocus={autoFocus}
+      data-autofocus={autoFocus || undefined}
+      data-placeholder={value ? undefined : ''}
+      {...invalidOf(state)}
+      className={cn(
+        'flex h-(--input-size) w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg border border-input bg-background px-3 text-left text-xs text-foreground transition-[border-color] duration-180 outline-none focus-visible:border-primary data-[placeholder]:text-muted-foreground data-[state=open]:border-primary aria-invalid:border-destructive pointer-coarse:text-[16px] pointer-coarse:leading-6',
+        className
+      )}
+    >
+      <span className="min-w-0 flex-1 truncate">{value ? longDate(value) : placeholder}</span>
+      <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+    </button>
+  );
+  const body = (
+    <>
+      {pickYear ? (
+        <>
           <Calendar
             mode="single"
-            selected={value ?? undefined}
-            defaultMonth={value ?? today ?? from}
+            captionLayout="dropdown"
+            selected={draft ?? undefined}
+            month={month ?? undefined}
+            onMonthChange={moveTo}
             today={today}
             disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
             startMonth={from}
             endMonth={to}
-            onSelect={(d) => {
-              if (!d) return;
-              onChange(d);
-              setOpen(false);
-            }}
+            onSelect={(d) => d && setDraft(d)}
             autoFocus
           />
-        )}
-      </PopoverContent>
-    </Popover>
+          <div className="flex gap-2 p-1 pt-2 [&>*]:flex-1">
+            <Button
+              onClick={() => {
+                if (draft) onChange(draft);
+                setOpen(false);
+              }}
+            >
+              {t('Potvrdi')}
+            </Button>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              {t('Otkaži')}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Calendar
+          mode="single"
+          selected={value ?? undefined}
+          defaultMonth={value ?? today ?? from}
+          today={today}
+          disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
+          startMonth={from}
+          endMonth={to}
+          onSelect={(d) => {
+            if (!d) return;
+            onChange(d);
+            setOpen(false);
+          }}
+          autoFocus
+        />
+      )}
+    </>
+  );
+  return (
+    <FieldPane open={open} onOpenChange={toggle} trigger={trigger} title={title} fallback={placeholder} popover={{ align: 'end' }}>
+      {body}
+    </FieldPane>
   );
 }
 
@@ -380,21 +423,30 @@ const listTrigger =
 
 // One from a long list, with a search on top: shadcn's combobox (a Popover
 // with a Command). `groups`: [{ label, options: [{ value, label }] }].
+// in a sheet on a phone the list fills what is under the search and scrolls
+// itself, the search staying on top; by the field it is as tall as it was
+const paneList = 'phone:min-h-0 phone:flex-1 phone:[&_[data-slot=command-list]]:max-h-none phone:[&_[data-slot=command-list]]:flex-1';
+
 export function Combobox({ value, onChange, groups, placeholder = t('Izaberite'), searchPlaceholder = t('Pretraga'), empty = t('Nema rezultata.') }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
   const chosen = groups.flatMap((g) => g.options).find((o) => o.value === value);
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <FieldPane
+      open={open}
+      onOpenChange={setOpen}
+      tall
+      fallback={placeholder}
+      popover={{ align: 'start', className: 'w-(--radix-popover-trigger-width) p-2' }}
+      trigger={
         <button type="button" id={id} role="combobox" aria-expanded={open} data-placeholder={chosen ? undefined : ''} {...invalidOf(state)} className={listTrigger}>
           <span className="min-w-0 flex-1 truncate">{chosen ? chosen.label : placeholder}</span>
           <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
         </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
-        <Command>
+      }
+    >
+        <Command className={paneList}>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{empty}</CommandEmpty>
@@ -417,8 +469,7 @@ export function Combobox({ value, onChange, groups, placeholder = t('Izaberite')
             ))}
           </CommandList>
         </Command>
-      </PopoverContent>
-    </Popover>
+    </FieldPane>
   );
 }
 
@@ -433,15 +484,22 @@ export function MultiCombobox({ values, onChange, options, placeholder = t('Izab
   const toggle = (v) => onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
   const shown = options.filter((o) => values.includes(o.value)).map((o) => o.label);
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <FieldPane
+      open={open}
+      onOpenChange={setOpen}
+      // a short list (the languages) is as tall as it is; a long one keeps the
+      // sheet's full height while the search narrows it
+      tall={options.length > 10}
+      fallback={placeholder}
+      popover={{ align: 'start', className: 'w-(--radix-popover-trigger-width) p-2' }}
+      trigger={
         <button type="button" id={id} role="combobox" aria-expanded={open} data-placeholder={shown.length ? undefined : ''} {...invalidOf(state)} className={listTrigger}>
           <span className="min-w-0 flex-1 truncate">{shown.length ? shown.join(', ') : placeholder}</span>
           <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
         </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
-        <Command>
+      }
+    >
+        <Command className={paneList}>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{empty}</CommandEmpty>
@@ -464,7 +522,6 @@ export function MultiCombobox({ values, onChange, options, placeholder = t('Izab
             {t('Zatvori')}
           </Button>
         </div>
-      </PopoverContent>
-    </Popover>
+    </FieldPane>
   );
 }
