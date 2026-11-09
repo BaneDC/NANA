@@ -31,7 +31,7 @@ export function StepPage({ eyebrow, title, sub, start, actions, children }) {
   return (
     <div data-slot="step-page" className="fixed inset-0 z-10 overflow-hidden">
       <GradientBackground />
-      <div ref={scroller} className="absolute inset-0 overflow-y-auto">
+      <div ref={scroller} data-slot="step-scroll" className="absolute inset-0 overflow-y-auto">
         {/* with buttons the bar's own 16 is the page's foot: the page's
             padding under it let the buttons, held 16 over the screen's edge,
             ride up by that much more once the page's end was reached */}
@@ -141,15 +141,22 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
     return () => watch.disconnect();
   }, []);
 
+  // its top to the top of the screen (decided 9. 11., Branislav), with the
+  // part above folding: as the heights start to move, the page goes to where
+  // the top will be once every part above is a row (56, min-h-14)
+  const toTop = () => {
+    const page = inner.current?.closest('[data-slot=step-scroll]');
+    if (!page) return;
+    const above = [...page.querySelectorAll('[data-slot=step-card]')].filter((c) => c.compareDocumentPosition(inner.current) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const fold = above.reduce((sum, c) => sum + c.offsetHeight - 56, 0);
+    const top = inner.current.getBoundingClientRect().top - page.getBoundingClientRect().top;
+    page.scrollTo({ top: page.scrollTop + top - fold, behavior: still ? 'auto' : 'smooth' });
+  };
   const settle = () => {
     setMoving(false);
     if (open && focusOnOpen.current) {
       focusOnOpen.current = false;
       fields.current?.querySelector('input:not([type=hidden]), textarea, button')?.focus({ preventScroll: true });
-      // its top at the top of the screen, whatever its height (decided 9. 11.,
-      // Branislav): "nearest" left a part taller than a phone's screen where it
-      // was, its top out of sight above
-      inner.current?.scrollIntoView?.({ block: 'start', behavior: still ? 'auto' : 'smooth' });
     }
   };
   const fade = still
@@ -167,7 +174,10 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
       initial={false}
       animate={{ height }}
       transition={still ? { duration: 0 } : { duration: 0.25, ease: EASE }}
-      onAnimationStart={() => setMoving(true)}
+      onAnimationStart={() => {
+        setMoving(true);
+        if (open && focusOnOpen.current) toTop();
+      }}
       onAnimationComplete={settle}
       // a part done opens again from anywhere on it: whiter on hover, as a choice in the test
       className={cn('imm-step', open ? 'is-open' : state === 'done' ? 'is-done' : 'is-upcoming')}
