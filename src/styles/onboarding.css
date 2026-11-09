@@ -1585,3 +1585,96 @@
   color: #8a7a6d;
   font-weight: var(--font-normal);
 }
+
+/* The page's buttons (StepPage, docs/patterns.md §10), across the whole page:
+   in their place 32 under the page (16 and the bar's 16) when they fit; held at the bottom of the screen while the page runs
+   past it, on a blur of the sky that fades out upward, as the test's bar on a
+   phone. No tint and no line: the bar never shows an edge. */
+.imm-step-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  padding-bottom: calc(var(--spacing-4) + env(safe-area-inset-bottom, 0px));
+}
+
+.imm-step-bar::before {
+  content: '';
+  position: absolute;
+  top: -24px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(to top, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 65%, transparent 100%);
+}
+
+/* The caregiver's review after her form, as the family's plan after the
+   onboarding: on the sky, no cards. A part is its name (16 medium, 12 above
+   its rows), 24, a line, 24 from the next; a row is the question left (200) and the answer
+   right, 15 / 24, 8 apart. The brown of the questions is darker than the
+   plan's labels, 5.2 : 1 on the palest sky. */
+/* parts apart by 24, a line, 24: a warm brown line, the sky's own tone */
+.imm-review-part + .imm-review-part {
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid rgba(122, 92, 70, 0.16);
+}
+
+/* the part's name a heading of its own, above the rows' 15: 16 medium, dark,
+   12 over its first row */
+.imm-review-title {
+  margin-bottom: var(--spacing-3);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: var(--font-medium);
+  color: #463d35;
+}
+
+.imm-review-rows {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  column-gap: var(--spacing-4);
+  row-gap: var(--spacing-2);
+  margin: 0;
+}
+
+.imm-review-rows dt {
+  font-size: 15px;
+  line-height: 24px;
+  color: #6f6155;
+}
+
+.imm-review-rows dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 24px;
+  color: #463d35;
+  overflow-wrap: anywhere;
+}
+
+.imm-review-rows .is-empty {
+  color: #6f6155;
+}
+
+/* on a phone the question over its answer, 12 to the next question */
+@media (max-width: 640px) {
+  .imm-review-rows {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  .imm-review-rows dt {
+    font-size: var(--text-xs-size);
+    line-height: var(--text-xs-leading);
+  }
+
+  .imm-review-rows > div:not(:first-child) > dt {
+    margin-top: var(--spacing-3);
+  }
+}
+

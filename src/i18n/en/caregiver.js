@@ -374,4 +374,11 @@ export default {
   "Odbili ste ovaj upit": "You declined this request",
   "Upit je odbijen, pa se kontakt ne prikazuje.": "The request was declined, so the contact is not shown.",
   "Razlog": "Reason",
+  "Nije navedeno": "Not given",
+  "Delovi dana": "Times of day",
+  "Vaša prijava": "Your application",
+  "Ovo ste upisali": "This is what you entered",
+  "Proverite podatke. Sledeći korak je test ličnosti.": "Check your details. Next comes the personality test.",
+  "Proverite podatke. Sledeći korak su dokumenti.": "Check your details. Next come the documents.",
+  "Proverite podatke. Sledeći korak je razgovor sa koordinatorkom.": "Check your details. Next comes the talk with the coordinator.",
 };

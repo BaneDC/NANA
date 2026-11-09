@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Note, PaneHint } from '@/components/pane';
-import { StepCard, StepCards, StepPage } from '@/components/StepCards';
+import { StepCard, StepCards, StepPage, StepReview } from '@/components/StepCards';
 import PersonalityTest from './PersonalityTest';
 import { Actions, Consent, FormCard, Welcome } from '../Register';
 import { Radius } from '../../components/caregiver/ProfileForms';
@@ -19,7 +19,9 @@ import { locale, msg, t } from '@/i18n';
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // where she wants to work, her account, the parts of the form for that market
 // on one page, then her documents (Finland) or the personality test (Serbia),
-// the channel for the talk with the coordinator, and thanks. Every screen is in
+// the channel for the talk with the coordinator, and thanks. The part that
+// finishes the form sends it, and a review of all that was given comes before
+// the next step. Every screen is in
 // the sign-up's own frame (Register.jsx): a title, grey panels with the fields,
 // the buttons under them. The form's parts are step cards (docs/patterns.md
 // §10): one open, the ones done folded into a row with their answers. Errors
@@ -108,25 +110,29 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     }
     if (!check.check(Object.values(errors))) return;
     check.reset();
-    const order = ['form', ...afterSteps(f)];
+    const order = ['form', 'review', ...afterSteps(f)];
     const i = order.indexOf(screen);
     setScreen(order[i + 1]);
     window.scrollTo?.(0, 0);
   };
   const back = () => {
     check.reset();
-    const order = ['account', 'form', ...afterSteps(f || {})];
+    const order = ['account', 'form', 'review', ...afterSteps(f || {})];
     const i = order.indexOf(screen);
     setScreen(i > 0 ? order[i - 1] : 'country');
   };
-  // "Dalje" in a part: only that part is checked; then it folds, and the next
-  // one not done yet opens
+  // the part's button: only that part is checked; then it folds, and the next
+  // one not done yet opens. On the part that finishes the form (every other
+  // one done) it is "Pošalji prijavu", and the review comes
+  const finishes = (i) => parts.every((p, j) => j === i || done.includes(p.id));
   const partNext = (i) => {
     if (!check.check(Object.values(stepErrors(parts[i].id, f)))) return;
     check.reset();
     const now = done.includes(parts[i].id) ? done : [...done, parts[i].id];
+    const to = firstOpen(now);
     setDone(now);
-    setOpen(firstOpen(now));
+    setOpen(to);
+    if (to === null) setScreen('review');
   };
   // the part left open folds as done when it is right, and as not done when
   // it is not, whichever way it was left
@@ -148,22 +154,6 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     check.reset();
     setDone(now);
     setOpen(i);
-  };
-  // the page's button: on, or the first part that is not right opens with its
-  // errors, and every part that is right folds as done
-  const sendForm = () => {
-    const bad = parts.findIndex((p) => wrong(p.id));
-    const right = parts.filter((p) => !wrong(p.id)).map((p) => p.id);
-    setDone(right);
-    if (bad < 0) {
-      check.reset();
-      setOpen(null);
-      setScreen(afterSteps(f)[0]);
-      window.scrollTo?.(0, 0);
-      return;
-    }
-    setOpen(bad);
-    check.check(Object.values(stepErrors(parts[bad].id, f)));
   };
   const submit = async () => {
     if (busy || sent) return;
@@ -449,23 +439,8 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   if (screen === 'form')
     return (
-      <StepPage
-        title={t('Vaši podaci')}
-        sub={t('Za popunjavanje treba 10 do 20 minuta.')}
-        // back at the left edge of the parts, send at the right; on a phone a column, send on top
-        actions={
-          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
-            <Button variant="secondary" size="lg" onClick={back}>
-              {t('Nazad')}
-            </Button>
-            {/* off until every part is right: an exception to §9, decided
-                8. 11.; the numbers and the pale parts say what is left */}
-            <Button size="lg" onClick={sendForm} disabled={parts.some((p) => wrong(p.id))}>
-              {t('Pošalji prijavu')}
-            </Button>
-          </div>
-        }
-      >
+      // no buttons under the parts: the part that finishes the form sends it
+      <StepPage title={t('Vaši podaci')} sub={t('Za popunjavanje treba 10 do 20 minuta.')}>
         <StepCards>
           {parts.map((p, i) => (
             <StepCard
@@ -477,11 +452,91 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
               summary={summary[p.id]}
               onOpen={() => openPart(i)}
               onNext={() => partNext(i)}
+              nextLabel={finishes(i) ? t('Pošalji prijavu') : undefined}
             >
               {i === open && body[p.id]}
             </StepCard>
           ))}
         </StepCards>
+      </StepPage>
+    );
+
+  // everything she gave, part by part, before the next step; "Izmenite
+  // podatke" takes her back to the parts, all folded
+  const yn = (v) => (v ? t('Da') : t('Ne'));
+  const list = (xs) => xs.filter(Boolean).join(', ');
+  const phone = (c, x) => x && `${dialOf(c)} ${x}`;
+  const review = {
+    basic: [
+      [t('Ime i prezime'), `${f.firstName} ${f.lastName}`.trim()],
+      [t('Datum rođenja'), f.birth && new Date(f.birth).toLocaleDateString(locale())],
+      [t('Prebivalište'), f.address],
+      [t('Opština'), f.area],
+      [t('Broj telefona'), phone(f.phoneCountry, f.phone)],
+    ],
+    profession: [
+      [t('Klasifikacije'), list(f.classifications)],
+      [t('Nivo obrazovanja'), f.education && t(f.education)],
+      [t('Jezici koje govorite'), list(f.languages.map((l) => t(l)))],
+      [t('Biografija'), f.bio],
+    ],
+    qualifications: [
+      [t('Nivo obrazovanja'), f.education && educationText(f.education, true)],
+      [t('Sertifikat akreditovane škole za negovateljice'), yn(f.certificate)],
+      [t('Kursevi'), f.courses],
+      [t('Opis radnog iskustva i veština'), f.bio],
+    ],
+    availability: [
+      ...(sr ? [[t('Angažman'), list(f.engagement.map((e) => (e === 'daily' ? t('Dnevne posete') : t('Smena 24 h'))))]] : []),
+      [t('Dani'), f.days.length > 0 && daysText(f.days.map(Number).sort())],
+      [t('Delovi dana'), list(f.slots.map((s) => `${t(SLOTS[s].label)} ${SLOTS[s].hours}`))],
+      ...(sr ? [[t('Rad u inostranstvu'), yn(f.abroad)]] : [[t('Cena'), f.rateMin && f.rateMax && `${f.rateMin}–${f.rateMax} €/h`]]),
+      [t('Radijus'), t('do {km} km', { km: f.radius })],
+    ],
+    health: [
+      ...HABITS.map(([id, label]) => [t(label), yn(f.habits[id])]),
+      [t('Jezici koje govorite'), list(f.languages.map((l) => t(l)))],
+      ...HEALTH_QUESTIONS.map(([id, label]) => [t(label), yn(f.health[id])]),
+      [t('Spremnost za rad'), list(READINESS.filter(([id]) => f.readiness.includes(id)).map(([, l]) => t(l)))],
+      [t('Šta ne želite da radite'), f.unwilling],
+    ],
+    emergency: [
+      [t('Ime i prezime'), f.emergency.name],
+      [t('Srodstvo'), f.emergency.relation && t(f.emergency.relation)],
+      [t('Broj telefona'), phone(f.emergency.phoneCountry, f.emergency.phone)],
+      [t('Adresa'), f.emergency.address],
+    ],
+  };
+  const ahead = {
+    test: t('Proverite podatke. Sledeći korak je test ličnosti.'),
+    documents: t('Proverite podatke. Sledeći korak su dokumenti.'),
+    interview: t('Proverite podatke. Sledeći korak je razgovor sa koordinatorkom.'),
+  };
+
+  if (screen === 'review')
+    return (
+      <StepPage
+        start
+        eyebrow={t('Vaša prijava')}
+        title={t('Ovo ste upisali')}
+        sub={ahead[afterSteps(f)[0]]}
+        // as the form's buttons were: at the two edges of the parts, on a phone a column, "Nastavi" on top
+        actions={
+          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+            <Button variant="secondary" size="lg" onClick={back}>
+              {t('Izmenite podatke')}
+            </Button>
+            <Button size="lg" onClick={next}>
+              {t('Nastavi')}
+            </Button>
+          </div>
+        }
+      >
+        <div>
+          {parts.map((p) => (
+            <StepReview key={p.id} title={t(p.title)} rows={review[p.id]} />
+          ))}
+        </div>
       </StepPage>
     );
 

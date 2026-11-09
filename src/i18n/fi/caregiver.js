@@ -374,4 +374,11 @@ export default {
   "Odbili ste ovaj upit": "Hylkäsit tämän pyynnön",
   "Upit je odbijen, pa se kontakt ne prikazuje.": "Pyyntö on hylätty, joten yhteystietoja ei näytetä.",
   "Razlog": "Syy",
+  "Nije navedeno": "Ei annettu",
+  "Delovi dana": "Vuorokaudenajat",
+  "Vaša prijava": "Hakemuksesi",
+  "Ovo ste upisali": "Tämän annoit",
+  "Proverite podatke. Sledeći korak je test ličnosti.": "Tarkista tietosi. Seuraavaksi persoonallisuustesti.",
+  "Proverite podatke. Sledeći korak su dokumenti.": "Tarkista tietosi. Seuraavaksi asiakirjat.",
+  "Proverite podatke. Sledeći korak je razgovor sa koordinatorkom.": "Tarkista tietosi. Seuraavaksi keskustelu koordinaattorin kanssa.",
 };

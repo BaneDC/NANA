@@ -18,21 +18,35 @@ import GradientBackground from '@/components/immersive/GradientBackground';
 
 // The page: the sky, the test's title and its line, the parts 32 under them
 // and the page's buttons 32 under the parts; it scrolls as one, and what is
-// short sits in the middle.
-export function StepPage({ title, sub, actions, children }) {
+// short sits in the middle. The form and its review are the same page, so the
+// sky goes on from one to the other; a new title starts at the top. `start`:
+// the header at the left under a small line, as the family's plan after the
+// onboarding. The buttons stay in reach: held at the bottom of the screen
+// while the page runs past it (.imm-step-bar).
+export function StepPage({ eyebrow, title, sub, start, actions, children }) {
+  const scroller = useRef(null);
+  useLayoutEffect(() => {
+    scroller.current?.scrollTo?.(0, 0);
+  }, [title]);
   return (
     <div data-slot="step-page" className="fixed inset-0 z-10 overflow-hidden">
       <GradientBackground />
-      <div className="absolute inset-0 overflow-y-auto">
+      <div ref={scroller} className="absolute inset-0 overflow-y-auto">
         <div className="flex min-h-full flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8">
           <div className="flex w-[560px] max-w-full flex-col gap-8">
-            <header className="flex flex-col gap-2 text-center">
+            <header className={cn('flex flex-col gap-2', start ? 'text-left' : 'text-center')}>
+              {eyebrow && <p className="imm-count my-0">{eyebrow}</p>}
               <h1 className="imm-title">{title}</h1>
-              {sub && <p className="imm-subtitle my-0">{sub}</p>}
+              {sub && <p className={cn('my-0', start ? 'imm-plan-text' : 'imm-subtitle')}>{sub}</p>}
             </header>
             {children}
-            {actions}
           </div>
+          {/* across the whole page, so its blur reaches both edges */}
+          {actions && (
+            <div className="imm-step-bar -mx-6 self-stretch px-6 phone:-mx-4 phone:px-4">
+              <div className="mx-auto w-[560px] max-w-full">{actions}</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -75,6 +89,26 @@ function Summary({ items }) {
         </Badge>
       )}
     </span>
+  );
+}
+
+// A part as it was given, on the review after the form, as a part of the
+// family's plan after the onboarding: on the sky, no card; its name, then each
+// question and its answer as a row, the question left and the answer right (on
+// a phone the question over the answer); a question left empty says so.
+export function StepReview({ title, rows }) {
+  return (
+    <section data-slot="step-review" className="imm-review-part">
+      <h2 className="imm-review-title">{title}</h2>
+      <dl className="imm-review-rows">
+        {rows.map(([label, value], i) => (
+          <div key={i} className="contents">
+            <dt>{label}</dt>
+            <dd>{value || <span className="is-empty">{t('Nije navedeno')}</span>}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
