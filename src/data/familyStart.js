@@ -1,6 +1,6 @@
-import { serviceTitle, servicesForNeed } from './serviceCatalog';
+import { servicesForNeed } from './serviceCatalog';
 import { START_HOUR } from './familyCare';
-import { localized, msg, t } from '../i18n';
+import { msg, t } from '../i18n';
 
 // The family's side as it really starts: nobody asked yet, nobody coming, no
 // card. Everything on it from here is something the family did, or a
@@ -90,20 +90,3 @@ export function withAnswers(care, answers, user) {
   };
 }
 
-// What the request says, in the family's words, from the plan.
-export function requestMessage(care) {
-  const what = (care.need?.services || []).map((s) => serviceTitle(s).toLowerCase()).join(', ');
-  return [
-    t('Tražimo negovateljicu, plan nege je u prilogu.'),
-    what && t('Potrebno je: {what}.', { what }),
-    care.need && t('Otprilike {schedule}.', { schedule: scheduleText(care.need.schedule) }),
-    t('Da li biste mogli da dolazite?'),
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
-
-// The same, kept on a request the app sent on its own (the demo, the
-// assistant): in every language, so it reads in the one chosen later. What the
-// family typed themselves is kept as they typed it.
-export const requestSaid = (care) => localized(() => requestMessage(care));

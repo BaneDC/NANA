@@ -20,7 +20,6 @@ import {
 } from '../data/familyCare';
 import { RESOLUTIONS, resolveQuery } from '../data/sim';
 import { caregiverById } from '../data/carePlan';
-import { requestSaid } from '../data/familyStart';
 import { market } from '../data/market';
 import { msg, t } from '@/i18n';
 
@@ -51,7 +50,7 @@ export default function SimForCaregiver({ care, caregiverId, onCare, onFlash }) 
             {t('Otkaži upit')}
           </Button>
         ) : canAsk(care, caregiverId) && caregiverById(caregiverId)?.status !== 'interview' ? (
-          <Button variant="secondary" onClick={() => run(askCaregiver(caregiverId, requestSaid(care)), t('Stigao je upit.'))}>
+          <Button variant="secondary" onClick={() => run(askCaregiver(caregiverId, ''), t('Stigao je upit.'))}>
             {t('Pošalji upit')}
           </Button>
         ) : null}

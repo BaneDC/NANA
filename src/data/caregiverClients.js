@@ -1,6 +1,6 @@
 import { demoAnswers, demoAnswersRs, demoNotes, demoUser, demoUserRs } from './demoCase';
 import { demoPerson } from './person';
-import { withAnswers, requestSaid } from './familyStart';
+import { withAnswers } from './familyStart';
 import { agreeTerms, allVisits, askCaregiver, confirmPlan, confirmVisit, endArrangement, linkCard } from './familyCare';
 import { DECLINE_REASONS, answerRequest, planVisit, sendTerms, sendWorkOrder } from './caregiverCare';
 import { passTime } from './sim';
@@ -33,7 +33,7 @@ const run = (client, ...steps) => ({
   person: { ...client.person, care: steps.reduce((c, step) => step(c), client.person.care) },
 });
 
-const asked = (c) => askCaregiver(CAREGIVER, requestSaid(c))(c);
+const asked = (c) => askCaregiver(CAREGIVER, '')(c);
 const agreed = [linkCard, asked, answerRequest(CAREGIVER, true), sendTerms(CAREGIVER), agreeTerms(CAREGIVER)];
 // one visit from its plan to its paid work order
 const paidVisit = (c) => {
@@ -85,7 +85,7 @@ const familyRs = (id, { elder, age, city, relative, relation, phone, email, goal
   return { id, person: { ...p, care: withAnswers(p.care, answers, user) } };
 };
 
-const askedRs = (c) => askCaregiver(MILICA, requestSaid(c))(c);
+const askedRs = (c) => askCaregiver(MILICA, '')(c);
 
 // names, places and what the families typed are Serbian on purpose
 const RS_FAMILIES = {

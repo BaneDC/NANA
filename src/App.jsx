@@ -36,7 +36,7 @@ import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { declineCard } from './data/sim';
-import { requestSaid, startCare, withAnswers } from './data/familyStart';
+import { startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import { herMove, myClients } from './data/caregiverView';
@@ -404,8 +404,9 @@ export default function App() {
       contactCaregiver(c);
       return false;
     }
-    setCare(askCaregiver(id, requestSaid(care)));
-    say(t('Poruka je poslata zajedno sa planom nege. {name} obično odgovori istog dana.', { name: firstName(c.name) }));
+    // the plan goes; a message only when the family writes one
+    setCare(askCaregiver(id, ''));
+    say(t('Plan nege je poslat. {name} obično odgovori istog dana.', { name: firstName(c.name) }));
     return true;
   };
   const openPage = (page) => {
