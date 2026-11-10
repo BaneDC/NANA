@@ -79,7 +79,17 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [busy, setBusy] = useState(false);
   // who is signing up: a family goes on to the form below; a caregiver's own
   // sign-up comes with part 5, so for now she is shown her side on the demo
-  const [who, setWho] = useState(null);
+  // a switch of language draws the app again (App.jsx); the caregiver who
+  // switched it on her first screen comes back to it (caregiver/SignUp.jsx)
+  const [who, setWho] = useState(() => {
+    try {
+      const back = sessionStorage.getItem('nana.signup');
+      sessionStorage.removeItem('nana.signup');
+      return back;
+    } catch {
+      return null;
+    }
+  });
 
   const dial = COUNTRIES.find((c) => c.id === country);
   const check = useCheck();
@@ -329,7 +339,11 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     else onContinue(user);
   };
 
+  // a forgotten password: its own step on the same screen
+  const [forgot, setForgot] = useState(false);
+
   if (pending) return <TwoFactorStep user={pending} onContinue={onContinue} onBack={() => setPending(null)} />;
+  if (forgot) return <ResetPassword email={email} onBack={() => setForgot(false)} />;
 
   return (
     <>
@@ -339,9 +353,15 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
           <Field label={t('Email')} required error={check.show(errors.email)}>
             <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
-          <Field label={t('Lozinka')} required error={check.show(errors.password) || (failed ? t('Email ili lozinka nisu tačni.') : null)}>
-            <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder={t('Vaša lozinka')} />
-          </Field>
+          {/* the link 8 under the password, at its right edge */}
+          <div className="flex flex-col items-end gap-2">
+            <Field label={t('Lozinka')} required error={check.show(errors.password) || (failed ? t('Email ili lozinka nisu tačni.') : null)}>
+              <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder={t('Vaša lozinka')} />
+            </Field>
+            <Button type="button" variant="link" size="sm" className="-mr-2 pointer-coarse:h-11" onClick={() => (check.reset(), setForgot(true))}>
+              {t('Zaboravili ste lozinku?')}
+            </Button>
+          </div>
         </FormCard>
         <Actions>
           <Button type="submit" size="lg" className="w-full">
@@ -363,6 +383,52 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
           >
             {t('Za testiranje: nalog sa dvofaktorskom prijavom')}
           </button>
+        </Actions>
+      </form>
+    </>
+  );
+}
+
+// A link for a new password, to the account's email (docs/patterns.md §10).
+// It never says whether the account exists, so addresses cannot be tried out.
+// The prototype sends nothing.
+function ResetPassword({ email: given, onBack }) {
+  const [email, setEmail] = useState(given);
+  const [sent, setSent] = useState(false);
+  const check = useCheck();
+  const send = () => {
+    if (!check.check([emailError(email)])) return;
+    setSent(true);
+  };
+
+  if (sent)
+    return (
+      <>
+        <Welcome title={t('Proverite email')} sub={t('Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.', { email: email.trim() })} />
+        <Actions>
+          <Button size="lg" className="w-full" onClick={onBack}>
+            {t('Nazad na prijavu')}
+          </Button>
+        </Actions>
+      </>
+    );
+
+  return (
+    <>
+      <Welcome title={t('Nova lozinka')} sub={t('Upišite email adresu naloga i poslaćemo vam link za novu lozinku.')} />
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), send())}>
+        <FormCard>
+          <Field label={t('Email adresa')} required error={check.show(emailError(email))}>
+            <Input value={email} onChange={setEmail} type="email" placeholder={t('Unesite svoju email adresu')} autoComplete="email" />
+          </Field>
+        </FormCard>
+        <Actions>
+          <Button type="submit" size="lg" className="w-full">
+            {t('Pošalji link')}
+          </Button>
+          <Button type="button" variant="ghost" size="lg" onClick={onBack}>
+            {t('Setili ste se lozinke? Prijavite se')}
+          </Button>
         </Actions>
       </form>
     </>

@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Fact, Facts } from '@/components/data-list';
 import { useKept } from '@/hooks/use-kept';
 import Tags from '../../components/Tags';
-import { AvailabilityForm, EmergencyForm, HealthForm, PersonalForm, ProfessionForm, QualificationsForm } from '../../components/caregiver/ProfileForms';
+import { AvailabilityForm, EmergencyForm, HealthForm, PersonalForm, ProfessionForm, QualificationsForm, radiusText } from '../../components/caregiver/ProfileForms';
 import { SLOTS, daysText, engagementText } from '../../data/carePlan';
 import { DOCUMENTS, HABITS, educationText, HEALTH_QUESTIONS, PERSONAL, READINESS } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
@@ -111,7 +111,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
           {c.engagement && <Fact label={t('Angažman')}>{engagementText(c).join(', ')}</Fact>}
           <Fact label={t('Dani')}>{daysText(c.days)}</Fact>
           <Fact label={t('Doba dana')}>{c.slots.map((s) => `${t(SLOTS[s].label).toLowerCase()} ${SLOTS[s].hours}`).join(', ')}</Fact>
-          <Fact label={t('Radijus')}>{t('do {km} km', { km: c.radius })}</Fact>
+          <Fact label={t('Radijus')}>{radiusText(c.radius, true)}</Fact>
           {fi && c.rate && <Fact label={t('Cena')}>{c.rate}</Fact>}
           {!fi && <Fact label={t('Rad u inostranstvu')}>{c.abroad ? t('Da') : t('Ne')}</Fact>}
         </Group>

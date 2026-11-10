@@ -62,7 +62,7 @@ export default function CaregiverApp({ view, onView, user, market, care, clients
     page = <ClientPage client={client} caregiverId={caregiverId} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => onView(from === 'clients' ? 'clients' : 'board')} act={act} />;
   else if (view === 'clients') page = <Clients clients={clients} onOpen={open} />;
   else if (view === 'earnings') page = <Earnings clients={clients} caregiverId={caregiverId} payouts={payouts} onPayouts={onPayouts} />;
-  else page = <Board user={user} clients={clients} caregiverId={caregiverId} onOpen={open} act={act} />;
+  else page = <Board user={user} clients={clients} caregiverId={caregiverId} onOpen={open} act={act} onEarnings={() => onView('earnings')} />;
 
   return (
     <AppPane>

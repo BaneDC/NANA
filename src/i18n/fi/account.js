@@ -479,6 +479,12 @@ export default {
   'politiku privatnosti': 'tietosuojakäytäntömme',
   'NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o zaštiti podataka.':
     'NANA Prime on suomalainen yritys. Tietonne säilytetään ja käsitellään turvallisesti EU:n tietosuoja-asetuksen (GDPR) mukaisesti.',
+  "Zaboravili ste lozinku?": "Unohditko salasanan?",
+  "Proverite email": "Tarkista sähköpostisi",
+  "Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.": "Jos osoitteella {email} on tili, lähetimme sinulle linkin uuden salasanan asettamiseen.",
+  "Upišite email adresu naloga i poslaćemo vam link za novu lozinku.": "Syötä tilisi sähköpostiosoite, niin lähetämme sinulle linkin uuden salasanan asettamiseen.",
+  "Pošalji link": "Lähetä linkki",
+  "Setili ste se lozinke? Prijavite se": "Muistatko salasanasi? Kirjaudu sisään",
   'Već imate nalog? Prijavite se': 'Onko teillä jo tili? Kirjautukaa',
   'Za testiranje: otvori demo sa gotovim planom': 'Testaukseen: avaa demo valmiilla suunnitelmalla',
   'Za pregled: sve kartice na jednoj stranici': 'Katselmointiin: kaikki kortit yhdellä sivulla',

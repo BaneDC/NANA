@@ -4,9 +4,11 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Note, PaneHint } from '@/components/pane';
 import { StepCard, StepCards, StepPage, StepReview } from '@/components/StepCards';
 import PersonalityTest from './PersonalityTest';
+import CookieSettings from '../../components/CookieSettings';
+import { COOKIE_DEFAULT } from '../../data/cookies';
 import { Actions, Consent, FormCard, Welcome } from '../Register';
-import { Radius } from '../../components/caregiver/ProfileForms';
-import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Password, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
+import { Radius, radiusText } from '../../components/caregiver/ProfileForms';
+import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
@@ -14,7 +16,7 @@ import { dialOf } from '../../data/countries';
 import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
-import { locale, msg, t } from '@/i18n';
+import { LANGUAGES, locale, msg, setLang, t, useLang } from '@/i18n';
 
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // where she wants to work, her account, the parts of the form for that market
@@ -28,6 +30,11 @@ import { locale, msg, t } from '@/i18n';
 // show on "Dalje", the first wrong field takes the focus (§10).
 
 const emailError = (v) => (!v.trim() ? requiredError() : /^\S+@\S+\.\S+$/.test(v.trim()) ? null : t('Unesite ispravnu email adresu.'));
+// the caregivers' terms and privacy, as production links them
+const LEGAL = {
+  terms: 'https://www.nanaprime.com/fi/legal/terms-of-use-caregivers',
+  privacy: 'https://www.nanaprime.com/fi/legal/data-processing',
+};
 const CHANNELS = [
   ['whatsapp', 'WhatsApp'],
   ['viber', 'Viber'],
@@ -71,7 +78,22 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const [screen, setScreen] = useState('country');
   const [market, setMarket] = useState(null);
   const [f, setF] = useState(null);
-  const [account, setAccount] = useState({ email: '', password: '', processing: false, accuracy: false });
+  // no password here: the system makes one when her profile is activated, and
+  // she changes it on her first sign-in (as on production)
+  const [account, setAccount] = useState({ email: '', processing: false, accuracy: false, cookies: COOKIE_DEFAULT });
+  const [cookiesOpen, setCookiesOpen] = useState(false);
+  const lang = useLang();
+  // the app is drawn again in the new language, so where she was is kept
+  // for a moment (Register.jsx reads it back)
+  const pickLang = (id) => {
+    if (!id) return;
+    try {
+      sessionStorage.setItem('nana.signup', 'caregiver');
+    } catch {
+      // not kept: she lands on "Ko ste?" again
+    }
+    setLang(id);
+  };
   // the application, saved on "Zakaži razgovor": kept even if the tab closes on
   // the thanks; a second press does not make a second one
   const [sent, setSent] = useState(null);
@@ -102,7 +124,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   const next = () => {
     if (screen === 'account') {
-      const e = [emailError(account.email), account.password.length < 8 && t('Kratka je - treba najmanje 8 karaktera.'), !account.processing && requiredError(), !account.accuracy && requiredError()];
+      const e = [emailError(account.email), !account.processing && requiredError(), !account.accuracy && requiredError()];
       if (!check.check(e)) return;
       check.reset();
       setOpen(firstOpen());
@@ -173,10 +195,13 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       phone: f.phone.trim(),
       country: record.market,
       registeredAt: new Date().toISOString(),
+      cookies: account.cookies,
+      language: lang,
       // her record too, so signing in again puts it back where families look
       record,
     };
-    await saveAccount(user, account.password);
+    // a stand-in for the password the system sends when the profile is activated
+    await saveAccount(user, crypto.randomUUID());
     setSent({ user, record });
     setBusy(false);
     check.reset();
@@ -220,6 +245,15 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <Button variant="ghost" size="lg" onClick={onBack}>
             {t('Nazad')}
           </Button>
+          {/* her language, before the form, which takes 10 to 20 minutes;
+              afterwards in Settings (docs/patterns.md §12b) */}
+          <ToggleGroup type="single" size="sm" className="mt-2" value={lang} onValueChange={pickLang} aria-label={t('Jezik')}>
+            {LANGUAGES.map((l) => (
+              <ToggleGroupItem key={l.id} value={l.id} lang={l.id}>
+                {l.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </Actions>
       </>
     );
@@ -227,22 +261,48 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   if (screen === 'account')
     return (
       <>
-        <Welcome title={t('Prijavite se kao negovateljica')} sub={t('Unesite podatke da započnete prijavu.')} />
+        <Welcome title={t('Prijavite se kao negovateljica')} sub={t('Unesite svoje podatke da biste započeli proces prijave.')} />
         <FormCard>
-          <Field label={t('Email')} required error={check.show(emailError(account.email))}>
-            <Input value={account.email} onChange={(v) => setAccount((a) => ({ ...a, email: v }))} type="email" autoComplete="email" />
-          </Field>
-          <Field label={t('Lozinka')} required error={check.show(account.password.length < 8 && t('Kratka je - treba najmanje 8 karaktera.'))}>
-            <Password value={account.password} onChange={(v) => setAccount((a) => ({ ...a, password: v }))} autoComplete="new-password" />
+          <Field label={t('Email adresa')} required error={check.show(emailError(account.email))}>
+            <Input value={account.email} onChange={(v) => setAccount((a) => ({ ...a, email: v }))} type="email" autoComplete="email" placeholder={t('Unesite svoju email adresu')} />
           </Field>
           <Consent required checked={account.processing} onChange={(v) => setAccount((a) => ({ ...a, processing: v }))} error={check.show(!account.processing && requiredError())}>
-            {t('Saglasna sam sa obradom podataka')}
+            {t('Saglasnost za obradu podataka')}
           </Consent>
           <Consent required checked={account.accuracy} onChange={(v) => setAccount((a) => ({ ...a, accuracy: v }))} error={check.show(!account.accuracy && requiredError())}>
-            {t('Potvrđujem da su podaci tačni')}
+            {t('Potvrda tačnosti podataka')}
           </Consent>
         </FormCard>
-        {footer(t('Nastavi'))}
+        {/* the terms under the button, as on the family's sign-up (Register.jsx) */}
+        <Actions>
+          <Button size="lg" className="w-full" onClick={next}>
+            {t('Nastavi')}
+          </Button>
+          <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
+            {t('Prijavom ste saglasni sa našim')}{' '}
+            <a href={LEGAL.terms} target="_blank" rel="noreferrer">
+              {t('uslovima korišćenja')}
+            </a>{' '}
+            {t('i')}{' '}
+            <a href={LEGAL.privacy} target="_blank" rel="noreferrer">
+              {t('politikom privatnosti')}
+            </a>
+            .{' '}
+            <a href="#kolacici" onClick={(e) => (e.preventDefault(), setCookiesOpen(true))}>
+              {t('Podešavanja kolačića')}
+            </a>
+          </p>
+          <Button variant="secondary" size="lg" className="w-full" onClick={back}>
+            {t('Nazad')}
+          </Button>
+        </Actions>
+        {cookiesOpen && (
+          <CookieSettings
+            cookies={account.cookies}
+            onSave={(cookies) => (setAccount((a) => ({ ...a, cookies })), setCookiesOpen(false))}
+            onClose={() => setCookiesOpen(false)}
+          />
+        )}
       </>
     );
 
@@ -428,7 +488,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       ...(sr ? f.engagement.map((e) => (e === 'daily' ? t('Dnevne posete') : t('Smena 24 h'))) : []),
       f.days.length > 0 && daysText(f.days.map(Number).sort()),
       ...f.slots.map((s) => t(SLOTS[s].label)),
-      t('do {km} km', { km: f.radius }),
+      radiusText(f.radius, true),
     ],
     health: [...f.languages.map((l) => t(l)), ...READINESS.filter(([id]) => f.readiness.includes(id)).map(([, l]) => t(l))],
     emergency: [f.emergency.name, f.emergency.relation && t(f.emergency.relation)],
@@ -491,7 +551,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       [t('Dani'), f.days.length > 0 && daysText(f.days.map(Number).sort())],
       [t('Delovi dana'), list(f.slots.map((s) => `${t(SLOTS[s].label)} ${SLOTS[s].hours}`))],
       ...(sr ? [[t('Rad u inostranstvu'), yn(f.abroad)]] : [[t('Cena'), f.rateMin && f.rateMax && `${f.rateMin}–${f.rateMax} €/h`]]),
-      [t('Radijus'), t('do {km} km', { km: f.radius })],
+      [t('Radijus'), radiusText(f.radius, true)],
     ],
     health: [
       ...HABITS.map(([id, label]) => [t(label), yn(f.habits[id])]),

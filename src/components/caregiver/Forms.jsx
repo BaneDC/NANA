@@ -90,8 +90,24 @@ export function AgreementDialog({ open, care, caregiverId, onClose, onSend }) {
 // ── visit plan ──────────────────────────────────────────────────────────────
 
 const HALF_HOURS = Array.from({ length: 48 }, (_, i) => i / 2);
-const DURATIONS = Array.from({ length: 24 }, (_, i) => (i + 1) / 2);
-const hoursText = (h) => t('{n} h', { n: String(h).replace('.', ',') });
+// how long: typed, in half hours from 0,5 to 24 (as on production); a comma
+// or a point both do
+const hoursOf = (v) => Number(String(v).trim().replace(',', '.'));
+const hoursError = (v) => {
+  const n = hoursOf(v);
+  if (!String(v).trim()) return requiredError();
+  if (n > 24) return t('Poseta ne može da traje duže od 24 sata.');
+  if (!(n >= 0.5)) return t('Poseta traje najmanje pola sata.');
+  return Number.isInteger(n * 2) ? null : t('Poseta se planira na pola sata.');
+};
+const typedHours = (h) => String(h).replace('.', ',');
+
+// only a number goes in: up to two digits, then a comma or a point and one
+// more; anything else typed or pasted is not taken
+function Hours({ value, onChange }) {
+  const take = (v) => /^\d{0,2}([.,]\d?)?$/.test(v) && onChange(v);
+  return <Input value={value} onChange={take} inputMode="decimal" suffix="h" />;
+}
 
 export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
   const act = activeVersion(arrangementOf(care, caregiverId));
@@ -99,16 +115,18 @@ export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
   const today = todayOf(care);
   const [day, setDay] = useState('tomorrow');
   const [start, setStart] = useState('9');
-  const [hours, setHours] = useState('3');
+  const [hours, setHours] = useState(typedHours(3));
   const [notes, setNotes] = useState('');
   const check = useCheck();
   const hourNow = now % 24;
   // today, only what is still ahead
   const starts = HALF_HOURS.filter((h) => day === 'tomorrow' || h > hourNow);
   const s = Number(start);
-  const h = Number(hours);
-  const errors = { start: day === 'today' && !(s > hourNow) ? t('Izaberite vreme koje još nije prošlo.') : null };
-  const held = chargedFor(h, act.rate);
+  const h = hoursOf(hours);
+  const errors = { start: day === 'today' && !(s > hourNow) ? t('Izaberite vreme koje još nije prošlo.') : null, hours: hoursError(hours) };
+  // while the hours are not right, the sums wait for them
+  const ok = !errors.hours;
+  const held = ok ? chargedFor(h, act.rate) : null;
   const soon = day === 'today' && s - hourNow < 1;
   const send = () => {
     if (!check.check(Object.values(errors))) return;
@@ -126,17 +144,17 @@ export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
         <Field label={t('Početak')} required error={check.show(errors.start)}>
           <Select value={start} onChange={setStart} options={starts.map((x) => ({ value: String(x), label: hourText(x) }))} />
         </Field>
-        <Field label={t('Trajanje')} required>
-          <Select value={hours} onChange={setHours} options={DURATIONS.map((x) => ({ value: String(x), label: hoursText(x) }))} />
+        <Field label={t('Trajanje')} required hint={t('Od 0,5 do 24 sata, na pola sata (npr. 1 ili 1,5).')} error={check.show(errors.hours)}>
+          <Hours value={hours} onChange={setHours} />
         </Field>
       </div>
       <Field label={t('Napomena')}>
         <TextArea value={notes} onChange={setNotes} rows={2} placeholder={t('Šta će raditi, šta da porodica pripremi.')} />
       </Field>
       <DataList>
-        <DataRow label={t('Kada')}>{`${day === 'today' ? t('Danas') : t('Sutra')} · ${hourText(s)}–${hourText(s + h)}`}</DataRow>
-        <DataRow label={t('Rezerviše se porodici')}>{money(held)}</DataRow>
-        <DataRow label={t('Vi dobijate')}>{money(net(held))}</DataRow>
+        <DataRow label={t('Kada')}>{`${day === 'today' ? t('Danas') : t('Sutra')} · ${hourText(s)}${ok ? `–${hourText(s + h)}` : ''}`}</DataRow>
+        <DataRow label={t('Rezerviše se porodici')}>{ok ? money(held) : '–'}</DataRow>
+        <DataRow label={t('Vi dobijate')}>{ok ? money(net(held)) : '–'}</DataRow>
       </DataList>
       {soon && <PaneHint>{t('Ako porodica otkaže u poslednjem satu, plaća celu posetu.')}</PaneHint>}
       <DialogFooter>
@@ -177,7 +195,7 @@ function Choice({ label, value, onChange, options }) {
 }
 
 export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
-  const [hours, setHours] = useState(String(visit.hours));
+  const [hours, setHours] = useState(typedHours(visit.hours));
   const [done, setDone] = useState(visit.services);
   const [mood, setMood] = useState('usual');
   const [eating, setEating] = useState('usual');
@@ -186,18 +204,18 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
   const [worry, setWorry] = useState('');
   const [worried, setWorried] = useState(false);
   const check = useCheck();
-  const h = Number(hours);
-  const errors = { note: !note.trim() && requiredError() };
+  const h = hoursOf(hours);
+  const errors = { hours: hoursError(hours), note: !note.trim() && requiredError() };
   const send = () => {
     if (!check.check(Object.values(errors))) return;
     onSend({ hours: h, done, mood, eating, moving, note: note.trim(), concern: worry.trim() || undefined });
   };
   return (
     <Dialog open={open} eyebrow={`${care.elder.name} · ${visit.date} · ${visit.time}`} title={t('Radni nalog')} wide onClose={onClose}>
-      <Field label={t('Sati')} required>
-        <Select value={hours} onChange={setHours} options={DURATIONS.map((x) => ({ value: String(x), label: hoursText(x) }))} />
+      <Field label={t('Sati')} required hint={t('Od 0,5 do 24 sata, na pola sata (npr. 1 ili 1,5).')} error={check.show(errors.hours)}>
+        <Hours value={hours} onChange={setHours} />
       </Field>
-      {h > visit.hours && <PaneHint>{t('Sat više porodica mora da odobri. Do tada se naplaćuje planirano.')}</PaneHint>}
+      {!errors.hours && h > visit.hours && <PaneHint>{t('Sat više porodica mora da odobri. Do tada se naplaćuje planirano.')}</PaneHint>}
       <Field label={t('Urađeno')}>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={done} onValueChange={setDone} aria-label={t('Urađeno')}>
           {visit.services.map((id) => (

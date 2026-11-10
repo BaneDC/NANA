@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
-import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import { Page, PageActions, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import { Card, CardFooter, CardLink } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ToggleGroup, ToggleGroupItem, useFade } from '@/components/ui/toggle-group';
 import { DataList, DataRow } from '@/components/data-list';
 import { useIsPhone } from '@/hooks/use-phone';
-import StatCard from '../../components/StatCard';
 import { activeVersion, firstName, monthOfDay, money, pendingVersion, todayOf } from '../../data/familyCare';
 import { cannotPlan } from '../../data/caregiverCare';
 import { earnings, netOf } from '../../data/caregiverView';
@@ -26,10 +26,10 @@ import { msg, t } from '@/i18n';
 // chosen one are under it (§12).
 
 const STAGES = [
-  { id: 'request', title: msg('Novi upiti'), note: msg('Prihvati ili odbij'), empty: msg('Trenutno nema novih upita.') },
-  { id: 'agreement', title: msg('Ugovor o nezi'), note: msg('Koje usluge, i jedna cena po satu'), empty: msg('Nema ugovora koje treba postaviti.') },
-  { id: 'active', title: msg('Aktivno'), note: msg('Saradnja je u toku'), empty: msg('Još nema saradnji u toku.') },
-  { id: 'work-order', title: msg('Radni nalozi'), note: msg('Pošalji posle svake posete'), empty: msg('Nema šta da se fakturiše.') },
+  { id: 'request', chip: msg('Upiti'), title: msg('Novi upiti'), note: msg('Prihvati ili odbij'), empty: msg('Trenutno nema novih upita.') },
+  { id: 'agreement', chip: msg('Ugovor'), title: msg('Ugovor o nezi'), note: msg('Koje usluge, i jedna cena po satu'), empty: msg('Nema ugovora koje treba postaviti.') },
+  { id: 'active', chip: msg('Posete'), title: msg('Aktivno'), note: msg('Saradnja je u toku'), empty: msg('Još nema saradnji u toku.') },
+  { id: 'work-order', chip: msg('Nalozi'), title: msg('Radni nalozi'), note: msg('Pošalji posle svake posete'), empty: msg('Nema šta da se fakturiše.') },
 ];
 
 const initials = (name) =>
@@ -107,22 +107,45 @@ function BoardCard({ client, caregiverId, onOpen, act }) {
   );
 }
 
-function Column({ stage, children, count }) {
+// a column's width beside a phone: at least 288, the rest shared. On a phone it is the screen less 32, so the next
+// one shows at the edge
+const cell = 'min-w-[288px] flex-1 basis-0';
+const slide = 'w-[calc(100%-32px)] shrink-0 snap-start snap-always';
+
+// a column: the whole height of the board; its cards scroll inside it when
+// there are more than fit. `extra` is the one figure it has, right of its note
+function Column({ stage, children, count, extra, className }) {
   return (
-    <section className="flex min-h-0 min-w-0 flex-col gap-2 rounded-4xl bg-muted p-2">
+    <section className={cn('flex min-h-0 flex-col gap-2 rounded-4xl bg-muted p-2', className)}>
       <header className="flex flex-col gap-1 px-4 pt-2 pb-1">
         <h2 className="flex items-center gap-2 text-small font-medium text-muted-foreground">
           {t(stage.title)}
           <Badge variant="secondary">{count}</Badge>
         </h2>
-        <p className="text-small text-muted-foreground">{t(stage.note)}</p>
+        <p className="flex items-baseline justify-between gap-3 text-small text-muted-foreground">
+          {t(stage.note)}
+          {extra && <span className="shrink-0 font-medium text-foreground">{extra}</span>}
+        </p>
       </header>
-      {children}
+      <div className="-m-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">{children}</div>
     </section>
   );
 }
 
-export default function Board({ user, clients, caregiverId, onOpen, act }) {
+// the four chips on a phone, four equal parts. Under 375 there is no room for
+// the count beside the name (360 included), so only the name, at 12; one that still does not fit
+// ends in "…", and nothing wraps or leaves its chip
+const chipRow =
+  'grid grid-cols-4 *:w-full *:min-w-0 *:px-1 [&_.inline-grid]:w-full [&_.inline-grid]:grid-cols-[minmax(0,1fr)] [&_.inline-flex]:min-w-0 [&_.inline-flex]:gap-1 ' +
+  'max-[375px]:*:text-small max-[375px]:[&_[data-count]]:hidden';
+
+// the side of the row that has more fades in its last 32 (docs/patterns.md §12)
+const fadeEdges =
+  'data-[fade=end]:[mask-image:linear-gradient(to_right,#000_calc(100%-32px),transparent)] ' +
+  'data-[fade=start]:[mask-image:linear-gradient(to_left,#000_calc(100%-32px),transparent)] ' +
+  'data-[fade=both]:[mask-image:linear-gradient(to_right,transparent,#000_32px,#000_calc(100%-32px),transparent)]';
+
+export default function Board({ user, clients, caregiverId, onOpen, act, onEarnings }) {
   const phone = useIsPhone();
   const live = clients.filter((c) => STAGES.some((s) => s.id === c.stage));
   const of = (id) => live.filter((c) => c.stage === id);
@@ -140,45 +163,92 @@ export default function Board({ user, clients, caregiverId, onOpen, act }) {
       <p className="px-4 pb-2 text-xs leading-body text-muted-foreground">{t(STAGES.find((s) => s.id === id).empty)}</p>
     );
 
+  // the one figure a column has, as production shows it
+  const extra = {
+    request: oldest > 0 ? t('najstariji: {n} d', { n: oldest }) : null,
+    active: e.reserved ? t('{amount} na putu', { amount: money(e.reserved) }) : null,
+    'work-order': unbilled ? t('{amount} nefakturisano', { amount: money(unbilled) }) : null,
+  };
+  const column = (s, className) => (
+    <Column key={s.id} stage={s} count={of(s.id).length} extra={extra[s.id]} className={className}>
+      {cards(s.id)}
+    </Column>
+  );
+
+  // the row of columns: beside a phone it scrolls sideways when they do not
+  // fit; on a phone one column at a time, a swipe moving exactly one, and the
+  // chips above follow it, a chip bringing its column
+  const [setFadeRow, fade] = useFade(true);
+  const row = useRef(null);
+  const steering = useRef(0);
+  const toRow = (el) => ((row.current = el), setFadeRow(el));
+  const slideTo = (id, smooth = true) => {
+    const el = row.current;
+    const i = STAGES.findIndex((s) => s.id === id);
+    if (!el || i < 0) return;
+    steering.current = Date.now();
+    el.scrollTo({ left: el.children[i].offsetLeft - el.children[0].offsetLeft, behavior: smooth ? 'smooth' : 'auto' });
+  };
+  const follow = () => {
+    const el = row.current;
+    if (!phone || !el || Date.now() - steering.current < 600) return;
+    const step = el.children[1].offsetLeft - el.children[0].offsetLeft;
+    const id = STAGES[Math.round(el.scrollLeft / step)]?.id;
+    if (id && id !== picked) setPicked(id);
+  };
+  // on a phone it opens on the first column with something in it
+  useEffect(() => {
+    if (phone) slideTo(picked, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone]);
+
   return (
-    // the board takes the width it is given, as the designer had it
-    <Page className="@container *:max-w-none">
+    // the board takes the width it is given and fits the screen's height: the
+    // page does not scroll, the columns do, and the row of them sideways
+    // (docs/patterns.md §12c)
+    <Page className="@container overflow-y-hidden *:max-w-none">
       <PageHeader>
         <PageHeaderText>
           <PageTitle>{t('Vaša tabla')}</PageTitle>
-          <PageDescription>{t('{name}, sve što čeka na vas, sleva nadesno, redom kojim se dešava.', { name: firstName(user.name) })}</PageDescription>
+          {/* on a phone the board's own names say it, and the lines go to the columns */}
+          <PageDescription className="phone:hidden">{t('{name}, sve što čeka na vas, sleva nadesno, redom kojim se dešava.', { name: firstName(user.name) })}</PageDescription>
         </PageHeaderText>
+        {/* what she was paid this month, the way to her earnings */}
+        <PageActions>
+          <Button variant="secondary" onClick={onEarnings}>
+            {/* on a phone it shares the title's line, so only the sum */}
+            {phone ? t('{amount} isplaćeno', { amount: money(e.paidThisMonth) }) : t('{amount} isplaćeno vam u {month}', { amount: money(e.paidThisMonth), month })}
+          </Button>
+        </PageActions>
       </PageHeader>
 
-      <div className="grid grid-cols-4 gap-3 @max-[672px]:grid-cols-2">
-        <StatCard value={requests.length} label={t('Za odgovor')} note={requests.length ? t('Najstariji: {n} d', { n: oldest }) : t('Ništa ne čeka')} />
-        <StatCard value={of('agreement').filter((c) => !pendingVersion(c.arrangement)).length} label={t('Ugovori za slanje')} note={of('agreement').filter((c) => !pendingVersion(c.arrangement)).length ? t('Blokira svaku posetu') : t('Sve poslato')} />
-        <StatCard value={of('work-order').length} label={t('Neposlati radni nalozi')} note={of('work-order').length ? t('{amount} nefakturisano', { amount: money(unbilled) }) : t('Sve poslato')} />
-        <StatCard value={money(e.paidThisMonth)} label={t('Isplaćeno vam u {month}', { month })} note={t('{amount} u obradi', { amount: money(e.processing) })} />
-      </div>
-
-      {phone ? (
-        <>
-          {/* one column at a time: a row of chips that scrolls sideways (§12) */}
-          <ToggleGroup type="single" size="sm" scroll className="items-center" value={picked} onValueChange={(v) => v && setPicked(v)} aria-label={t('Kolone table')}>
-            {STAGES.map((s) => (
-              <ToggleGroupItem key={s.id} value={s.id}>
-                {t(s.title)}
-                <span className="text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">{of(s.id).length}</span>
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-          <div className="flex flex-col gap-2">{cards(picked)}</div>
-        </>
-      ) : (
-        <div className="grid grid-cols-4 items-start gap-3 @max-[1100px]:grid-cols-2">
+      {phone && (
+        // all four at once, as four equal parts: not a filter but the whole
+        // board's way, each with its count (docs/patterns.md §12c); the short
+        // name, the full one being the column's own title under it
+        <ToggleGroup type="single" size="sm" className={chipRow} value={picked} onValueChange={(v) => v && (setPicked(v), slideTo(v))} aria-label={t('Kolone table')}>
           {STAGES.map((s) => (
-            <Column key={s.id} stage={s} count={of(s.id).length}>
-              {cards(s.id)}
-            </Column>
+            <ToggleGroupItem key={s.id} value={s.id}>
+              <span className="min-w-0 truncate">{t(s.chip)}</span>
+              <span data-count className="shrink-0 text-small text-disabled in-data-[state=on]:text-inherit in-data-[state=on]:opacity-80">{of(s.id).length}</span>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       )}
+      {/* out to the pane's edges, so a column is cut there, fading, and not
+          short of it */}
+      <div
+        ref={toRow}
+        data-fade={fade}
+        onScroll={follow}
+        className={cn(
+          'flex min-h-0 flex-1 gap-3 overflow-x-auto [scrollbar-width:thin]',
+          phone ? '-mx-4! w-auto! min-w-0 snap-x snap-mandatory scroll-px-4 px-4 [scrollbar-width:none]' : '-mx-6! w-auto! min-w-0 scroll-px-6 px-6',
+          fadeEdges
+        )}
+      >
+        {STAGES.map((s) => column(s, phone ? slide : cell))}
+      </div>
     </Page>
   );
 }

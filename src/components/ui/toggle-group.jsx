@@ -27,7 +27,7 @@ const scrollRow =
   "phone:data-[fade=both]:[mask-image:linear-gradient(to_right,transparent,#000_32px,#000_calc(100%-32px),transparent)]"
 
 // which ends of a scrolling row have more past them
-function useFade(on) {
+export function useFade(on) {
   const [row, setRow] = React.useState(null)
   const [fade, setFade] = React.useState(undefined)
   React.useEffect(() => {

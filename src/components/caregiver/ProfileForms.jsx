@@ -74,13 +74,18 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
   );
 }
 
+// how far she will go, up to 200: the end of the line is "200+", anywhere
+// farther too (as on production)
+export const RADIUS_MAX = 200;
+export const radiusText = (km, upTo) => (km >= RADIUS_MAX ? t('{km}+ km', { km: RADIUS_MAX }) : upTo ? t('do {km} km', { km }) : t('{km} km', { km }));
+
 // how far she will go: a line she drags, the distance beside its label
 export function Radius({ value, onChange }) {
   return (
     <Field label={t('Gde želite da radite? (radijus)')}>
       <div className="flex items-center gap-3">
-        <Slider value={[value]} min={1} max={100} step={1} onValueChange={([v]) => onChange(v)} aria-label={t('Radijus')} className="flex-1" />
-        <span className="w-14 shrink-0 text-right text-xs font-medium text-foreground tabular-nums">{t('{km} km', { km: value })}</span>
+        <Slider value={[value]} min={1} max={RADIUS_MAX} step={1} onValueChange={([v]) => onChange(v)} aria-label={t('Radijus')} className="flex-1" />
+        <span className="min-w-14 shrink-0 whitespace-nowrap text-right text-xs font-medium text-foreground tabular-nums">{radiusText(value)}</span>
       </div>
     </Field>
   );
