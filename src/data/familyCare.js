@@ -122,6 +122,9 @@ export function dayOf(text, today = 0) {
 // for a date written as text (a visit) or a prototype day (an entry's `at` / 24)
 export const monthOf = (text, today = 0) => monthName(dayOf(text, today));
 export const monthOfDay = (day) => monthName(dateOfDay(day));
+// a month over a group of a list, on its own as a title: from a capital, as in
+// the calendar ("Avgust 2026"); in a sentence it stays small (docs/patterns.md §8a)
+export const monthTitle = (m) => (m ? m.charAt(0).toLocaleUpperCase() + m.slice(1) : m);
 const monthName = (d) => {
   if (getLang() === 'sr') return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
   return d.toLocaleDateString(locale(), { month: 'long', year: 'numeric' });

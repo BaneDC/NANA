@@ -4,11 +4,12 @@ import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/comp
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
-import { PaneLabel, Stat, Stats } from '@/components/pane';
+import { PaneLabel } from '@/components/pane';
+import StatCard from '../../components/StatCard';
 import { useShowMore } from '@/hooks/use-show-more';
 import ShowMore from '../../components/ShowMore';
 import Attention from '../../components/Attention';
-import { money } from '../../data/familyCare';
+import { money, monthTitle } from '../../data/familyCare';
 import { earnings, netOf } from '../../data/caregiverView';
 import { t } from '@/i18n';
 
@@ -45,13 +46,16 @@ export default function Earnings({ clients, caregiverId, payouts, onPayouts }) {
         </Attention>
       )}
 
-      <Card>
-        <Stats>
-          <Stat value={money(e.paidThisMonth)} label={t('Isplaćeno ovog meseca')} />
-          <Stat value={money(e.processing)} label={t('U obradi')} note={t('naplata za 24 sata')} />
-          <Stat value={money(e.reserved)} label={t('Rezervisano')} note={t('za zakazane posete')} />
-        </Stats>
-      </Card>
+      {/* three numbers, each a card, as on the family's home (docs/patterns.md
+          §4a): three to a line, on a narrow page two and the third the whole
+          line; the grid follows the page's room, not the window */}
+      <div className="@container">
+        <div className="grid grid-cols-2 gap-3 @lg:grid-cols-3">
+          <StatCard value={money(e.paidTotal)} label={t('Isplaćeno do sada')} note={t('ukupno, od prve posete')} />
+          <StatCard value={money(e.processing)} label={t('U obradi')} note={t('naplata za 24 sata')} />
+          <StatCard className="col-span-2 @lg:col-span-1" value={money(e.reserved)} label={t('Rezervisano')} note={t('za zakazane posete')} />
+        </div>
+      </div>
 
       <Card>
         <CardHeader>
@@ -72,9 +76,9 @@ export default function Earnings({ clients, caregiverId, payouts, onPayouts }) {
           ) : (
             months.map((mo) => (
               <Fragment key={mo.m}>
-                <div className="flex items-center gap-2">
-                  <PaneLabel>{mo.m}</PaneLabel>
-                  <Badge variant="secondary" className="ml-auto">
+                <div className="flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
+                  <PaneLabel>{monthTitle(mo.m)}</PaneLabel>
+                  <Badge variant="secondary" className="ml-auto phone:ml-0">
                     {mo.visits.length}
                   </Badge>
                 </div>

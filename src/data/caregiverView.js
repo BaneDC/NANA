@@ -1,5 +1,18 @@
-import { activeVersion, allVisits, arrangementOf, lastVersion, latestRequest, monthOfDay, pendingVersion, todayOf, visitCharge } from './familyCare';
+import { activeVersion, allVisits, arrangementOf, lastVersion, latestRequest, monthOfDay, pendingVersion, visitCharge } from './familyCare';
 import { SERVICE_FEE } from './fees';
+import { cannotPlan } from './caregiverCare';
+
+// Whether the next move on a family is hers: the cards on her board that have
+// a button for her. A request to answer, an agreement to send (not one the
+// family is looking at), a visit to plan (when one can be), a work order to
+// send. Her menu counts these, so the number is what the buttons are.
+export const herMove = (client, caregiverId) => {
+  const { stage, arrangement: a } = client;
+  if (stage === 'request' || stage === 'work-order') return true;
+  if (stage === 'agreement') return !(a && pendingVersion(a));
+  if (stage === 'active') return !cannotPlan(client.care, caregiverId);
+  return false;
+};
 
 // The caregiver's side reads the same care the family's does, from where she
 // stands: who her clients are, where each of them sits on her board, what she
@@ -63,18 +76,18 @@ export const netOf = (v) => Math.round(visitCharge(v) * (1 - SERVICE_FEE) * 100)
 // what she will get for a planned visit, at the hours planned
 export const plannedNet = (v) => Math.round(v.hours * v.rate * (1 - SERVICE_FEE) * 100) / 100;
 
-// Her earnings across every family: paid this month, in the 24 hours before a
+// Her earnings across every family: paid so far, in the 24 hours before a
 // charge, held for visits to come, and every paid visit, newest first.
 export function earnings(clients, caregiverId) {
   const visits = clients.flatMap(({ id, care }) =>
     allVisits(care)
       .filter((v) => v.caregiver.id === caregiverId)
-      .map((v) => ({ ...v, clientId: id, elder: care.elder.name, month: monthOfDay(v.day), thisMonth: monthOfDay(v.day) === monthOfDay(todayOf(care)) }))
+      .map((v) => ({ ...v, clientId: id, elder: care.elder.name, month: monthOfDay(v.day) }))
   );
   const sum = (list, f) => Math.round(list.reduce((n, v) => n + f(v), 0) * 100) / 100;
   const paid = visits.filter((v) => v.status === 'paid').sort((a, b) => b.day - a.day || b.start - a.start);
   return {
-    paidThisMonth: sum(paid.filter((v) => v.thisMonth), netOf),
+    paidTotal: sum(paid, netOf),
     processing: sum(visits.filter((v) => v.status === 'charging'), netOf),
     reserved: sum(visits.filter((v) => v.status === 'planned'), plannedNet),
     paid,

@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { useKept } from '@/hooks/use-kept';
-import Modal from '../Modal';
-import { SheetDescription, SheetFooter } from '@/components/ui/sheet';
-import { DataList, DataRow } from '@/components/data-list';
-import { PaneHint, PaneLabel } from '@/components/pane';
-import { RECORD_PARTS, partRows } from '../../data/record';
-import { scheduleText } from '../../data/familyStart';
-import { serviceTitle } from '../../data/serviceCatalog';
 import { AgreementDialog, CALL_OFF_REASONS, NO_VISIT_REASONS, ReasonDialog, VisitPlanDialog, WorkOrderDialog } from './Forms';
 import {
   DECLINE_REASONS,
@@ -26,7 +18,8 @@ import { t } from '@/i18n';
 // Every action she takes on a family, from the board or from the family's page:
 // `open({ kind, client, visitId })` opens the right dialog, and what she sends
 // goes through the same functions the simulation uses (caregiverCare.js), on
-// that family's care. Accepting a request and withdrawing terms need no dialog.
+// that family's care. Accepting a request and withdrawing terms need no dialog;
+// a request is answered on the family's page, in both markets.
 export function useClientActions({ caregiverId, onClientCare, onFlash }) {
   const [open, setOpen] = useState(null);
   const kept = useKept(open);
@@ -57,39 +50,15 @@ export function useClientActions({ caregiverId, onClientCare, onFlash }) {
       run(client, fn, said);
       close();
     };
-    if (kind === 'request')
+    if (kind === 'decline')
       dialog = (
-        <RequestDrawer
-          open={shown}
-          client={client}
-          onClose={close}
-          onAccept={() => {
-            close();
-            act('accept', client);
-          }}
-          onDecline={() => setOpen({ kind: 'decline', client, over: true })}
-        />
-      );
-    else if (kind === 'decline') {
-      const decline = (
         <DeclineDialog
           open={shown}
           name={client.care.elder.name}
-          // from the request's drawer, "Nazad" goes back to it (§7)
-          onClose={kept.over ? () => setOpen({ kind: 'request', client }) : close}
+          onClose={close}
           onConfirm={(reason) => done(answerRequest(caregiverId, false, reason), t('Upit je odbijen. {name} je obaveštena.', { name: family(client) }))}
         />
       );
-      // opened from the request's drawer: the drawer stays under it
-      dialog = kept.over ? (
-        <>
-          <RequestDrawer open={shown} client={client} onClose={close} onAccept={() => {}} onDecline={() => {}} />
-          {decline}
-        </>
-      ) : (
-        decline
-      );
-    }
     else if (kind === 'terms')
       dialog = <AgreementDialog open={shown} care={client.care} caregiverId={caregiverId} onClose={close} onSend={(opts) => done(sendTerms(caregiverId, opts), t('Ugovor je poslat. {name} ga prihvata ili odbija.', { name: family(client) }))} />;
     else if (kind === 'plan')
@@ -110,51 +79,4 @@ export function useClientActions({ caregiverId, onClientCare, onFlash }) {
 // deleted, so the action is default, not destructive (§9)
 function DeclineDialog({ open, name, onClose, onConfirm }) {
   return <ReasonDialog open={open} eyebrow={name} title={t('Odbiti upit?')} reasons={DECLINE_REASONS} action={t('Odbij upit')} primary onClose={onClose} onConfirm={onConfirm} />;
-}
-
-// A new request, opened from its card on the board: who asks, why and what for,
-// with the family's address and contact hidden until she says yes. Details are
-// a drawer (docs/patterns.md §7), a bottom sheet on a phone; "Odbij" opens its
-// reason over it, "Prihvati" closes it and moves the card on.
-function RequestDrawer({ open, client, onClose, onAccept, onDecline }) {
-  const { person, care, request: r } = client;
-  const answers = person.answers || {};
-  const age = answers['about-person']?.values?.age;
-  const household = partRows(RECORD_PARTS.person, answers).rows.find((x) => x.key === 'household');
-  return (
-    <Modal
-      eyebrow={t('Nov upit')}
-      title={care.elder.name}
-      wide
-      open={open}
-      onClose={onClose}
-    >
-      <SheetDescription>
-        {[age && t('{n} godina', { n: age }), care.elder.area, t('upit {when}', { when: r.requested })].filter(Boolean).join(' · ')}
-      </SheetDescription>
-      {r.message && (
-        <>
-          <PaneLabel>{t('Zašto pitaju')}</PaneLabel>
-          <SheetDescription className="text-foreground">{t(r.message)}</SheetDescription>
-          <PaneHint>{care.family.name}</PaneHint>
-        </>
-      )}
-      <PaneLabel>{t('Šta traže')}</PaneLabel>
-      <DataList className="mt-2">
-        {care.need?.services?.length > 0 && <DataRow label={t('Usluge')}>{care.need.services.map(serviceTitle).join(', ')}</DataRow>}
-        {care.need?.schedule && <DataRow label={t('Kada')}>{scheduleText(care.need.schedule)}</DataRow>}
-        {care.need?.hours && <DataRow label={t('Sati')}>{t('{hours} h nedeljno', { hours: care.need.hours })}</DataRow>}
-        {household && household.value !== '-' && <DataRow label={t('Domaćinstvo')}>{household.value}</DataRow>}
-        <DataRow label={t('Gde')}>{`********, ${care.elder.area}`}</DataRow>
-        <DataRow label={t('Kontakt')}>{'********, ********@*****'}</DataRow>
-      </DataList>
-      <PaneHint>{t('Adresu i kontakt porodice vidite kad prihvatite upit.')}</PaneHint>
-      <SheetFooter>
-        <Button variant="secondary" onClick={onDecline}>
-          {t('Odbij')}
-        </Button>
-        <Button onClick={onAccept}>{t('Prihvati')}</Button>
-      </SheetFooter>
-    </Modal>
-  );
 }

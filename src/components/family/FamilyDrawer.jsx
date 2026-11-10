@@ -58,6 +58,7 @@ import {
   latestRequest,
   vatText,
   visitCharge,
+  monthTitle,
 } from '../../data/familyCare';
 import { scheduleText } from '../../data/familyStart';
 import { msg, say, t, tn } from '@/i18n';
@@ -789,7 +790,7 @@ export function ActivityDrawer({ open = true, care, caregiverId, side = 'family'
       {days.map((d) => (
         <Fragment key={d.day}>
           <div className="flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
-            <PaneLabel>{d.day}</PaneLabel>
+            <PaneLabel>{monthTitle(d.day)}</PaneLabel>
             <Badge variant="secondary" className="ml-auto phone:ml-0">
               {d.entries.length}
             </Badge>

@@ -39,7 +39,7 @@ import { declineCard } from './data/sim';
 import { requestSaid, startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
-import { myClients } from './data/caregiverView';
+import { herMove, myClients } from './data/caregiverView';
 import { useKept } from './hooks/use-kept';
 import { buildPlan, caregiverById, coordinator, setProfiles, setRegistered } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
@@ -567,7 +567,7 @@ export default function App() {
               ? care.requests.filter((r) => r.caregiverId === user.caregiverId && r.status === 'pending').length
               : unseenAnswers(care)
           }
-          boardBadge={caregiverSide ? myClientsNow.filter((c) => c.stage === 'request' || c.stage === 'work-order').length : 0}
+          boardBadge={caregiverSide ? myClientsNow.filter((c) => herMove(c, user.caregiverId)).length : 0}
           threads={conversationEntries}
           activeThread={conversation}
           onSelectThread={openConversation}

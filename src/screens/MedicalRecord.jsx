@@ -15,7 +15,7 @@ import FirstTime from '../components/FirstTime';
 import FrailtyScale from '../components/FrailtyScale';
 import ShowMore from '../components/ShowMore';
 import Tags, { Group } from '../components/Tags';
-import { AMOUNT_LABEL, MOOD_LABEL, dayLabel, hourText, monthOfDay, todayOf } from '../data/familyCare';
+import { AMOUNT_LABEL, MOOD_LABEL, dayLabel, hourText, monthOfDay, todayOf, monthTitle } from '../data/familyCare';
 import {
   HEALTH,
   HISTORY_FILTERS,
@@ -246,7 +246,7 @@ function History({ entries, kind, today }) {
       {months.map((m) => (
         <Fragment key={m.month}>
           <div className="mt-2 flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
-            <PaneLabel className="mt-0">{m.month}</PaneLabel>
+            <PaneLabel className="mt-0">{monthTitle(m.month)}</PaneLabel>
             <Badge variant="secondary" className="ml-auto phone:ml-0">
               {m.entries.length}
             </Badge>

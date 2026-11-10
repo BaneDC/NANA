@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem, useFade } from '@/components/ui/toggle-group';
 import { DataList, DataRow } from '@/components/data-list';
 import { useIsPhone } from '@/hooks/use-phone';
-import { activeVersion, firstName, monthOfDay, money, pendingVersion, todayOf } from '../../data/familyCare';
+import { activeVersion, firstName, money, pendingVersion, todayOf } from '../../data/familyCare';
 import { cannotPlan } from '../../data/caregiverCare';
-import { earnings, netOf } from '../../data/caregiverView';
+import { earnings, herMove, netOf } from '../../data/caregiverView';
 import { scheduleText } from '../../data/familyStart';
 import { msg, t } from '@/i18n';
 
@@ -69,8 +69,8 @@ function BoardCard({ client, caregiverId, onOpen, act }) {
           </Avatar>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="-mb-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-foreground">
-              {/* a new request opens its details; every other card, the family's page */}
-              <CardLink onClick={() => (stage === 'request' ? act('request', client) : onOpen(client.id))}>{care.elder.name}</CardLink>
+              {/* the family's page; for a new request, the same page as in Serbia */}
+              <CardLink onClick={() => onOpen(client.id)}>{care.elder.name}</CardLink>
               {badge && <span className="my-[calc((var(--text-xs-leading)-20px)/2)]">{badge}</span>}
             </p>
             <p className="text-xs leading-body text-muted-foreground">
@@ -87,7 +87,7 @@ function BoardCard({ client, caregiverId, onOpen, act }) {
           {due && <DataRow label={t('Vi dobijate')}>{money(netOf(due))}</DataRow>}
         </DataList>
         {why && <p className="text-xs leading-body text-muted-foreground">{why}</p>}
-        {(stage === 'request' || (stage === 'agreement' && !pen) || (stage === 'active' && !why) || stage === 'work-order') && (
+        {herMove(client, caregiverId) && (
           <CardFooter>
             {stage === 'request' && (
               <>
@@ -154,7 +154,6 @@ export default function Board({ user, clients, caregiverId, onOpen, act, onEarni
   const requests = of('request');
   const oldest = Math.max(0, ...requests.map((c) => todayOf(c.care) - (c.request.requestedDay ?? todayOf(c.care))));
   const unbilled = of('work-order').reduce((n, c) => n + c.arrangement.visits.filter((v) => v.status === 'awaiting').reduce((m, v) => m + netOf(v), 0), 0);
-  const month = clients[0] ? monthOfDay(todayOf(clients[0].care)) : '';
 
   const cards = (id) =>
     of(id).length ? (
@@ -207,17 +206,19 @@ export default function Board({ user, clients, caregiverId, onOpen, act, onEarni
     // page does not scroll, the columns do, and the row of them sideways
     // (docs/patterns.md §12c)
     <Page className="@container overflow-y-hidden *:max-w-none">
-      <PageHeader>
+      {/* 24 in, where the text in the columns is (a column is 8 around its
+          cards), not 16 as over a plain card (docs/patterns.md §12c) */}
+      <PageHeader className="pl-6">
         <PageHeaderText>
           <PageTitle>{t('Vaša tabla')}</PageTitle>
           {/* on a phone the board's own names say it, and the lines go to the columns */}
           <PageDescription className="phone:hidden">{t('{name}, sve što čeka na vas, sleva nadesno, redom kojim se dešava.', { name: firstName(user.name) })}</PageDescription>
         </PageHeaderText>
-        {/* what she was paid this month, the way to her earnings */}
+        {/* what she has been paid so far, the way to her earnings */}
         <PageActions>
           <Button variant="secondary" onClick={onEarnings}>
             {/* on a phone it shares the title's line, so only the sum */}
-            {phone ? t('{amount} isplaćeno', { amount: money(e.paidThisMonth) }) : t('{amount} isplaćeno vam u {month}', { amount: money(e.paidThisMonth), month })}
+            {phone ? t('{amount} isplaćeno', { amount: money(e.paidTotal) }) : t('{amount} isplaćeno do sada', { amount: money(e.paidTotal) })}
           </Button>
         </PageActions>
       </PageHeader>

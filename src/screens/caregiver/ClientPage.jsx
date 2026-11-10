@@ -6,21 +6,19 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
-import { DataList, DataRow, Fact, Facts } from '@/components/data-list';
+import { DataList, DataRow } from '@/components/data-list';
 import { PaneLabel, Stat, Stats } from '@/components/pane';
+import Modal from '../../components/Modal';
 import { useKept } from '@/hooks/use-kept';
 import { useShowMore } from '@/hooks/use-show-more';
 import ShowMore from '../../components/ShowMore';
 import BackButton from '../../components/BackButton';
 import Attention from '../../components/Attention';
-import Modal from '../../components/Modal';
-import FrailtyScale from '../../components/FrailtyScale';
-import Tags from '../../components/Tags';
+import { AboutFamily } from './ClientProfile';
 import { ActivityDrawer, ServiceChips } from '../../components/family/FamilyDrawer';
-import { activeVersion, firstName, money, monthOfDay, pendingVersion, rateText, unsettled } from '../../data/familyCare';
+import { activeVersion, firstName, money, monthOfDay, pendingVersion, rateText, unsettled, monthTitle } from '../../data/familyCare';
 import { cannotPlan } from '../../data/caregiverCare';
 import { netOf, owes, plannedNet } from '../../data/caregiverView';
-import { RECORD_PARTS, alertsOf, partRows } from '../../data/record';
 import { SERVICE_FEE } from '../../data/fees';
 import { msg, t } from '@/i18n';
 
@@ -48,45 +46,19 @@ const initials = (name) =>
     .toUpperCase();
 const net = (rate) => Math.round(rate * (1 - SERVICE_FEE) * 100) / 100;
 
+// Everything about the family, in a drawer from the head of their page, so the
+// page itself is the work: two numbers, then what she knows of them, the same
+// as in Serbia, since both fill in the same AI conversation (docs/patterns.md §12c)
 function Overview({ open, client, onClose }) {
-  const { person, care, arrangement: a } = client;
-  const answers = person.answers || {};
-  const act = a && activeVersion(a);
+  const { care, arrangement: a } = client;
   const done = a ? a.visits.filter((v) => ['paid', 'charging', 'awaiting', 'disputed'].includes(v.status)).length : 0;
-  const you = answers['about-you']?.values || {};
   return (
     <Modal eyebrow={care.elder.name} title={t('Pregled')} wide open={open} onClose={onClose}>
       <Stats>
         <Stat value={done} label={t('poseta do sada')} note={t('{n} zakazano', { n: a ? a.visits.filter((v) => v.status === 'planned').length : 0 })} />
         <Stat value={a?.since || '-'} label={t('zajedno od')} />
       </Stats>
-      <PaneLabel>{t('Kontakt porodice')}</PaneLabel>
-      <Facts>
-        <Fact label={t('Ime')}>{[care.family.name, you.relation && t(you.relation)].filter(Boolean).join(' · ') || '-'}</Fact>
-        <Fact label={t('Telefon')}>{you['your-phone'] || '-'}</Fact>
-        <Fact label={t('Adresa')}>{answers['about-person']?.values?.city || care.elder.area || '-'}</Fact>
-      </Facts>
-      <PaneLabel>{t('Na šta paziti')}</PaneLabel>
-      <Tags items={alertsOf(answers, person.record)} />
-      <FrailtyScale answers={answers} />
-      {[RECORD_PARTS.daily, RECORD_PARTS.support].map((part) => (
-        <Fragment key={part.id}>
-          <PaneLabel>{t(part.title)}</PaneLabel>
-          <Facts>
-            {partRows(part, answers).rows.map((r) => (
-              <Fact key={r.key} label={t(r.label)}>
-                {r.value}
-              </Fact>
-            ))}
-          </Facts>
-        </Fragment>
-      ))}
-      {act && (
-        <>
-          <PaneLabel>{t('Dogovorena nega')}</PaneLabel>
-          <ServiceChips ids={act.services} grouped />
-        </>
-      )}
+      <AboutFamily client={client} pane />
     </Modal>
   );
 }
@@ -242,7 +214,7 @@ export default function ClientPage({ client, caregiverId, backLabel, onBack, act
             {months.map((mo) => (
               <Fragment key={mo.m}>
                 <div className="flex items-center gap-2">
-                  <PaneLabel>{mo.m}</PaneLabel>
+                  <PaneLabel>{monthTitle(mo.m)}</PaneLabel>
                   <Badge variant="secondary" className="ml-auto">
                     {mo.visits.length}
                   </Badge>

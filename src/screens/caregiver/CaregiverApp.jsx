@@ -58,6 +58,9 @@ export default function CaregiverApp({ view, onView, user, market, care, clients
   // Serbia: the requests, and a family's profile (part 4)
   else if (!fi && client) page = <ClientProfile client={client} onBack={() => onView('requests')} act={act} />;
   else if (!fi) page = <RequestsRs user={user} clients={clients} onOpen={open} act={act} />;
+  // a new request in Finland: the same page as in Serbia, answered there
+  else if (client && client.stage === 'request')
+    page = <ClientProfile client={client} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => onView(from === 'clients' ? 'clients' : 'board')} act={act} />;
   else if (client)
     page = <ClientPage client={client} caregiverId={caregiverId} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => onView(from === 'clients' ? 'clients' : 'board')} act={act} />;
   else if (view === 'clients') page = <Clients clients={clients} onOpen={open} />;

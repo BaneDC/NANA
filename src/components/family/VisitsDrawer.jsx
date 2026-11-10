@@ -7,6 +7,7 @@ import { useVisitHistory } from '@/hooks/use-visit-history';
 import Modal from '../Modal';
 import ShowMore from '../ShowMore';
 import VisitRow from './VisitRow';
+import { monthTitle } from '../../data/familyCare';
 import { t, tn } from '@/i18n';
 
 // Every visit, read without leaving the home (docs/patterns.md §4a): opened
@@ -48,7 +49,7 @@ export default function VisitsDrawer({ open = true, care, onClose, onOpen }) {
       {groups.map((g) => (
         <Fragment key={g.month}>
           <div className="flex items-center gap-2 phone:flex-wrap phone:gap-y-2">
-            <PaneLabel>{g.month}</PaneLabel>
+            <PaneLabel>{monthTitle(g.month)}</PaneLabel>
             <Badge variant="secondary" className="ml-auto phone:ml-0">
               {g.visits.length}
             </Badge>
