@@ -56,6 +56,13 @@ export function StepPage({ eyebrow, title, sub, start, actions, children }) {
   );
 }
 
+// One glass card with fields, as the part open in the form, for a page of the
+// same flow that has one part only (documents, the talk, thanks): r24, p16,
+// the questions 24 apart, so nothing changes from the form to the end.
+export function StepPanel({ className, children }) {
+  return <section data-slot="step-panel" className={cn('imm-step is-open flex flex-col gap-6 p-4', className)}>{children}</section>;
+}
+
 export function StepCards({ className, children }) {
   return <div data-slot="step-cards" className={cn('flex flex-col gap-2', className)}>{children}</div>;
 }

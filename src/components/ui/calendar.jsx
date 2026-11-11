@@ -4,9 +4,11 @@ import * as React from "react"
 import { DayPicker } from "react-day-picker"
 import { enGB, fi, srLatn } from "react-day-picker/locale"
 import { getLang } from "@/i18n"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useIsPhone } from "@/hooks/use-phone"
+import { OptionSheet } from "@/components/OptionSheet"
 
 // the day picker speaks the app's language
 const LOCALES = { sr: srLatn, en: enGB, fi }
@@ -90,6 +92,34 @@ const cap = (x) => (typeof x === "string" ? x.charAt(0).toUpperCase() + x.slice(
 
 function CalendarDropdown({ options = [], value, onChange, "aria-label": label }) {
   const chosen = options.find((o) => o.value === value)
+  const phone = useIsPhone()
+  const [open, setOpen] = React.useState(false)
+  // on a phone the list opens in a sheet over the calendar's (OptionSheet,
+  // docs/patterns.md §10, decided 10. 11.), the year a list of a hundred
+  if (phone)
+    return (
+      <>
+        <button
+          type="button"
+          aria-label={label}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+          className="flex h-11 w-auto cursor-pointer items-center gap-1 rounded-lg border border-input bg-background px-2 text-[16px] leading-6 text-foreground outline-none focus-visible:border-primary"
+        >
+          {cap(chosen?.label)}
+          <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+        </button>
+        <OptionSheet
+          open={open}
+          onOpenChange={setOpen}
+          title={label}
+          options={options.map((o) => ({ value: o.value, label: cap(o.label), disabled: o.disabled }))}
+          value={value}
+          onPick={(v) => onChange?.({ target: { value: String(v) } })}
+        />
+      </>
+    )
   return (
     <Select
       value={String(value)}

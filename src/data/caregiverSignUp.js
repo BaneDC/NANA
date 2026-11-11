@@ -54,6 +54,8 @@ export const emptyForm = (market) => ({
   abroad: false,
   habits: { smoker: false, alcohol: false, pets: false },
   health: { allergies: false, limits: false, problems: false, convicted: false },
+  // what a "Da" on a health question is, in her words (HEALTH_DETAILS)
+  healthNotes: { allergies: '', limits: '', problems: '' },
   readiness: [],
   unwilling: '',
   emergency: { name: '', relation: '', phoneCountry: market === 'sr' ? 'RS' : 'FI', phone: '', address: '' },
@@ -105,6 +107,12 @@ export function stepErrors(step, f) {
       if (blank(f.rateMin) || blank(f.rateMax)) e.rate = requiredError();
       else if (!(a > 0 && b >= a)) e.rate = t('Cena „od" ne može biti veća od cene „do".');
     }
+  }
+  // a "Da" on allergies, a limit or a health problem asks what it is
+  if (step === 'health') {
+    Object.keys(f.healthNotes || {}).forEach((id) => {
+      if (f.health[id] && blank(f.healthNotes[id])) e['health-' + id] = requiredError();
+    });
   }
   if (step === 'emergency') {
     need('emergencyName', !blank(f.emergency.name));
@@ -165,7 +173,7 @@ export function recordFrom(f, id, email = '') {
     address: f.address.trim(),
     birth: f.birth ? new Date(f.birth).toLocaleDateString(locale()) : '',
     ...(sr
-      ? { certificate: f.certificate, courses: f.courses.trim(), engagement: f.engagement, abroad: f.abroad, habits: f.habits, health: f.health, readiness: f.readiness, unwilling: f.unwilling.trim(), emergency: { ...f.emergency, phone: `${dialOf(f.emergency.phoneCountry)} ${f.emergency.phone.trim()}` } }
+      ? { certificate: f.certificate, courses: f.courses.trim(), engagement: f.engagement, abroad: f.abroad, habits: f.habits, health: f.health, healthNotes: Object.fromEntries(Object.entries(f.healthNotes || {}).filter(([id]) => f.health[id]).map(([id, v]) => [id, v.trim()])), readiness: f.readiness, unwilling: f.unwilling.trim(), emergency: { ...f.emergency, phone: `${dialOf(f.emergency.phoneCountry)} ${f.emergency.phone.trim()}` } }
       : { rateMin: Number(String(f.rateMin).replace(',', '.')), rateMax: Number(String(f.rateMax).replace(',', '.')) }),
   };
 }

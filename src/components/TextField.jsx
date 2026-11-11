@@ -8,6 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useIsPhone } from '@/hooks/use-phone';
+import { OptionSheet } from './OptionSheet';
 import {
   Select as SelectRoot,
   SelectContent,
@@ -189,10 +190,37 @@ export function TextArea({ value, onChange, rows = 3, className, ...rest }) {
 // closed field shows when it should be shorter than the row (a country's code).
 // `bare` draws the trigger without the field's box, for a Select inside
 // another field (the country code in front of a phone number), behind a line.
+// On a phone it opens in a bottom sheet, headed by the field's label
+// (OptionSheet; docs/patterns.md §10, decided 10. 11.).
 export function Select({ value, onChange, options, placeholder = t('Izaberite'), labelledBy, ariaLabel, bare, className }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
+  const label = useContext(FieldTitle);
+  const phone = useIsPhone();
+  const [open, setOpen] = useState(false);
   const chosen = options.find((o) => o.value === value);
+  if (phone)
+    return (
+      <>
+        <button
+          type="button"
+          id={id}
+          aria-labelledby={labelledBy}
+          aria-label={ariaLabel}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          data-state={open ? 'open' : 'closed'}
+          data-placeholder={chosen ? undefined : ''}
+          {...(bare ? {} : invalidOf(state))}
+          onClick={() => setOpen(true)}
+          className={cn(listTrigger, bare && 'h-auto w-auto shrink-0 self-stretch rounded-none border-y-0 border-l-0 bg-transparent pr-2 pl-3', className)}
+        >
+          <span className={cn('min-w-0 truncate', !bare && 'flex-1')}>{chosen ? chosen.display ?? chosen.label : placeholder}</span>
+          <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
+        </button>
+        <OptionSheet open={open} onOpenChange={setOpen} title={(bare ? ariaLabel || label : label || ariaLabel) || placeholder} options={options} value={value} onPick={onChange} />
+      </>
+    );
   return (
     <SelectRoot value={value ?? ''} onValueChange={onChange}>
       <SelectTrigger

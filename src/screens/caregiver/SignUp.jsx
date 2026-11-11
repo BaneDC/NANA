@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Note, PaneHint } from '@/components/pane';
-import { StepCard, StepCards, StepPage, StepReview } from '@/components/StepCards';
+import { StepCard, StepCards, StepPage, StepPanel, StepReview } from '@/components/StepCards';
 import PersonalityTest from './PersonalityTest';
 import CookieSettings from '../../components/CookieSettings';
 import { COOKIE_DEFAULT } from '../../data/cookies';
@@ -10,6 +10,7 @@ import { Actions, Consent, FormCard, Welcome } from '../Register';
 import { Radius, radiusText } from '../../components/caregiver/ProfileForms';
 import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
 import { dialOf } from '../../data/countries';
@@ -64,6 +65,51 @@ function Chips({ label, value, onChange, options, multiple = true, required, err
     </Field>
   );
 }
+
+// a choice in the form (docs/patterns.md §10, decided 10. 11.): one answer of
+// several is a radio, several a box beside each; a row each, the whole row
+// the target (44 on touch), in a grid when the answers are short. Yes / no
+// stays two chips (YesNo).
+const choiceRow = 'flex min-h-8 cursor-pointer items-start gap-2 py-1.5 text-xs leading-5 text-foreground pointer-coarse:min-h-11 pointer-coarse:py-3';
+
+function Checks({ label, value, onChange, options, required, error, cols = 'grid-cols-2' }) {
+  return (
+    <Field label={label} required={required}>
+      <div role="group" aria-label={label} className={`grid gap-x-3 ${cols}`}>
+        {options.map(([id, text]) => (
+          <label key={id} className={choiceRow}>
+            <Checkbox checked={value.includes(id)} onCheckedChange={(on) => onChange(on ? [...value, id] : value.filter((x) => x !== id))} className="mt-0.5" />
+            <span className="min-w-0">{text}</span>
+          </label>
+        ))}
+      </div>
+      {error && <FieldError>{error}</FieldError>}
+    </Field>
+  );
+}
+
+function Radios({ label, value, onChange, options, required, error, cols = 'grid-cols-1' }) {
+  return (
+    <Field label={label} required={required}>
+      <RadioGroup value={value} onValueChange={onChange} aria-label={label} className={`gap-x-3 gap-y-0 ${cols}`}>
+        {options.map(([id, text]) => (
+          <label key={id} className={choiceRow}>
+            <RadioGroupItem value={id} className="mt-0.5" />
+            <span className="min-w-0">{text}</span>
+          </label>
+        ))}
+      </RadioGroup>
+      {error && <FieldError>{error}</FieldError>}
+    </Field>
+  );
+}
+
+// what a "Da" asks for, in a field under it
+const HEALTH_DETAILS = {
+  allergies: msg('Na šta ste alergični?'),
+  limits: msg('Koje ograničenje imate?'),
+  problems: msg('Koji problem imate i kako utiče na rad?'),
+};
 
 const yesNo = [
   ['no', msg('Ne')],
@@ -121,6 +167,8 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     return i >= 0 ? i : null;
   };
   const setE = (patch) => set({ emergency: { ...f.emergency, ...patch } });
+  // the health question just answered "Da", whose field takes the focus as it comes
+  const [asked, setAsked] = useState(null);
 
   const next = () => {
     if (screen === 'account') {
@@ -207,17 +255,6 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     check.reset();
     setScreen('thanks');
   };
-
-  const footer = (label = t('Dalje'), onNext = next) => (
-    <Actions>
-      <Button size="lg" className="w-full" onClick={onNext}>
-        {label}
-      </Button>
-      <Button variant="secondary" size="lg" className="w-full" onClick={back}>
-        {t('Nazad')}
-      </Button>
-    </Actions>
-  );
 
   if (screen === 'country')
     return (
@@ -402,10 +439,9 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       <>
         {sr && (
           <div className="flex flex-col gap-3">
-            <Chips
+            <Checks
               label={t('Angažman')}
               required
-              cols="grid-cols-2"
               value={f.engagement}
               onChange={(v) => set({ engagement: v })}
               options={[
@@ -417,12 +453,11 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
           </div>
         )}
-        <Chips label={t('Koje dane želite da radite?')} required cols="grid-cols-7 phone:grid-cols-4" value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
+        <Checks label={t('Koje dane želite da radite?')} required cols="grid-cols-7 phone:grid-cols-4" value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
         <div className="flex flex-col gap-3">
-          <Chips
+          <Checks
             label={t('Izaberite raspored koji vam najviše odgovara')}
             required
-            cols="grid-cols-2"
             value={f.slots}
             onChange={(v) => set({ slots: v })}
             options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])}
@@ -453,10 +488,34 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         <Field label={t('Jezici koje govorite')}>
           <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
         </Field>
+        {/* a "Da" on allergies, a limit or a health problem asks what it is,
+            12 under the answer, and takes the focus */}
         {HEALTH_QUESTIONS.map(([id, label]) => (
-          <YesNo key={id} label={t(label)} value={f.health[id]} onChange={(v) => set({ health: { ...f.health, [id]: v } })} />
+          <div key={id} className="flex flex-col gap-3">
+            <YesNo
+              label={t(label)}
+              value={f.health[id]}
+              onChange={(v) => {
+                set({ health: { ...f.health, [id]: v } });
+                setAsked(v ? id : null);
+              }}
+            />
+            {HEALTH_DETAILS[id] && f.health[id] && (
+              <Field error={show('health-' + id)}>
+                <TextArea
+                  id={`su-health-${id}`}
+                  autoFocus={asked === id}
+                  rows={2}
+                  value={f.healthNotes?.[id] ?? ''}
+                  onChange={(v) => set({ healthNotes: { ...f.healthNotes, [id]: v } })}
+                  placeholder={t(HEALTH_DETAILS[id])}
+                  aria-label={t(label)}
+                />
+              </Field>
+            )}
+          </div>
         ))}
-        <Chips label={t('Spremnost za rad')} value={f.readiness} onChange={(v) => set({ readiness: v })} options={READINESS.map(([id, l]) => [id, t(l)])} />
+        <Checks label={t('Spremnost za rad')} cols="grid-cols-2 phone:grid-cols-1" value={f.readiness} onChange={(v) => set({ readiness: v })} options={READINESS.map(([id, l]) => [id, t(l)])} />
         <Field label={t('Šta ne želite da radite')}>
           <TextArea value={f.unwilling} onChange={(v) => set({ unwilling: v })} rows={2} placeholder={t('Npr. menjanje pelena, kupanje, rad sa nepokretnim osobama.')} />
         </Field>
@@ -556,7 +615,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     health: [
       ...HABITS.map(([id, label]) => [t(label), yn(f.habits[id])]),
       [t('Jezici koje govorite'), list(f.languages.map((l) => t(l)))],
-      ...HEALTH_QUESTIONS.map(([id, label]) => [t(label), yn(f.health[id])]),
+      ...HEALTH_QUESTIONS.map(([id, label]) => [t(label), f.health[id] && f.healthNotes?.[id]?.trim() ? `${t('Da')}: ${f.healthNotes[id].trim()}` : yn(f.health[id])]),
       [t('Spremnost za rad'), list(READINESS.filter(([id]) => f.readiness.includes(id)).map(([, l]) => t(l)))],
       [t('Šta ne želite da radite'), f.unwilling],
     ],
@@ -600,20 +659,31 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       </StepPage>
     );
 
+  // the pages after the review, in the form's look on the same sky
+  // (docs/patterns.md §10): the parts' glass card and the review's buttons
+  const pageButtons = (label, onNext) => (
+    <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+      <Button variant="secondary" size="lg" onClick={back}>
+        {t('Nazad')}
+      </Button>
+      <Button size="lg" onClick={onNext}>
+        {label}
+      </Button>
+    </div>
+  );
+
   if (screen === 'documents')
     return (
-      <>
-        <Welcome title={t('Dokumenti')} sub={t('Za klasifikacije koje ste izabrali treba dokument.')} />
-        <FormCard>
+      <StepPage title={t('Dokumenti')} sub={t('Za klasifikacije koje ste izabrali treba dokument.')} actions={pageButtons(t('Dalje'), next)}>
+        <StepPanel>
           {documentsNeeded(f).map((c) => (
             <Field key={c} label={CLASSIFICATIONS.find((x) => x.id === c).document} required error={show('doc-' + c)}>
               <FileField value={f.documents[c] || ''} onChange={(name) => set({ documents: { ...f.documents, [c]: name } })} ariaLabel={c} />
             </Field>
           ))}
           <PaneHint>{t('Dokumenti se čuvaju bezbedno i brišu se posle provere.')}</PaneHint>
-        </FormCard>
-        {footer()}
-      </>
+        </StepPanel>
+      </StepPage>
     );
 
   if (screen === 'test')
@@ -621,40 +691,44 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   if (screen === 'interview')
     return (
-      <>
-        <Welcome title={t('Zakažite razgovor')} sub={t('Kratak video razgovor sa koordinatorkom je poslednji korak prijave.')} />
-        <FormCard>
-          <Chips
-            label={t('Kako vam je najlakše?')}
-            required
-            multiple={false}
-            value={f.channel}
-            onChange={(v) => set({ channel: v })}
-            options={CHANNELS.map(([id, l]) => [id, t(l)])}
-            error={show('channel')}
-          />
-          {f.channel && <PaneHint>{t('Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.', { channel: t(CHANNELS.find(([id]) => id === f.channel)[1]) })}</PaneHint>}
-        </FormCard>
-        {footer(t('Zakaži razgovor'), submit)}
-      </>
+      <StepPage title={t('Zakažite razgovor')} sub={t('Kratak video razgovor sa koordinatorkom je poslednji korak prijave.')} actions={pageButtons(t('Zakaži razgovor'), submit)}>
+        <StepPanel>
+          {/* the hint goes with its question, 12 under it */}
+          <div className="flex flex-col gap-3">
+            <Radios
+              label={t('Kako vam je najlakše?')}
+              required
+              value={f.channel}
+              onChange={(v) => set({ channel: v })}
+              options={CHANNELS.map(([id, l]) => [id, t(l)])}
+              error={show('channel')}
+            />
+            {f.channel && <PaneHint>{t('Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.', { channel: t(CHANNELS.find(([id]) => id === f.channel)[1]) })}</PaneHint>}
+          </div>
+        </StepPanel>
+      </StepPage>
     );
 
   // thanks
   return (
-    <>
-      <Welcome title={t('Hvala!')} sub={t('Prijava je poslata.')} />
-      <FormCard>
+    <StepPage
+      title={t('Hvala!')}
+      sub={t('Prijava je poslata.')}
+      actions={
+        <div className="flex justify-center phone:*:w-full">
+          <Button size="lg" onClick={() => sent && onDone(sent.user, sent.record)}>
+            {t('Na početnu')}
+          </Button>
+        </div>
+      }
+    >
+      <StepPanel>
         <p className="text-xs leading-body text-foreground">
           {t('Profil se aktivira posle kratkog razgovora sa koordinatorkom. Javiće vam se preko kanala {channel} i reći sve što treba da znate. Posle toga možete da primate upite.', {
             channel: t(CHANNELS.find(([id]) => id === f.channel)?.[1] || ''),
           })}
         </p>
-      </FormCard>
-      <Actions>
-        <Button size="lg" className="w-full" onClick={() => sent && onDone(sent.user, sent.record)}>
-          {t('Na početnu')}
-        </Button>
-      </Actions>
-    </>
+      </StepPanel>
+    </StepPage>
   );
 }

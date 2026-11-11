@@ -399,4 +399,7 @@ export default {
   "Proverite podatke. Sledeći korak je test ličnosti.": "Check your details. Next comes the personality test.",
   "Proverite podatke. Sledeći korak su dokumenti.": "Check your details. Next come the documents.",
   "Proverite podatke. Sledeći korak je razgovor sa koordinatorkom.": "Check your details. Next comes the talk with the coordinator.",
+  "Na šta ste alergični?": "What are you allergic to?",
+  "Koje ograničenje imate?": "What limitation do you have?",
+  "Koji problem imate i kako utiče na rad?": "What problem do you have, and how does it affect your work?",
 };

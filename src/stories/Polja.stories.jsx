@@ -4,6 +4,7 @@ import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { DateInput, Field, Input, Password, Select, TextArea } from '@/components/TextField';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription } from '@/components/ui/card';
@@ -158,6 +159,30 @@ export const PrekidacIKvacica = {
           </span>
         </label>
       </div>
+    );
+  },
+};
+
+// one answer of several in a form: a radio a row, the whole row the target
+// (docs/patterns.md §10, "Izbor u formi: radio i checkbox")
+export const Radio = {
+  render: function Story() {
+    const [channel, setChannel] = useState('viber');
+    return (
+      <Field label="Kako vam je najlakše?" required>
+        <RadioGroup value={channel} onValueChange={setChannel} aria-label="Kako vam je najlakše?" className="gap-y-0">
+          {[
+            ['whatsapp', 'WhatsApp'],
+            ['viber', 'Viber'],
+            ['meet', 'Google Meet ili Zoom'],
+          ].map(([id, text]) => (
+            <label key={id} className="flex min-h-8 cursor-pointer items-start gap-2 py-1.5 text-xs leading-5 text-foreground pointer-coarse:min-h-11 pointer-coarse:py-3">
+              <RadioGroupItem value={id} className="mt-0.5" />
+              <span>{text}</span>
+            </label>
+          ))}
+        </RadioGroup>
+      </Field>
     );
   },
 };

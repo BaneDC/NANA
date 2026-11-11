@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Part, PaneHint } from '@/components/pane';
@@ -6,7 +7,7 @@ import Dialog from './Dialog';
 import { CoordinatorRows } from './PlanFooterBlocks';
 import { Field, TextArea, requiredError, useCheck } from './TextField';
 import { t } from '@/i18n';
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemLink, ItemTitle } from '@/components/ui/item';
+import { Item, ItemAction, ItemContent, ItemDescription, ItemGroup, ItemLink, ItemTitle } from '@/components/ui/item';
 import { CODE, CODE_INTRO, CODE_TITLE } from '../data/codeOfConduct';
 
 // her side: the code she works by, one row under the coordinator's contact
@@ -66,6 +67,14 @@ export default function HelpDialog({ open = true, coordinator, caregiver = false
                   </ItemTitle>
                   <ItemDescription>{t('Šta se od vas očekuje kod korisnika.')}</ItemDescription>
                 </ItemContent>
+                {/* a row that opens something says so (docs/patterns.md §7):
+                    the button on the right, on a phone the arrow */}
+                <ItemAction>
+                  <Button variant="secondary" onClick={() => setCode(true)}>
+                    {t('Pročitaj')}
+                  </Button>
+                </ItemAction>
+                <ChevronRight aria-hidden="true" className="mt-0.5 hidden size-4 shrink-0 text-muted-foreground phone:block" strokeWidth={1.75} />
               </Item>
             </ItemGroup>
           </Part>

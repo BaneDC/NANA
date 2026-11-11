@@ -399,4 +399,7 @@ export default {
   "Proverite podatke. Sledeći korak je test ličnosti.": "Tarkista tietosi. Seuraavaksi persoonallisuustesti.",
   "Proverite podatke. Sledeći korak su dokumenti.": "Tarkista tietosi. Seuraavaksi asiakirjat.",
   "Proverite podatke. Sledeći korak je razgovor sa koordinatorkom.": "Tarkista tietosi. Seuraavaksi keskustelu koordinaattorin kanssa.",
+  "Na šta ste alergični?": "Mille olet allerginen?",
+  "Koje ograničenje imate?": "Mikä rajoitus sinulla on?",
+  "Koji problem imate i kako utiče na rad?": "Mikä ongelma sinulla on ja miten se vaikuttaa työhön?",
 };
