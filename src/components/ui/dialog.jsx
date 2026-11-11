@@ -155,7 +155,8 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "sticky -bottom-6 z-1 -mx-6 -mt-2 -mb-6 flex justify-end gap-2 bg-card px-6 pt-3 pb-6",
+        // 24 under the body (12 of its gap, 12 of its own; decided 11. 11., was 16)
+        "sticky -bottom-6 z-1 -mx-6 mt-0 -mb-6 flex justify-end gap-2 bg-card px-6 pt-3 pb-6",
         "phone:-bottom-4 phone:-mx-4 phone:mt-auto phone:-mb-4 phone:border-t phone:px-4 phone:py-3",
         // on a phone the buttons share the width; when they do not fit in one
         // row they stack, the last (the main one) on top (docs/patterns.md §12)

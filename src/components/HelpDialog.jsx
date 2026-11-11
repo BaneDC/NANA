@@ -7,7 +7,7 @@ import Dialog from './Dialog';
 import { CoordinatorRows } from './PlanFooterBlocks';
 import { Field, TextArea, requiredError, useCheck } from './TextField';
 import { t } from '@/i18n';
-import { Item, ItemAction, ItemContent, ItemDescription, ItemGroup, ItemLink, ItemTitle } from '@/components/ui/item';
+import { Card, CardAction, CardDescription, CardHeader, CardLink, CardTitle } from '@/components/ui/card';
 import { CODE, CODE_INTRO, CODE_TITLE } from '../data/codeOfConduct';
 
 // her side: the code she works by, one row under the coordinator's contact
@@ -59,24 +59,23 @@ export default function HelpDialog({ open = true, coordinator, caregiver = false
         </Part>
         {caregiver && (
           <Part label={t('Pravila rada')}>
-            <ItemGroup>
-              <Item>
-                <ItemContent>
-                  <ItemTitle>
-                    <ItemLink onClick={() => setCode(true)}>{t('Kodeks ponašanja')}</ItemLink>
-                  </ItemTitle>
-                  <ItemDescription>{t('Šta se od vas očekuje kod korisnika.')}</ItemDescription>
-                </ItemContent>
-                {/* a row that opens something says so (docs/patterns.md §7):
-                    the button on the right, on a phone the arrow */}
-                <ItemAction>
+            {/* a card of its own, whole of it opening the code (§7; decided
+                11. 11.: as a row it read as text): the button on the right,
+                on a phone the arrow */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  <CardLink onClick={() => setCode(true)}>{t('Kodeks ponašanja')}</CardLink>
+                </CardTitle>
+                <CardAction className="phone:hidden">
                   <Button variant="secondary" onClick={() => setCode(true)}>
                     {t('Pročitaj')}
                   </Button>
-                </ItemAction>
-                <ChevronRight aria-hidden="true" className="mt-0.5 hidden size-4 shrink-0 text-muted-foreground phone:block" strokeWidth={1.75} />
-              </Item>
-            </ItemGroup>
+                </CardAction>
+                <ChevronRight aria-hidden="true" className="ml-auto hidden size-4 shrink-0 text-muted-foreground phone:block" strokeWidth={1.75} />
+              </CardHeader>
+              <CardDescription>{t('Šta se od vas očekuje kod korisnika.')}</CardDescription>
+            </Card>
           </Part>
         )}
         {/* the one field: its part's name and the placeholder say what goes in,

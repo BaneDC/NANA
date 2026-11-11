@@ -1,14 +1,15 @@
-import { cloneElement, createContext, useContext, useId, useRef, useState } from 'react';
-import { CalendarDays, Check, ChevronDown, ChevronsUpDown, Eye, EyeOff } from 'lucide-react';
+import { cloneElement, createContext, useContext, useId, useMemo, useRef, useState } from 'react';
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronsUpDown, Eye, EyeOff, X } from 'lucide-react';
 import { FieldDescription, FieldError as FieldErrorRoot, FieldLabel, Field as FieldRoot } from '@/components/ui/field';
 import { Input as InputBox } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar, CalendarPick } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { paneCloseClass } from '@/components/ui/dialog';
 import { useIsPhone } from '@/hooks/use-phone';
-import { OptionSheet } from './OptionSheet';
+import { LONG_LIST, OptionList, OptionSheet } from './OptionSheet';
 import {
   Select as SelectRoot,
   SelectContent,
@@ -250,7 +251,12 @@ export function Select({ value, onChange, options, placeholder = t('Izaberite'),
 // on a phone, and the keyboard a search brings up left a list two rows. The
 // sheet is headed by the field's label (or `title`); `tall` keeps it at its
 // full height, so it does not jump while a search narrows the list.
-function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, popover, children }) {
+// `closable`: a sheet whose choice is kept only on its button (the date of
+// birth, a list with boxes) has the X every pane has, and only that button in
+// its foot (decided 11. 11.); one where a row is the choice closes on it.
+// `back`: a view inside the sheet (the month's list in the date's), with the
+// way back at the head's left, where the title starts.
+function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, closable, back, popover, children }) {
   const phone = useIsPhone();
   const label = useContext(FieldTitle);
   if (phone)
@@ -260,7 +266,27 @@ function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, popover
         <Drawer open={open} onOpenChange={onOpenChange}>
           <DrawerContent
             kind="dialog"
-            head={<DrawerTitle>{title || label || fallback}</DrawerTitle>}
+            head={
+              closable || back ? (
+                // as tall as its buttons (44) in each view, so going in and back does not move it
+                <div className="flex min-h-11 items-center gap-2">
+                  {back && (
+                    <Button type="button" variant="ghost" size="icon" className="-ml-3" aria-label={t('Nazad')} onClick={back.onBack}>
+                      <ChevronLeft className="size-4" strokeWidth={1.75} />
+                    </Button>
+                  )}
+                  <DrawerTitle className="min-w-0 flex-1 truncate">{back?.title || title || label || fallback}</DrawerTitle>
+                  {closable && (
+                    <DrawerClose className={paneCloseClass}>
+                      <X className="size-4" strokeWidth={1.75} />
+                      <span className="sr-only">{t('Zatvori')}</span>
+                    </DrawerClose>
+                  )}
+                </div>
+              ) : (
+                <DrawerTitle>{title || label || fallback}</DrawerTitle>
+              )
+            }
             className={tall ? 'h-[calc(100%-48px-env(safe-area-inset-top,0px))]' : undefined}
             bodyClassName={tall ? 'min-h-0 flex-1 overflow-hidden' : undefined}
           >
@@ -286,18 +312,37 @@ function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, popover
 // `pickYear`: month and year as dropdowns, for a date years back (a date of
 // birth). People pick the day first, then the month and the year, so a day
 // only marks the date and does not close: the day marked goes along when the
-// month or year changes, and nothing is kept until "Potvrdi" (docs/patterns.md §10).
-// On a phone the month opens in a bottom sheet (FieldPane).
+// month or year changes, and nothing is kept until "Potvrdi", at the right of
+// its foot (docs/patterns.md §10). Six weeks always, so it does not change
+// height from month to month. On a phone the month opens in a bottom sheet
+// (FieldPane) with an X, and the month's or the year's list opens in its place
+// in that sheet, at the calendar's height, with "Nazad" in the head (decided
+// 11. 11.; it was a second sheet over the first, with no way back but a pick).
 export function DateInput({ value, onChange, from, to, today = from, pickYear, placeholder = t('Izaberite datum'), title, ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(null);
   const [month, setMonth] = useState(null);
+  const phone = useIsPhone();
+  // the month's or the year's list, shown in the sheet in the calendar's place
+  const [list, setList] = useState(null);
+  const pane = useRef(null);
+  const [height, setHeight] = useState(null);
+  const pick = useMemo(
+    () => ({
+      open: (l) => {
+        setHeight(pane.current?.offsetHeight ?? null);
+        setList(l);
+      },
+    }),
+    []
+  );
   const toggle = (on) => {
     if (on) {
       setDraft(value ?? null);
       setMonth(value ?? today ?? from);
+      setList(null);
     }
     setOpen(on);
   };
@@ -327,34 +372,49 @@ export function DateInput({ value, onChange, from, to, today = from, pickYear, p
   const body = (
     <>
       {pickYear ? (
-        <>
-          <Calendar
-            mode="single"
-            captionLayout="dropdown"
-            selected={draft ?? undefined}
-            month={month ?? undefined}
-            onMonthChange={moveTo}
-            today={today}
-            disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
-            startMonth={from}
-            endMonth={to}
-            onSelect={(d) => d && setDraft(d)}
-            autoFocus
-          />
-          <div className="flex gap-2 p-1 pt-2 [&>*]:flex-1">
-            <Button
-              onClick={() => {
-                if (draft) onChange(draft);
-                setOpen(false);
-              }}
-            >
-              {t('Potvrdi')}
-            </Button>
-            <Button variant="secondary" onClick={() => setOpen(false)}>
-              {t('Otkaži')}
-            </Button>
+        <CalendarPick.Provider value={phone ? pick : null}>
+          {list && (
+            <div style={height ? { height } : undefined} className="flex min-h-0 flex-col">
+              <OptionList
+                key={list.label}
+                options={list.options}
+                value={list.value}
+                className="min-h-0 flex-1 [&_[data-slot=command-list]]:max-h-none [&_[data-slot=command-list]]:flex-1"
+                onPick={(v) => {
+                  list.onPick(v);
+                  setList(null);
+                }}
+              />
+            </div>
+          )}
+          {/* kept while a list is shown, so the month it was on stays */}
+          <div ref={pane} className={cn('flex flex-col', list && 'hidden')}>
+            <Calendar
+              mode="single"
+              captionLayout="dropdown"
+              fixedWeeks
+              selected={draft ?? undefined}
+              month={month ?? undefined}
+              onMonthChange={moveTo}
+              today={today}
+              disabled={[from && { before: from }, to && { after: to }].filter(Boolean)}
+              startMonth={from}
+              endMonth={to}
+              onSelect={(d) => d && setDraft(d)}
+              autoFocus
+            />
+            <div className="flex justify-end p-1 pt-2">
+              <Button
+                onClick={() => {
+                  if (draft) onChange(draft);
+                  setOpen(false);
+                }}
+              >
+                {t('Potvrdi')}
+              </Button>
+            </div>
           </div>
-        </>
+        </CalendarPick.Provider>
       ) : (
         <Calendar
           mode="single"
@@ -375,7 +435,17 @@ export function DateInput({ value, onChange, from, to, today = from, pickYear, p
     </>
   );
   return (
-    <FieldPane open={open} onOpenChange={toggle} trigger={trigger} title={title} fallback={placeholder} popover={{ align: 'end' }}>
+    <FieldPane
+      open={open}
+      onOpenChange={toggle}
+      trigger={trigger}
+      title={title}
+      fallback={placeholder}
+      closable={pickYear}
+      back={list && { title: list.label, onBack: () => setList(null) }}
+      // with month and year as dropdowns 320, so "Septembar" and the year fit whole
+      popover={{ align: 'end', className: pickYear ? 'w-80' : undefined }}
+    >
       {body}
     </FieldPane>
   );
@@ -501,23 +571,30 @@ export function Combobox({ value, onChange, groups, placeholder = t('Izaberite')
   );
 }
 
-// Several from a list, with a search, "Izaberi sve" and "Zatvori", as the
-// platform's own languages field: a box beside each, the chosen named in the
-// field. Kept in this file with the other fields (docs/patterns.md §10).
+// Several from a list (docs/patterns.md §10, "Više od više u listi", decided
+// 11. 11.): a box beside each; a search on top only when the list is long
+// (OptionSheet's LONG_LIST). What is ticked is kept only on "Izaberi", right
+// in the foot; at its left "Izaberi sve" while not all are, and "Poništi
+// izbor" once any is. Closed any other way, nothing changes.
 export function MultiCombobox({ values, onChange, options, placeholder = t('Izaberite'), searchPlaceholder = t('Pretraga'), empty = t('Nema rezultata.') }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
-  const all = values.length === options.length;
-  const toggle = (v) => onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  const [draft, setDraft] = useState(values);
+  const long = options.length > LONG_LIST;
+  const toggleOpen = (on) => {
+    if (on) setDraft(values);
+    setOpen(on);
+  };
+  const toggle = (v) => setDraft((d) => (d.includes(v) ? d.filter((x) => x !== v) : [...d, v]));
   const shown = options.filter((o) => values.includes(o.value)).map((o) => o.label);
   return (
     <FieldPane
       open={open}
-      onOpenChange={setOpen}
-      // a short list (the languages) is as tall as it is; a long one keeps the
-      // sheet's full height while the search narrows it
-      tall={options.length > 10}
+      onOpenChange={toggleOpen}
+      // a long one keeps the sheet's full height while the search narrows it
+      tall={long}
+      closable
       fallback={placeholder}
       popover={{ align: 'start', className: 'w-(--radix-popover-trigger-width) p-2' }}
       trigger={
@@ -527,27 +604,40 @@ export function MultiCombobox({ values, onChange, options, placeholder = t('Izab
         </button>
       }
     >
-        <Command className={paneList}>
-          <CommandInput placeholder={searchPlaceholder} />
+        <Command className={long ? paneList : '[&_[data-slot=command-list]]:max-h-none'}>
+          {long && <CommandInput placeholder={searchPlaceholder} />}
           <CommandList>
-            <CommandEmpty>{empty}</CommandEmpty>
+            {long && <CommandEmpty>{empty}</CommandEmpty>}
             <CommandGroup className="p-0">
-              <CommandItem value={t('Izaberi sve')} onSelect={() => onChange(all ? [] : options.map((o) => o.value))}>
-                <Checkbox checked={all} tabIndex={-1} className="pointer-events-none" />
-                {t('Izaberi sve')}
-              </CommandItem>
               {options.map((o) => (
                 <CommandItem key={o.value} value={o.label} onSelect={() => toggle(o.value)}>
-                  <Checkbox checked={values.includes(o.value)} tabIndex={-1} className="pointer-events-none" />
+                  <Checkbox checked={draft.includes(o.value)} tabIndex={-1} className="pointer-events-none" />
                   {o.label}
                 </CommandItem>
               ))}
             </CommandGroup>
           </CommandList>
         </Command>
-        <div className="mt-2 border-t pt-2">
-          <Button type="button" variant="ghost" className="w-full" onClick={() => setOpen(false)}>
-            {t('Zatvori')}
+        <div className="mt-2 flex items-center gap-2 border-t pt-2">
+          {draft.length < options.length && (
+            <Button type="button" variant="ghost" onClick={() => setDraft(options.map((o) => o.value))}>
+              {t('Izaberi sve')}
+            </Button>
+          )}
+          {draft.length > 0 && (
+            <Button type="button" variant="ghost" onClick={() => setDraft([])}>
+              {t('Poništi izbor')}
+            </Button>
+          )}
+          <Button
+            type="button"
+            className="ml-auto"
+            onClick={() => {
+              onChange(options.map((o) => o.value).filter((v) => draft.includes(v)));
+              setOpen(false);
+            }}
+          >
+            {t('Izaberi')}
           </Button>
         </div>
     </FieldPane>

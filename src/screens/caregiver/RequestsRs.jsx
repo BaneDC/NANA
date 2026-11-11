@@ -104,21 +104,25 @@ export default function RequestsRs({ user, clients, onOpen, act }) {
                           {r.message && <Group label={t('Poruka porodice')} text={t(r.message)} />}
                         </Groups>
                       )}
+                      {/* after a yes, the family's contact: they agree the rest
+                          by phone; a part of what is said of the request, so
+                          on its line, not the avatar's (decided 11. 11.) */}
+                      {r.status === 'accepted' && care.family.phone && (
+                        <div className="mt-3 flex flex-col gap-2">
+                          <p className="text-small font-medium text-muted-foreground">{t('Kontakt porodice · {name}', { name: care.family.name })}</p>
+                          <PersonRows phone={care.family.phone} email={care.family.email || ''} />
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {/* after a yes, the family's contact: they agree the rest by phone */}
-                  {r.status === 'accepted' && care.family.phone && (
-                    <>
-                      <p className="mt-2 text-small font-medium text-muted-foreground">{t('Kontakt porodice · {name}', { name: care.family.name })}</p>
-                      <PersonRows phone={care.family.phone} email={care.family.email || ''} />
-                    </>
-                  )}
                   {r.status === 'pending' && (
-                    <CardFooter>
-                      <Button onClick={() => act('accept', c)}>{t('Prihvati')}</Button>
+                    // at the card's right, the yes last, at its edge; a line
+                    // over them, 16 and 16 (decided 11. 11.)
+                    <CardFooter className="justify-end border-t border-(--card-line) pt-4">
                       <Button variant="secondary" onClick={() => act('decline', c)}>
                         {t('Odbij')}
                       </Button>
+                      <Button onClick={() => act('accept', c)}>{t('Prihvati')}</Button>
                     </CardFooter>
                   )}
                 </Card>

@@ -81,6 +81,13 @@ export async function signIn(email, password) {
   return record.passwordHash === (await hash(password)) ? record.user : null;
 }
 
+// Out of the account, to the start: what the account holds stays in this
+// browser, so signing in again picks up from there. The page loads anew on the
+// plain address, as a reload does (a demo's ?demo goes with it).
+export function signOut() {
+  window.location.assign(window.location.pathname);
+}
+
 // How far the family got, kept with the account: the answers and notes the plan
 // is built from, and whether the onboarding finished. Signing back in picks up
 // from there, so a finished onboarding is never run again.

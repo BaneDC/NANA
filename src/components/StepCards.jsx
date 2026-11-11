@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useIsPhone } from '@/hooks/use-phone';
 import { cn } from '@/lib/utils';
-import { t } from '@/i18n';
+import { t, useLang } from '@/i18n';
 import GradientBackground from '@/components/immersive/GradientBackground';
 
 // A form in parts on one page (docs/patterns.md §10), as the chat kit's
@@ -23,11 +23,20 @@ import GradientBackground from '@/components/immersive/GradientBackground';
 // the header at the left under a small line, as the family's plan after the
 // onboarding. The buttons stay in reach: held at the bottom of the screen
 // while the page runs past it (.imm-step-bar).
-export function StepPage({ eyebrow, title, sub, start, actions, children }) {
+// `footer`: what belongs to the page and not to its step (the language, on
+// the sign-up's first page), quiet at its foot, 32 under the buttons.
+export function StepPage({ eyebrow, title, sub, start, actions, footer, children }) {
   const scroller = useRef(null);
+  // a new title is a new page, to the top; the same one in another language is not
+  const lang = useLang();
+  const wasLang = useRef(lang);
   useLayoutEffect(() => {
+    if (wasLang.current !== lang) {
+      wasLang.current = lang;
+      return;
+    }
     scroller.current?.scrollTo?.(0, 0);
-  }, [title]);
+  }, [title, lang]);
   return (
     <div data-slot="step-page" className="fixed inset-0 z-10 overflow-hidden">
       <GradientBackground />
@@ -50,6 +59,8 @@ export function StepPage({ eyebrow, title, sub, start, actions, children }) {
               <div className="mx-auto w-[560px] max-w-full">{actions}</div>
             </div>
           )}
+          {/* 32 under what is over it: the bar's own 16 and 16 more, or 32 */}
+          {footer && <footer className={cn('flex w-[560px] max-w-full flex-wrap justify-center gap-1 pb-8 phone:pb-6', actions ? 'mt-4' : 'mt-8')}>{footer}</footer>}
         </div>
       </div>
     </div>

@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem, useFade } from '@/components/ui/toggle-group';
 import { DataList, DataRow } from '@/components/data-list';
+import { Note } from '@/components/pane';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useIsPhone } from '@/hooks/use-phone';
 import { activeVersion, firstName, money, pendingVersion, todayOf } from '../../data/familyCare';
 import { cannotPlan } from '../../data/caregiverCare';
@@ -86,15 +88,18 @@ function BoardCard({ client, caregiverId, onOpen, act }) {
           {due && <DataRow label={t('Poseta')}>{`${due.date} · ${due.time}`}</DataRow>}
           {due && <DataRow label={t('Vi dobijate')}>{money(netOf(due))}</DataRow>}
         </DataList>
-        {why && <p className="text-xs leading-body text-muted-foreground">{why}</p>}
+        {/* why she cannot plan: a note on its grey ground, not a stray line (decided 11. 11.) */}
+        {why && <Note>{why}</Note>}
         {herMove(client, caregiverId) && (
-          <CardFooter>
+          // at the card's right, the main one last, at its edge; a line over
+          // them, 16 from what is over it and 16 to them (decided 11. 11.)
+          <CardFooter className="justify-end border-t border-(--card-line) pt-4">
             {stage === 'request' && (
               <>
-                <Button onClick={() => act('accept', client)}>{t('Prihvati')}</Button>
                 <Button variant="secondary" onClick={() => act('decline', client)}>
                   {t('Odbij')}
                 </Button>
+                <Button onClick={() => act('accept', client)}>{t('Prihvati')}</Button>
               </>
             )}
             {stage === 'agreement' && <Button onClick={() => act('terms', client)}>{t('Pošalji ugovor')}</Button>}
@@ -195,6 +200,13 @@ export default function Board({ user, clients, caregiverId, onOpen, act, onEarni
     const id = STAGES[Math.round(el.scrollLeft / step)]?.id;
     if (id && id !== picked) setPicked(id);
   };
+  // a column's width (and the gap) to one side
+  const step = (dir) => {
+    const el = row.current;
+    if (!el) return;
+    const by = el.children[1].offsetLeft - el.children[0].offsetLeft;
+    el.scrollBy({ left: dir * by, behavior: 'smooth' });
+  };
   // on a phone it opens on the first column with something in it
   useEffect(() => {
     if (phone) slideTo(picked, false);
@@ -216,6 +228,18 @@ export default function Board({ user, clients, caregiverId, onOpen, act, onEarni
         </PageHeaderText>
         {/* what she has been paid so far, the way to her earnings */}
         <PageActions>
+          {/* beside a phone, when the columns do not fit: a column at a
+              time either way, as a wheel only goes down (decided 11. 11.) */}
+          {!phone && fade && (
+            <>
+              <Button variant="secondary" size="icon" aria-label={t('Kolone levo')} title={t('Kolone levo')} disabled={fade === 'end'} onClick={() => step(-1)}>
+                <ChevronLeft size={16} strokeWidth={1.75} />
+              </Button>
+              <Button variant="secondary" size="icon" aria-label={t('Kolone desno')} title={t('Kolone desno')} disabled={fade === 'start'} onClick={() => step(1)}>
+                <ChevronRight size={16} strokeWidth={1.75} />
+              </Button>
+            </>
+          )}
           <Button variant="secondary" onClick={onEarnings}>
             {/* on a phone it shares the title's line, so only the sum */}
             {phone ? t('{amount} isplaćeno', { amount: money(e.paidTotal) }) : t('{amount} isplaćeno do sada', { amount: money(e.paidTotal) })}

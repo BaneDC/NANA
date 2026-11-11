@@ -337,6 +337,9 @@ export default {
   'Isključeno': 'Pois käytöstä',
   'uvek': 'aina',
   'Podešavanja kolačića': 'Evästeasetukset',
+  'Odjava': 'Kirjaudu ulos',
+  'Sve što ste uneli ostaje sačuvano. Prijavite se ponovo kad god želite.': 'Kaikki syöttämäsi tiedot säilyvät. Kirjaudu uudelleen milloin haluat.',
+  'Odjavi se': 'Kirjaudu ulos',
   'Otkazati pretplatu?': 'Perutaanko tilaus?',
   'Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju plaćenog perioda. Možete da se pretplatite ponovo kad god želite.':
     'Hoitosuunnitelma säilyy, mutta hoitajien numerot ja täydet suositukset sulkeutuvat maksetun jakson lopussa. Voitte tilata uudelleen milloin tahansa.',

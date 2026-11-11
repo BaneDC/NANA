@@ -6,14 +6,14 @@ import { StepCard, StepCards, StepPage, StepPanel, StepReview } from '@/componen
 import PersonalityTest from './PersonalityTest';
 import CookieSettings from '../../components/CookieSettings';
 import { COOKIE_DEFAULT } from '../../data/cookies';
-import { Actions, Consent, FormCard, Welcome } from '../Register';
+import { Consent } from '../Register';
 import { Radius, radiusText } from '../../components/caregiver/ProfileForms';
 import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
-import { dialOf } from '../../data/countries';
+import { COUNTRIES, dialOf } from '../../data/countries';
 import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
@@ -68,14 +68,14 @@ function Chips({ label, value, onChange, options, multiple = true, required, err
 
 // a choice in the form (docs/patterns.md §10, decided 10. 11.): one answer of
 // several is a radio, several a box beside each; a row each, the whole row
-// the target (44 on touch), in a grid when the answers are short. Yes / no
-// stays two chips (YesNo).
+// the target (44 on touch), always one under the other (decided 11. 11.).
+// Yes / no, the days, the time of day and the engagement are chips.
 const choiceRow = 'flex min-h-8 cursor-pointer items-start gap-2 py-1.5 text-xs leading-5 text-foreground pointer-coarse:min-h-11 pointer-coarse:py-3';
 
-function Checks({ label, value, onChange, options, required, error, cols = 'grid-cols-2' }) {
+function Checks({ label, value, onChange, options, required, error }) {
   return (
     <Field label={label} required={required}>
-      <div role="group" aria-label={label} className={`grid gap-x-3 ${cols}`}>
+      <div role="group" aria-label={label} className="flex flex-col">
         {options.map(([id, text]) => (
           <label key={id} className={choiceRow}>
             <Checkbox checked={value.includes(id)} onCheckedChange={(on) => onChange(on ? [...value, id] : value.filter((x) => x !== id))} className="mt-0.5" />
@@ -88,10 +88,10 @@ function Checks({ label, value, onChange, options, required, error, cols = 'grid
   );
 }
 
-function Radios({ label, value, onChange, options, required, error, cols = 'grid-cols-1' }) {
+function Radios({ label, value, onChange, options, required, error }) {
   return (
     <Field label={label} required={required}>
-      <RadioGroup value={value} onValueChange={onChange} aria-label={label} className={`gap-x-3 gap-y-0 ${cols}`}>
+      <RadioGroup value={value} onValueChange={onChange} aria-label={label} className="flex flex-col gap-0">
         {options.map(([id, text]) => (
           <label key={id} className={choiceRow}>
             <RadioGroupItem value={id} className="mt-0.5" />
@@ -146,11 +146,12 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const [busy, setBusy] = useState(false);
   const check = useCheck();
   const set = (patch) => setF((x) => ({ ...x, ...patch }));
-  // past the country and the account it is a form: the page drops its photos
+  // the sign-up's photos are not over her pages
+  // every page of hers is on the form's own sky, from where she wants to work
   useEffect(() => {
-    onForm?.(!['country', 'account'].includes(screen));
+    onForm?.(true);
     return () => onForm?.(false);
-  }, [screen, onForm]);
+  }, [onForm]);
   // the form's parts, which one is open, and the ones done
   const parts = market ? STEPS[market] : [];
   const [open, setOpen] = useState(0);
@@ -256,83 +257,112 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     setScreen('thanks');
   };
 
+  // the terms, under "Nazad" (decided 11. 11.)
+  const terms = (
+    <p className="mt-3 text-small text-muted-foreground phone:text-center [&_a]:text-primary-600">
+      {t('Prijavom ste saglasni sa našim')}{' '}
+      <a href={LEGAL.terms} target="_blank" rel="noreferrer">
+        {t('uslovima korišćenja')}
+      </a>{' '}
+      {t('i')}{' '}
+      <a href={LEGAL.privacy} target="_blank" rel="noreferrer">
+        {t('politikom privatnosti')}
+      </a>
+      .{' '}
+      <a href="#kolacici" onClick={(e) => (e.preventDefault(), setCookiesOpen(true))}>
+        {t('Podešavanja kolačića')}
+      </a>
+    </p>
+  );
+
+  // where she wants to work and her account are the first steps of the same
+  // process as the form, so on its sky (docs/patterns.md §10, decided 11. 11.):
+  // the countries two glass cards side by side, each with its flag; the
+  // language quiet at the page's foot. No "Nazad": the first page of the
+  // flow, the browser's back goes to the start (decided 11. 11.; the routes
+  // are Branislav's, still to come)
   if (screen === 'country')
     return (
-      <>
-        <Welcome title={t('Gde želite da radite?')} sub={t('Izaberite zemlju u kojoj želite da negujete starije.')} />
-        <Actions>
-          {[
-            ['sr', t('Srbija')],
-            ['fi', t('Finska')],
-          ].map(([id, label]) => (
-            <Button
-              key={id}
-              size="lg"
-              variant="secondary"
-              className="w-full"
-              onClick={() => {
-                setMarket(id);
-                setF(emptyForm(id));
-                setScreen('account');
-              }}
-            >
-              {label}
-            </Button>
-          ))}
-          <Button variant="ghost" size="lg" onClick={onBack}>
-            {t('Nazad')}
+      <StepPage
+        title={t('Gde želite da radite?')}
+        sub={t('Izaberite zemlju u kojoj želite da negujete starije.')}
+        footer={LANGUAGES.map((l) => (
+          <Button
+            key={l.id}
+            variant="ghost"
+            lang={l.id}
+            aria-pressed={l.id === lang}
+            className={l.id === lang ? 'font-medium text-foreground' : 'text-muted-foreground'}
+            onClick={() => pickLang(l.id)}
+          >
+            {l.label}
           </Button>
-          {/* her language, before the form, which takes 10 to 20 minutes;
-              afterwards in Settings (docs/patterns.md §12b) */}
-          <ToggleGroup type="single" size="sm" className="mt-2" value={lang} onValueChange={pickLang} aria-label={t('Jezik')}>
-            {LANGUAGES.map((l) => (
-              <ToggleGroupItem key={l.id} value={l.id} lang={l.id}>
-                {l.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </Actions>
-      </>
+        ))}
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            ['sr', 'RS'],
+            ['fi', 'FI'],
+          ].map(([id, code]) => {
+            const c = COUNTRIES.find((x) => x.id === code);
+            return (
+              <button
+                key={id}
+                type="button"
+                className="imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                onClick={() => {
+                  setMarket(id);
+                  setF(emptyForm(id));
+                  setScreen('account');
+                }}
+              >
+                <span aria-hidden="true" className="text-[24px] leading-6">
+                  {c.flag}
+                </span>
+                <span className="imm-option-title">{t(c.name)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </StepPage>
     );
 
   if (screen === 'account')
     return (
-      <>
-        <Welcome title={t('Prijavite se kao negovateljica')} sub={t('Unesite svoje podatke da biste započeli proces prijave.')} />
-        <FormCard>
+      <StepPage
+        title={t('Prijavite se kao negovateljica')}
+        sub={t('Unesite svoje podatke da biste započeli proces prijave.')}
+        actions={
+          <>
+            <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+              <Button variant="secondary" size="lg" onClick={back}>
+                {t('Nazad')}
+              </Button>
+              <Button size="lg" onClick={next}>
+                {t('Nastavi')}
+              </Button>
+            </div>
+            {terms}
+          </>
+        }
+      >
+        <StepPanel>
           <Field label={t('Email adresa')} required error={check.show(emailError(account.email))}>
             <Input value={account.email} onChange={(v) => setAccount((a) => ({ ...a, email: v }))} type="email" autoComplete="email" placeholder={t('Unesite svoju email adresu')} />
           </Field>
+        </StepPanel>
+        {/* under the card, on the sky, not in it: white boxes on the white
+            glass were barely seen (decided 11. 11., dizajner). The box's edge
+            in the grey of the text (it was the field's, 1.4 : 1), and each
+            row 44 under a finger, the 16 under the card kept */}
+        <div className="-mt-4 flex flex-col gap-3 px-4 pointer-coarse:-mt-7 pointer-coarse:gap-0 [&_[role=checkbox]]:border-muted-foreground pointer-coarse:[&_label]:py-3">
           <Consent required checked={account.processing} onChange={(v) => setAccount((a) => ({ ...a, processing: v }))} error={check.show(!account.processing && requiredError())}>
             {t('Saglasnost za obradu podataka')}
           </Consent>
           <Consent required checked={account.accuracy} onChange={(v) => setAccount((a) => ({ ...a, accuracy: v }))} error={check.show(!account.accuracy && requiredError())}>
             {t('Potvrda tačnosti podataka')}
           </Consent>
-        </FormCard>
-        {/* the terms under the button, as on the family's sign-up (Register.jsx) */}
-        <Actions>
-          <Button size="lg" className="w-full" onClick={next}>
-            {t('Nastavi')}
-          </Button>
-          <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
-            {t('Prijavom ste saglasni sa našim')}{' '}
-            <a href={LEGAL.terms} target="_blank" rel="noreferrer">
-              {t('uslovima korišćenja')}
-            </a>{' '}
-            {t('i')}{' '}
-            <a href={LEGAL.privacy} target="_blank" rel="noreferrer">
-              {t('politikom privatnosti')}
-            </a>
-            .{' '}
-            <a href="#kolacici" onClick={(e) => (e.preventDefault(), setCookiesOpen(true))}>
-              {t('Podešavanja kolačića')}
-            </a>
-          </p>
-          <Button variant="secondary" size="lg" className="w-full" onClick={back}>
-            {t('Nazad')}
-          </Button>
-        </Actions>
+        </div>
         {cookiesOpen && (
           <CookieSettings
             cookies={account.cookies}
@@ -340,7 +370,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             onClose={() => setCookiesOpen(false)}
           />
         )}
-      </>
+      </StepPage>
     );
 
   const sr = market === 'sr';
@@ -387,13 +417,14 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     profession: (
       <>
         {/* each classification with what it is and whether it needs a
-            document, together: a grey row each in the white card; the hint
+            document, together: a white row each on the card's glass (grey read
+            poorly, decided 11. 11.); the hint
             on documents goes with them, under the same line */}
         <div className="flex flex-col gap-3">
           <Field label={t('Klasifikacije')} required hint={t('Izaberite sve koje važe. Za neke klasifikacije treba priložiti sertifikat.')} error={show('classifications')}>
             <div className="flex flex-col gap-2">
               {CLASSIFICATIONS.map((c) => (
-                <label key={c.id} className="flex cursor-pointer items-start gap-3 rounded-lg bg-muted p-3">
+                <label key={c.id} className="flex cursor-pointer items-start gap-3 rounded-lg bg-card p-3">
                   <Checkbox
                     checked={f.classifications.includes(c.id)}
                     onCheckedChange={(on) => set({ classifications: on ? [...f.classifications, c.id] : f.classifications.filter((x) => x !== c.id) })}
@@ -439,7 +470,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       <>
         {sr && (
           <div className="flex flex-col gap-3">
-            <Checks
+            <Chips
               label={t('Angažman')}
               required
               value={f.engagement}
@@ -453,9 +484,9 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
           </div>
         )}
-        <Checks label={t('Koje dane želite da radite?')} required cols="grid-cols-7 phone:grid-cols-4" value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
+        <Chips label={t('Koje dane želite da radite?')} required cols="grid-cols-7 phone:grid-cols-4" value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
         <div className="flex flex-col gap-3">
-          <Checks
+          <Chips
             label={t('Izaberite raspored koji vam najviše odgovara')}
             required
             value={f.slots}
@@ -515,7 +546,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             )}
           </div>
         ))}
-        <Checks label={t('Spremnost za rad')} cols="grid-cols-2 phone:grid-cols-1" value={f.readiness} onChange={(v) => set({ readiness: v })} options={READINESS.map(([id, l]) => [id, t(l)])} />
+        <Checks label={t('Spremnost za rad')} value={f.readiness} onChange={(v) => set({ readiness: v })} options={READINESS.map(([id, l]) => [id, t(l)])} />
         <Field label={t('Šta ne želite da radite')}>
           <TextArea value={f.unwilling} onChange={(v) => set({ unwilling: v })} rows={2} placeholder={t('Npr. menjanje pelena, kupanje, rad sa nepokretnim osobama.')} />
         </Field>
@@ -709,11 +740,14 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       </StepPage>
     );
 
-  // thanks
+  // thanks: what comes next said with the thanks, under the title as one
+  // text, no card (decided 11. 11.)
   return (
     <StepPage
       title={t('Hvala!')}
-      sub={t('Prijava je poslata.')}
+      sub={`${t('Prijava je poslata.')} ${t('Profil se aktivira posle kratkog razgovora sa koordinatorkom. Javiće vam se preko kanala {channel} i reći sve što treba da znate. Posle toga možete da primate upite.', {
+        channel: t(CHANNELS.find(([id]) => id === f.channel)?.[1] || ''),
+      })}`}
       actions={
         <div className="flex justify-center phone:*:w-full">
           <Button size="lg" onClick={() => sent && onDone(sent.user, sent.record)}>
@@ -721,14 +755,6 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           </Button>
         </div>
       }
-    >
-      <StepPanel>
-        <p className="text-xs leading-body text-foreground">
-          {t('Profil se aktivira posle kratkog razgovora sa koordinatorkom. Javiće vam se preko kanala {channel} i reći sve što treba da znate. Posle toga možete da primate upite.', {
-            channel: t(CHANNELS.find(([id]) => id === f.channel)?.[1] || ''),
-          })}
-        </p>
-      </StepPanel>
-    </StepPage>
+    />
   );
 }

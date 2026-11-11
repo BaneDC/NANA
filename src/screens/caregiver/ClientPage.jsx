@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
 import { DataList, DataRow } from '@/components/data-list';
-import { PaneLabel, Stat, Stats } from '@/components/pane';
+import { Note, PaneLabel, Stat, Stats } from '@/components/pane';
 import Modal from '../../components/Modal';
 import { useKept } from '@/hooks/use-kept';
 import { useShowMore } from '@/hooks/use-show-more';
@@ -140,7 +140,20 @@ export default function ClientPage({ client, caregiverId, backLabel, onBack, act
         </Attention>
       )}
 
-      {a && !a.endedOn && act0 && (
+      {/* nothing planned and she can plan: the orange part with its button,
+          as everything that waits on her (decided 11. 11.) */}
+      {a && !a.endedOn && act0 && !next && !why && (
+        <Attention title={t('Sledeća poseta')}>
+          <Card>
+            <CardDescription>{t('Još ništa nije planirano.')}</CardDescription>
+            <CardFooter>
+              <Button onClick={() => act('plan', client)}>{t('Pošalji plan posete')}</Button>
+            </CardFooter>
+          </Card>
+        </Attention>
+      )}
+
+      {a && !a.endedOn && act0 && (next || why) && (
         <Card>
           <CardHeader>
             <CardTitle>{t('Sledeća poseta')}</CardTitle>
@@ -152,17 +165,14 @@ export default function ClientPage({ client, caregiverId, backLabel, onBack, act
               <DataRow label={t('Vi dobijate')}>{money(plannedNet(next))}</DataRow>
             </DataList>
           ) : (
-            <CardDescription>{why || t('Još ništa nije planirano.')}</CardDescription>
+            // why she cannot plan: a note, not a stray line (decided 11. 11.)
+            <Note>{why}</Note>
           )}
-          {(next || !why) && (
+          {next && (
             <CardFooter>
-              {next ? (
-                <Button variant="secondary" onClick={() => act('call-off', client, { visitId: next.id })}>
-                  {t('Otkaži posetu')}
-                </Button>
-              ) : (
-                <Button onClick={() => act('plan', client)}>{t('Pošalji plan posete')}</Button>
-              )}
+              <Button variant="secondary" onClick={() => act('call-off', client, { visitId: next.id })}>
+                {t('Otkaži posetu')}
+              </Button>
             </CardFooter>
           )}
         </Card>
@@ -184,7 +194,7 @@ export default function ClientPage({ client, caregiverId, backLabel, onBack, act
           )}
           <ServiceChips ids={(act0 || pen).services} grouped />
           {!a.endedOn && unsettled(a).length > 0 && (
-            <p className="text-xs leading-body text-muted-foreground">{t('Saradnja se završava kad su sve posete izmirene.')}</p>
+            <Note>{t('Saradnja se završava kad su sve posete izmirene.')}</Note>
           )}
           {!a.endedOn && (
             <CardFooter>

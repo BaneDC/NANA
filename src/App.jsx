@@ -537,7 +537,11 @@ export default function App() {
   };
 
   return (
-    <SidebarProvider key={lang} className={shell}>
+    // In the app a switch of language draws it all anew (a string kept in some
+    // state would stay in the old one). Registration is drawn again in place:
+    // anew, its sky (a WebGL canvas) came back white for a frame and the page
+    // jumped (decided 11. 11.); nothing in it keeps a string in state.
+    <SidebarProvider key={phase === 'register' ? 'register' : lang} className={shell}>
       {/* On a phone there is no room for a nav beside the page, so it becomes a
           drawer and this bar is what opens it. Above 900px the bar is not
           drawn at all and the nav is a column again. */}

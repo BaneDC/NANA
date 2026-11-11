@@ -337,6 +337,9 @@ export default {
   'Isključeno': 'Off',
   'uvek': 'always',
   'Podešavanja kolačića': 'Cookie settings',
+  'Odjava': 'Sign out',
+  'Sve što ste uneli ostaje sačuvano. Prijavite se ponovo kad god želite.': 'Everything you entered stays saved. Sign in again whenever you like.',
+  'Odjavi se': 'Sign out',
   'Otkazati pretplatu?': 'Cancel the subscription?',
   'Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju plaćenog perioda. Možete da se pretplatite ponovo kad god želite.':
     'You keep the care plan, but caregivers\' numbers and the full recommendations close at the end of the paid period. You can subscribe again whenever you like.',

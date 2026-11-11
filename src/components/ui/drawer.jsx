@@ -166,7 +166,10 @@ function DrawerContent({
                 <div
                   data-slot="drawer-head"
                   className={cn(
-                    "shrink-0 border-b border-transparent px-4 pt-4 pb-2 transition-colors duration-150",
+                    // 24 over the title (the grip in it) and 12 under it, with
+                    // the body's 4 the 16 to what follows (decided 11. 11.;
+                    // it was 16 and 12), as the drawer's header on a phone
+                    "shrink-0 border-b border-transparent px-4 pt-6 pb-3 transition-colors duration-150",
                     scrolled && "border-border"
                   )}
                 >

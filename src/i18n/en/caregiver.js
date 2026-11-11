@@ -402,4 +402,9 @@ export default {
   "Na šta ste alergični?": "What are you allergic to?",
   "Koje ograničenje imate?": "What limitation do you have?",
   "Koji problem imate i kako utiče na rad?": "What problem do you have, and how does it affect your work?",
+  "Poništi izbor": "Clear selection",
+  "Izaberi": "Select",
+  "Izaberite usluge": "Choose services",
+  "Kolone levo": "Columns to the left",
+  "Kolone desno": "Columns to the right",
 };

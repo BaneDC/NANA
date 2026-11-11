@@ -39,9 +39,6 @@ function AccountDialog({ open, user, onSave, onClose }) {
         ))}
       </div>
       <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Otkaži')}
-        </Button>
         <Button onClick={() => check.check(Object.values(errors)) && onSave(values)}>
           {t('Sačuvaj')}
         </Button>

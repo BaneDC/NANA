@@ -402,4 +402,9 @@ export default {
   "Na šta ste alergični?": "Mille olet allerginen?",
   "Koje ograničenje imate?": "Mikä rajoitus sinulla on?",
   "Koji problem imate i kako utiče na rad?": "Mikä ongelma sinulla on ja miten se vaikuttaa työhön?",
+  "Poništi izbor": "Tyhjennä valinta",
+  "Izaberi": "Valitse",
+  "Izaberite usluge": "Valitse palvelut",
+  "Kolone levo": "Sarakkeet vasemmalle",
+  "Kolone desno": "Sarakkeet oikealle",
 };

@@ -227,9 +227,6 @@ function CodeCheck({ open, secret, title, text, action, onDone, onClose }) {
       <FieldError className="text-center">{shown}</FieldError>
 
       <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Otkaži')}
-        </Button>
         <Button loading={checking} onClick={confirm}>
           {action}
         </Button>
@@ -340,9 +337,6 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
           )}
 
           <DialogFooter>
-            <Button variant="secondary" onClick={onClose}>
-              {t('Otkaži')}
-            </Button>
             <Button onClick={() => setStep(1)}>
               {t('Dalje')}
             </Button>
@@ -359,9 +353,6 @@ export default function TwoFactorSetup({ open = true, email, onDone, onClose }) 
           <FieldError className="text-center">{shown}</FieldError>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>
-              {t('Otkaži')}
-            </Button>
             <Button
               variant="secondary"
               onClick={() => {

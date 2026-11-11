@@ -4,6 +4,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint } from '@/components/pane';
 import Dialog from '../Dialog';
+import { formGap } from './Forms';
 import { Combobox, Field, FieldError, Input, MultiCombobox, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
@@ -17,12 +18,10 @@ import { t } from '@/i18n';
 
 function Frame({ open, title, onClose, onSave, children }) {
   return (
-    <Dialog open={open} title={title} onClose={onClose}>
+    // the questions 24 apart, as every form in a dialog (decided 11. 11.)
+    <Dialog open={open} title={title} className={formGap} onClose={onClose}>
       {children}
       <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Nazad')}
-        </Button>
         <Button onClick={onSave}>{t('Sačuvaj')}</Button>
       </DialogFooter>
     </Dialog>

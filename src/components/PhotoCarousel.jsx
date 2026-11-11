@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useIsPhone } from '@/hooks/use-phone';
 import photo1 from '../assets/photo1.jpg';
 import photo2 from '../assets/photo2.jpg';
 import photo3 from '../assets/photo3.jpg';
@@ -28,6 +29,11 @@ export default function PhotoCarousel({ interval = 3200 }) {
   // the right one being cut off. Never larger than the layout.
   const railRef = useRef(null);
   const [scale, setScale] = useState(1);
+  // on a phone a third of the screen's height (decided 11. 11., dizajner):
+  // shrunk to the width with the rest it was a strip of 150; the slots keep
+  // their widths and grow tall, the photos cropped to them
+  const phone = useIsPhone();
+  const height = phone ? 'calc(100svh / 3)' : HERO_WIDTH * scale;
   useLayoutEffect(() => {
     const el = railRef.current;
     if (!el) return;
@@ -56,7 +62,7 @@ export default function PhotoCarousel({ interval = 3200 }) {
               <motion.div
                 key={position}
                 className="shrink-0"
-                style={{ height: HERO_WIDTH * scale }}
+                style={{ height }}
                 // the gap is carried inside the animated width, so an item that
                 // has shrunk to nothing occupies nothing — removing it can no
                 // longer collapse a leftover 8px and jolt the whole rail

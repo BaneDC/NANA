@@ -35,11 +35,12 @@ function Calendar({
       classNames={{
         months: "relative flex flex-col",
         month: "flex flex-col gap-2",
-        month_caption: "flex h-9 items-center justify-center px-10 pointer-coarse:h-11",
+        month_caption: "flex h-9 items-center justify-center px-10 pointer-coarse:h-11 pointer-coarse:px-12",
         caption_label: "text-xs font-medium text-foreground",
         // month and year as two dropdowns (`captionLayout="dropdown"`, a date of
         // birth): our Select (CalendarDropdown below), never the browser's own
-        dropdowns: "flex h-9 items-center justify-center gap-2 pointer-coarse:h-11",
+        // the two fill the row between the arrows, the month wider (decided 11. 11.)
+        dropdowns: "flex h-9 w-full items-center gap-2 pointer-coarse:h-11 [&>button:first-of-type]:flex-[3] [&>button:last-of-type]:flex-[2]",
         // the arrows lie over the caption; only they take a press, so the month
         // and year dropdowns under the same row stay clickable
         nav: "pointer-events-none absolute inset-x-0 top-0 z-1 flex items-center justify-between [&>button]:pointer-events-auto",
@@ -49,7 +50,9 @@ function Calendar({
         weekdays: "flex",
         weekday: "flex h-9 flex-1 items-center justify-center text-small font-normal text-muted-foreground",
         week: "flex",
-        day: "flex flex-1 justify-center p-0",
+        // the cell holds its height with no day in it, so a sixth week of
+        // nothing (`fixedWeeks`) is as tall as the others
+        day: "flex h-9 flex-1 justify-center p-0 pointer-coarse:h-11",
         day_button:
           "flex size-9 cursor-pointer items-center justify-center rounded-lg text-xs text-foreground tabular-nums transition-colors duration-150 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 pointer-coarse:size-11 pointer-coarse:text-sm [@media(hover:hover)]:hover:bg-muted",
         today: "[&>button]:font-medium [&>button]:text-primary-600",
@@ -82,7 +85,12 @@ function Calendar({
 const navButton =
   "flex size-9 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-disabled:pointer-events-none aria-disabled:opacity-40 pointer-coarse:size-11 [@media(hover:hover)]:hover:bg-muted [@media(hover:hover)]:hover:text-foreground"
 
-export { Calendar }
+// A sheet the calendar sits in can show the month's or the year's list in its
+// own place, with a way back, instead of a second sheet over it (the date's
+// sheet, decided 11. 11.): it gives `open({ label, options, value, onPick })`.
+const CalendarPick = React.createContext(null)
+
+export { Calendar, CalendarPick }
 
 // The month or the year, as every list here is chosen: shadcn's Select, not the
 // browser's (docs/patterns.md §10). DayPicker hands its options and expects a
@@ -93,7 +101,10 @@ const cap = (x) => (typeof x === "string" ? x.charAt(0).toUpperCase() + x.slice(
 function CalendarDropdown({ options = [], value, onChange, "aria-label": label }) {
   const chosen = options.find((o) => o.value === value)
   const phone = useIsPhone()
+  const pick = React.useContext(CalendarPick)
   const [open, setOpen] = React.useState(false)
+  const choices = options.map((o) => ({ value: o.value, label: cap(o.label), disabled: o.disabled }))
+  const choose = (v) => onChange?.({ target: { value: String(v) } })
   // on a phone the list opens in a sheet over the calendar's (OptionSheet,
   // docs/patterns.md §10, decided 10. 11.), the year a list of a hundred
   if (phone)
@@ -104,20 +115,13 @@ function CalendarDropdown({ options = [], value, onChange, "aria-label": label }
           aria-label={label}
           aria-haspopup="dialog"
           aria-expanded={open}
-          onClick={() => setOpen(true)}
-          className="flex h-11 w-auto cursor-pointer items-center gap-1 rounded-lg border border-input bg-background px-2 text-[16px] leading-6 text-foreground outline-none focus-visible:border-primary"
+          onClick={() => (pick ? pick.open({ label, options: choices, value, onPick: choose }) : setOpen(true))}
+          className="flex h-11 min-w-0 cursor-pointer items-center justify-between gap-1 rounded-lg border border-input bg-background px-3 text-[16px] leading-6 text-foreground outline-none focus-visible:border-primary"
         >
-          {cap(chosen?.label)}
+          <span className="truncate">{cap(chosen?.label)}</span>
           <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
         </button>
-        <OptionSheet
-          open={open}
-          onOpenChange={setOpen}
-          title={label}
-          options={options.map((o) => ({ value: o.value, label: cap(o.label), disabled: o.disabled }))}
-          value={value}
-          onPick={(v) => onChange?.({ target: { value: String(v) } })}
-        />
+        {!pick && <OptionSheet open={open} onOpenChange={setOpen} title={label} options={choices} value={value} onPick={choose} />}
       </>
     )
   return (
@@ -125,7 +129,7 @@ function CalendarDropdown({ options = [], value, onChange, "aria-label": label }
       value={String(value)}
       onValueChange={(v) => onChange?.({ target: { value: v } })}
     >
-      <SelectTrigger aria-label={label} className="h-8 w-auto gap-1 px-2 pointer-coarse:h-11">
+      <SelectTrigger aria-label={label} className="h-8 min-w-0 justify-between gap-1 px-2 pointer-coarse:h-11">
         <SelectValue>{cap(chosen?.label)}</SelectValue>
       </SelectTrigger>
       <SelectContent className="max-h-72">

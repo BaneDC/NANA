@@ -28,6 +28,12 @@ import { focusPane } from '../lib/sheet';
 // one Escape closes, and the drawer stays. `dismissible={false}` takes away the
 // close, Escape and a click past it: backup codes are shown once.
 //
+// A dialog closes on its X, Escape or a click past it; a button that only
+// closes it ("Nazad", "Otkaži" beside the X) is not added (decided 11. 11.,
+// docs/patterns.md §7). `confirm`: a question with two answers (call a visit
+// off, end the work, decline a version), where going back is one of the
+// answers: no X, and a click past it does nothing; Escape is still "no".
+//
 // The head is one group: the eyebrow over the title, with the close beside the
 // two and on their middle (with a mouse; a sheet's close is placed by the
 // sheet), and `description`, the dialog's sentence of what this is about, 4
@@ -53,11 +59,13 @@ export default function Dialog({
   className,
   closeClassName,
   dismissible = true,
+  confirm = false,
   open = true,
   onClose,
   children,
 }) {
   const phone = useIsPhone();
+  const closable = dismissible && !confirm;
   const onOpenChange = (next) => !next && onClose?.();
   const head = (Title, close) =>
     header ? (
@@ -77,10 +85,10 @@ export default function Dialog({
 
   if (phone) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
+      <Drawer open={open} onOpenChange={onOpenChange} dismissible={closable}>
         <DrawerContent kind="dialog" bodyClassName={className} head={head(DrawerTitle)}>
-          {dismissible && (
-            <DrawerClose className={cn(paneCloseClass, 'absolute top-[22px] right-4 z-3', closeClassName)}>
+          {closable && (
+            <DrawerClose className={cn(paneCloseClass, 'absolute top-[30px] right-4 z-3', closeClassName)}>
               <X className="size-4" strokeWidth={1.75} />
               <span className="sr-only">{t('Zatvori')}</span>
             </DrawerClose>
@@ -100,7 +108,7 @@ export default function Dialog({
         showCloseButton={false}
         onOpenAutoFocus={focusPane}
         onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
-        onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
+        onPointerDownOutside={(e) => !closable && e.preventDefault()}
       >
         {/* the head stays while a long body scrolls under it, as the footer
             does at the bottom and as a sheet's head does on a phone; its 12
@@ -108,7 +116,7 @@ export default function Dialog({
         <div data-slot="dialog-sticky-head" className="sticky -top-6 z-2 -mx-6 -mt-6 -mb-3 bg-card px-6 pt-6 pb-3">
           {head(
             DialogTitle,
-            dismissible && !header && (
+            closable && !header && (
               <DialogClose className={cn(paneCloseClass, 'shrink-0')}>
                 <X className="size-4" strokeWidth={1.75} />
                 <span className="sr-only">{t('Zatvori')}</span>
@@ -117,7 +125,7 @@ export default function Dialog({
           )}
           {/* a head of its own keeps the close in the corner, inside the part
               that stays */}
-          {dismissible && header && (
+          {closable && header && (
             <DialogClose className={cn(paneCloseClass, 'absolute top-3 right-3')}>
               <X className="size-4" strokeWidth={1.75} />
               <span className="sr-only">{t('Zatvori')}</span>

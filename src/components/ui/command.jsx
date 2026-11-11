@@ -62,9 +62,11 @@ function CommandInput({
   ...props
 }) {
   return (
+    // our search field (TextField's Input with the search in front): its
+    // box, r8, the primary on focus, 8 over the list (decided 11. 11.)
     <div
       data-slot="command-input-wrapper"
-      className="flex h-(--input-size) items-center gap-2 border-b px-3"
+      className="mb-2 flex h-(--input-size) shrink-0 items-center gap-2 rounded-lg border border-input bg-background px-3 transition-[border-color] duration-200 focus-within:border-primary"
     >
       <SearchIcon className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
       <CommandPrimitive.Input

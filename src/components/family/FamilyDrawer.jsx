@@ -230,6 +230,7 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
       <Dialog
         eyebrow={`${a.caregiver.name} · ${care.elder.name}`}
         title={t('Odbiti verziju {version}?', { version: pen.version })}
+        confirm
         onClose={() => setDeclining(false)}
       >
         <DialogDescription>
@@ -433,9 +434,6 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
         </Field>
         <PaneHint>{t('Ništa se ne naplaćuje dok je ovo otvoreno. Čita koordinatorka, ne negovateljica.')}</PaneHint>
         <DialogFooter>
-          <Button variant="secondary" onClick={() => setQuerying(false)}>
-            {t('Nazad')}
-          </Button>
           <Button onClick={query}>
             {t('Pošalji koordinatorki')}
           </Button>
@@ -550,9 +548,6 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
           {t('Novac ostaje rezervisan dok je ovo otvoreno, a negovateljica je obaveštena da ne dolazi dok se ne reši. Čita koordinatorka, ne negovateljica.')}
         </PaneHint>
         <DialogFooter>
-          <Button variant="secondary" onClick={() => setMode('idle')}>
-            {t('Nazad')}
-          </Button>
           <Button onClick={query}>
             {t('Pošalji koordinatorki')}
           </Button>
@@ -561,7 +556,7 @@ function Plan({ open = true, care, visitId, onCare, onClose, onFlash }) {
     )}
 
     {mode === 'call-off' && (
-      <Dialog eyebrow={`${t('Plan posete')} · ${v.date} · ${v.time}`} title={t('Otkazati posetu?')} onClose={() => setMode('idle')}>
+      <Dialog eyebrow={`${t('Plan posete')} · ${v.date} · ${v.time}`} title={t('Otkazati posetu?')} confirm onClose={() => setMode('idle')}>
         <PaneLabel>{t('Zašto se otkazuje')}</PaneLabel>
         <ToggleGroup type="single" size="sm" value={reason} onValueChange={(id) => id && setReason(id)} aria-label={t('Zašto se otkazuje')}>
           {CALL_OFF_REASONS.map((r) => (
@@ -616,23 +611,20 @@ function End({ open = true, care, caregiverId, onCare, onClose, onFlash, onOpen 
   };
 
   return (
-    <Dialog eyebrow={`${a.caregiver.name} · ${t('samo ova saradnja')}`} title={t('Završiti saradnju?')} open={open} onClose={onClose}>
+    <Dialog eyebrow={`${a.caregiver.name} · ${t('samo ova saradnja')}`} title={t('Završiti saradnju?')} confirm={!blocked.length} open={open} onClose={onClose}>
       {blocked.length ? (
         <>
           <DialogDescription>
             {t('{name} je obavila posao koji još nije izmiren. To prvo mora da se završi - da sada prekinete, ostala bi neplaćena za posetu koju je već obavila.', { name: first })}
           </DialogDescription>
           <PaneHint>{t('Prvo rešite otvoreni radni nalog, pa se vratite na ovo.')}</PaneHint>
-          <DialogFooter>
-            <Button variant="secondary" onClick={onClose}>
-              {t('Ne sada')}
-            </Button>
-            {blocked[0].status === 'charging' && (
+          {blocked[0].status === 'charging' && (
+            <DialogFooter>
               <Button onClick={() => onOpen({ kind: 'work-order', visitId: blocked[0].id, then: { kind: 'end', caregiverId } })}>
                 {t('Pogledaj radni nalog')}
               </Button>
-            )}
-          </DialogFooter>
+            </DialogFooter>
+          )}
         </>
       ) : (
         <>
@@ -727,15 +719,11 @@ function Profile({ open = true, care, caregiverId, unlocked, askNote, onContact,
       {/* Never asked: write to her. Asked before and free to ask again (a no,
           or a cooperation that ended): the same, said as again; and when she
           came before, her page with everything from then. */}
-      {(!standing || canAsk(care, c.id) || arrangementOf(care, c.id)) && (
+      {(canAsk(care, c.id) || arrangementOf(care, c.id)) && (
         <SheetFooter>
-          {arrangementOf(care, c.id) ? (
+          {arrangementOf(care, c.id) && (
             <Button variant="secondary" onClick={() => onCaregiver(c.id)}>
               {t('Njena stranica')}
-            </Button>
-          ) : (
-            <Button variant="secondary" onClick={onClose}>
-              {t('Ne sada')}
             </Button>
           )}
           {canAsk(care, c.id) && (

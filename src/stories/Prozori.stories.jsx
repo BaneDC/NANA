@@ -81,10 +81,8 @@ export const ModalOsnovni = {
             <Field>
               <TextArea value={text} onChange={setText} rows={3} placeholder="Opišite ukratko." aria-label={title} />
             </Field>
+            {/* no "Nazad": the X closes it (§7) */}
             <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={close}>
-                Nazad
-              </Button>
               <Button variant={destructive ? 'destructive' : 'default'} onClick={close}>
                 {confirm}
               </Button>

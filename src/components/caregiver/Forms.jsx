@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DataList, DataRow } from '@/components/data-list';
-import { PaneHint, Part } from '@/components/pane';
-import { cn } from '@/lib/utils';
+import { Note, Part } from '@/components/pane';
 import Dialog from '../Dialog';
-import { Field, FieldError, Input, Select, TextArea, requiredError, useCheck } from '../TextField';
+import { Field, FieldError, Input, MultiCombobox, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { SERVICE_GROUPS, serviceTitle } from '../../data/serviceCatalog';
 import { activeVersion, arrangementOf, chargedFor, hourText, money, todayOf } from '../../data/familyCare';
 import { OTHER_REASON, nowOf } from '../../data/caregiverCare';
@@ -20,6 +17,11 @@ import { msg, t } from '@/i18n';
 // visit off or end the work together. Each is a Dialog in parts (docs/patterns.md
 // §7), a bottom sheet on a phone; nothing is disabled for what is missing, the
 // errors show under what is wrong on the press (§9, §10).
+
+// a form in a dialog: its questions 24 apart, not the dialog's 12, and its
+// buttons 24 under the last as in any dialog (decided 11. 11.; docs/patterns.md
+// §7); on a phone the buttons are at the sheet's foot, as they were
+export const formGap = 'gap-6 [&_[data-slot=dialog-footer]]:-mt-3 phone:[&_[data-slot=dialog-footer]]:mt-auto';
 
 const net = (amount) => Math.round(amount * (1 - SERVICE_FEE) * 100) / 100;
 const MIN_RATE = 12;
@@ -44,30 +46,32 @@ export function AgreementDialog({ open, care, caregiverId, onClose, onSend }) {
     onSend({ services, rate: n, terms: terms.trim() || undefined, note: note.trim() || undefined });
   };
   return (
-    <Dialog open={open} eyebrow={care.elder.name} title={act ? t('Nova verzija ugovora') : t('Ugovor o nezi')} wide onClose={onClose}>
+    <Dialog open={open} eyebrow={care.elder.name} title={act ? t('Nova verzija ugovora') : t('Ugovor o nezi')} wide className={formGap} onClose={onClose}>
       {act && <DialogDescription>{t('Verzija koja važi ostaje dok porodica ne prihvati novu. Nove posete čekaju do tada.')}</DialogDescription>}
-      <Field label={t('Usluge')} required>
-        {SERVICE_GROUPS.map((g) => (
-          <div key={g.id} className="flex flex-col gap-2">
-            <p className="text-small text-muted-foreground">{t(g.title)}</p>
-            <ToggleGroup
-              type="multiple"
-              size="sm"
-              className="flex-wrap"
-              value={services.filter((s) => g.items.some(([id]) => id === s))}
-              onValueChange={(picked) => setServices((all) => [...all.filter((s) => !g.items.some(([id]) => id === s)), ...picked])}
-              aria-label={t(g.title)}
-            >
-              {g.items.map(([id]) => (
-                <ToggleGroupItem key={id} value={id}>
-                  {serviceTitle(id)}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
-        ))}
-        <FieldError>{check.show(errors.services)}</FieldError>
-      </Field>
+      {/* the services a field per group, several from its list (decided
+          11. 11.: sixty chips at once could not be read) */}
+      <Part
+        label={
+          <>
+            {t('Usluge')}
+            <span className="text-primary-600"> *</span>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          {SERVICE_GROUPS.map((g) => (
+            <Field key={g.id} label={t(g.title)}>
+              <MultiCombobox
+                values={services.filter((s) => g.items.some(([id]) => id === s))}
+                onChange={(picked) => setServices((all) => [...all.filter((s) => !g.items.some(([id]) => id === s)), ...picked])}
+                options={g.items.map(([id]) => ({ value: id, label: serviceTitle(id) }))}
+                placeholder={t('Izaberite usluge')}
+              />
+            </Field>
+          ))}
+        </div>
+        <FieldError className="px-0">{check.show(errors.services)}</FieldError>
+      </Part>
       <Field label={t('Cena po satu')} required hint={n >= MIN_RATE ? t('Porodica plaća ovu cenu, PDV uključen. Vi dobijate {net} / h.', { net: money(net(n)) }) : t('Porodica plaća ovu cenu, PDV uključen.')} error={check.show(errors.rate)}>
         <Input value={rate} onChange={setRate} inputMode="decimal" suffix="€/h" />
       </Field>
@@ -78,9 +82,6 @@ export function AgreementDialog({ open, care, caregiverId, onClose, onSend }) {
         <TextArea value={note} onChange={setNote} rows={2} />
       </Field>
       <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Nazad')}
-        </Button>
         <Button onClick={send}>{t('Pošalji ugovor')}</Button>
       </DialogFooter>
     </Dialog>
@@ -133,34 +134,32 @@ export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
     onSend({ day: day === 'today' ? today : today + 1, start: s, hours: h, notes: notes.trim() || undefined });
   };
   return (
-    <Dialog open={open} eyebrow={care.elder.name} title={t('Plan posete')} onClose={onClose}>
+    <Dialog open={open} eyebrow={care.elder.name} title={t('Plan posete')} className={formGap} onClose={onClose}>
       <Field label={t('Dan')}>
         <ToggleGroup type="single" size="sm" value={day} onValueChange={(v) => v && setDay(v)} aria-label={t('Dan')}>
           <ToggleGroupItem value="today">{t('Danas')}</ToggleGroupItem>
           <ToggleGroupItem value="tomorrow">{t('Sutra')}</ToggleGroupItem>
         </ToggleGroup>
       </Field>
-      <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
-        <Field label={t('Početak')} required error={check.show(errors.start)}>
-          <Select value={start} onChange={setStart} options={starts.map((x) => ({ value: String(x), label: hourText(x) }))} />
-        </Field>
-        <Field label={t('Trajanje')} required hint={t('Od 0,5 do 24 sata, na pola sata (npr. 1 ili 1,5).')} error={check.show(errors.hours)}>
-          <Hours value={hours} onChange={setHours} />
-        </Field>
-      </div>
+      {/* one under the other: side by side the hint under one left a hole
+          under the other (decided 11. 11.) */}
+      <Field label={t('Početak')} required error={check.show(errors.start)}>
+        <Select value={start} onChange={setStart} options={starts.map((x) => ({ value: String(x), label: hourText(x) }))} />
+      </Field>
+      <Field label={t('Trajanje')} required hint={t('Od 0,5 do 24 sata, na pola sata (npr. 1 ili 1,5).')} error={check.show(errors.hours)}>
+        <Hours value={hours} onChange={setHours} />
+      </Field>
       <Field label={t('Napomena')}>
         <TextArea value={notes} onChange={setNotes} rows={2} placeholder={t('Šta će raditi, šta da porodica pripremi.')} />
       </Field>
-      <DataList>
+      {/* what it comes to, apart from what she fills in: on the grey ground */}
+      <DataList className="rounded-2xl bg-muted p-4">
         <DataRow label={t('Kada')}>{`${day === 'today' ? t('Danas') : t('Sutra')} · ${hourText(s)}${ok ? `–${hourText(s + h)}` : ''}`}</DataRow>
         <DataRow label={t('Rezerviše se porodici')}>{ok ? money(held) : '–'}</DataRow>
         <DataRow label={t('Vi dobijate')}>{ok ? money(net(held)) : '–'}</DataRow>
       </DataList>
-      {soon && <PaneHint>{t('Ako porodica otkaže u poslednjem satu, plaća celu posetu.')}</PaneHint>}
+      {soon && <Note>{t('Ako porodica otkaže u poslednjem satu, plaća celu posetu.')}</Note>}
       <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Nazad')}
-        </Button>
         <Button onClick={send}>{t('Pošalji plan posete')}</Button>
       </DialogFooter>
     </Dialog>
@@ -202,7 +201,6 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
   const [moving, setMoving] = useState('usual');
   const [note, setNote] = useState('');
   const [worry, setWorry] = useState('');
-  const [worried, setWorried] = useState(false);
   const check = useCheck();
   const h = hoursOf(hours);
   const errors = { hours: hoursError(hours), note: !note.trim() && requiredError() };
@@ -211,11 +209,14 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
     onSend({ hours: h, done, mood, eating, moving, note: note.trim(), concern: worry.trim() || undefined });
   };
   return (
-    <Dialog open={open} eyebrow={`${care.elder.name} · ${visit.date} · ${visit.time}`} title={t('Radni nalog')} wide onClose={onClose}>
-      <Field label={t('Sati')} required hint={t('Od 0,5 do 24 sata, na pola sata (npr. 1 ili 1,5).')} error={check.show(errors.hours)}>
-        <Hours value={hours} onChange={setHours} />
-      </Field>
-      {!errors.hours && h > visit.hours && <PaneHint>{t('Sat više porodica mora da odobri. Do tada se naplaćuje planirano.')}</PaneHint>}
+    <Dialog open={open} eyebrow={`${care.elder.name} · ${visit.date} · ${visit.time}`} title={t('Radni nalog')} wide className={formGap} onClose={onClose}>
+      {/* the note goes with its question, 12 under it */}
+      <div className="flex flex-col gap-3">
+        <Field label={t('Sati')} required hint={t('Od 0,5 do 24 sata, na pola sata (npr. 1 ili 1,5).')} error={check.show(errors.hours)}>
+          <Hours value={hours} onChange={setHours} />
+        </Field>
+        {!errors.hours && h > visit.hours && <Note>{t('Sat više porodica mora da odobri. Do tada se naplaćuje planirano.')}</Note>}
+      </div>
       <Field label={t('Urađeno')}>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={done} onValueChange={setDone} aria-label={t('Urađeno')}>
           {visit.services.map((id) => (
@@ -231,23 +232,11 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
       <Field label={t('Šta ste zapisali')} required error={check.show(errors.note)}>
         <TextArea value={note} onChange={setNote} rows={3} placeholder={t('Kako je prošla poseta, šta porodica treba da zna.')} />
       </Field>
-      <Collapsible open={worried} onOpenChange={setWorried}>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="-ml-3 self-start" aria-expanded={worried}>
-            {t('Nešto vas je zabrinulo?')}
-            <ChevronDown size={14} strokeWidth={1.75} className={cn('transition-transform duration-200', worried && 'rotate-180')} />
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="flex flex-col gap-2 pt-2">
-          <Field hint={t('Vidi samo koordinatorka.')}>
-            <TextArea value={worry} onChange={setWorry} rows={2} aria-label={t('Šta vas je zabrinulo')} />
-          </Field>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* always there, not behind a press (decided 11. 11.) */}
+      <Field label={t('Nešto vas je zabrinulo?')} hint={t('Vidi samo koordinatorka.')}>
+        <TextArea value={worry} onChange={setWorry} rows={2} />
+      </Field>
       <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Nazad')}
-        </Button>
         <Button onClick={send}>{t('Pošalji radni nalog')}</Button>
       </DialogFooter>
     </Dialog>
@@ -282,7 +271,7 @@ export function ReasonDialog({ open, eyebrow, title, text, reasons, action, back
     onConfirm(own ? other.trim() : reason);
   };
   return (
-    <Dialog open={open} eyebrow={eyebrow} title={title} onClose={onClose}>
+    <Dialog open={open} eyebrow={eyebrow} title={title} confirm onClose={onClose}>
       {text && <DialogDescription>{text}</DialogDescription>}
       {reasons && (
         <Part label={t('Zašto')}>

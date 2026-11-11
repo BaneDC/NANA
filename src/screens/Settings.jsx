@@ -16,7 +16,7 @@ import TwoFactorSetup, { TwoFactorDisable, TwoFactorNewCodes } from '../componen
 import { Field, FieldError, Password, requiredError, useCheck } from '../components/TextField';
 import { cardTrouble, chargingVisit, heldNow, linkCard, money, visitCharge } from '../data/familyCare';
 import { COOKIE_DEFAULT, COOKIE_GROUPS } from '../data/cookies';
-import { changePassword, hashBackupCodes } from '../lib/account';
+import { changePassword, hashBackupCodes, signOut } from '../lib/account';
 import { dateOn, planEvery, planPrice, plansFor, priceLine, renewsOn } from '../data/plans';
 import { marketHas } from '../data/market';
 import { LANGUAGES, msg, setLang, t, tn, useLang } from '../i18n';
@@ -122,9 +122,6 @@ function PasswordModal({ open = true, email, onDone, onClose }) {
         {fault && fault !== 'wrong-current' && <FieldError className="text-center">{error}</FieldError>}
 
         <DialogFooter>
-          <Button type="button" variant="secondary" onClick={onClose}>
-            {t('Otkaži')}
-          </Button>
           <Button type="submit" loading={saving}>
             {t('Sačuvaj lozinku')}
           </Button>
@@ -502,6 +499,20 @@ export default function Settings({ payments = true, unlocked, subscription, care
         </Card>
       </PageSection>
 
+      {/* last on the page, for both sides (decided 11. 11., dizajner): it ends
+          what is on, so secondary (§9); nothing is lost, so no question first */}
+      <PageSection>
+        <Card>
+          <CardTitle>{t('Odjava')}</CardTitle>
+          <CardDescription>{t('Sve što ste uneli ostaje sačuvano. Prijavite se ponovo kad god želite.')}</CardDescription>
+          <CardFooter>
+            <Button variant="secondary" onClick={signOut}>
+              {t('Odjavi se')}
+            </Button>
+          </CardFooter>
+        </Card>
+      </PageSection>
+
       {keptCookies && (
         <CookieSettings
           open={cookiesOpen}
@@ -514,7 +525,7 @@ export default function Settings({ payments = true, unlocked, subscription, care
         />
       )}
 
-      <Dialog eyebrow={t('Pretplata')} title={t('Otkazati pretplatu?')} open={cancelling} onClose={() => setCancelling(false)}>
+      <Dialog eyebrow={t('Pretplata')} title={t('Otkazati pretplatu?')} confirm open={cancelling} onClose={() => setCancelling(false)}>
         <DialogDescription>
           {t(
             'Plan nege vam ostaje, ali brojevi negovateljica i pune preporuke se zatvaraju na kraju plaćenog perioda. Možete da se pretplatite ponovo kad god želite.'
@@ -610,9 +621,6 @@ export default function Settings({ payments = true, unlocked, subscription, care
           </li>
         </CheckList>
         <DialogFooter>
-          <Button variant="secondary" onClick={() => setCardOpen(false)}>
-            {t('Otkaži')}
-          </Button>
           <Button onClick={connect}>{t('Nastavi na Stripe')}</Button>
         </DialogFooter>
       </Dialog>

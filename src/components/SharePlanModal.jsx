@@ -67,9 +67,6 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
       )}
 
       <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {t('Otkaži')}
-        </Button>
         <Button onClick={() => check.check([error]) && onSend(entered, note.trim())}>
           <Send size={14} strokeWidth={1.75} />
           {entered.length > 1 ? t('Pošalji na {addresses}', { addresses: tn(entered.length, 'adresu', 'adrese', 'adresa') }) : t('Pošalji')}

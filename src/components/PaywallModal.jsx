@@ -226,19 +226,18 @@ export default function PaywallModal({ open = true, caregiver, unlocked, already
         </>
       )}
 
-      <DialogFooter>
-        <Button variant="secondary" onClick={onClose}>
-          {alreadyAsked ? t('Zatvori') : t('Možda kasnije')}
-        </Button>
-        {!alreadyAsked &&
-          (unlocked ? (
+      {/* closed by its X or a click past it; asked already, nothing is left to do here */}
+      {!alreadyAsked && (
+        <DialogFooter>
+          {unlocked ? (
             <Button onClick={() => onSend(message.trim())}>
               {t('Pošalji poruku')}
             </Button>
           ) : (
             <Button onClick={() => setStep('plans')}>{once ? t('Dalje: izaberite paket') : t('Dalje: izaberite pretplatu')}</Button>
-          ))}
-      </DialogFooter>
+          )}
+        </DialogFooter>
+      )}
     </Dialog>
   );
 }
