@@ -42,10 +42,11 @@ export const session = {
 };
 
 // A switch of side or market starts this tab again as someone else; the
-// address goes back to plain ?demo, so the old one cannot bring the old role back.
+// address goes back to plain /?demo, so the old one cannot bring the old role
+// back, and the new one starts at its own home.
 export function go(next) {
   session.write(next);
-  window.location.assign(`${window.location.pathname}?demo`);
+  window.location.assign('/?demo');
 }
 
 const CAREGIVER_OF = { fi: 'sanna', sr: 'milica' };
