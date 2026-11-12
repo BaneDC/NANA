@@ -27,11 +27,8 @@ import CaregiverPage from './screens/CaregiverPage';
 import RequestsPage from './screens/RequestsPage';
 import Toast from './components/family/Toast';
 import ApiKeyPanel from './components/ApiKeyPanel';
-import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardFooter } from '@/components/ui/card';
-import { AppPane, Page } from '@/components/page';
+import { AppPane } from '@/components/page';
 import { SidePanelFrame } from './components/SidePanel';
-import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
 import { arrangementOf, askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
@@ -219,7 +216,6 @@ export default function App() {
   };
   // the history of conversations opens when asked for
   const [chatListOpen, setChatListOpen] = useState(false);
-  const [variant, setVariant] = useState('classic'); // classic | ai
   // the AI variant runs against the developer's own key, kept in this browser
   const [apiKey, setApiKey] = useState(loadKey);
   const [askingKey, setAskingKey] = useState(false);
@@ -242,7 +238,11 @@ export default function App() {
 
   // The onboarding has made the plan: from now on it is built from her answers,
   // and its history starts. The plan it hands over is the same buildPlan.
-  const onPlan = useCallback(() => setPerson((p) => withPlan(p)), [setPerson]);
+  // Its summary is on screen from here until she goes on from it.
+  const onPlan = useCallback(() => {
+    setPerson((p) => withPlan(p));
+    setSummaryShowing(true);
+  }, [setPerson]);
   const onNote = useCallback((note) => setNotes((n) => (n.includes(note) ? n : [...n, note])), []);
   // Answers are reconciled, not just merged: a changed frailty level retires the
   // branch questions it no longer asks, so the state can never hold an answer to a
@@ -544,16 +544,9 @@ export default function App() {
   // is not painted at all. Covering it was not enough: it fades in over most of
   // a second, and registering straight into it showed the nav and the empty
   // chat through that fade before the conversation landed.
-  const fullscreen = phase === 'app' && variant === 'ai';
-
-  const startVariant = (next) => {
-    setVariant(next);
-    if (next === 'ai' && !apiKey) setAskingKey(true);
-    if (next !== 'classic') {
-      setRightPanel(null);
-      setView('chat');
-    }
-  };
+  // It is its own address, /onboarding, and until it has made the plan a
+  // family sees nothing else (decided 12. 11.; src/lib/routeGuard.js).
+  const fullscreen = phase === 'app' && view === 'onboarding';
 
 
 
@@ -659,7 +652,7 @@ export default function App() {
                 // A family starts with Minna, not with the questionnaire: the AI
                 // onboarding is the first thing after signing in, and the rest of
                 // the app is what it hands over to once the plan exists.
-                startVariant('ai');
+                navigate({ page: 'onboarding' }, { replace: true });
               }}
             />
           </AnimatePresence>
@@ -689,33 +682,11 @@ export default function App() {
         />
       ) : (
         <>
-          {/* Razgovor: once the plan exists, the assistant, for anything; before
-              it, the way back into the conversation with Minna. */}
+          {/* Razgovor: the assistant, for anything (there is always a plan
+              by now: before it there is only the onboarding) */}
           {view === 'chat' && !fullscreen && (
             <AppPane>
-              {plan ? (
-                <KitAssistant
-                  id={conversation}
-                  ctx={chatCtx}
-                  title={t('Razgovor')}
-                  actions={chatActions}
-                  openPane={openPane}
-                  onOpenPane={setOpenPane}
-                />
-              ) : (
-                <Page>
-                  <Attention title={t('Upoznavanje nije završeno')}>
-                    <Card>
-                      <CardDescription>
-                        {t('Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.')}
-                      </CardDescription>
-                      <CardFooter>
-                        <Button onClick={() => startVariant('ai')}>{t('Nastavite razgovor')}</Button>
-                      </CardFooter>
-                    </Card>
-                  </Attention>
-                </Page>
-              )}
+              <KitAssistant id={conversation} ctx={chatCtx} title={t('Razgovor')} actions={chatActions} openPane={openPane} onOpenPane={setOpenPane} />
             </AppPane>
           )}
 
@@ -853,7 +824,7 @@ export default function App() {
 
       {/* The AI variant asks for a key first; it is fullscreen, so the gate is too. */}
       <AnimatePresence>
-        {phase === 'app' && variant === 'ai' && (askingKey || !apiKey) && (
+        {fullscreen && (askingKey || !apiKey) && (
           <AppPane key="key-gate" className="fixed inset-0 z-40 bg-primary-100">
             <ApiKeyPanel
               initial={apiKey}
@@ -864,14 +835,18 @@ export default function App() {
                 setKeyRejected(false);
                 setAskingKey(false);
               }}
+              // no key, no onboarding, and nothing else before it: back to
+              // signing in (decided 12. 11.)
               onCancel={() => {
                 setAskingKey(false);
-                setVariant('classic');
+                setPhase('register');
+                setUser({ name: '', email: '', role: 'family' });
+                navigate({ page: 'signin' }, { replace: true });
               }}
             />
           </AppPane>
         )}
-        {phase === 'app' && variant === 'ai' && apiKey && !askingKey && (
+        {fullscreen && apiKey && !askingKey && (
           <ImmersiveConversation
             key="ai"
             user={user}
@@ -884,8 +859,8 @@ export default function App() {
             // The first thing after the onboarding is the home, which is the
             // care plan itself until someone comes (docs/patterns.md §4a).
             onFinish={() => {
-              setVariant('classic');
-              setView('dashboard');
+              setSummaryShowing(false);
+              navigate({ page: 'dashboard' }, { replace: true });
             }}
             // the saved key goes, so a reload cannot bring the same one back
             onKeyRejected={() => {
