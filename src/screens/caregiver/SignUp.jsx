@@ -7,9 +7,8 @@ import { StepCard, StepCards, StepPage, StepPanel, StepReview } from '@/componen
 import PersonalityTest from './PersonalityTest';
 import CookieSettings from '../../components/CookieSettings';
 import { COOKIE_DEFAULT } from '../../data/cookies';
-import { Consent } from '../Register';
 import { Radius, radiusText } from '../../components/caregiver/ProfileForms';
-import { Combobox, DateInput, Field, FieldError, FileField, Input, MultiCombobox, Phone, Select, TextArea, requiredError, useCheck } from '../../components/TextField';
+import { Checks, Combobox, DateInput, Field, FieldError, FileField, Input, Phone, Select, TextArea, choiceRow, requiredError, useCheck } from '../../components/TextField';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +21,6 @@ import { marketDate } from '../../data/familyCare';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
 import { getLang, msg, t, useLang } from '@/i18n';
-import LanguagePicker from '../../components/LanguagePicker';
 
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // her account, with where she wants to work, then the parts of the form for that market
@@ -71,25 +69,19 @@ function Chips({ label, value, onChange, options, multiple = true, required, err
   );
 }
 
-// a choice in the form (docs/patterns.md §10, decided 10. 11.): one answer of
-// several is a radio, several a box beside each; a row each, the whole row
-// the target (44 on touch), always one under the other (decided 11. 11.).
-// Yes / no, the days, the time of day and the engagement are chips.
-const choiceRow = 'flex min-h-8 cursor-pointer items-start gap-2 py-1.5 text-xs leading-5 text-foreground pointer-coarse:min-h-11 pointer-coarse:py-3';
-
-function Checks({ label, value, onChange, options, required, error }) {
+// a consent on her account, a row as a radio's (choiceRow), its star and its error with it
+function ConsentRow({ checked, onChange, required, error, children }) {
   return (
-    <Field label={label} required={required}>
-      <div role="group" aria-label={label} className="flex flex-col">
-        {options.map(([id, text]) => (
-          <label key={id} className={choiceRow}>
-            <Checkbox checked={value.includes(id)} onCheckedChange={(on) => onChange(on ? [...value, id] : value.filter((x) => x !== id))} className="mt-0.5" />
-            <span className="min-w-0">{text}</span>
-          </label>
-        ))}
-      </div>
-      {error && <FieldError>{error}</FieldError>}
-    </Field>
+    <div className="flex flex-col">
+      <label className={choiceRow}>
+        <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} aria-invalid={error ? true : undefined} className="mt-0.5" />
+        <span className="min-w-0">
+          {children}
+          {required && <span className="text-primary-600"> *</span>}
+        </span>
+      </label>
+      {error && <FieldError className="px-0 pl-6">{error}</FieldError>}
+    </div>
   );
 }
 
@@ -332,9 +324,9 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   // §4, decided 12. 11.): what she wrote is kept a week (signupDraft.js)
   const exit = { label: t('Nazad na početak'), onClick: onBack };
 
-  // the terms under the button (decided 11. 11.)
+  // the terms under the card, the one thing out of it (decided 12. 11.)
   const terms = (
-    <p className="mt-3 text-small text-muted-foreground phone:text-center [&_a]:text-primary-600">
+    <p className="-mt-4 px-4 text-small text-muted-foreground phone:text-center [&_a]:text-primary-600">
       {t('Prijavom ste saglasni sa našim')}{' '}
       <a href={LEGAL.terms} target="_blank" rel="noreferrer">
         {t('uslovima korišćenja')}
@@ -352,31 +344,23 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   // her account, with where she wants to work, is the first step of the same
   // process as the form, so on its sky (docs/patterns.md §12d, decided 11. 11.;
-  // the market on it since 12. 11., Branislav); the language quiet at the
-  // page's foot, as on every page before the account (§12b)
+  // the market on it since 12. 11., Branislav); the language in the head,
+  // across from the way back, as on every page before the account (§12b)
   if (screen === 'account')
     return (
       <StepPage
         title={t('Prijavite se kao negovateljica')}
         sub={t('Unesite svoje podatke da biste započeli proces prijave.')}
         back={exit}
-        actions={
-          <>
-            <div className="flex justify-end phone:*:w-full">
-              <Button size="lg" onClick={next}>
-                {t('Nastavi')}
-              </Button>
-            </div>
-            {terms}
-          </>
-        }
-        footer={<LanguagePicker />}
+        language
       >
+        {/* one card, as a part of the form: where, the email, the consents
+            and "Nastavi" in it, the terms alone under it (decided 12. 11.,
+            dizajner; until then the consents and the button were under it) */}
         <StepPanel>
           <Radios
             label={t('Gde želite da radite?')}
             required
-            cols="grid-cols-2"
             value={market ?? ''}
             onChange={pickMarket}
             options={MARKET_OPTIONS.map(([id, l]) => [id, t(l)])}
@@ -385,19 +369,21 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <Field label={t('Email adresa')} required error={check.show(emailError(account.email))}>
             <Input value={account.email} onChange={(v) => setAccount((a) => ({ ...a, email: v }))} type="email" autoComplete="email" placeholder={market ? EXAMPLE[market].email : t('Unesite svoju email adresu')} />
           </Field>
+          {/* rows as the radios over them: a box, the sentence, the whole row the target */}
+          <div className="flex flex-col">
+            <ConsentRow required checked={account.processing} onChange={(v) => setAccount((a) => ({ ...a, processing: v }))} error={check.show(!account.processing && requiredError())}>
+              {t('Saglasnost za obradu podataka')}
+            </ConsentRow>
+            <ConsentRow required checked={account.accuracy} onChange={(v) => setAccount((a) => ({ ...a, accuracy: v }))} error={check.show(!account.accuracy && requiredError())}>
+              {t('Potvrda tačnosti podataka')}
+            </ConsentRow>
+          </div>
+          {/* as "Dalje" in the form's card: at its right, on a phone across it */}
+          <div className="flex justify-end phone:*:flex-1">
+            <Button onClick={next}>{t('Nastavi')}</Button>
+          </div>
         </StepPanel>
-        {/* under the card, on the sky, not in it: white boxes on the white
-            glass were barely seen (decided 11. 11., dizajner). The box's edge
-            in the grey of the text (it was the field's, 1.4 : 1), and each
-            row 44 under a finger, the 16 under the card kept */}
-        <div className="-mt-4 flex flex-col gap-3 px-4 pointer-coarse:-mt-7 pointer-coarse:gap-0 [&_[role=checkbox]]:border-muted-foreground pointer-coarse:[&_label]:py-3">
-          <Consent required checked={account.processing} onChange={(v) => setAccount((a) => ({ ...a, processing: v }))} error={check.show(!account.processing && requiredError())}>
-            {t('Saglasnost za obradu podataka')}
-          </Consent>
-          <Consent required checked={account.accuracy} onChange={(v) => setAccount((a) => ({ ...a, accuracy: v }))} error={check.show(!account.accuracy && requiredError())}>
-            {t('Potvrda tačnosti podataka')}
-          </Consent>
-        </div>
+        {terms}
         {cookiesOpen && <CookieSettings cookies={account.cookies} onSave={(cookies) => (setAccount((a) => ({ ...a, cookies })), setCookiesOpen(false))} onClose={() => setCookiesOpen(false)} />}
       </StepPage>
     );
@@ -474,9 +460,8 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         <Field label={t('Nivo obrazovanja')} required error={show('education')}>
           <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
         </Field>
-        <Field label={t('Jezici koje govorite')}>
-          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages)} placeholder={t('Izaberite jezike')} />
-        </Field>
+        {/* a box each, the four of her market at sight (decided 12. 11., dizajner; was a dropdown) */}
+        <Checks label={t('Jezici koje govorite')} value={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages).map((o) => [o.value, o.label])} />
         <Field label={t('Biografija')} required error={show('bio')}>
           <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
         </Field>
@@ -554,9 +539,8 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         {HABITS.map(([id, label]) => (
           <YesNo key={id} label={t(label)} value={f.habits[id]} onChange={(v) => set({ habits: { ...f.habits, [id]: v } })} />
         ))}
-        <Field label={t('Jezici koje govorite')}>
-          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages)} placeholder={t('Izaberite jezike')} />
-        </Field>
+        {/* a box each, the four of her market at sight (decided 12. 11., dizajner; was a dropdown) */}
+        <Checks label={t('Jezici koje govorite')} value={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages).map((o) => [o.value, o.label])} />
         {/* a "Da" on allergies, a limit or a health problem asks what it is,
             12 under the answer, and takes the focus */}
         {HEALTH_QUESTIONS.map(([id, label]) => (

@@ -5,7 +5,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint } from '@/components/pane';
 import Dialog from '../Dialog';
 import { formGap } from './Forms';
-import { Combobox, Field, FieldError, Input, MultiCombobox, Select, TextArea, requiredError, useCheck } from '../TextField';
+import { Checks, Combobox, Field, FieldError, Input, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
@@ -63,9 +63,7 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
       <Field label={t('Nivo obrazovanja')} required error={check.show(errors.education)}>
         <Select value={education} onChange={setEducation} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
       </Field>
-      <Field label={t('Jezici koje govorite')}>
-        <MultiCombobox values={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages)} placeholder={t('Izaberite jezike')} />
-      </Field>
+      <Checks label={t('Jezici koje govorite')} value={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages).map((o) => [o.value, o.label])} />
       <Field label={t('Biografija')} required error={check.show(errors.bio)}>
         <TextArea value={bio} onChange={setBio} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
       </Field>
@@ -214,9 +212,7 @@ export function HealthForm({ open, profile, onClose, onSave }) {
       {HABITS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={habits[id] || 'no'} onChange={(v) => setHabits((h) => ({ ...h, [id]: v }))} />
       ))}
-      <Field label={t('Jezici koje govorite')}>
-        <MultiCombobox values={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages)} placeholder={t('Izaberite jezike')} />
-      </Field>
+      <Checks label={t('Jezici koje govorite')} value={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages).map((o) => [o.value, o.label])} />
       {HEALTH_QUESTIONS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={health[id] || 'no'} onChange={(v) => setHealth((h) => ({ ...h, [id]: v }))} />
       ))}

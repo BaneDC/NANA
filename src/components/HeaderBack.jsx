@@ -4,18 +4,19 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // A way back that leaves the page or the process lives in the page's head, top
-// left: the arrow and where it goes (docs/patterns.md §4, decided 12. 11.). A
-// step back inside the same process stays a button by the main one.
+// left: the arrow and where it goes, a ghost button (docs/patterns.md §4,
+// decided 12. 11.). A step back inside the same process stays a button by the
+// main one.
 
-// On the form's sky and in the personality test: the onboarding's glass
-// control, as "Uputstvo" across from it in the test. `short`: on a phone the
-// arrow alone, its name in aria-label (the test, whose right side is full).
+// On the form's sky and in the personality test. `short`: on a phone the
+// arrow alone, a square, its name in aria-label (the test, whose right side is
+// full).
 export function SkyBack({ label, onClick, short, className }) {
   return (
-    <button type="button" className={cn('imm-ctl is-text is-back', short && 'is-short', className)} aria-label={label} onClick={onClick}>
+    <Button variant="ghost" aria-label={label} onClick={onClick} className={cn(short && 'phone:size-11 phone:px-0', className)}>
       <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
-      <span className="imm-ctl-label">{label}</span>
-    </button>
+      <span className={cn(short && 'phone:sr-only')}>{label}</span>
+    </Button>
   );
 }
 
@@ -35,15 +36,15 @@ export function useHeaderBack(label, onClick) {
   }, [set, label]);
 }
 
-// 16 from the top and the left edge of the screen; the frame's own 48 and 24
-// taken back, and 24 to the logo under it
-export function FrameBack({ back }) {
+// The page's head: the way back at the left, or `lead` where there is none
+// (the logo, on signing in and up), and what is on the right (the language)
+// across from it (decided 12. 11., dizajner). 16 from the top and the edges
+// of the screen; in the sign-in's frame its own 48 and 24 taken back.
+export function PageHead({ back, lead, className, children }) {
   return (
-    <div data-slot="header-back" className="-mx-2 -mt-8 self-stretch">
-      <Button variant="ghost" onClick={back.onClick}>
-        <ArrowLeft size={14} strokeWidth={1.75} />
-        {back.label}
-      </Button>
+    <div data-slot="page-head" className={cn('flex shrink-0 items-center justify-between gap-2', className)}>
+      {back ? <SkyBack label={back.label} onClick={back.onClick} /> : lead || <span />}
+      {children}
     </div>
   );
 }

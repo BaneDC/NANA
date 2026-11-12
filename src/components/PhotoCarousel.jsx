@@ -22,6 +22,16 @@ const DURATION = 0.85;
 // Material 3 "emphasized" easing.
 const EASE = [0.2, 0, 0, 1];
 
+// The way to the other door ("Nemate nalog?") stays above the fold on every
+// screen (decided 12. 11., dizajner): where the page is too short for it, the
+// carousel gives up height, never width (shrunk whole it was a small thing in
+// the middle, turned down the same day), down to 80; shorter still, the page
+// scrolls. The page marks that button `data-fold`; a page with none (a form)
+// keeps the carousel whole.
+const FIT_MIN = 80;
+// room left under the button, to the screen's edge: the column's own gap
+const FIT_ROOM = 24;
+
 export default function PhotoCarousel({ interval = 3200 }) {
   const [offset, setOffset] = useState(0);
   // Narrower than the rail (a phone), the whole rail shrinks to fit, every
@@ -29,19 +39,54 @@ export default function PhotoCarousel({ interval = 3200 }) {
   // the right one being cut off. Never larger than the layout.
   const railRef = useRef(null);
   const [scale, setScale] = useState(1);
+  // the most height it may take, to keep the fold's button in view; null: all
+  const [cap, setCap] = useState(null);
   // on a phone a third of the screen's height (decided 11. 11., dizajner):
   // shrunk to the width with the rest it was a strip of 150; the slots keep
   // their widths and grow tall, the photos cropped to them
   const phone = useIsPhone();
-  const height = phone ? 'calc(100svh / 3)' : HERO_WIDTH * scale;
+  const natural = phone ? 'calc(100svh / 3)' : `${HERO_WIDTH * scale}px`;
+  const height = cap == null ? natural : `min(${natural}, ${cap}px)`;
   useLayoutEffect(() => {
     const el = railRef.current;
     if (!el) return;
-    const fit = () => setScale(Math.min(1, (el.clientWidth - 3 * GAP) / (RAIL - 3 * GAP)));
-    fit();
-    const ro = new ResizeObserver(fit);
+    const size = () => setScale(Math.min(1, (el.clientWidth - 3 * GAP) / (RAIL - 3 * GAP)));
+    size();
+    const ro = new ResizeObserver(size);
     ro.observe(el);
     return () => ro.disconnect();
+  }, []);
+
+  // How much the carousel must give up for the button to fit: the page's
+  // content from its top to the button's bottom, against the page's height.
+  // Only the carousel's height moves the button, so one measure settles it.
+  useLayoutEffect(() => {
+    const rail = railRef.current;
+    const pane = rail?.parentElement?.parentElement;
+    if (!pane) return;
+    const measure = () => {
+      const fold = pane.querySelector('[data-fold]');
+      const first = pane.firstElementChild;
+      if (!fold || !first) return setCap(null);
+      // where the content starts when it does not fit and the page scrolls
+      const top = parseFloat(getComputedStyle(pane).paddingTop) + parseFloat(getComputedStyle(first).marginTop);
+      const need = top + (fold.getBoundingClientRect().bottom - first.getBoundingClientRect().top) + FIT_ROOM;
+      const next = Math.max(FIT_MIN, Math.round(rail.offsetHeight - (need - pane.clientHeight)));
+      setCap((now) => (now === next ? now : next));
+    };
+    let frame = 0;
+    const later = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    measure();
+    const ro = new ResizeObserver(later);
+    ro.observe(pane);
+    // another page in the same frame, or an error under a field
+    const mo = new MutationObserver(later);
+    mo.observe(pane, { childList: true, subtree: true });
+    document.fonts?.ready.then(later);
+    return () => (cancelAnimationFrame(frame), ro.disconnect(), mo.disconnect());
   }, []);
 
   useEffect(() => {
@@ -52,7 +97,8 @@ export default function PhotoCarousel({ interval = 3200 }) {
 
   return (
     <div className="w-[480px] max-w-full shrink-0 px-4">
-      <div ref={railRef} className="flex w-full overflow-hidden">
+      <div ref={railRef} className="w-full">
+        <div className="flex overflow-hidden">
         {/* keys are virtual positions, so the leftmost item exits while a new
             one is appended right — no element ever flies across the rail */}
         <AnimatePresence initial={false}>
@@ -84,6 +130,7 @@ export default function PhotoCarousel({ interval = 3200 }) {
             );
           })}
         </AnimatePresence>
+        </div>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ import { session } from '../data/demo';
 import { setSiteMarket } from '../lib/siteLink';
 import CaregiverSignUp from './caregiver/SignUp';
 import LanguagePicker from '../components/LanguagePicker';
-import { FrameBack, HeaderBackSlot, useHeaderBack } from '../components/HeaderBack';
+import { HeaderBackSlot, PageHead, useHeaderBack } from '../components/HeaderBack';
 import { goBackTo, navigate, useRoute } from '../lib/route';
 import { msg, t } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
@@ -138,7 +138,8 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
           <Button variant="secondary" size="lg" className="w-full" onClick={() => setWho('caregiver')}>
             {t('Negovateljica')}
           </Button>
-          <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
+          {/* kept above the fold: the carousel gives way (PhotoCarousel) */}
+          <Button type="button" variant="ghost" size="lg" data-fold="" onClick={onSignIn}>
             {t('Već imate nalog? Prijavite se')}
           </Button>
           <DemoLink onDemo={onDemo} />
@@ -391,7 +392,8 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
           <Button type="submit" size="lg" className="w-full">
             {t('Prijavi se')}
           </Button>
-          <Button type="button" variant="ghost" size="lg" onClick={onSignUp}>
+          {/* kept above the fold: the carousel gives way (PhotoCarousel) */}
+          <Button type="button" variant="ghost" size="lg" data-fold="" onClick={onSignUp}>
             {t('Nemate nalog? Napravite ga')}
           </Button>
           <DemoLink onDemo={onDemo} />
@@ -574,8 +576,24 @@ export default function Register({ onContinue, onDemo }) {
       animate={{ opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }}
       exit={{ opacity: 0, y: -16, transition: { duration: 0.2, ease: 'easeIn' } }}
     >
-      {back && <FrameBack back={back} />}
-      <Logo width={150} />
+      {/* the head (§4, §12b): the logo at the left, or the way back where
+          there is one, and the language at the right; the logo's text where
+          the arrow's is (decided 12. 11., dizajner) */}
+      {(back || !form) && (
+        <PageHead
+          back={back}
+          lead={
+            <span className="flex h-(--button-size) items-center px-3">
+              <Logo width={120} />
+            </span>
+          }
+          className={`${column} -mt-8 phone:-mx-2 phone:w-auto phone:max-w-none phone:self-stretch`}
+        >
+          {!form && <LanguagePicker />}
+        </PageHead>
+      )}
+      {/* a page with a way back keeps the logo, under the head */}
+      {back && <Logo width={150} />}
       {/* the photos on the sign-in and sign-up pages only, not over a form's steps */}
       {!form && <PhotoCarousel />}
       <HeaderBackSlot value={setBack}>
@@ -585,8 +603,6 @@ export default function Register({ onContinue, onDemo }) {
           <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
         )}
       </HeaderBackSlot>
-      {/* the language, on every page before the account, not over a form's steps (§12b) */}
-      {!form && <LanguagePicker />}
     </motion.div>
   );
 }

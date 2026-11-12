@@ -1469,27 +1469,24 @@
   white-space: nowrap;
 }
 
-/* the way out, top left in the head (docs/patterns.md §4): the arrow and
-   where it goes, as the test's controls across from it */
-.imm-ctl.is-back {
-  gap: var(--spacing-2);
+/* the test's buttons on a phone: one under the other, the whole width,
+   "Pošalji test" on top (decided 12. 11., dizajner) */
+@media (max-width: 640px) {
+  .is-test .imm-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .is-test .imm-actions > * {
+    width: 100%;
+  }
 }
 
+/* the way out, top left in the head (docs/patterns.md §4): a ghost button,
+   across from the test's controls, at their height */
 .imm-ctls.is-start {
   left: var(--spacing-4);
   right: auto;
-}
-
-/* in the test the right side is full on a phone: the arrow alone, a square */
-@media (max-width: 640px) {
-  .imm-ctl.is-back.is-short {
-    width: 44px;
-    padding: 0;
-  }
-
-  .imm-ctl.is-back.is-short .imm-ctl-label {
-    display: none;
-  }
 }
 
 .imm-test-bar {

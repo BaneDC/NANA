@@ -62,7 +62,8 @@ export const emptyForm = (market) => ({
   emergency: { name: '', relation: '', phoneCountry: market === 'sr' ? 'RS' : 'FI', phone: '', address: '' },
   documents: {},
   test: {},
-  channel: '',
+  // one answer of a few, so one is chosen from the start (decided 12. 11.)
+  channel: 'whatsapp',
 });
 
 // 18 or older today

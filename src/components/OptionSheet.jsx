@@ -29,7 +29,10 @@ export function OptionList({ options, value, onPick, className }) {
   return (
     <Command value={lit} onValueChange={setLit} className={className ?? (long ? 'min-h-0 flex-1 [&_[data-slot=command-list]]:max-h-none [&_[data-slot=command-list]]:flex-1' : '[&_[data-slot=command-list]]:max-h-none')}>
       {long && <CommandInput placeholder={t('Pretraga')} />}
-      <CommandList ref={list}>
+      {/* a row is a choice, not a grip: the sheet's swipe took the pointer on
+          a mouse press, and the click went to the sheet, not to the row
+          (12. 11.); the grip and the head still drag it */}
+      <CommandList ref={list} data-base-ui-swipe-ignore="">
         {long && <CommandEmpty>{t('Nema rezultata.')}</CommandEmpty>}
         <CommandGroup className="p-0">
           {options.map((o) => (

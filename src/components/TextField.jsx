@@ -71,6 +71,28 @@ export function Field({ label, required, hint, error, className, labelId, childr
   );
 }
 
+// a choice in the form (docs/patterns.md §10, decided 10. 11.): one answer of
+// several is a radio, several a box beside each; a row each, the whole row
+// the target (44 on touch), always one under the other (decided 11. 11.).
+// Yes / no, the days, the time of day and the engagement are chips.
+export const choiceRow = 'flex min-h-8 cursor-pointer items-start gap-2 py-1.5 text-xs leading-5 text-foreground pointer-coarse:min-h-11 pointer-coarse:py-3';
+
+export function Checks({ label, value, onChange, options, required, error }) {
+  return (
+    <Field label={label} required={required}>
+      <div role="group" aria-label={label} className="flex flex-col">
+        {options.map(([id, text]) => (
+          <label key={id} className={choiceRow}>
+            <Checkbox checked={value.includes(id)} onCheckedChange={(on) => onChange(on ? [...value, id] : value.filter((x) => x !== id))} className="mt-0.5" />
+            <span className="min-w-0">{text}</span>
+          </label>
+        ))}
+      </div>
+      {error && <FieldError>{error}</FieldError>}
+    </Field>
+  );
+}
+
 // An error under what is not a field (a consent, a choice of services, the
 // six-digit code, the onboarding's cards): the same red line, `role="alert"`.
 export function FieldError({ className, children, ...rest }) {
@@ -290,7 +312,12 @@ function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, closabl
             className={tall ? 'h-[calc(100%-48px-env(safe-area-inset-top,0px))]' : undefined}
             bodyClassName={tall ? 'min-h-0 flex-1 overflow-hidden' : undefined}
           >
-            {children}
+            {/* the rows, days and buttons are choices, not a grip: the sheet's
+                swipe took the pointer on a mouse press, and the click went to
+                the sheet (12. 11.); the grip and the head still drag it */}
+            <div data-base-ui-swipe-ignore="" className="contents">
+              {children}
+            </div>
           </DrawerContent>
         </Drawer>
       </>
