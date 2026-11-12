@@ -5,7 +5,7 @@ const memory = () => {
   const m = new Map();
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), raw: m };
 };
-const draft = { screen: 'form', reached: 'form', market: 'fi', f: { firstName: 'Aino', documents: { Lähihoitaja: 'todistus.pdf' } }, account: { email: 'a@b.fi' }, open: 1, done: ['basic'], sent: null };
+const draft = { screen: 'form', reached: 'form', chosen: 'fi', f: { firstName: 'Aino', documents: { Lähihoitaja: 'todistus.pdf' } }, account: { email: 'a@b.fi' }, open: 1, done: ['basic'], sent: null };
 const DAY = 24 * 3600 * 1000;
 
 describe('signup draft', () => {

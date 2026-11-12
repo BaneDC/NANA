@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { PAIRS, traitOf } from './personalityTest';
 import { adult, afterSteps, emptyForm, firstUnfinished, recordFrom, stepErrors } from './caregiverSignUp';
+import { marketDate } from './familyCare';
+import { languageOptions } from './caregiverProfile';
 
 const filled = (market) => ({
   ...emptyForm(market),
@@ -80,5 +82,27 @@ describe('date of birth', () => {
   it('someone under 18 is told so under the field', () => {
     const f = { ...emptyForm('fi'), birth: Date.now() };
     expect(stepErrors('basic', f).birth).toBe('Morate imati najmanje 18 godina.');
+  });
+});
+
+describe('marketDate', () => {
+  it('writes a date of birth as the market does, whatever the language', () => {
+    const d = new Date(1967, 10, 8);
+    expect(marketDate(d, 'fi')).toBe('8.11.1967');
+    expect(marketDate(d, 'sr')).toBe('08.11.1967.');
+  });
+  it('goes into her record in her market\'s figures', () => {
+    const f = { ...filled('sr'), birth: new Date(1967, 10, 8).getTime() };
+    expect(recordFrom(f, 'reg-1').birth).toBe('08.11.1967.');
+  });
+});
+
+describe('languageOptions', () => {
+  it('offers her market\'s four, each with a capital', () => {
+    expect(languageOptions('sr').map((o) => o.label)).toEqual(['Srpski', 'Engleski', 'Nemački', 'Francuski']);
+    expect(languageOptions('FI').map((o) => o.label)).toEqual(['Finski', 'Švedski', 'Norveški', 'Engleski']);
+  });
+  it('keeps one she already had that the list no longer offers, so it can be taken off', () => {
+    expect(languageOptions('RS', ['srpski', 'ruski']).map((o) => o.value)).toEqual(['srpski', 'engleski', 'nemački', 'francuski', 'ruski']);
   });
 });

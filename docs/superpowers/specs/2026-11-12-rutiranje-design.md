@@ -39,8 +39,7 @@ Imena prate postojeća imena ekrana u kodu.
 |---|---|
 | `/signup` | „Ko ste?" (`Register` › `SignUp`, `who === null`) |
 | `/signup/family` | registracija porodice (`who === 'family'`) |
-| `/signup/caregiver` | „Gde želite da radite?", sa jezikom (`screen === 'country'`) |
-| `/signup/caregiver/account` | nalog (`'account'`) |
+| `/signup/caregiver` | nalog, sa tržištem (`'account'`; do 12. 11. uveče ovde je bilo „Gde želite da radite?", a nalog na `/signup/caregiver/account`, vidi pravilo 16) |
 | `/signup/caregiver/form` | forma u delovima (`'form'`; delovi nemaju svoje adrese) |
 | `/signup/caregiver/review` | pregled (`'review'`) |
 | `/signup/caregiver/documents` | dokumenti, samo Finska kad treba sertifikat (`'documents'`) |
@@ -116,3 +115,24 @@ Upisuje se u `docs/changes/` za taj dan, u „Za dizajnera", u obliku tabele: gd
 - **Koraci prijave negovateljice:** „Nazad" na „Gde želite da radite?", na nalogu, na posle-pregleda stranama (`pageButtons` u `SignUp.jsx`), u testu ličnosti (dva mesta u `PersonalityTest.jsx`).
 - **Prijava i registracija:** „Nazad na prijavu" (nova lozinka, poslat link; i u `CardGallery`), povratak iz 2FA koraka, iz prijave negovateljice na „Ko ste?".
 - **Ne ulaze u spisak stranica, ali da se vide:** „Nazad" unutar drawer-a i modala (`FamilyDrawer`, `caregiver/Forms.jsx`, `ProfileForms.jsx`, `TwoFactorSetup`, `ApiKeyPanel`, `PaywallModal` „Nazad na poruku"). To su koraci unutar prozora, nemaju adresu, i browser back ih ne zamenjuje.
+
+## Dodatak (12. 11. uveče): tržište i jezik u prijavi negovateljice
+
+Odluke Branislava, 12. 11. Na produkciji „Tražim posao" sa sajta vodi na međustranicu „Gde želite da radite?" (Srbija / Finska), pa na nalog. Taj korak se izbacuje.
+
+16. **Nema ekrana „Gde želite da radite?".** Tržište se bira na nalogu, prvom koraku, koji je sada na `/signup/caregiver` (`/signup/caregiver/account` više ne postoji; demo niko ne koristi, pa nema preusmeravanja ni starih linkova). Na nalogu je, pre emaila, obavezno pitanje „Gde želite da radite?" sa dva radija, Srbija i Finska (§10: jedan odgovor od više je radio), već izabrano kad se zna:
+    1. forma, kad je već napravljena (pravilo 17),
+    2. `market` iz linka (`?market=sr|fi`): svež link je pouzdaniji od stare nedovršene prijave,
+    3. tržište koje je sama izabrala (kliknula radio) u sačuvanom nacrtu; tržište iz linka ili jezika se ne pamti, pa sledeći dolazak opet odlučuju link i jezik,
+    4. jezik: srpski → Srbija, finski → Finska,
+    5. engleski bez `market`: ništa nije izabrano, mora da izabere.
+   U prototipu „Ko ste?" glumi sajt, pa red „Za demo: tržište", kad je u njemu nešto izabrano, ide na prijavu kao `market` iz linka.
+   Promena jezika na nalogu ne menja tržište; samo popuni prazno (engleski pa srpski → Srbija). *(Geo-IP za engleski je moguće proširenje na produkciji, ne u prototipu.)*
+17. **Tržište je zaključano kad krene forma.** „Nastavi" na nalogu pravi formu za izabrano tržište. Posle toga se na nalog ne vraća: forma nema „Nazad" ka njemu, a adresa naloga (back, upisana) vodi na prvi korak na kom može da bude, kao i svaki korak dalje od dozvoljenog. Promene tržišta usred forme zato nema, pa ni potvrde ni brisanja. **Izuzetak:** kad sa sajta stigne drugo tržište (`?market=`, a u prototipu red „Za demo: tržište" na „Ko ste?"), započeta prijava se briše i počinje nova, za to tržište, od naloga (odluka Branislava, 12. 11.: demo ne treba toliku zabranu).
+18. **Sajt predaje jezik kroz link**, kao produkcija (`app.nanaprime.com/caregivers/application/?lng=sr`): `?lng=sr|en|fi` na bilo kojoj adresi postavi jezik, a `?market=` zapamti tržište za prijavu negovateljice. Oba se pročitaju jednom, pri učitavanju, i skinu sa adrese (`replace`). U prototipu sajt glumi `/signup` („Ko ste?"), koji ostaje.
+19. **Jezik na svakoj strani pre naloga** (`/signup…` do forme, `/signin…`): mali padajući izbor ispod svega na strani, u toku strane, ne fiksiran (na telefonu bi u uglu prekrio dugme). Jezici svojim imenom, bez zastava: zastava je država, a jezik i tržište su odvojeni. Zamenjuje čipove jezika sa „Gde želite da radite?" i red „Za demo: jezik".
+
+### Otvoreno: dijaspora (porodica)
+
+Na produkciji porodica bira Srbija / Finska / **Dijaspora** (porodica iz Srbije koja živi u inostranstvu, a negovateljica dolazi kod nje). Za AI onboarding to znači drugi tok: partneri su lokalni, pa nema punog plana, nego kraći razgovor čiji je ishod negovateljica. To je treće tržište kroz celu aplikaciju (cene, valuta, partneri, Simulacija, demo), pa ide kao posebna celina, sa svojim specom, posle ovoga. Dotle porodica u ovoj grani dobija samo izbor jezika (pravilo 19); njeno tržište ostaje kao danas (pozivni broj).
+

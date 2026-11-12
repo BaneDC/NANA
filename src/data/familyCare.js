@@ -87,6 +87,11 @@ const dayMonth = (d) => {
 // a picked date, as it is said with its year: "1. novembra 2026" (no closing
 // dot, so it can end a sentence)
 export const longDate = (d) => `${dayMonth(d)} ${d.getFullYear()}`;
+// a date in figures, as the market writes it whatever the language: Finland
+// 8.11.1967, Serbia 08.11.1967. (decided 12. 11.; a date of birth)
+const two = (n) => String(n).padStart(2, '0');
+export const marketDate = (d, market) =>
+  market === 'sr' ? `${two(d.getDate())}.${two(d.getMonth() + 1)}.${d.getFullYear()}.` : `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
 export const dateText = (day) => dayMonth(dateOfDay(day));
 export function dayLabel(day, today) {
   const diff = day - today;

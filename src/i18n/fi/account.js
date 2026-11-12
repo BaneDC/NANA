@@ -690,4 +690,5 @@ export default {
   "Za demo: porodica": "Demoa varten: perhe",
   "Za demo: negovateljica": "Demoa varten: hoitaja",
   "Za demo: tržište": "Demoa varten: markkina",
+  "Po jeziku": "Kielen mukaan",
 };

@@ -11,9 +11,11 @@ import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
+import { setSiteMarket } from '../lib/siteLink';
 import CaregiverSignUp from './caregiver/SignUp';
+import LanguagePicker from '../components/LanguagePicker';
 import { goBackTo, navigate, useRoute } from '../lib/route';
-import { LANGUAGES, msg, setLang, t, useLang } from '../i18n';
+import { msg, t } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -79,9 +81,16 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [newsletter, setNewsletter] = useState(false);
   const [busy, setBusy] = useState(false);
   // who is signing up, from the address: /signup/family goes on to the form
-  // below, /signup/caregiver to her own sign-up; /signup asks
+  // below, /signup/caregiver to her own sign-up; /signup asks (in the
+  // prototype it stands in for the website, where production asks)
   const who = useRoute().route.who ?? null;
-  const setWho = (w) => navigate({ page: 'signup', who: w });
+  // "Ko ste?" stands in for the website: the market row below goes along to
+  // her sign-up as the website's link would, ?market= for Finska or Srbija,
+  // nothing for "Po jeziku" (her language decides; in English she picks)
+  const setWho = (w) => {
+    if (w === 'caregiver') setSiteMarket(siteRow.read());
+    navigate({ page: 'signup', who: w });
+  };
 
   const dial = COUNTRIES.find((c) => c.id === country);
   const check = useCheck();
@@ -257,23 +266,47 @@ function DemoLink({ onDemo }) {
         {t('Za pregled: sve kartice na jednoj stranici')}
       </button>
       <DemoMarket />
-      <DemoLanguage />
     </>
   );
 }
 
-// Which market the demo opens on: the same row as the language, kept for this
-// tab (src/data/demo.js), so the two links above open on it.
+// What the market row says for the "website" (setWho), kept for this tab:
+// 'fi' or 'sr', or null for "Po jeziku"
+const SITE_ROW = 'nana.demo.site';
+const siteRow = {
+  read() {
+    try {
+      return sessionStorage.getItem(SITE_ROW);
+    } catch {
+      return null;
+    }
+  },
+  write(m) {
+    try {
+      if (m) sessionStorage.setItem(SITE_ROW, m);
+      else sessionStorage.removeItem(SITE_ROW);
+    } catch {
+      /* lasts until the page is left */
+    }
+  },
+};
+
+// Which market the demo opens on (kept for this tab, src/data/demo.js, so the
+// two links above open on it), and which one "Ko ste?", the website's stand-in,
+// hands to the caregiver's sign-up. "Po jeziku" (the start) hands none, as a
+// website link without ?market=, and the demo links then open on Finland.
 function DemoMarket() {
-  const [market, setMarket] = useState(() => session.read()?.market || 'fi');
+  const [market, setMarket] = useState(() => siteRow.read() || 'lang');
   const pick = (m) => {
     setMarket(m);
-    session.write({ role: session.read()?.role || 'family', market: m });
+    siteRow.write(m === 'lang' ? null : m);
+    session.write({ role: session.read()?.role || 'family', market: m === 'lang' ? 'fi' : m });
   };
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span>{t('Za demo: tržište')}</span>
       {[
+        ['lang', t('Po jeziku')],
         ['fi', t('Finska')],
         ['sr', t('Srbija')],
       ].map(([id, label]) => (
@@ -285,28 +318,6 @@ function DemoMarket() {
           onClick={() => pick(id)}
         >
           {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// For showing the demo in another language: the same choice as in Settings,
-// made before there is an account, so the onboarding is held in it too.
-function DemoLanguage() {
-  const lang = useLang();
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span>{t('Za demo: jezik')}</span>
-      {LANGUAGES.map((l) => (
-        <button
-          key={l.id}
-          type="button"
-          aria-pressed={l.id === lang}
-          className={l.id === lang ? 'text-xs font-medium text-foreground' : demoLink}
-          onClick={() => setLang(l.id)}
-        >
-          {l.label}
         </button>
       ))}
     </div>
@@ -580,6 +591,8 @@ export default function Register({ onContinue, onDemo }) {
       ) : (
         <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
       )}
+      {/* the language, on every page before the account, not over a form's steps (§12b) */}
+      {!form && <LanguagePicker />}
     </motion.div>
   );
 }

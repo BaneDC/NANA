@@ -31,6 +31,8 @@ describe('route', () => {
   it('anything else is unknown', () => {
     expect(parse('/nope')).toEqual({ page: 'unknown' });
     expect(parse('/signup/caregiver/nope')).toEqual({ page: 'unknown' });
+    // the account is /signup/caregiver itself (12. 11.)
+    expect(parse('/signup/caregiver/account')).toEqual({ page: 'unknown' });
     expect(parse('/signup/nobody')).toEqual({ page: 'unknown' });
     expect(parse('/clients/a/b')).toEqual({ page: 'unknown' });
   });

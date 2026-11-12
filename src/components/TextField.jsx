@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { countryOptions } from '../data/countries';
-import { longDate } from '../data/familyCare';
+import { longDate, marketDate } from '../data/familyCare';
 import { t } from '../i18n';
 
 // The one text field (docs/patterns.md §10), built from shadcn's Field, Input,
@@ -288,7 +288,9 @@ function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, popover
 // only marks the date and does not close: the day marked goes along when the
 // month or year changes, and nothing is kept until "Potvrdi" (docs/patterns.md §10).
 // On a phone the month opens in a bottom sheet (FieldPane).
-export function DateInput({ value, onChange, from, to, today = from, pickYear, placeholder = t('Izaberite datum'), title, ariaLabel, autoFocus, className }) {
+// `market` ('sr' | 'fi'): the date in figures, as that market writes it
+// (marketDate: 8.11.1967 / 08.11.1967.), not in words.
+export function DateInput({ value, onChange, from, to, today = from, pickYear, market, placeholder = t('Izaberite datum'), title, ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
@@ -320,7 +322,7 @@ export function DateInput({ value, onChange, from, to, today = from, pickYear, p
         className
       )}
     >
-      <span className="min-w-0 flex-1 truncate">{value ? longDate(value) : placeholder}</span>
+      <span className="min-w-0 flex-1 truncate">{value ? (market ? marketDate(value, market) : longDate(value)) : placeholder}</span>
       <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
     </button>
   );
@@ -425,7 +427,9 @@ export function FileField({ value, onChange, accept = '.pdf,.jpg,.jpeg,.png', ar
 // A phone number: the country (flag and code) in front, behind a line, then the
 // number, as one field (docs/provera-pravila.md, 5). The family's sign-up and
 // the caregiver's use it.
-export function Phone({ country, onCountry, value, onChange, labelledBy, placeholder = '40 123 4567' }) {
+// a mobile number as it is written in that country, for the example in the field
+const PHONE_EXAMPLE = { RS: '64 123 4567', FI: '40 123 4567' };
+export function Phone({ country, onCountry, value, onChange, labelledBy, placeholder = PHONE_EXAMPLE[country] ?? '40 123 4567' }) {
   const state = useContext(FieldState);
   const id = useContext(FieldId);
   return (
@@ -501,14 +505,14 @@ export function Combobox({ value, onChange, groups, placeholder = t('Izaberite')
   );
 }
 
-// Several from a list, with a search, "Izaberi sve" and "Zatvori", as the
-// platform's own languages field: a box beside each, the chosen named in the
-// field. Kept in this file with the other fields (docs/patterns.md §10).
+// Several from a list, with "Zatvori" (and a search when longer than 12), as the platform's own
+// languages field: a box beside each, the chosen named in the field. Kept in
+// this file with the other fields (docs/patterns.md §10). No "Izaberi sve"
+// (12. 11.): with four languages nobody speaks them all, and it was easy to hit.
 export function MultiCombobox({ values, onChange, options, placeholder = t('Izaberite'), searchPlaceholder = t('Pretraga'), empty = t('Nema rezultata.') }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
-  const all = values.length === options.length;
   const toggle = (v) => onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
   const shown = options.filter((o) => values.includes(o.value)).map((o) => o.label);
   return (
@@ -528,14 +532,11 @@ export function MultiCombobox({ values, onChange, options, placeholder = t('Izab
       }
     >
         <Command className={paneList}>
-          <CommandInput placeholder={searchPlaceholder} />
+          {/* a search only for a list longer than 12, as a Select's sheet (§10) */}
+          {options.length > 12 && <CommandInput placeholder={searchPlaceholder} />}
           <CommandList>
             <CommandEmpty>{empty}</CommandEmpty>
             <CommandGroup className="p-0">
-              <CommandItem value={t('Izaberi sve')} onSelect={() => onChange(all ? [] : options.map((o) => o.value))}>
-                <Checkbox checked={all} tabIndex={-1} className="pointer-events-none" />
-                {t('Izaberi sve')}
-              </CommandItem>
               {options.map((o) => (
                 <CommandItem key={o.value} value={o.label} onSelect={() => toggle(o.value)}>
                   <Checkbox checked={values.includes(o.value)} tabIndex={-1} className="pointer-events-none" />

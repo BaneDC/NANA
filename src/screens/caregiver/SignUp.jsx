@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { siteMarket } from '../../lib/siteLink';
 import { Note, PaneHint } from '@/components/pane';
 import { StepCard, StepCards, StepPage, StepPanel, StepReview } from '@/components/StepCards';
 import PersonalityTest from './PersonalityTest';
@@ -16,13 +17,14 @@ import { saveAccount } from '../../lib/account';
 import { goBackTo, navigate, useRoute } from '../../lib/route';
 import { clearDraft, loadDraft, saveDraft } from '../../data/signupDraft';
 import { dialOf } from '../../data/countries';
-import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, firstUnfinished, recordFrom, stepErrors } from '../../data/caregiverSignUp';
-import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
+import { CLASSIFICATIONS, EXAMPLE, STEPS, afterSteps, documentsNeeded, emptyForm, firstUnfinished, recordFrom, stepErrors } from '../../data/caregiverSignUp';
+import { marketDate } from '../../data/familyCare';
+import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
-import { LANGUAGES, locale, msg, setLang, t, useLang } from '@/i18n';
+import { getLang, msg, t, useLang } from '@/i18n';
 
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
-// where she wants to work, her account, the parts of the form for that market
+// her account, with where she wants to work, then the parts of the form for that market
 // on one page, then her documents (Finland) or the personality test (Serbia),
 // the channel for the talk with the coordinator, and thanks. The part that
 // finishes the form sends it, and a review of all that was given comes before
@@ -122,22 +124,54 @@ function YesNo({ label, value, onChange }) {
   return <Chips label={label} cols="grid-cols-2" multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
 }
 
-// her steps, each an address: /signup/caregiver, then /signup/caregiver/<step>
-const toStep = (step, opts) => navigate({ page: 'signup', who: 'caregiver', step: step === 'country' ? undefined : step }, opts);
-const backToStep = (step) => goBackTo({ page: 'signup', who: 'caregiver', step: step === 'country' ? undefined : step });
+// her steps, each an address: /signup/caregiver (the account), then /signup/caregiver/<step>
+const toStep = (step, opts) => navigate({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step }, opts);
+const backToStep = (step) => goBackTo({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step });
+
+// the market her language points to: Serbian Serbia, Finnish Finland, English none
+const marketOfLang = (lang) => (lang === 'sr' || lang === 'fi' ? lang : null);
+const MARKET_OPTIONS = [
+  ['sr', msg('Srbija')],
+  ['fi', msg('Finska')],
+];
+// a draft from before the account was her first step (12. 11.)
+const draftNow = () => {
+  const d = loadDraft();
+  // the website (or the demo's market row) names the other market: a new
+  // application for it, the one begun for the other market is let go (rule 17)
+  if (d?.f && siteMarket() && d.f.market !== siteMarket()) {
+    clearDraft();
+    return null;
+  }
+  return d && { ...d, screen: d.screen === 'country' ? 'account' : d.screen, reached: d.reached === 'country' ? 'account' : d.reached };
+};
 
 export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   // what she had written, if she was here in the last week (signupDraft.js)
-  const [kept] = useState(loadDraft);
-  const [market, setMarket] = useState(kept?.market ?? null);
+  const [kept] = useState(draftNow);
+  // Where she wants to work, asked on the account (rule 16 in the routing
+  // spec): the form's once it is made, else what the website's link said, else
+  // what she chose before, else what her language says; in English nothing
+  // until she picks.
+  // (a form only binds once she is past the account: the old flow made one on
+  // the country, before the account)
+  const begun = kept?.f && kept.reached !== 'account' ? kept.f.market : null;
+  const [market, setMarket] = useState(() => begun ?? siteMarket() ?? kept?.chosen ?? marketOfLang(getLang()));
+  // only a market she picked herself is kept with the draft (as `chosen`);
+  // one from a link or her language is not, so the next visit's link and
+  // language decide again
+  const [picked, setPicked] = useState(() => Boolean(kept?.chosen) && !siteMarket());
+  const pickMarket = (m) => (setMarket(m), setPicked(true));
   const [f, setF] = useState(kept?.f ?? null);
   // no password here: the system makes one when her profile is activated, and
   // she changes it on her first sign-in (as on production)
   const [account, setAccount] = useState(kept?.account ?? { email: '', processing: false, accuracy: false, cookies: COOKIE_DEFAULT });
   const [cookiesOpen, setCookiesOpen] = useState(false);
   const lang = useLang();
-  // the app is drawn again in the new language; the address keeps her here
-  const pickLang = (id) => id && setLang(id);
+  // a change of language does not change her market; it only fills one not chosen
+  useEffect(() => {
+    if (!market && marketOfLang(lang)) setMarket(marketOfLang(lang));
+  }, [lang]); // eslint-disable-line react-hooks/exhaustive-deps
   // the application, saved on "Zakaži razgovor": kept even if the tab closes on
   // the thanks; a second press does not make a second one
   const [sent, setSent] = useState(kept?.sent ?? null);
@@ -145,42 +179,44 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const check = useCheck();
   const set = (patch) => setF((x) => ({ ...x, ...patch }));
   // the form's parts, which one is open, and the ones done
-  const parts = market ? STEPS[market] : [];
+  const parts = f ? STEPS[f.market] : [];
   const [open, setOpen] = useState(kept?.open ?? 0);
   const [done, setDone] = useState(kept?.done ?? []);
   // The steps in order, and the furthest one whose checks have passed: forward
   // (the browser's too) goes no further than that. The step is the address's;
   // one she may not be on yet (a reload with nothing kept, a link, a step of
   // the other country) shows, and becomes, the furthest she may.
-  const order = f ? ['country', 'account', 'form', 'review', ...afterSteps(f)] : ['country'];
-  const [furthest, setFurthest] = useState(kept?.reached ?? 'country');
+  const order = f ? ['account', 'form', 'review', ...afterSteps(f)] : ['account'];
+  const [furthest, setFurthest] = useState(kept?.reached ?? 'account');
   // a step that is no longer on her way (documents she no longer needs) counts as the one after the review
   const indexOf = (step) => (order.includes(step) ? order.indexOf(step) : Math.max(0, order.indexOf('interview')));
-  const wanted = useRoute().route.step ?? 'country';
+  const wanted = useRoute().route.step ?? 'account';
+  // past the account her market is set (rule 17): the account is behind her
+  const locked = Boolean(f) && indexOf(furthest) > 0;
   // and no further than the first step that is not right now (forward
   // included): what she changes after a step is checked again
   const stop = !f ? null : emailError(account.email) || !account.processing || !account.accuracy ? 'account' : firstUnfinished(order, f);
   const limit = stop ? Math.min(indexOf(furthest), order.indexOf(stop)) : indexOf(furthest);
-  const allowed = sent ? wanted === 'thanks' : order.includes(wanted) && order.indexOf(wanted) <= limit && wanted !== 'thanks';
-  const screen = allowed ? wanted : sent ? 'thanks' : order[limit];
+  const allowed = sent ? wanted === 'thanks' : order.includes(wanted) && order.indexOf(wanted) <= limit && wanted !== 'thanks' && !(locked && wanted === 'account');
+  const screen = allowed ? wanted : sent ? 'thanks' : order[locked ? Math.max(1, limit) : limit];
   useEffect(() => {
     if (screen !== wanted) toStep(screen, { replace: true });
   }, [screen, wanted]);
   // coming back to "Negovateljica" after a while: the step she was on
   useEffect(() => {
-    if (wanted === 'country' && kept?.screen && kept.screen !== 'country') toStep(kept.screen, { replace: true });
+    if (wanted === 'account' && kept?.screen && kept.screen !== 'account') toStep(kept.screen, { replace: true });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  // kept as she goes, once she has picked her country, until it is sent and she goes on
+  // kept as she goes, once her market is known, until it is sent and she goes on
   useEffect(() => {
-    if (market) saveDraft({ screen, reached: furthest, market, f, account, open, done, sent });
-  }, [screen, furthest, market, f, account, open, done, sent]);
+    if (f || picked || account.email) saveDraft({ screen, reached: furthest, chosen: picked ? market : null, f, account, open, done, sent });
+  }, [screen, furthest, market, picked, f, account, open, done, sent]);
   const go = (step, opts) => {
     if (indexOf(step) > indexOf(furthest)) setFurthest(step);
     toStep(step, opts);
   };
   // past the country and the account it is a form: the page drops its photos
   useEffect(() => {
-    onForm?.(!['country', 'account'].includes(screen));
+    onForm?.(screen !== 'account');
     return () => onForm?.(false);
   }, [screen, onForm]);
   const at = screen === 'form' ? parts[open]?.id : screen;
@@ -200,10 +236,17 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   const next = () => {
     if (screen === 'account') {
-      const e = [emailError(account.email), !account.processing && requiredError(), !account.accuracy && requiredError()];
+      const e = [!market && requiredError(), emailError(account.email), !account.processing && requiredError(), !account.accuracy && requiredError()];
       if (!check.check(e)) return;
       check.reset();
-      setOpen(firstOpen());
+      // the form for her market; from here on the market stays
+      if (f?.market !== market) {
+        setF(emptyForm(market));
+        setOpen(0);
+        setDone([]);
+        // the form is not in her steps until this render is over
+        setFurthest('form');
+      } else setOpen(firstOpen());
       return go('form');
     }
     if (!check.check(Object.values(errors))) return;
@@ -283,59 +326,22 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     toStep('thanks', { replace: true });
   };
 
-  if (screen === 'country')
-    return (
-      <>
-        <Welcome title={t('Gde želite da radite?')} sub={t('Izaberite zemlju u kojoj želite da negujete starije.')} />
-        <Actions>
-          {[
-            ['sr', t('Srbija')],
-            ['fi', t('Finska')],
-          ].map(([id, label]) => (
-            <Button
-              key={id}
-              size="lg"
-              variant="secondary"
-              className="w-full"
-              onClick={() => {
-                // the same country again keeps what she wrote
-                if (id !== market || !f) {
-                  setMarket(id);
-                  setF(emptyForm(id));
-                  setOpen(0);
-                  setDone([]);
-                  // her order is known only from here: the account is the next step
-                  setFurthest('account');
-                }
-                go('account');
-              }}
-            >
-              {label}
-            </Button>
-          ))}
-          <Button variant="ghost" size="lg" onClick={onBack}>
-            {t('Nazad')}
-          </Button>
-          {/* her language, before the form, which takes 10 to 20 minutes;
-              afterwards in Settings (docs/patterns.md §12b) */}
-          <ToggleGroup type="single" size="sm" className="mt-2" value={lang} onValueChange={pickLang} aria-label={t('Jezik')}>
-            {LANGUAGES.map((l) => (
-              <ToggleGroupItem key={l.id} value={l.id} lang={l.id}>
-                {l.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </Actions>
-      </>
-    );
-
   if (screen === 'account')
     return (
       <>
         <Welcome title={t('Prijavite se kao negovateljica')} sub={t('Unesite svoje podatke da biste započeli proces prijave.')} />
         <FormCard>
+          <Radios
+            label={t('Gde želite da radite?')}
+            required
+            cols="grid-cols-2"
+            value={market ?? ''}
+            onChange={pickMarket}
+            options={MARKET_OPTIONS.map(([id, l]) => [id, t(l)])}
+            error={check.show(!market && requiredError())}
+          />
           <Field label={t('Email adresa')} required error={check.show(emailError(account.email))}>
-            <Input value={account.email} onChange={(v) => setAccount((a) => ({ ...a, email: v }))} type="email" autoComplete="email" placeholder={t('Unesite svoju email adresu')} />
+            <Input value={account.email} onChange={(v) => setAccount((a) => ({ ...a, email: v }))} type="email" autoComplete="email" placeholder={market ? EXAMPLE[market].email : t('Unesite svoju email adresu')} />
           </Field>
           <Consent required checked={account.processing} onChange={(v) => setAccount((a) => ({ ...a, processing: v }))} error={check.show(!account.processing && requiredError())}>
             {t('Saglasnost za obradu podataka')}
@@ -344,10 +350,14 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             {t('Potvrda tačnosti podataka')}
           </Consent>
         </FormCard>
-        {/* the terms under the button, as on the family's sign-up (Register.jsx) */}
+        {/* the two buttons together, the terms under them (decided 12. 11.;
+            between them they parted "Nastavi" from "Nazad") */}
         <Actions>
           <Button size="lg" className="w-full" onClick={next}>
             {t('Nastavi')}
+          </Button>
+          <Button variant="secondary" size="lg" className="w-full" onClick={onBack}>
+            {t('Nazad')}
           </Button>
           <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
             {t('Prijavom ste saglasni sa našim')}{' '}
@@ -363,9 +373,6 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
               {t('Podešavanja kolačića')}
             </a>
           </p>
-          <Button variant="secondary" size="lg" className="w-full" onClick={back}>
-            {t('Nazad')}
-          </Button>
         </Actions>
         {cookiesOpen && (
           <CookieSettings
@@ -377,7 +384,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       </>
     );
 
-  const sr = market === 'sr';
+  const sr = f.market === 'sr';
   const n = (id) => parts.findIndex((p) => p.id === id) + 1;
 
   // what each part holds, in the open card
@@ -387,10 +394,10 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         {/* one under the other on a phone, 24 apart as every question */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-6 max-[480px]:grid-cols-1">
           <Field label={t('Vaše ime')} required error={show('firstName')}>
-            <Input value={f.firstName} onChange={(v) => set({ firstName: v })} placeholder="Sarah" autoComplete="given-name" />
+            <Input value={f.firstName} onChange={(v) => set({ firstName: v })} placeholder={EXAMPLE[f.market].firstName} autoComplete="given-name" />
           </Field>
           <Field label={t('Vaše prezime')} required error={show('lastName')}>
-            <Input value={f.lastName} onChange={(v) => set({ lastName: v })} placeholder="Doe" autoComplete="family-name" />
+            <Input value={f.lastName} onChange={(v) => set({ lastName: v })} placeholder={EXAMPLE[f.market].lastName} autoComplete="family-name" />
           </Field>
         </div>
         <Field label={t('Datum rođenja')} required error={show('birth')}>
@@ -404,14 +411,15 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             to={new Date()}
             today={new Date()}
             pickYear
+            market={f.market}
             placeholder={t('Izaberite datum rođenja')}
           />
         </Field>
         <Field label={t('Prebivalište')} required error={show('address')}>
-          <Input value={f.address} onChange={(v) => set({ address: v })} placeholder={t('Unesite adresu iz lične karte')} />
+          <Input value={f.address} onChange={(v) => set({ address: v })} placeholder={EXAMPLE[f.market].address} />
         </Field>
         <Field label={t('Opština')} required error={show('area')}>
-          <Combobox value={f.area} onChange={(v) => set({ area: v })} groups={municipalityGroups(market)} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
+          <Combobox value={f.area} onChange={(v) => set({ area: v })} groups={municipalityGroups(f.market)} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
         </Field>
         <Field label={t('Broj telefona')} required labelId="su-phone" error={show('phone')}>
           <Phone country={f.phoneCountry} onCountry={(v) => set({ phoneCountry: v })} value={f.phone} onChange={(v) => set({ phone: v })} labelledBy="su-phone" />
@@ -448,7 +456,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
         </Field>
         <Field label={t('Jezici koje govorite')}>
-          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
+          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages)} placeholder={t('Izaberite jezike')} />
         </Field>
         <Field label={t('Biografija')} required error={show('bio')}>
           <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
@@ -520,7 +528,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <YesNo key={id} label={t(label)} value={f.habits[id]} onChange={(v) => set({ habits: { ...f.habits, [id]: v } })} />
         ))}
         <Field label={t('Jezici koje govorite')}>
-          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={LANGUAGES_OFFERED.map((l) => ({ value: l, label: t(l) }))} placeholder={t('Engleski, nemački, švedski…')} />
+          <MultiCombobox values={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages)} placeholder={t('Izaberite jezike')} />
         </Field>
         {/* a "Da" on allergies, a limit or a health problem asks what it is,
             12 under the answer, and takes the focus */}
@@ -558,7 +566,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     emergency: (
       <>
         <Field label={t('Ime i prezime')} required error={show('emergencyName')}>
-          <Input value={f.emergency.name} onChange={(v) => setE({ name: v })} placeholder={t('Unesite ime i prezime')} />
+          <Input value={f.emergency.name} onChange={(v) => setE({ name: v })} placeholder={EXAMPLE[f.market].emergencyName} />
         </Field>
         <Field label={t('Srodstvo')} required error={show('emergencyRelation')}>
           <Select value={f.emergency.relation} onChange={(v) => setE({ relation: v })} placeholder={t('Majka, otac, sestra i sl.')} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
@@ -567,14 +575,14 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <Phone country={f.emergency.phoneCountry} onCountry={(v) => setE({ phoneCountry: v })} value={f.emergency.phone} onChange={(v) => setE({ phone: v })} labelledBy="su-e-phone" />
         </Field>
         <Field label={t('Adresa')} required error={show('emergencyAddress')}>
-          <Input value={f.emergency.address} onChange={(v) => setE({ address: v })} />
+          <Input value={f.emergency.address} onChange={(v) => setE({ address: v })} placeholder={EXAMPLE[f.market].emergencyAddress} />
         </Field>
       </>
     ),
   };
   // what a part folded into its row says it holds
   const summary = {
-    basic: [`${f.firstName} ${f.lastName}`.trim(), f.area, f.phone && `${dialOf(f.phoneCountry)} ${f.phone}`, f.birth && new Date(f.birth).toLocaleDateString(locale()), f.address],
+    basic: [`${f.firstName} ${f.lastName}`.trim(), f.area, f.phone && `${dialOf(f.phoneCountry)} ${f.phone}`, f.birth && marketDate(new Date(f.birth), f.market), f.address],
     profession: [...f.classifications, f.education && t(f.education)],
     qualifications: [f.education && educationText(f.education, true), f.certificate && t('Sertifikat negovateljice'), f.courses],
     availability: [
@@ -622,7 +630,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   const review = {
     basic: [
       [t('Ime i prezime'), `${f.firstName} ${f.lastName}`.trim()],
-      [t('Datum rođenja'), f.birth && new Date(f.birth).toLocaleDateString(locale())],
+      [t('Datum rođenja'), f.birth && marketDate(new Date(f.birth), f.market)],
       [t('Prebivalište'), f.address],
       [t('Opština'), f.area],
       [t('Broj telefona'), phone(f.phoneCountry, f.phone)],

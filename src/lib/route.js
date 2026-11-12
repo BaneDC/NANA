@@ -12,7 +12,8 @@ const PLAIN = ['onboarding', 'chat', 'dashboard', 'requests', 'find-caregiver', 
 // pages with an id: the address's word, and the route's page
 const WITH_ID = { caregivers: 'caregiver', clients: 'client' };
 const ID_WORD = Object.fromEntries(Object.entries(WITH_ID).map(([word, page]) => [page, word]));
-export const CAREGIVER_STEPS = ['account', 'form', 'review', 'documents', 'test', 'interview', 'thanks'];
+// her first step, the account, is /signup/caregiver itself
+export const CAREGIVER_STEPS = ['form', 'review', 'documents', 'test', 'interview', 'thanks'];
 const SIGNIN_STEPS = ['verify', 'reset'];
 
 const UNKNOWN = { page: 'unknown' };
