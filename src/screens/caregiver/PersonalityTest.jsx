@@ -5,12 +5,14 @@ import { DialogFooter } from '@/components/ui/dialog';
 import Dialog from '../../components/Dialog';
 import GradientBackground from '../../components/immersive/GradientBackground';
 import { PAIRS, TRAITS, traitOf } from '../../data/personalityTest';
+import { SkyBack } from '../../components/HeaderBack';
 import { t } from '@/i18n';
 
 // The personality test of the Serbian sign-up (docs/patterns.md §12d): one pair
 // a screen, in the onboarding's language and over the whole page. A choice goes
 // on by itself: "Dalje" on each of 62 pairs would be 124 touches. "Nazad" takes
-// back a wrong one, and the last pair waits for "Pošalji test".
+// back a wrong one, and the last pair waits for "Pošalji test". `onExit`: out
+// of the sign-up, from the head's top left (docs/patterns.md §4).
 
 // how long a chosen card stays lit before the next pair comes
 const HOLD_MS = 250;
@@ -58,7 +60,7 @@ function Guide({ step, first, onStep, onClose }) {
   );
 }
 
-export default function PersonalityTest({ f, set, onBack, onSend }) {
+export default function PersonalityTest({ f, set, onBack, onExit, onSend }) {
   const answered = Object.keys(f.test).length;
   const [at, setAt] = useState(Math.min(answered, PAIRS.length - 1));
   // the first time is read from what is there (§4b): no pair chosen yet
@@ -111,6 +113,11 @@ export default function PersonalityTest({ f, set, onBack, onSend }) {
       <GradientBackground />
 
       <div className="imm-chrome">
+        {onExit && (
+          <div className="imm-ctls is-start">
+            <SkyBack short label={t('Nazad na početak')} onClick={onExit} />
+          </div>
+        )}
         <div className="imm-ctls">
           <button type="button" className="imm-ctl is-text" onClick={() => openGuide('guide')}>
             {t('Uputstvo')}

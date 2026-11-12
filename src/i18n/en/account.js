@@ -487,7 +487,6 @@ export default {
   "Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.": "If there is an account for {email}, we have sent you a link to set a new password.",
   "Upišite email adresu naloga i poslaćemo vam link za novu lozinku.": "Enter your account's email address and we will send you a link to set a new password.",
   "Pošalji link": "Send link",
-  "Setili ste se lozinke? Prijavite se": "Remember your password? Sign in",
   'Već imate nalog? Prijavite se': 'Already have an account? Sign in',
   'Za testiranje: otvori demo sa gotovim planom': 'For testing: open the demo with a finished plan',
   'Za pregled: sve kartice na jednoj stranici': 'For review: every card on one page',
@@ -510,6 +509,7 @@ export default {
   'Koristite rezervni kod': 'Use a backup code',
   'Potvrdi': 'Confirm',
   'Nazad na prijavu': 'Back to sign-in',
+  'Nazad na početak': 'Back to the start',
 
   // ── two-factor ────────────────────────────────────────────────────────────
   'Skeniraj': 'Scan',

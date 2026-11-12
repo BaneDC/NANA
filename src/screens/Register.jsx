@@ -14,6 +14,7 @@ import { session } from '../data/demo';
 import { setSiteMarket } from '../lib/siteLink';
 import CaregiverSignUp from './caregiver/SignUp';
 import LanguagePicker from '../components/LanguagePicker';
+import { FrameBack, HeaderBackSlot, useHeaderBack } from '../components/HeaderBack';
 import { goBackTo, navigate, useRoute } from '../lib/route';
 import { msg, t } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
@@ -424,17 +425,10 @@ function ResetPassword({ email: given, onBack }) {
     setSent(true);
   };
 
-  if (sent)
-    return (
-      <>
-        <Welcome title={t('Proverite email')} sub={t('Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.', { email: email.trim() })} />
-        <Actions>
-          <Button size="lg" className="w-full" onClick={onBack}>
-            {t('Nazad na prijavu')}
-          </Button>
-        </Actions>
-      </>
-    );
+  // back to signing in, from the head (docs/patterns.md §4, decided 12. 11.)
+  useHeaderBack(t('Nazad na prijavu'), onBack);
+
+  if (sent) return <Welcome title={t('Proverite email')} sub={t('Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.', { email: email.trim() })} />;
 
   return (
     <>
@@ -448,9 +442,6 @@ function ResetPassword({ email: given, onBack }) {
         <Actions>
           <Button type="submit" size="lg" className="w-full">
             {t('Pošalji link')}
-          </Button>
-          <Button type="button" variant="ghost" size="lg" onClick={onBack}>
-            {t('Setili ste se lozinke? Prijavite se')}
           </Button>
         </Actions>
       </form>
@@ -481,8 +472,9 @@ function TestCodes() {
 // The second step of signing in when two-factor is on: the six digits from
 // the app, or one of the backup codes saved when it was turned on (each signs
 // in once). Laid out as signing in is: the welcome, the grey form, the actions
-// under it. "Nazad na prijavu" goes back to the email and password.
+// under it. "Nazad na prijavu", in the head, goes back to the email and password.
 function TwoFactorStep({ user, onContinue, onBack }) {
+  useHeaderBack(t('Nazad na prijavu'), onBack);
   const [backup, setBackup] = useState(false);
   const [code, setCode] = useState('');
   const [typed, setTyped] = useState('');
@@ -559,9 +551,6 @@ function TwoFactorStep({ user, onContinue, onBack }) {
               {t('Potvrdi')}
             </Button>
           </div>
-          <Button type="button" variant="ghost" size="lg" onClick={onBack}>
-            {t('Nazad na prijavu')}
-          </Button>
           {user.email === demoTwoFactor.user.email && <TestCodes />}
         </Actions>
       </form>
@@ -574,6 +563,8 @@ export default function Register({ onContinue, onDemo }) {
   const mode = useRoute().route.page === 'signin' ? 'sign-in' : 'sign-up';
   // a caregiver's sign-up past her account: a form, no photos over it
   const [form, setForm] = useState(false);
+  // a page's way back, drawn in the head over the logo (docs/patterns.md §4)
+  const [back, setBack] = useState(null);
   return (
     // the whole screen, its column centred and scrolling (safe: a tall form is
     // not cut off at the top)
@@ -583,14 +574,17 @@ export default function Register({ onContinue, onDemo }) {
       animate={{ opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }}
       exit={{ opacity: 0, y: -16, transition: { duration: 0.2, ease: 'easeIn' } }}
     >
+      {back && <FrameBack back={back} />}
       <Logo width={150} />
       {/* the photos on the sign-in and sign-up pages only, not over a form's steps */}
       {!form && <PhotoCarousel />}
-      {mode === 'sign-up' ? (
-        <SignUp onContinue={onContinue} onSignIn={() => navigate({ page: 'signin' })} onDemo={onDemo} onForm={setForm} />
-      ) : (
-        <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
-      )}
+      <HeaderBackSlot value={setBack}>
+        {mode === 'sign-up' ? (
+          <SignUp onContinue={onContinue} onSignIn={() => navigate({ page: 'signin' })} onDemo={onDemo} onForm={setForm} />
+        ) : (
+          <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
+        )}
+      </HeaderBackSlot>
       {/* the language, on every page before the account, not over a form's steps (§12b) */}
       {!form && <LanguagePicker />}
     </motion.div>

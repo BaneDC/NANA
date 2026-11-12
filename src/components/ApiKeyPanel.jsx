@@ -3,6 +3,7 @@ import { KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
+import BackButton from './BackButton';
 import { Field, Input, requiredError, useCheck } from './TextField';
 import { t } from '../i18n';
 
@@ -26,6 +27,8 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
 
   return (
     <Page>
+      {/* the way back first on the page, as every page's (docs/patterns.md §4) */}
+      {onCancel && <BackButton label={t('Nazad na prijavu')} onClick={onCancel} />}
       <PageHeader>
         <PageHeaderText>
           <PageTitle>{t('AI razgovor')}</PageTitle>
@@ -75,11 +78,6 @@ export default function ApiKeyPanel({ initial = '', rejected = false, onSave, on
           <Button onClick={save}>
             {t('Sačuvaj i počni')}
           </Button>
-          {onCancel && (
-            <Button variant="secondary" onClick={onCancel}>
-              {t('Nazad')}
-            </Button>
-          )}
         </CardFooter>
       </Card>
     </Page>

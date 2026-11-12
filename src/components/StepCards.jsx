@@ -7,6 +7,7 @@ import { useIsPhone } from '@/hooks/use-phone';
 import { cn } from '@/lib/utils';
 import { t, useLang } from '@/i18n';
 import GradientBackground from '@/components/immersive/GradientBackground';
+import { SkyBack } from '@/components/HeaderBack';
 
 // A form in parts on one page (docs/patterns.md §10), as the chat kit's
 // QuestionGroup until the kit's card takes a host's own fields
@@ -25,7 +26,9 @@ import GradientBackground from '@/components/immersive/GradientBackground';
 // while the page runs past it (.imm-step-bar).
 // `footer`: what belongs to the page and not to its step (the language, on
 // the sign-up's first page), quiet at its foot, 32 under the buttons.
-export function StepPage({ eyebrow, title, sub, start, actions, footer, children }) {
+// `back` ({ label, onClick }): the way out of the process, in the page's head
+// at the top left (docs/patterns.md §4); the page's own column under it.
+export function StepPage({ eyebrow, title, sub, start, actions, footer, back, children }) {
   const scroller = useRef(null);
   // a new title is a new page, to the top; the same one in another language is not
   const lang = useLang();
@@ -44,23 +47,30 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, children
         {/* with buttons the bar's own 16 is the page's foot: the page's
             padding under it let the buttons, held 16 over the screen's edge,
             ride up by that much more once the page's end was reached */}
-        <div className={cn('flex min-h-full flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8', actions && 'pb-0 phone:pb-0')}>
-          <div className="flex w-[560px] max-w-full flex-col gap-8">
-            <header className={cn('flex flex-col gap-2', start ? 'text-left' : 'text-center')}>
-              {eyebrow && <p className="imm-count my-0">{eyebrow}</p>}
-              <h1 className="imm-title">{title}</h1>
-              {sub && <p className={cn('my-0', start ? 'imm-plan-text' : 'imm-subtitle')}>{sub}</p>}
-            </header>
-            {children}
-          </div>
-          {/* across the whole page, so its blur reaches both edges */}
-          {actions && (
-            <div className="imm-step-bar -mx-6 self-stretch px-6 phone:-mx-4 phone:px-4">
-              <div className="mx-auto w-[560px] max-w-full">{actions}</div>
+        <div className="flex min-h-full flex-col">
+          {back && (
+            <div data-slot="header-back" className="flex shrink-0 px-4 pt-3">
+              <SkyBack label={back.label} onClick={back.onClick} />
             </div>
           )}
-          {/* 32 under what is over it: the bar's own 16 and 16 more, or 32 */}
-          {footer && <footer className={cn('flex w-[560px] max-w-full flex-wrap justify-center gap-1 pb-8 phone:pb-6', actions ? 'mt-4' : 'mt-8')}>{footer}</footer>}
+          <div className={cn('flex flex-1 flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8', actions && 'pb-0 phone:pb-0')}>
+            <div className="flex w-[560px] max-w-full flex-col gap-8">
+              <header className={cn('flex flex-col gap-2', start ? 'text-left' : 'text-center')}>
+                {eyebrow && <p className="imm-count my-0">{eyebrow}</p>}
+                <h1 className="imm-title">{title}</h1>
+                {sub && <p className={cn('my-0', start ? 'imm-plan-text' : 'imm-subtitle')}>{sub}</p>}
+              </header>
+              {children}
+            </div>
+            {/* across the whole page, so its blur reaches both edges */}
+            {actions && (
+              <div className="imm-step-bar -mx-6 self-stretch px-6 phone:-mx-4 phone:px-4">
+                <div className="mx-auto w-[560px] max-w-full">{actions}</div>
+              </div>
+            )}
+            {/* 32 under what is over it: the bar's own 16 and 16 more, or 32 */}
+            {footer && <footer className={cn('flex w-[560px] max-w-full flex-wrap justify-center gap-1 pb-8 phone:pb-6', actions ? 'mt-4' : 'mt-8')}>{footer}</footer>}
+          </div>
         </div>
       </div>
     </div>
@@ -71,11 +81,19 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, children
 // same flow that has one part only (documents, the talk, thanks): r24, p16,
 // the questions 24 apart, so nothing changes from the form to the end.
 export function StepPanel({ className, children }) {
-  return <section data-slot="step-panel" className={cn('imm-step is-open flex flex-col gap-6 p-4', className)}>{children}</section>;
+  return (
+    <section data-slot="step-panel" className={cn('imm-step is-open flex flex-col gap-6 p-4', className)}>
+      {children}
+    </section>
+  );
 }
 
 export function StepCards({ className, children }) {
-  return <div data-slot="step-cards" className={cn('flex flex-col gap-2', className)}>{children}</div>;
+  return (
+    <div data-slot="step-cards" className={cn('flex flex-col gap-2', className)}>
+      {children}
+    </div>
+  );
 }
 
 const EASE = [0.23, 1, 0.32, 1];

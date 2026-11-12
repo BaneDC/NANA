@@ -328,7 +328,11 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     toStep('thanks', { replace: true });
   };
 
-  // the terms, under "Nazad" (decided 11. 11.)
+  // out of the sign-up, to "Ko ste?", from every page's head (docs/patterns.md
+  // §4, decided 12. 11.): what she wrote is kept a week (signupDraft.js)
+  const exit = { label: t('Nazad na početak'), onClick: onBack };
+
+  // the terms under the button (decided 11. 11.)
   const terms = (
     <p className="mt-3 text-small text-muted-foreground phone:text-center [&_a]:text-primary-600">
       {t('Prijavom ste saglasni sa našim')}{' '}
@@ -355,12 +359,10 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       <StepPage
         title={t('Prijavite se kao negovateljica')}
         sub={t('Unesite svoje podatke da biste započeli proces prijave.')}
+        back={exit}
         actions={
           <>
-            <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
-              <Button variant="secondary" size="lg" onClick={onBack}>
-                {t('Nazad')}
-              </Button>
+            <div className="flex justify-end phone:*:w-full">
               <Button size="lg" onClick={next}>
                 {t('Nastavi')}
               </Button>
@@ -396,13 +398,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             {t('Potvrda tačnosti podataka')}
           </Consent>
         </div>
-        {cookiesOpen && (
-          <CookieSettings
-            cookies={account.cookies}
-            onSave={(cookies) => (setAccount((a) => ({ ...a, cookies })), setCookiesOpen(false))}
-            onClose={() => setCookiesOpen(false)}
-          />
-        )}
+        {cookiesOpen && <CookieSettings cookies={account.cookies} onSave={(cookies) => (setAccount((a) => ({ ...a, cookies })), setCookiesOpen(false))} onClose={() => setCookiesOpen(false)} />}
       </StepPage>
     );
 
@@ -518,7 +514,15 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
             {f.engagement.length === 2 && <PaneHint>{t('Smena od 24 sata je vaš prvi izbor, a otvoreni ste i za dnevne posete kod drugih korisnika kad niste na dužnosti.')}</PaneHint>}
           </div>
         )}
-        <Chips label={t('Koje dane želite da radite?')} required cols="grid-cols-7 phone:grid-cols-4" value={f.days} onChange={(v) => set({ days: v })} options={DAYS.map((d, i) => [String(i), t(d)])} error={show('days')} />
+        <Chips
+          label={t('Koje dane želite da radite?')}
+          required
+          cols="grid-cols-7 phone:grid-cols-4"
+          value={f.days}
+          onChange={(v) => set({ days: v })}
+          options={DAYS.map((d, i) => [String(i), t(d)])}
+          error={show('days')}
+        />
         <div className="flex flex-col gap-3">
           <Chips
             label={t('Izaberite raspored koji vam najviše odgovara')}
@@ -624,7 +628,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   if (screen === 'form')
     return (
       // no buttons under the parts: the part that finishes the form sends it
-      <StepPage title={t('Vaši podaci')} sub={t('Za popunjavanje treba 10 do 20 minuta.')}>
+      <StepPage back={exit} title={t('Vaši podaci')} sub={t('Za popunjavanje treba 10 do 20 minuta.')}>
         <StepCards>
           {parts.map((p, i) => (
             <StepCard
@@ -700,6 +704,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   if (screen === 'review')
     return (
       <StepPage
+        back={exit}
         start
         eyebrow={t('Vaša prijava')}
         title={t('Ovo ste upisali')}
@@ -739,7 +744,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   if (screen === 'documents')
     return (
-      <StepPage title={t('Dokumenti')} sub={t('Za klasifikacije koje ste izabrali treba dokument.')} actions={pageButtons(t('Dalje'), next)}>
+      <StepPage back={exit} title={t('Dokumenti')} sub={t('Za klasifikacije koje ste izabrali treba dokument.')} actions={pageButtons(t('Dalje'), next)}>
         <StepPanel>
           {documentsNeeded(f).map((c) => (
             <Field key={c} label={CLASSIFICATIONS.find((x) => x.id === c).document} required error={show('doc-' + c)}>
@@ -751,23 +756,15 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       </StepPage>
     );
 
-  if (screen === 'test')
-    return <PersonalityTest f={f} set={set} onBack={back} onSend={next} />;
+  if (screen === 'test') return <PersonalityTest f={f} set={set} onBack={back} onExit={onBack} onSend={next} />;
 
   if (screen === 'interview')
     return (
-      <StepPage title={t('Zakažite razgovor')} sub={t('Kratak video razgovor sa koordinatorkom je poslednji korak prijave.')} actions={pageButtons(t('Zakaži razgovor'), submit)}>
+      <StepPage back={exit} title={t('Zakažite razgovor')} sub={t('Kratak video razgovor sa koordinatorkom je poslednji korak prijave.')} actions={pageButtons(t('Zakaži razgovor'), submit)}>
         <StepPanel>
           {/* the hint goes with its question, 12 under it */}
           <div className="flex flex-col gap-3">
-            <Radios
-              label={t('Kako vam je najlakše?')}
-              required
-              value={f.channel}
-              onChange={(v) => set({ channel: v })}
-              options={CHANNELS.map(([id, l]) => [id, t(l)])}
-              error={show('channel')}
-            />
+            <Radios label={t('Kako vam je najlakše?')} required value={f.channel} onChange={(v) => set({ channel: v })} options={CHANNELS.map(([id, l]) => [id, t(l)])} error={show('channel')} />
             {f.channel && <PaneHint>{t('Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.', { channel: t(CHANNELS.find(([id]) => id === f.channel)[1]) })}</PaneHint>}
           </div>
         </StepPanel>
@@ -784,11 +781,14 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       })}`}
       actions={
         <div className="flex justify-center phone:*:w-full">
-          <Button size="lg" onClick={() => {
-            if (!sent) return;
-            clearDraft();
-            onDone(sent.user, sent.record);
-          }}>
+          <Button
+            size="lg"
+            onClick={() => {
+              if (!sent) return;
+              clearDraft();
+              onDone(sent.user, sent.record);
+            }}
+          >
             {t('Na početnu')}
           </Button>
         </div>
