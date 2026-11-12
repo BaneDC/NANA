@@ -4,7 +4,7 @@ import { ArrowRight, ArrowUp, ArrowUpRight, ChevronDown, History, PenLine, Volum
 import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { emergencyNumber } from '../data/market';
-import { remainingQuestions, systemPrompt, withoutLongDashes } from '../data/conversation';
+import { remainingQuestions, resumeAt, systemPrompt, withoutLongDashes } from '../data/conversation';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregiversIn } from '../data/carePlan';
 import { planOverview } from '../data/carePlan.sr';
@@ -373,7 +373,11 @@ export default function ImmersiveConversation({
   onFinish,
   onKeyRejected,
 }) {
-  const [stage, setStage] = useState('open'); // open | talking | plan
+  // back after leaving it half done: straight to the first question she has
+  // not answered, from the flow, without the blank page (decided 12. 11.)
+  const [resumed] = useState(() => resumeAt(answers));
+  const [welcomeBack, setWelcomeBack] = useState(Boolean(resumed));
+  const [stage, setStage] = useState(resumed ? 'talking' : 'open'); // open | talking | plan
   const [said, setSaid] = useState('');
   const [draft, setDraft] = useState('');
   // "Pošalji" pressed on an empty page: it says so under the field
@@ -384,7 +388,7 @@ export default function ImmersiveConversation({
     setDraftTried(true);
     draftField.current?.focus();
   };
-  const [asked, setAsked] = useState(null);
+  const [asked, setAsked] = useState(resumed);
   const [followUp, setFollowUp] = useState(null); // string[] of suggestions
   // Why the question on screen is being asked — only when Minna judged it needs
   // saying, so most questions have none.
@@ -519,6 +523,7 @@ export default function ImmersiveConversation({
       const picked = `${t('(izabrano)')} `;
       setLog((l) => [...l, { question: onScreen.current, answer: text.startsWith(picked) ? text.slice(picked.length) : text }]);
       setAsked(null);
+      setWelcomeBack(false);
       setFollowUp(null);
       setWhy(null);
       setThought({ text: '', missing: [] });
@@ -745,7 +750,7 @@ export default function ImmersiveConversation({
           {stage === 'talking' && (
             <motion.div key="conversation" className="imm-screen is-conversation" variants={screen} initial="initial" animate="animate" exit="exit">
               <motion.p className="imm-count" variants={piece}>
-                {SECTION[remaining[0]?.sekcija] ? t(SECTION[remaining[0].sekcija]) : t('Skoro gotovo')}
+                {welcomeBack ? t('Nastavljamo gde smo stali') : SECTION[remaining[0]?.sekcija] ? t(SECTION[remaining[0].sekcija]) : t('Skoro gotovo')}
               </motion.p>
 
               {/* How she got to this question. Open while she works, with a
