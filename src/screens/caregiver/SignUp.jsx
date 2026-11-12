@@ -13,6 +13,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { saveAccount } from '../../lib/account';
+import { goBackTo, navigate, useRoute } from '../../lib/route';
+import { clearDraft, loadDraft, saveDraft } from '../../data/signupDraft';
 import { dialOf } from '../../data/countries';
 import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
@@ -120,41 +122,63 @@ function YesNo({ label, value, onChange }) {
   return <Chips label={label} cols="grid-cols-2" multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
 }
 
+// her steps, each an address: /signup/caregiver, then /signup/caregiver/<step>
+const toStep = (step, opts) => navigate({ page: 'signup', who: 'caregiver', step: step === 'country' ? undefined : step }, opts);
+const backToStep = (step) => goBackTo({ page: 'signup', who: 'caregiver', step: step === 'country' ? undefined : step });
+
 export default function CaregiverSignUp({ onDone, onBack, onForm }) {
-  const [screen, setScreen] = useState('country');
-  const [market, setMarket] = useState(null);
-  const [f, setF] = useState(null);
+  // what she had written, if she was here in the last week (signupDraft.js)
+  const [kept] = useState(loadDraft);
+  const [market, setMarket] = useState(kept?.market ?? null);
+  const [f, setF] = useState(kept?.f ?? null);
   // no password here: the system makes one when her profile is activated, and
   // she changes it on her first sign-in (as on production)
-  const [account, setAccount] = useState({ email: '', processing: false, accuracy: false, cookies: COOKIE_DEFAULT });
+  const [account, setAccount] = useState(kept?.account ?? { email: '', processing: false, accuracy: false, cookies: COOKIE_DEFAULT });
   const [cookiesOpen, setCookiesOpen] = useState(false);
   const lang = useLang();
-  // the app is drawn again in the new language, so where she was is kept
-  // for a moment (Register.jsx reads it back)
-  const pickLang = (id) => {
-    if (!id) return;
-    try {
-      sessionStorage.setItem('nana.signup', 'caregiver');
-    } catch {
-      // not kept: she lands on "Ko ste?" again
-    }
-    setLang(id);
-  };
+  // the app is drawn again in the new language; the address keeps her here
+  const pickLang = (id) => id && setLang(id);
   // the application, saved on "Zakaži razgovor": kept even if the tab closes on
   // the thanks; a second press does not make a second one
-  const [sent, setSent] = useState(null);
+  const [sent, setSent] = useState(kept?.sent ?? null);
   const [busy, setBusy] = useState(false);
   const check = useCheck();
   const set = (patch) => setF((x) => ({ ...x, ...patch }));
+  // the form's parts, which one is open, and the ones done
+  const parts = market ? STEPS[market] : [];
+  const [open, setOpen] = useState(kept?.open ?? 0);
+  const [done, setDone] = useState(kept?.done ?? []);
+  // The steps in order, and the furthest one whose checks have passed: forward
+  // (the browser's too) goes no further than that. The step is the address's;
+  // one she may not be on yet (a reload with nothing kept, a link, a step of
+  // the other country) shows, and becomes, the furthest she may.
+  const order = f ? ['country', 'account', 'form', 'review', ...afterSteps(f)] : ['country'];
+  const [furthest, setFurthest] = useState(kept?.reached ?? 'country');
+  // a step that is no longer on her way (documents she no longer needs) counts as the one after the review
+  const indexOf = (step) => (order.includes(step) ? order.indexOf(step) : Math.max(0, order.indexOf('interview')));
+  const wanted = useRoute().route.step ?? 'country';
+  const allowed = sent ? wanted === 'thanks' : order.includes(wanted) && order.indexOf(wanted) <= indexOf(furthest) && wanted !== 'thanks';
+  const screen = allowed ? wanted : sent ? 'thanks' : order[indexOf(furthest)];
+  useEffect(() => {
+    if (screen !== wanted) toStep(screen, { replace: true });
+  }, [screen, wanted]);
+  // coming back to "Negovateljica" after a while: the step she was on
+  useEffect(() => {
+    if (wanted === 'country' && kept?.screen && kept.screen !== 'country') toStep(kept.screen, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // kept as she goes, once she has picked her country, until it is sent and she goes on
+  useEffect(() => {
+    if (market) saveDraft({ screen, reached: furthest, market, f, account, open, done, sent });
+  }, [screen, furthest, market, f, account, open, done, sent]);
+  const go = (step, opts) => {
+    if (indexOf(step) > indexOf(furthest)) setFurthest(step);
+    toStep(step, opts);
+  };
   // past the country and the account it is a form: the page drops its photos
   useEffect(() => {
     onForm?.(!['country', 'account'].includes(screen));
     return () => onForm?.(false);
   }, [screen, onForm]);
-  // the form's parts, which one is open, and the ones done
-  const parts = market ? STEPS[market] : [];
-  const [open, setOpen] = useState(0);
-  const [done, setDone] = useState([]);
   const at = screen === 'form' ? parts[open]?.id : screen;
   const errors = f ? stepErrors(at, f) : {};
   const show = (k) => check.show(errors[k]);
@@ -176,20 +200,16 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       if (!check.check(e)) return;
       check.reset();
       setOpen(firstOpen());
-      return setScreen('form');
+      return go('form');
     }
     if (!check.check(Object.values(errors))) return;
     check.reset();
-    const order = ['form', 'review', ...afterSteps(f)];
-    const i = order.indexOf(screen);
-    setScreen(order[i + 1]);
+    go(order[order.indexOf(screen) + 1]);
     window.scrollTo?.(0, 0);
   };
   const back = () => {
     check.reset();
-    const order = ['account', 'form', 'review', ...afterSteps(f || {})];
-    const i = order.indexOf(screen);
-    setScreen(i > 0 ? order[i - 1] : 'country');
+    backToStep(order[Math.max(0, order.indexOf(screen) - 1)]);
   };
   // the part's button: only that part is checked; then it folds, and the next
   // one not done yet opens. On the part that finishes the form (every other
@@ -202,7 +222,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     const to = firstOpen(now);
     setDone(now);
     setOpen(to);
-    if (to === null) setScreen('review');
+    if (to === null) go('review');
   };
   // the part left open folds as done when it is right, and as not done when
   // it is not, whichever way it was left
@@ -253,7 +273,10 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     setSent({ user, record });
     setBusy(false);
     check.reset();
-    setScreen('thanks');
+    // sent: the steps before are behind her (the address is replaced, and
+    // every step leads to the thanks from now on)
+    setFurthest('thanks');
+    toStep('thanks', { replace: true });
   };
 
   if (screen === 'country')
@@ -271,9 +294,16 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
               variant="secondary"
               className="w-full"
               onClick={() => {
-                setMarket(id);
-                setF(emptyForm(id));
-                setScreen('account');
+                // the same country again keeps what she wrote
+                if (id !== market || !f) {
+                  setMarket(id);
+                  setF(emptyForm(id));
+                  setOpen(0);
+                  setDone([]);
+                  // her order is known only from here: the account is the next step
+                  setFurthest('account');
+                }
+                go('account');
               }}
             >
               {label}
@@ -716,7 +746,11 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       sub={t('Prijava je poslata.')}
       actions={
         <div className="flex justify-center phone:*:w-full">
-          <Button size="lg" onClick={() => sent && onDone(sent.user, sent.record)}>
+          <Button size="lg" onClick={() => {
+            if (!sent) return;
+            clearDraft();
+            onDone(sent.user, sent.record);
+          }}>
             {t('Na početnu')}
           </Button>
         </div>

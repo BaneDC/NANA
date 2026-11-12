@@ -12,6 +12,7 @@ import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
 import CaregiverSignUp from './caregiver/SignUp';
+import { goBackTo, navigate, useRoute } from '../lib/route';
 import { LANGUAGES, msg, setLang, t, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
@@ -77,19 +78,10 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [accuracy, setAccuracy] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
   const [busy, setBusy] = useState(false);
-  // who is signing up: a family goes on to the form below; a caregiver's own
-  // sign-up comes with part 5, so for now she is shown her side on the demo
-  // a switch of language draws the app again (App.jsx); the caregiver who
-  // switched it on her first screen comes back to it (caregiver/SignUp.jsx)
-  const [who, setWho] = useState(() => {
-    try {
-      const back = sessionStorage.getItem('nana.signup');
-      sessionStorage.removeItem('nana.signup');
-      return back;
-    } catch {
-      return null;
-    }
-  });
+  // who is signing up, from the address: /signup/family goes on to the form
+  // below, /signup/caregiver to her own sign-up; /signup asks
+  const who = useRoute().route.who ?? null;
+  const setWho = (w) => navigate({ page: 'signup', who: w });
 
   const dial = COUNTRIES.find((c) => c.id === country);
   const check = useCheck();
@@ -145,7 +137,7 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
     );
 
   // her own sign-up (part 5), in this same frame
-  if (who === 'caregiver') return <CaregiverSignUp onBack={() => setWho(null)} onForm={onForm} onDone={(u, record) => onContinue(u, { record })} />;
+  if (who === 'caregiver') return <CaregiverSignUp onBack={() => goBackTo({ page: 'signup' })} onForm={onForm} onDone={(u, record) => onContinue(u, { record })} />;
 
   return (
     <>
@@ -330,20 +322,40 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
 
   // with two-factor on, the right password leads to the code, not in
   const [pending, setPending] = useState(null);
+  const { step } = useRoute().route;
 
   const submit = async () => {
     if (!check.check(Object.values(errors))) return;
     const user = await signIn(email, password);
     if (!user) setFailed(true);
-    else if (user.twoFactor && user.twoFactorSecret) setPending(user);
+    else if (user.twoFactor && user.twoFactorSecret) {
+      setPending(user);
+      navigate({ page: 'signin', step: 'verify' });
+    }
     else onContinue(user);
   };
 
-  // a forgotten password: its own step on the same screen
-  const [forgot, setForgot] = useState(false);
+  // the code's step is /signin/verify, only after the password: opened
+  // without it (a reload, a link) it is the sign-in again
+  const verifying = step === 'verify' && pending;
+  useEffect(() => {
+    if (step === 'verify' && !pending) navigate({ page: 'signin' }, { replace: true });
+  }, [step, pending]);
+  const toSignIn = () => goBackTo({ page: 'signin' });
 
-  if (pending) return <TwoFactorStep user={pending} onContinue={onContinue} onBack={() => setPending(null)} />;
-  if (forgot) return <ResetPassword email={email} onBack={() => setForgot(false)} />;
+  if (verifying)
+    return (
+      <TwoFactorStep
+        user={pending}
+        onContinue={onContinue}
+        onBack={() => {
+          setPending(null);
+          toSignIn();
+        }}
+      />
+    );
+  // a forgotten password: its own step, /signin/reset
+  if (step === 'reset') return <ResetPassword email={email} onBack={toSignIn} />;
 
   return (
     <>
@@ -358,7 +370,7 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
             <Field label={t('Lozinka')} required error={check.show(errors.password) || (failed ? t('Email ili lozinka nisu tačni.') : null)}>
               <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder={t('Vaša lozinka')} />
             </Field>
-            <Button type="button" variant="link" size="sm" className="-mr-2 pointer-coarse:h-11" onClick={() => (check.reset(), setForgot(true))}>
+            <Button type="button" variant="link" size="sm" className="-mr-2 pointer-coarse:h-11" onClick={() => (check.reset(), navigate({ page: 'signin', step: 'reset' }))}>
               {t('Zaboravili ste lozinku?')}
             </Button>
           </div>
@@ -547,7 +559,8 @@ function TwoFactorStep({ user, onContinue, onBack }) {
 }
 
 export default function Register({ onContinue, onDemo }) {
-  const [mode, setMode] = useState('sign-up');
+  // signing up or in: the address says which (src/lib/route.js)
+  const mode = useRoute().route.page === 'signin' ? 'sign-in' : 'sign-up';
   // a caregiver's sign-up past her account: a form, no photos over it
   const [form, setForm] = useState(false);
   return (
@@ -563,9 +576,9 @@ export default function Register({ onContinue, onDemo }) {
       {/* the photos on the sign-in and sign-up pages only, not over a form's steps */}
       {!form && <PhotoCarousel />}
       {mode === 'sign-up' ? (
-        <SignUp onContinue={onContinue} onSignIn={() => setMode('sign-in')} onDemo={onDemo} onForm={setForm} />
+        <SignUp onContinue={onContinue} onSignIn={() => navigate({ page: 'signin' })} onDemo={onDemo} onForm={setForm} />
       ) : (
-        <SignIn onContinue={onContinue} onSignUp={() => setMode('sign-up')} onDemo={onDemo} />
+        <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
       )}
     </motion.div>
   );
