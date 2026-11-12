@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PAIRS, traitOf } from './personalityTest';
-import { adult, afterSteps, emptyForm, recordFrom, stepErrors } from './caregiverSignUp';
+import { adult, afterSteps, emptyForm, firstUnfinished, recordFrom, stepErrors } from './caregiverSignUp';
 
 const filled = (market) => ({
   ...emptyForm(market),
@@ -48,6 +48,26 @@ describe('sign-up steps', () => {
   it('makes a record in the shape of the others, waiting for the interview', () => {
     const r = recordFrom(filled('fi'), 'reg-1');
     expect(r).toMatchObject({ id: 'reg-1', market: 'FI', status: 'interview', name: 'Ana Lind', rateMin: 15, rateMax: 20, days: [0, 1] });
+  });
+});
+
+describe('how far she may go', () => {
+  const order = (f) => ['country', 'account', 'form', 'review', ...afterSteps(f)];
+  it('an empty form stops her at the form', () => {
+    const f = emptyForm('fi');
+    expect(firstUnfinished(order(f), f)).toBe('form');
+  });
+  it('a filled form with its document missing stops her at the documents', () => {
+    const f = filled('fi');
+    expect(firstUnfinished(order(f), f)).toBe('documents');
+  });
+  it('a name cleared after the fact stops her at the form again', () => {
+    const f = { ...filled('fi'), firstName: '', documents: { Lähihoitaja: 'todistus.pdf' }, channel: 'viber' };
+    expect(firstUnfinished(order(f), f)).toBe('form');
+  });
+  it('all done: nothing stops her', () => {
+    const f = { ...filled('fi'), documents: { Lähihoitaja: 'todistus.pdf' }, channel: 'viber' };
+    expect(firstUnfinished(order(f), f)).toBeNull();
   });
 });
 

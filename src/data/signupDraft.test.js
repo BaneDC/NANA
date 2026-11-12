@@ -29,6 +29,11 @@ describe('signup draft', () => {
     storage.setItem('nana.signup.caregiver', '{not json');
     expect(loadDraft()).toBeNull();
   });
+  it('a sent application is not kept', () => {
+    saveDraft(draft);
+    saveDraft({ ...draft, sent: { user: {}, record: {} } });
+    expect(loadDraft()).toBeNull();
+  });
   it('clears', () => {
     saveDraft(draft);
     clearDraft();

@@ -146,6 +146,18 @@ export const documentsNeeded = (f) => f.classifications.filter((c) => DOCUMENTS[
 // Serbia the test; both the interview, then the thanks
 export const afterSteps = (f) => [...(f.market === 'sr' ? ['test'] : documentsNeeded(f).length ? ['documents'] : []), 'interview', 'thanks'];
 
+// The first step on her way whose checks do not pass now, or null. No step
+// after it can be opened, the browser's forward included: what she changes
+// after passing a step (a name cleared, a classification that now needs a
+// document) is checked again before she can go on or send.
+export function firstUnfinished(order, f) {
+  for (const step of order) {
+    const ids = step === 'form' ? STEPS[f.market].map((p) => p.id) : [step];
+    if (ids.some((id) => Object.values(stepErrors(id, f)).some(Boolean))) return step;
+  }
+  return null;
+}
+
 // The caregiver record her sign-up makes, in the shape of every other one
 // (carePlan.js, caregiversRs.js), new and not yet active.
 export function recordFrom(f, id, email = '') {

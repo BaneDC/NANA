@@ -8,6 +8,8 @@ export const DRAFT_DAYS = 7;
 const LIFE = DRAFT_DAYS * 24 * 3600 * 1000;
 
 export function saveDraft(draft, now = Date.now()) {
+  // sent: nothing left to carry on with, and the next one starts afresh
+  if (draft.sent) return clearDraft();
   try {
     localStorage.setItem(KEY, JSON.stringify({ ...draft, savedAt: now }));
   } catch {

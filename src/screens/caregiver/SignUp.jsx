@@ -16,7 +16,7 @@ import { saveAccount } from '../../lib/account';
 import { goBackTo, navigate, useRoute } from '../../lib/route';
 import { clearDraft, loadDraft, saveDraft } from '../../data/signupDraft';
 import { dialOf } from '../../data/countries';
-import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, recordFrom, stepErrors } from '../../data/caregiverSignUp';
+import { CLASSIFICATIONS, STEPS, afterSteps, documentsNeeded, emptyForm, firstUnfinished, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, LANGUAGES_OFFERED, READINESS, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
 import { LANGUAGES, locale, msg, setLang, t, useLang } from '@/i18n';
@@ -157,8 +157,12 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   // a step that is no longer on her way (documents she no longer needs) counts as the one after the review
   const indexOf = (step) => (order.includes(step) ? order.indexOf(step) : Math.max(0, order.indexOf('interview')));
   const wanted = useRoute().route.step ?? 'country';
-  const allowed = sent ? wanted === 'thanks' : order.includes(wanted) && order.indexOf(wanted) <= indexOf(furthest) && wanted !== 'thanks';
-  const screen = allowed ? wanted : sent ? 'thanks' : order[indexOf(furthest)];
+  // and no further than the first step that is not right now (forward
+  // included): what she changes after a step is checked again
+  const stop = !f ? null : emailError(account.email) || !account.processing || !account.accuracy ? 'account' : firstUnfinished(order, f);
+  const limit = stop ? Math.min(indexOf(furthest), order.indexOf(stop)) : indexOf(furthest);
+  const allowed = sent ? wanted === 'thanks' : order.includes(wanted) && order.indexOf(wanted) <= limit && wanted !== 'thanks';
+  const screen = allowed ? wanted : sent ? 'thanks' : order[limit];
   useEffect(() => {
     if (screen !== wanted) toStep(screen, { replace: true });
   }, [screen, wanted]);
