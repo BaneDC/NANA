@@ -9,7 +9,10 @@ import { showScrollbarsWhileScrolling } from './lib/scrollbars';
 import { preventFocusZoomOnIOS } from './lib/iosZoom';
 import { useLang } from './i18n';
 import { keyboardDebug, keyboardOnlyForFingers, moveOnlyTheComposer } from './lib/keyboardViewport';
+import { takeSiteLink } from './lib/siteLink';
 
+// the website's ?lng (and ?market), before anything is drawn
+takeSiteLink();
 showScrollbarsWhileScrolling();
 preventFocusZoomOnIOS();
 moveOnlyTheComposer();

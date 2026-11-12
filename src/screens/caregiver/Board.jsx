@@ -220,7 +220,7 @@ export default function Board({ user, clients, caregiverId, onOpen, act, onEarni
     <Page className="@container overflow-y-hidden *:max-w-none">
       {/* 24 in, where the text in the columns is (a column is 8 around its
           cards), not 16 as over a plain card (docs/patterns.md §12c) */}
-      <PageHeader className="pl-6">
+      <PageHeader>
         <PageHeaderText>
           <PageTitle>{t('Vaša tabla')}</PageTitle>
           {/* on a phone the board's own names say it, and the lines go to the columns */}

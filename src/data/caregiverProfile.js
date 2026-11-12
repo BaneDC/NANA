@@ -21,7 +21,22 @@ export const EDUCATION_SR = [msg('Osnovna škola'), msg('Srednja škola'), msg('
 // through keys of their own. In Serbian the name is the same either way.
 const SR_NAMES = { 'Osnovna škola': msg('Osnovna škola (Srbija)'), 'Srednja škola': msg('Srednja škola (Srbija)') }; // i18n-ignore
 export const educationText = (e, sr) => (sr && getLang() !== 'sr' && SR_NAMES[e] ? t(SR_NAMES[e]) : t(e));
-export const LANGUAGES_OFFERED = [msg('engleski'), msg('nemački'), msg('švedski'), msg('finski'), msg('norveški'), msg('srpski'), msg('drugi jezici')];
+// The languages a caregiver is asked about, by the market she works on
+// (decided 12. 11., Branislav): the ones families there ask for. Kept as the
+// word in a sentence ("srpski"), so a profile reads "srpski, engleski".
+export const LANGUAGES_OFFERED = {
+  sr: [msg('srpski'), msg('engleski'), msg('nemački'), msg('francuski')],
+  fi: [msg('finski'), msg('švedski'), msg('norveški'), msg('engleski')],
+};
+const capital = (s) => s.charAt(0).toLocaleUpperCase() + s.slice(1);
+// The options for her market, each on its own so with a capital ("Srpski"),
+// and any she already has from before that the list no longer offers, so
+// they stay and can be taken off.
+export const languageOptions = (market, kept = []) =>
+  [...LANGUAGES_OFFERED[market === 'sr' || market === 'RS' ? 'sr' : 'fi'], ...kept.filter((l) => !LANGUAGES_OFFERED[market === 'sr' || market === 'RS' ? 'sr' : 'fi'].includes(l))].map((l) => ({
+    value: l,
+    label: capital(t(l)),
+  }));
 
 // What the demo knows of her that the family's list does not show: kept on
 // her profile only (part 3).

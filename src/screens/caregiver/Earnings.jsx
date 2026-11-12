@@ -84,7 +84,8 @@ export default function Earnings({ clients, caregiverId, payouts, onPayouts }) {
                 </div>
                 <ItemGroup>
                   {mo.visits.map((v) => (
-                    <Item key={v.id} className="items-start gap-3">
+                    // a visit's id is unique within its family only, and this list is every family's
+                    <Item key={`${v.clientId}-${v.id}`} className="items-start gap-3">
                       <ItemContent>
                         <p className="text-xs font-medium text-foreground">{v.elder}</p>
                         <p className="text-xs leading-body text-muted-foreground">{`${v.date} · ${v.time}`}</p>

@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { countryOptions } from '../data/countries';
-import { longDate } from '../data/familyCare';
+import { longDate, marketDate } from '../data/familyCare';
 import { t } from '../i18n';
 
 // The one text field (docs/patterns.md §10), built from shadcn's Field, Input,
@@ -318,7 +318,9 @@ function FieldPane({ open, onOpenChange, trigger, title, fallback, tall, closabl
 // (FieldPane) with an X, and the month's or the year's list opens in its place
 // in that sheet, at the calendar's height, with "Nazad" in the head (decided
 // 11. 11.; it was a second sheet over the first, with no way back but a pick).
-export function DateInput({ value, onChange, from, to, today = from, pickYear, placeholder = t('Izaberite datum'), title, ariaLabel, autoFocus, className }) {
+// `market` ('sr' | 'fi'): the date in figures, as that market writes it
+// (marketDate: 8.11.1967 / 08.11.1967.), not in words.
+export function DateInput({ value, onChange, from, to, today = from, pickYear, market, placeholder = t('Izaberite datum'), title, ariaLabel, autoFocus, className }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
   const [open, setOpen] = useState(false);
@@ -365,7 +367,7 @@ export function DateInput({ value, onChange, from, to, today = from, pickYear, p
         className
       )}
     >
-      <span className="min-w-0 flex-1 truncate">{value ? longDate(value) : placeholder}</span>
+      <span className="min-w-0 flex-1 truncate">{value ? (market ? marketDate(value, market) : longDate(value)) : placeholder}</span>
       <CalendarDays className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
     </button>
   );
@@ -495,7 +497,9 @@ export function FileField({ value, onChange, accept = '.pdf,.jpg,.jpeg,.png', ar
 // A phone number: the country (flag and code) in front, behind a line, then the
 // number, as one field (docs/provera-pravila.md, 5). The family's sign-up and
 // the caregiver's use it.
-export function Phone({ country, onCountry, value, onChange, labelledBy, placeholder = '40 123 4567' }) {
+// a mobile number as it is written in that country, for the example in the field
+const PHONE_EXAMPLE = { RS: '64 123 4567', FI: '40 123 4567' };
+export function Phone({ country, onCountry, value, onChange, labelledBy, placeholder = PHONE_EXAMPLE[country] ?? '40 123 4567' }) {
   const state = useContext(FieldState);
   const id = useContext(FieldId);
   return (
@@ -574,8 +578,9 @@ export function Combobox({ value, onChange, groups, placeholder = t('Izaberite')
 // Several from a list (docs/patterns.md §10, "Više od više u listi", decided
 // 11. 11.): a box beside each; a search on top only when the list is long
 // (OptionSheet's LONG_LIST). What is ticked is kept only on "Izaberi", right
-// in the foot; at its left "Izaberi sve" while not all are, and "Poništi
-// izbor" once any is. Closed any other way, nothing changes.
+// in the foot; at its left "Poništi izbor" once any is. Closed any other way,
+// nothing changes. No "Izaberi sve" (12. 11., Branislav): with four languages
+// nobody speaks them all, and it was easy to hit.
 export function MultiCombobox({ values, onChange, options, placeholder = t('Izaberite'), searchPlaceholder = t('Pretraga'), empty = t('Nema rezultata.') }) {
   const id = useContext(FieldId);
   const state = useContext(FieldState);
@@ -619,11 +624,6 @@ export function MultiCombobox({ values, onChange, options, placeholder = t('Izab
           </CommandList>
         </Command>
         <div className="mt-2 flex items-center gap-2 border-t pt-2">
-          {draft.length < options.length && (
-            <Button type="button" variant="ghost" onClick={() => setDraft(options.map((o) => o.value))}>
-              {t('Izaberi sve')}
-            </Button>
-          )}
           {draft.length > 0 && (
             <Button type="button" variant="ghost" onClick={() => setDraft([])}>
               {t('Poništi izbor')}

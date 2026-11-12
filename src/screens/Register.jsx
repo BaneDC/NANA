@@ -11,8 +11,11 @@ import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
+import { setSiteMarket } from '../lib/siteLink';
 import CaregiverSignUp from './caregiver/SignUp';
-import { LANGUAGES, msg, setLang, t, useLang } from '../i18n';
+import LanguagePicker from '../components/LanguagePicker';
+import { goBackTo, navigate, useRoute } from '../lib/route';
+import { msg, t } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -77,19 +80,17 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [accuracy, setAccuracy] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
   const [busy, setBusy] = useState(false);
-  // who is signing up: a family goes on to the form below; a caregiver's own
-  // sign-up comes with part 5, so for now she is shown her side on the demo
-  // a switch of language draws the app again (App.jsx); the caregiver who
-  // switched it on her first screen comes back to it (caregiver/SignUp.jsx)
-  const [who, setWho] = useState(() => {
-    try {
-      const back = sessionStorage.getItem('nana.signup');
-      sessionStorage.removeItem('nana.signup');
-      return back;
-    } catch {
-      return null;
-    }
-  });
+  // who is signing up, from the address: /signup/family goes on to the form
+  // below, /signup/caregiver to her own sign-up; /signup asks (in the
+  // prototype it stands in for the website, where production asks)
+  const who = useRoute().route.who ?? null;
+  // "Ko ste?" stands in for the website: the market row below goes along to
+  // her sign-up as the website's link would, ?market= for Finska or Srbija,
+  // nothing for "Po jeziku" (her language decides; in English she picks)
+  const setWho = (w) => {
+    if (w === 'caregiver') setSiteMarket(siteRow.read());
+    navigate({ page: 'signup', who: w });
+  };
 
   const dial = COUNTRIES.find((c) => c.id === country);
   const check = useCheck();
@@ -145,7 +146,7 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
     );
 
   // her own sign-up (part 5), in this same frame
-  if (who === 'caregiver') return <CaregiverSignUp onBack={() => setWho(null)} onForm={onForm} onDone={(u, record) => onContinue(u, { record })} />;
+  if (who === 'caregiver') return <CaregiverSignUp onBack={() => goBackTo({ page: 'signup' })} onForm={onForm} onDone={(u, record) => onContinue(u, { record })} />;
 
   return (
     <>
@@ -265,23 +266,47 @@ function DemoLink({ onDemo }) {
         {t('Za pregled: sve kartice na jednoj stranici')}
       </button>
       <DemoMarket />
-      <DemoLanguage />
     </>
   );
 }
 
-// Which market the demo opens on: the same row as the language, kept for this
-// tab (src/data/demo.js), so the two links above open on it.
+// What the market row says for the "website" (setWho), kept for this tab:
+// 'fi' or 'sr', or null for "Po jeziku"
+const SITE_ROW = 'nana.demo.site';
+const siteRow = {
+  read() {
+    try {
+      return sessionStorage.getItem(SITE_ROW);
+    } catch {
+      return null;
+    }
+  },
+  write(m) {
+    try {
+      if (m) sessionStorage.setItem(SITE_ROW, m);
+      else sessionStorage.removeItem(SITE_ROW);
+    } catch {
+      /* lasts until the page is left */
+    }
+  },
+};
+
+// Which market the demo opens on (kept for this tab, src/data/demo.js, so the
+// two links above open on it), and which one "Ko ste?", the website's stand-in,
+// hands to the caregiver's sign-up. "Po jeziku" (the start) hands none, as a
+// website link without ?market=, and the demo links then open on Finland.
 function DemoMarket() {
-  const [market, setMarket] = useState(() => session.read()?.market || 'fi');
+  const [market, setMarket] = useState(() => siteRow.read() || 'lang');
   const pick = (m) => {
     setMarket(m);
-    session.write({ role: session.read()?.role || 'family', market: m });
+    siteRow.write(m === 'lang' ? null : m);
+    session.write({ role: session.read()?.role || 'family', market: m === 'lang' ? 'fi' : m });
   };
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span>{t('Za demo: tržište')}</span>
       {[
+        ['lang', t('Po jeziku')],
         ['fi', t('Finska')],
         ['sr', t('Srbija')],
       ].map(([id, label]) => (
@@ -299,28 +324,6 @@ function DemoMarket() {
   );
 }
 
-// For showing the demo in another language: the same choice as in Settings,
-// made before there is an account, so the onboarding is held in it too.
-function DemoLanguage() {
-  const lang = useLang();
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <span>{t('Za demo: jezik')}</span>
-      {LANGUAGES.map((l) => (
-        <button
-          key={l.id}
-          type="button"
-          aria-pressed={l.id === lang}
-          className={l.id === lang ? 'text-xs font-medium text-foreground' : demoLink}
-          onClick={() => setLang(l.id)}
-        >
-          {l.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function SignIn({ onContinue, onSignUp, onDemo }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -330,20 +333,40 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
 
   // with two-factor on, the right password leads to the code, not in
   const [pending, setPending] = useState(null);
+  const { step } = useRoute().route;
 
   const submit = async () => {
     if (!check.check(Object.values(errors))) return;
     const user = await signIn(email, password);
     if (!user) setFailed(true);
-    else if (user.twoFactor && user.twoFactorSecret) setPending(user);
+    else if (user.twoFactor && user.twoFactorSecret) {
+      setPending(user);
+      navigate({ page: 'signin', step: 'verify' });
+    }
     else onContinue(user);
   };
 
-  // a forgotten password: its own step on the same screen
-  const [forgot, setForgot] = useState(false);
+  // the code's step is /signin/verify, only after the password: opened
+  // without it (a reload, a link) it is the sign-in again
+  const verifying = step === 'verify' && pending;
+  useEffect(() => {
+    if (step === 'verify' && !pending) navigate({ page: 'signin' }, { replace: true });
+  }, [step, pending]);
+  const toSignIn = () => goBackTo({ page: 'signin' });
 
-  if (pending) return <TwoFactorStep user={pending} onContinue={onContinue} onBack={() => setPending(null)} />;
-  if (forgot) return <ResetPassword email={email} onBack={() => setForgot(false)} />;
+  if (verifying)
+    return (
+      <TwoFactorStep
+        user={pending}
+        onContinue={onContinue}
+        onBack={() => {
+          setPending(null);
+          toSignIn();
+        }}
+      />
+    );
+  // a forgotten password: its own step, /signin/reset
+  if (step === 'reset') return <ResetPassword email={email} onBack={toSignIn} />;
 
   return (
     <>
@@ -358,7 +381,7 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
             <Field label={t('Lozinka')} required error={check.show(errors.password) || (failed ? t('Email ili lozinka nisu tačni.') : null)}>
               <Password value={password} onChange={(v) => (setPassword(v), setFailed(false))} placeholder={t('Vaša lozinka')} />
             </Field>
-            <Button type="button" variant="link" size="sm" className="-mr-2 pointer-coarse:h-11" onClick={() => (check.reset(), setForgot(true))}>
+            <Button type="button" variant="link" size="sm" className="-mr-2 pointer-coarse:h-11" onClick={() => (check.reset(), navigate({ page: 'signin', step: 'reset' }))}>
               {t('Zaboravili ste lozinku?')}
             </Button>
           </div>
@@ -547,7 +570,8 @@ function TwoFactorStep({ user, onContinue, onBack }) {
 }
 
 export default function Register({ onContinue, onDemo }) {
-  const [mode, setMode] = useState('sign-up');
+  // signing up or in: the address says which (src/lib/route.js)
+  const mode = useRoute().route.page === 'signin' ? 'sign-in' : 'sign-up';
   // a caregiver's sign-up past her account: a form, no photos over it
   const [form, setForm] = useState(false);
   return (
@@ -563,10 +587,12 @@ export default function Register({ onContinue, onDemo }) {
       {/* the photos on the sign-in and sign-up pages only, not over a form's steps */}
       {!form && <PhotoCarousel />}
       {mode === 'sign-up' ? (
-        <SignUp onContinue={onContinue} onSignIn={() => setMode('sign-in')} onDemo={onDemo} onForm={setForm} />
+        <SignUp onContinue={onContinue} onSignIn={() => navigate({ page: 'signin' })} onDemo={onDemo} onForm={setForm} />
       ) : (
-        <SignIn onContinue={onContinue} onSignUp={() => setMode('sign-up')} onDemo={onDemo} />
+        <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
       )}
+      {/* the language, on every page before the account, not over a form's steps (§12b) */}
+      {!form && <LanguagePicker />}
     </motion.div>
   );
 }

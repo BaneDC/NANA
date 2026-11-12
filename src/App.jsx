@@ -27,20 +27,19 @@ import CaregiverPage from './screens/CaregiverPage';
 import RequestsPage from './screens/RequestsPage';
 import Toast from './components/family/Toast';
 import ApiKeyPanel from './components/ApiKeyPanel';
-import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardFooter } from '@/components/ui/card';
-import { AppPane, Page } from '@/components/page';
+import { AppPane } from '@/components/page';
 import { SidePanelFrame } from './components/SidePanel';
-import Attention from './components/Attention';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
-import { askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
+import { arrangementOf, askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { declineCard } from './data/sim';
 import { startCare, withAnswers } from './data/familyStart';
 import SimPanel from './components/family/SimPanel';
 import CaregiverApp from './screens/caregiver/CaregiverApp';
 import { herMove, myClients } from './data/caregiverView';
 import { useKept } from './hooks/use-kept';
+import { goBackTo, href, keptSearch, navigate, useRoute } from './lib/route';
+import { resolve } from './lib/routeGuard';
 import { buildPlan, caregiverById, coordinator, setProfiles, setRegistered } from './data/carePlan';
 import { applyChanges, describeChanges, planDiff } from './data/planEdits';
 import { recordImpact, writeEvent, written } from './data/record';
@@ -60,7 +59,11 @@ const DEMO_TAB = ENTRY && (ENTRY.explicit || !session.read() ? { role: ENTRY.rol
 if (DEMO_TAB) session.write(DEMO_TAB);
 const DEMO = Boolean(DEMO_TAB);
 // /?demo&puno: the week into care, every time it is opened, over what was kept
-if (ENTRY?.filled) store.save(DEMO_TAB.market, seedState(DEMO_TAB.market, { filled: true }));
+if (ENTRY?.filled) {
+  store.save(DEMO_TAB.market, seedState(DEMO_TAB.market, { filled: true }));
+  // filled once: the address loses &puno, so a reload keeps what was done since
+  window.history.replaceState(window.history.state, '', window.location.pathname + keptSearch(window.location.search));
+}
 
 // What registration already told us about the person writing, as the answer the
 // onboarding would otherwise ask for, so Minna does not ask it again.
@@ -77,7 +80,9 @@ export default function App() {
   const lang = useLang();
   useKeepScroll(lang);
   const [phase, setPhase] = useState(DEMO ? 'app' : 'register'); // register | app
-  const [view, setView] = useState(DEMO ? (DEMO_TAB.role === 'caregiver' ? (DEMO_TAB.market === 'sr' ? 'requests' : 'board') : 'dashboard') : 'chat');
+  // the page is the address (src/lib/route.js); `view` and `setView` below
+  // read and write it
+  const { route } = useRoute();
   // `role` is chosen at registration and decides which of the two applications
   // this is: the family's, or the caregiver's. Switching means starting over:
   // reloading the page goes back to sign-in.
@@ -170,6 +175,30 @@ export default function App() {
   // rebuilt when what it is built from changes, not on every change to her care
   const { planMade } = person;
   const plan = useMemo(() => planOf({ planMade, answers, notes }), [planMade, answers, notes, lang]);
+  // Which page shows: the address, unless this person may not see it, and then
+  // their home in its place (src/lib/routeGuard.js). `view` is the page's name,
+  // as the nav and the pages have always called it.
+  // the onboarding's summary is up: the plan exists, and the page stays until she goes on
+  const [summaryShowing, setSummaryShowing] = useState(false);
+  const routeCtx = {
+    signedIn: phase === 'app',
+    role: user.role === 'caregiver' ? 'caregiver' : 'family',
+    market,
+    hasPlan: Boolean(plan),
+    summaryShowing,
+    hasClient: (id) => myClientsNow.some((c) => c.id === id),
+    // a caregiver's page is the family's work with her: only one they have terms with
+    hasCaregiver: (id) => Boolean(care && arrangementOf(care, id)),
+  };
+  const redirect = resolve(route, routeCtx);
+  const shown = redirect || route;
+  const redirectTo = redirect && href(redirect);
+  useEffect(() => {
+    if (redirectTo) navigate(redirect, { replace: true });
+  }, [redirectTo]); // eslint-disable-line react-hooks/exhaustive-deps
+  const view = shown.page;
+  const openCaregiver = view === 'caregiver' ? shown.id : null;
+  const setView = (page, id, state) => navigate({ page, id }, { state });
   // one slot on the right: the care plan or the assistant, never both
   const [rightPanel, setRightPanel] = useState(null); // null | 'plan' | 'copilot'
   // null when closed, otherwise { caregiver } — a caregiver means the user tapped one
@@ -187,7 +216,6 @@ export default function App() {
   };
   // the history of conversations opens when asked for
   const [chatListOpen, setChatListOpen] = useState(false);
-  const [variant, setVariant] = useState('classic'); // classic | ai
   // the AI variant runs against the developer's own key, kept in this browser
   const [apiKey, setApiKey] = useState(loadKey);
   const [askingKey, setAskingKey] = useState(false);
@@ -198,21 +226,23 @@ export default function App() {
   const [drawer, setDrawer] = useState(null); // { kind, caregiverId?, visitId? }
   const shownDrawer = useKept(drawer);
   const [flash, setFlash] = useState(null);
-  const [openCaregiver, setOpenCaregiver] = useState(null);
   // The last change to the plan, kept so the plan can say what changed and take
   // it back: what moved, which parts of the plan it rewrote, and the state from
   // before it, for "Poništi".
   const [planChange, setPlanChange] = useState(null);
   // the nav, on a screen too narrow to keep it open beside the page
   const showCaregiver = (id) => {
-    setOpenCaregiver(id);
     setDrawer(null);
-    setView('caregiver');
+    setView('caregiver', id);
   };
 
   // The onboarding has made the plan: from now on it is built from her answers,
   // and its history starts. The plan it hands over is the same buildPlan.
-  const onPlan = useCallback(() => setPerson((p) => withPlan(p)), [setPerson]);
+  // Its summary is on screen from here until she goes on from it.
+  const onPlan = useCallback(() => {
+    setPerson((p) => withPlan(p));
+    setSummaryShowing(true);
+  }, [setPerson]);
   const onNote = useCallback((note) => setNotes((n) => (n.includes(note) ? n : [...n, note])), []);
   // Answers are reconciled, not just merged: a changed frailty level retires the
   // branch questions it no longer asks, so the state can never hold an answer to a
@@ -389,6 +419,18 @@ export default function App() {
   // what the chat has open beside it, drawn by the app rather than inside the
   // conversation, so it is a pane of its own in the shell's right column
   const [openPane, setOpenPane] = useState(null);
+  // Another page, by a click or the browser's back: what was open over the old
+  // one closes with it (drawers and modals have no address of their own). On a
+  // phone the assistant covers the page, so it closes too.
+  const pageHref = href(shown);
+  const lastHref = useRef(pageHref);
+  useEffect(() => {
+    if (lastHref.current === pageHref) return;
+    lastHref.current = pageHref;
+    setDrawer(null);
+    setOpenPane(null);
+    if (window.matchMedia('(max-width: 640px)').matches) setRightPanel(null);
+  }, [pageHref]);
   // the plan sent to someone outside the app, and who it has gone to so far
   const [sharing, setSharing] = useState(false);
   const shownSharing = useKept(sharing);
@@ -502,16 +544,9 @@ export default function App() {
   // is not painted at all. Covering it was not enough: it fades in over most of
   // a second, and registering straight into it showed the nav and the empty
   // chat through that fade before the conversation landed.
-  const fullscreen = phase === 'app' && variant === 'ai';
-
-  const startVariant = (next) => {
-    setVariant(next);
-    if (next === 'ai' && !apiKey) setAskingKey(true);
-    if (next !== 'classic') {
-      setRightPanel(null);
-      setView('chat');
-    }
-  };
+  // It is its own address, /onboarding, and until it has made the plan a
+  // family sees nothing else (decided 12. 11.; src/lib/routeGuard.js).
+  const fullscreen = phase === 'app' && view === 'onboarding';
 
 
 
@@ -601,7 +636,7 @@ export default function App() {
                     store.save(m, { ...st, registered: [...(st.registered || []), { ...rec, status: u.status || rec.status }] });
                   }
                   setUser(u);
-                  setView(m === 'sr' ? 'requests' : 'board');
+                  navigate({ page: m === 'sr' ? 'requests' : 'board' }, { replace: true });
                   setPhase('app');
                   return;
                 }
@@ -613,7 +648,7 @@ export default function App() {
                 const saved = loadProgress(u.email);
                 if (saved?.planDone) {
                   setPerson((p) => ({ ...p, answers: saved.answers, notes: saved.notes || [], planMade: true, log: saved.planLog || [] }));
-                  setView('dashboard');
+                  navigate({ page: 'dashboard' }, { replace: true });
                   return;
                 }
                 setAnswers({ ...(saved?.answers || {}), 'about-you': aboutYou(u) });
@@ -621,7 +656,7 @@ export default function App() {
                 // A family starts with Minna, not with the questionnaire: the AI
                 // onboarding is the first thing after signing in, and the rest of
                 // the app is what it hands over to once the plan exists.
-                startVariant('ai');
+                navigate({ page: 'onboarding' }, { replace: true });
               }}
             />
           </AnimatePresence>
@@ -629,6 +664,7 @@ export default function App() {
       ) : caregiverSide ? (
         <CaregiverApp
           view={view}
+          openId={shown.id}
           onView={setView}
           user={user}
           market={market}
@@ -650,33 +686,11 @@ export default function App() {
         />
       ) : (
         <>
-          {/* Razgovor: once the plan exists, the assistant, for anything; before
-              it, the way back into the conversation with Minna. */}
+          {/* Razgovor: the assistant, for anything (there is always a plan
+              by now: before it there is only the onboarding) */}
           {view === 'chat' && !fullscreen && (
             <AppPane>
-              {plan ? (
-                <KitAssistant
-                  id={conversation}
-                  ctx={chatCtx}
-                  title={t('Razgovor')}
-                  actions={chatActions}
-                  openPane={openPane}
-                  onOpenPane={setOpenPane}
-                />
-              ) : (
-                <Page>
-                  <Attention title={t('Upoznavanje nije završeno')}>
-                    <Card>
-                      <CardDescription>
-                        {t('Minna pamti sve što ste do sada rekli. Kad završite, pravi plan nege i predlaže negovateljice.')}
-                      </CardDescription>
-                      <CardFooter>
-                        <Button onClick={() => startVariant('ai')}>{t('Nastavite razgovor')}</Button>
-                      </CardFooter>
-                    </Card>
-                  </Attention>
-                </Page>
-              )}
+              <KitAssistant id={conversation} ctx={chatCtx} title={t('Razgovor')} actions={chatActions} openPane={openPane} onOpenPane={setOpenPane} />
             </AppPane>
           )}
 
@@ -715,7 +729,7 @@ export default function App() {
                   onCare={setCare}
                   onDrawer={setDrawer}
                   onFlash={(text) => setFlash({ text, at: Date.now() })}
-                  onBack={() => setView('dashboard')}
+                  onBack={() => goBackTo({ page: 'dashboard' })}
                   onContact={contactCaregiver}
                 />
               )}
@@ -814,7 +828,7 @@ export default function App() {
 
       {/* The AI variant asks for a key first; it is fullscreen, so the gate is too. */}
       <AnimatePresence>
-        {phase === 'app' && variant === 'ai' && (askingKey || !apiKey) && (
+        {fullscreen && (askingKey || !apiKey) && (
           <AppPane key="key-gate" className="fixed inset-0 z-40 bg-primary-100">
             <ApiKeyPanel
               initial={apiKey}
@@ -825,14 +839,18 @@ export default function App() {
                 setKeyRejected(false);
                 setAskingKey(false);
               }}
+              // no key, no onboarding, and nothing else before it: back to
+              // signing in (decided 12. 11.)
               onCancel={() => {
                 setAskingKey(false);
-                setVariant('classic');
+                setPhase('register');
+                setUser({ name: '', email: '', role: 'family' });
+                navigate({ page: 'signin' }, { replace: true });
               }}
             />
           </AppPane>
         )}
-        {phase === 'app' && variant === 'ai' && apiKey && !askingKey && (
+        {fullscreen && apiKey && !askingKey && (
           <ImmersiveConversation
             key="ai"
             user={user}
@@ -845,8 +863,8 @@ export default function App() {
             // The first thing after the onboarding is the home, which is the
             // care plan itself until someone comes (docs/patterns.md §4a).
             onFinish={() => {
-              setVariant('classic');
-              setView('dashboard');
+              setSummaryShowing(false);
+              navigate({ page: 'dashboard' }, { replace: true });
             }}
             // the saved key goes, so a reload cannot bring the same one back
             onKeyRejected={() => {

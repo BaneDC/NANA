@@ -56,6 +56,15 @@ export function remainingQuestions(answers) {
   });
 }
 
+// A family back after leaving the onboarding half done (decided 12. 11.):
+// the first question she has not answered, asked straight away from the flow,
+// instead of the blank page again. Null on a first visit, where registration
+// has given only "about-you".
+export function resumeAt(answers) {
+  if (!Object.keys(answers).some((id) => id !== 'about-you')) return null;
+  return remainingQuestions(answers)[0]?.id ?? null;
+}
+
 function serialize(q, stepId) {
   const sr = Q[q.id] || {};
   const out = { id: q.id, sekcija: stepId, pitanje: t(sr.title || q.title), tip: q.type };

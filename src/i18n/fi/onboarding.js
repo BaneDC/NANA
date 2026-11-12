@@ -479,6 +479,7 @@ export default {
   'Ili krenite od nekog od ovih': 'Tai aloittakaa jostakin näistä',
   'Ako je hitno (pala je, ne može da diše, ne prepoznaje vas), nemojte pisati meni.': 'Jos asia on kiireellinen (hän on kaatunut, ei saa henkeä, ei tunnista teitä), älkää kirjoittako minulle.',
   'Zovite': 'Soittakaa',
+  'Nastavljamo gde smo stali': 'Jatketaan siitä, mihin jäätiin',
   'Skoro gotovo': 'Melkein valmista',
   'Razmišljam… {n} s': 'Mietin… {n} s',
   'Razmišljala sam {n} s': 'Mietin {n} s',

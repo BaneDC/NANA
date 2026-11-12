@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { goBackTo, useRoute } from '../../lib/route';
 import { AppPane, Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
 import { Card, CardDescription } from '@/components/ui/card';
 import Attention from '../../components/Attention';
@@ -19,16 +19,13 @@ import { t } from '@/i18n';
 // (docs/superpowers/specs/2026-10-19-negovateljice-pregled.md). Finland: her
 // board, her clients and one client's page, her earnings, her profile. Serbia
 // keeps the requests page until part 4.
-export default function CaregiverApp({ view, onView, user, market, care, clients, payouts, onPayouts, onClientCare, onCare, onSaveUser, onSaveProfile, onFlash }) {
+export default function CaregiverApp({ view, openId, onView, user, market, care, clients, payouts, onPayouts, onClientCare, onCare, onSaveUser, onSaveProfile, onFlash }) {
   const caregiverId = user.caregiverId;
-  const [openId, setOpenId] = useState(null);
-  const [from, setFrom] = useState('board');
+  // where a client's page was opened from, kept with that step of the history;
+  // its "Nazad" says it and leads there (a link opened cold: the board)
+  const from = useRoute().state?.from || 'board';
   const { act, dialog } = useClientActions({ caregiverId, onClientCare, onFlash });
-  const open = (id) => {
-    setFrom(view);
-    setOpenId(id);
-    onView('client');
-  };
+  const open = (id) => onView('client', id, { from: view });
   const client = view === 'client' && clients.find((c) => c.id === openId);
   const fi = market !== 'sr';
 
@@ -56,13 +53,13 @@ export default function CaregiverApp({ view, onView, user, market, care, clients
   else if (view === 'settings') page = <Settings payments={false} user={user} care={care} onCare={onCare} onSaveUser={onSaveUser} onFlash={onFlash} />;
   else if (view === 'profile') page = <Profile caregiver={caregiverById(caregiverId) || user.record} user={user} market={market} onSaveProfile={onSaveProfile} />;
   // Serbia: the requests, and a family's profile (part 4)
-  else if (!fi && client) page = <ClientProfile client={client} onBack={() => onView('requests')} act={act} />;
+  else if (!fi && client) page = <ClientProfile client={client} onBack={() => goBackTo({ page: 'requests' })} act={act} />;
   else if (!fi) page = <RequestsRs user={user} clients={clients} onOpen={open} act={act} />;
   // a new request in Finland: the same page as in Serbia, answered there
   else if (client && client.stage === 'request')
-    page = <ClientProfile client={client} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => onView(from === 'clients' ? 'clients' : 'board')} act={act} />;
+    page = <ClientProfile client={client} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => goBackTo({ page: from === 'clients' ? 'clients' : 'board' })} act={act} />;
   else if (client)
-    page = <ClientPage client={client} caregiverId={caregiverId} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => onView(from === 'clients' ? 'clients' : 'board')} act={act} />;
+    page = <ClientPage client={client} caregiverId={caregiverId} backLabel={from === 'clients' ? t('Klijenti') : t('Tabla')} onBack={() => goBackTo({ page: from === 'clients' ? 'clients' : 'board' })} act={act} />;
   else if (view === 'clients') page = <Clients clients={clients} onOpen={open} />;
   else if (view === 'earnings') page = <Earnings clients={clients} caregiverId={caregiverId} payouts={payouts} onPayouts={onPayouts} />;
   else page = <Board user={user} clients={clients} caregiverId={caregiverId} onOpen={open} act={act} onEarnings={() => onView('earnings')} />;

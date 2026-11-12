@@ -476,6 +476,7 @@ export default {
   'Ili krenite od nekog od ovih': 'Or start from one of these',
   'Ako je hitno (pala je, ne može da diše, ne prepoznaje vas), nemojte pisati meni.': 'If it\'s urgent (she has fallen, can\'t breathe, doesn\'t recognise you), don\'t write to me.',
   'Zovite': 'Call',
+  'Nastavljamo gde smo stali': 'Picking up where we left off',
   'Skoro gotovo': 'Almost done',
   'Razmišljam… {n} s': 'Thinking… {n} s',
   'Razmišljala sam {n} s': 'Thought for {n} s',

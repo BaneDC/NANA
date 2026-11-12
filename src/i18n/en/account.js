@@ -693,4 +693,5 @@ export default {
   "Za demo: porodica": "For the demo: family",
   "Za demo: negovateljica": "For the demo: caregiver",
   "Za demo: tržište": "For the demo: market",
+  "Po jeziku": "By language",
 };

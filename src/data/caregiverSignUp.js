@@ -1,7 +1,8 @@
 import { requiredError } from '../components/TextField';
 import { DOCUMENTS } from './caregiverProfile';
 import { dialOf } from './countries';
-import { locale, msg, t } from '../i18n';
+import { msg, t } from '../i18n';
+import { marketDate } from './familyCare';
 
 // The caregiver's sign-up, per market (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // which steps, what each one requires, and the caregiver record it makes. The
@@ -74,6 +75,28 @@ const blank = (v) => !String(v ?? '').trim();
 const phoneShort = (v) => String(v || '').replace(/\D/g, '').length < 6;
 
 // What is wrong in a step, field by field; an empty object when it is right.
+// What the form's fields show before they are filled: someone real from that
+// market, and their address and number as written there (decided 12. 11.).
+// Names and places are not translated (docs/patterns.md §12b).
+export const EXAMPLE = {
+  sr: {
+    firstName: 'Milica',
+    lastName: 'Jovanović', // i18n-ignore: a name, not translated
+    email: 'milica.jovanovic@gmail.com',
+    address: 'Bulevar oslobođenja 12, Novi Sad', // i18n-ignore: a name or place, not translated
+    emergencyName: 'Dragan Jovanović', // i18n-ignore: a name or place, not translated
+    emergencyAddress: 'Njegoševa 5, Beograd', // i18n-ignore: a name or place, not translated
+  },
+  fi: {
+    firstName: 'Aino',
+    lastName: 'Virtanen',
+    email: 'aino.virtanen@gmail.com',
+    address: 'Mannerheimintie 12 A 5, 00100 Helsinki',
+    emergencyName: 'Matti Virtanen',
+    emergencyAddress: 'Hämeenkatu 8 B 12, 33100 Tampere',
+  },
+};
+
 export function stepErrors(step, f) {
   const e = {};
   const need = (k, ok) => {
@@ -146,6 +169,18 @@ export const documentsNeeded = (f) => f.classifications.filter((c) => DOCUMENTS[
 // Serbia the test; both the interview, then the thanks
 export const afterSteps = (f) => [...(f.market === 'sr' ? ['test'] : documentsNeeded(f).length ? ['documents'] : []), 'interview', 'thanks'];
 
+// The first step on her way whose checks do not pass now, or null. No step
+// after it can be opened, the browser's forward included: what she changes
+// after passing a step (a name cleared, a classification that now needs a
+// document) is checked again before she can go on or send.
+export function firstUnfinished(order, f) {
+  for (const step of order) {
+    const ids = step === 'form' ? STEPS[f.market].map((p) => p.id) : [step];
+    if (ids.some((id) => Object.values(stepErrors(id, f)).some(Boolean))) return step;
+  }
+  return null;
+}
+
 // The caregiver record her sign-up makes, in the shape of every other one
 // (carePlan.js, caregiversRs.js), new and not yet active.
 export function recordFrom(f, id, email = '') {
@@ -171,7 +206,7 @@ export function recordFrom(f, id, email = '') {
     slots: f.slots,
     classifications: sr ? [] : f.classifications,
     address: f.address.trim(),
-    birth: f.birth ? new Date(f.birth).toLocaleDateString(locale()) : '',
+    birth: f.birth ? marketDate(new Date(f.birth), f.market) : '',
     ...(sr
       ? { certificate: f.certificate, courses: f.courses.trim(), engagement: f.engagement, abroad: f.abroad, habits: f.habits, health: f.health, healthNotes: Object.fromEntries(Object.entries(f.healthNotes || {}).filter(([id]) => f.health[id]).map(([id, v]) => [id, v.trim()])), readiness: f.readiness, unwilling: f.unwilling.trim(), emergency: { ...f.emergency, phone: `${dialOf(f.emergency.phoneCountry)} ${f.emergency.phone.trim()}` } }
       : { rateMin: Number(String(f.rateMin).replace(',', '.')), rateMax: Number(String(f.rateMax).replace(',', '.')) }),
