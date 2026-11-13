@@ -72,10 +72,16 @@ export function Field({ label, required, hint, error, className, labelId, childr
 }
 
 // a choice in the form (docs/patterns.md §10, decided 10. 11.): one answer of
-// several is a radio, several a box beside each; a row each, the whole row
-// the target (44 on touch), always one under the other (decided 11. 11.).
-// Yes / no, the days, the time of day and the engagement are chips.
-export const choiceRow = 'flex min-h-8 cursor-pointer items-start gap-2 py-1.5 text-xs leading-5 text-foreground pointer-coarse:min-h-11 pointer-coarse:py-3';
+// several is a radio, several a box beside each; a row each, the target the
+// box and its text, no further (decided 13. 11.: a press on the empty right of
+// the row changed a consent), 44 on touch, always one under the other
+// (decided 11. 11.). Yes / no, the days, the time of day and the engagement
+// are chips.
+export const choiceRow = 'flex w-fit max-w-full min-h-8 cursor-pointer items-start gap-2 py-1.5 text-xs leading-5 text-foreground pointer-coarse:min-h-11 pointer-coarse:py-3';
+// an error under such rows, 4 under the last one's text as under a field's
+// edge (decided 13. 11.): up into the row's own padding (6, 12 on touch), what
+// the field's 4 is added to; so the next row is clearly further off
+export const choiceError = '-mt-1.5 pointer-coarse:-mt-3';
 
 export function Checks({ label, value, onChange, options, required, error }) {
   return (
@@ -88,7 +94,7 @@ export function Checks({ label, value, onChange, options, required, error }) {
           </label>
         ))}
       </div>
-      {error && <FieldError>{error}</FieldError>}
+      {error && <FieldError className={choiceError}>{error}</FieldError>}
     </Field>
   );
 }

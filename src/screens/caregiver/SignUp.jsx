@@ -8,7 +8,7 @@ import PersonalityTest from './PersonalityTest';
 import CookieSettings from '../../components/CookieSettings';
 import { COOKIE_DEFAULT } from '../../data/cookies';
 import { Radius, radiusText } from '../../components/caregiver/ProfileForms';
-import { Checks, Combobox, DateInput, Field, FieldError, FileField, Input, Phone, Select, TextArea, choiceRow, requiredError, useCheck } from '../../components/TextField';
+import { Checks, Combobox, DateInput, Field, FieldError, FileField, Input, Phone, Select, TextArea, choiceError, choiceRow, requiredError, useCheck } from '../../components/TextField';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ import { marketDate } from '../../data/familyCare';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
 import { getLang, msg, t, useLang } from '@/i18n';
+import { cn } from '@/lib/utils';
 
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // her account, with where she wants to work, then the parts of the form for that market
@@ -73,7 +74,7 @@ function Chips({ label, value, onChange, options, multiple = true, required, err
 // error with it; the family's sign-up has the same (Register.jsx)
 export function ConsentRow({ checked, onChange, required, error, children }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       <label className={choiceRow}>
         <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} aria-invalid={error ? true : undefined} className="mt-0.5" />
         <span className="min-w-0">
@@ -81,7 +82,7 @@ export function ConsentRow({ checked, onChange, required, error, children }) {
           {required && <span className="text-primary-600"> *</span>}
         </span>
       </label>
-      {error && <FieldError className="px-0 pl-6">{error}</FieldError>}
+      {error && <FieldError className={cn(choiceError, 'pb-1.5 pl-6 pointer-coarse:pb-0')}>{error}</FieldError>}
     </div>
   );
 }
@@ -97,7 +98,7 @@ function Radios({ label, value, onChange, options, required, error }) {
           </label>
         ))}
       </RadioGroup>
-      {error && <FieldError>{error}</FieldError>}
+      {error && <FieldError className={choiceError}>{error}</FieldError>}
     </Field>
   );
 }
