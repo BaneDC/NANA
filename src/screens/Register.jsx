@@ -138,7 +138,7 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
     );
 
   // her own sign-up (part 5), in this same frame
-  if (who === 'caregiver') return <CaregiverSignUp onBack={() => goBackTo({ page: 'signup' })} onForm={onForm} />;
+  if (who === 'caregiver') return <CaregiverSignUp onForm={onForm} />;
 
   // on the onboarding's sky, as her account (docs/patterns.md §10, decided
   // 13. 11.): the photos are not over it, and Minna comes next on the same sky

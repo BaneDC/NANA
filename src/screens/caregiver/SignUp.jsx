@@ -133,16 +133,18 @@ const MARKET_OPTIONS = [
 // a draft from before the account was her first step (12. 11.)
 const draftNow = () => {
   const d = loadDraft();
-  // the website (or the demo's market row) names the other market: a new
-  // application for it, the one begun for the other market is let go (rule 17)
-  if (d?.f && siteMarket() && d.f.market !== siteMarket()) {
+  // the website (or the demo's market row) names the other market while she
+  // is still on the account: that market, what she typed is let go; once she
+  // is past the account it is hers to finish, whatever a link says (rule 17;
+  // decided 13. 11., Branislav, as on production)
+  if (d?.f && d.reached === 'account' && siteMarket() && d.f.market !== siteMarket()) {
     clearDraft();
     return null;
   }
   return d && { ...d, screen: d.screen === 'country' ? 'account' : d.screen, reached: d.reached === 'country' ? 'account' : d.reached };
 };
 
-export default function CaregiverSignUp({ onBack, onForm }) {
+export default function CaregiverSignUp({ onForm }) {
   // what she had written, if she was here in the last week (signupDraft.js)
   const [kept] = useState(draftNow);
   // Where she wants to work, asked on the account (rule 16 in the routing
@@ -351,9 +353,10 @@ export default function CaregiverSignUp({ onBack, onForm }) {
     toStep('thanks', { replace: true });
   };
 
-  // out of the sign-up, to "Ko ste?", from every page's head (docs/patterns.md
-  // §4, decided 12. 11.): what she wrote is kept a week (signupDraft.js)
-  const exit = { label: t('Nazad na početak'), onClick: onBack };
+  // Once begun, the only way is through (decided 13. 11., Branislav, as on
+  // production): no way out in the head of any of her pages; the browser's
+  // back is not held, but coming back to the sign-up opens the step she
+  // stopped at (docs/patterns.md §4, §12d)
 
   // the terms under the card, the one thing out of it (decided 12. 11.)
   const terms = (
@@ -382,7 +385,6 @@ export default function CaregiverSignUp({ onBack, onForm }) {
       <StepPage
         title={t('Prijavite se kao negovateljica')}
         sub={t('Unesite svoje podatke da biste započeli proces prijave.')}
-        back={exit}
         language
       >
         {/* one card, as a part of the form: where, the email, the consents
@@ -643,7 +645,7 @@ export default function CaregiverSignUp({ onBack, onForm }) {
   if (screen === 'form')
     return (
       // no buttons under the parts: the part that finishes the form leads to the review
-      <StepPage back={exit} title={t('Vaši podaci')} sub={t('Za popunjavanje je potrebno 5 do 10 minuta.')}>
+      <StepPage title={t('Vaši podaci')} sub={t('Za popunjavanje je potrebno 5 do 10 minuta.')}>
         <StepCards>
           {parts.map((p, i) => (
             <StepCard
@@ -726,7 +728,6 @@ export default function CaregiverSignUp({ onBack, onForm }) {
   if (screen === 'review')
     return (
       <StepPage
-        back={exit}
         start
         eyebrow={t('Vaša prijava')}
         title={t('Ovo ste upisali')}
@@ -763,7 +764,7 @@ export default function CaregiverSignUp({ onBack, onForm }) {
 
   if (screen === 'documents')
     return (
-      <StepPage back={exit} title={t('Dokumenti')} sub={t('Za klasifikacije koje ste izabrali treba dokument.')} actions={pageButtons(t('Dalje'), next)}>
+      <StepPage title={t('Dokumenti')} sub={t('Za klasifikacije koje ste izabrali treba dokument.')} actions={pageButtons(t('Dalje'), next)}>
         <StepPanel>
           {documentsNeeded(f).map((c) => (
             <Field key={c} label={CLASSIFICATIONS.find((x) => x.id === c).document} required error={show('doc-' + c)}>
@@ -775,11 +776,11 @@ export default function CaregiverSignUp({ onBack, onForm }) {
       </StepPage>
     );
 
-  if (screen === 'test') return <PersonalityTest f={f} set={set} onBack={back} onExit={onBack} onSend={next} />;
+  if (screen === 'test') return <PersonalityTest f={f} set={set} onBack={back} onSend={next} />;
 
   if (screen === 'interview')
     return (
-      <StepPage back={exit} title={t('Zakažite razgovor')} sub={t('Kratak video razgovor sa koordinatorkom je poslednji korak prijave.')} actions={pageButtons(t('Zakaži razgovor'), submit)}>
+      <StepPage title={t('Zakažite razgovor')} sub={t('Kratak video razgovor sa koordinatorkom je poslednji korak prijave.')} actions={pageButtons(t('Zakaži razgovor'), submit)}>
         <StepPanel>
           {/* the hint goes with its question, 12 under it */}
           <div className="flex flex-col gap-3">
