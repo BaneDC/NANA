@@ -10,13 +10,13 @@ import { activateCaregiver, awaitingFirstSignIn, changePassword, saveAccount, sa
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
-import { setSiteMarket } from '../lib/siteLink';
+import { setSiteMarket, siteMarket } from '../lib/siteLink';
 import CaregiverSignUp, { ConsentRow } from './caregiver/SignUp';
 import { StepPage, StepPanel } from '../components/StepCards';
 import LanguagePicker from '../components/LanguagePicker';
 import { HeaderBackSlot, PageHead, useHeaderBack } from '../components/HeaderBack';
 import { goBackTo, navigate, useRoute } from '../lib/route';
-import { msg, t } from '../i18n';
+import { msg, t, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -55,7 +55,15 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [country, setCountry] = useState('FI');
+  // her market, as the caregiver's (decided 13. 11., Branislav): what the
+  // website's link (in the prototype the demo's market row) said, else her
+  // language; in English with no link Finland, as before. It gives the
+  // fields' examples and the phone's country code, until she picks a code.
+  const lang = useLang();
+  const market = siteMarket() ?? siteRow.read() ?? (lang === 'sr' ? 'sr' : 'fi');
+  const [picked, setPicked] = useState(null);
+  const country = picked ?? (market === 'sr' ? 'RS' : 'FI');
+  const setCountry = setPicked;
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [source, setSource] = useState('');
@@ -71,7 +79,7 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   // her sign-up as the website's link would, ?market= for Finska or Srbija,
   // nothing for "Po jeziku" (her language decides; in English she picks)
   const setWho = (w) => {
-    if (w === 'caregiver') setSiteMarket(siteRow.read());
+    setSiteMarket(siteRow.read());
     navigate({ page: 'signup', who: w });
   };
 
@@ -134,8 +142,14 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
 
   // on the onboarding's sky, as her account (docs/patterns.md §10, decided
   // 13. 11.): the photos are not over it, and Minna comes next on the same sky
-  return <FamilySignUp {...{ firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
+  return <FamilySignUp {...{ example: FAMILY_EXAMPLE[market], firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
 }
+
+// the examples in the family's fields, from her market (as the caregiver's, EXAMPLE)
+const FAMILY_EXAMPLE = {
+  sr: { firstName: 'Marko', lastName: 'Petrović', email: 'marko.petrovic@gmail.com' }, // i18n-ignore: a name, not translated
+  fi: { firstName: 'Anna', lastName: 'Korhonen', email: 'anna@mail.com' },
+};
 
 function FamilySignUp(p) {
   const { show, onForm } = p;
@@ -161,14 +175,14 @@ function FamilySignUp(p) {
           {/* one under the other on a phone, 24 apart as every question */}
           <div className="grid grid-cols-2 gap-x-3 gap-y-6 max-[480px]:grid-cols-1">
             <Field label={t('Ime')} required error={show('firstName')}>
-              <Input value={p.firstName} onChange={p.setFirstName} placeholder="Anna" autoComplete="given-name" />
+              <Input value={p.firstName} onChange={p.setFirstName} placeholder={p.example.firstName} autoComplete="given-name" />
             </Field>
             <Field label={t('Prezime')} required error={show('lastName')}>
-              <Input value={p.lastName} onChange={p.setLastName} placeholder="Korhonen" autoComplete="family-name" />
+              <Input value={p.lastName} onChange={p.setLastName} placeholder={p.example.lastName} autoComplete="family-name" />
             </Field>
           </div>
           <Field label={t('Email')} required error={show('email')}>
-            <Input value={p.email} onChange={p.setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
+            <Input value={p.email} onChange={p.setEmail} type="email" placeholder={p.example.email} autoComplete="email" />
           </Field>
           <Field label={t('Broj telefona')} required as="div" labelId="reg-phone" error={show('phone')}>
             {/* the country's code in front, behind a line, then the number (TextField's Phone) */}
