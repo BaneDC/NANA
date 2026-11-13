@@ -70,6 +70,40 @@ export async function spendBackupCode(user, code) {
   return next;
 }
 
+// The coordinator approves a caregiver's application: her profile is active,
+// and an email gives her the account's address and a temporary password,
+// which she changes on her first sign-in (`mustChangePassword`). Returns that
+// password (the prototype shows the email), or null when the account is not
+// in this browser.
+const TEMP_LETTERS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+export async function activateCaregiver(email) {
+  let record = null;
+  try {
+    record = JSON.parse(localStorage.getItem(KEY) || 'null');
+  } catch {
+    record = null;
+  }
+  if (!record || record.user.email.toLowerCase() !== String(email).trim().toLowerCase()) return null;
+  const pick = () => TEMP_LETTERS[crypto.getRandomValues(new Uint32Array(1))[0] % TEMP_LETTERS.length];
+  const temp = `${Array.from({ length: 4 }, pick).join('')}-${Array.from({ length: 4 }, pick).join('')}`;
+  const { user } = record;
+  const active = { ...user, status: 'active', mustChangePassword: true, record: user.record && { ...user.record, status: 'active' } };
+  await saveAccount(active, temp);
+  return temp;
+}
+
+// For the demo's sign-in: the caregiver approved here who has not yet signed
+// in (her temporary password is only in the email, which a closed tab loses),
+// so the coordinator can send a new one. Her email, or null.
+export function awaitingFirstSignIn() {
+  try {
+    const record = JSON.parse(localStorage.getItem(KEY) || 'null');
+    return record?.user?.role === 'caregiver' && record.user.mustChangePassword ? record.user.email : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function signIn(email, password) {
   let record = null;
   try {

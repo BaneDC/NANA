@@ -63,9 +63,12 @@ function Guide({ step, first, onStep, onClose }) {
 export default function PersonalityTest({ f, set, onBack, onExit, onSend }) {
   const answered = Object.keys(f.test).length;
   const [at, setAt] = useState(Math.min(answered, PAIRS.length - 1));
-  // the first time is read from what is there (§4b): no pair chosen yet
-  const first = useRef(!answered);
-  const [guide, setGuide] = useState(answered ? null : 'guide');
+  // the first time is read from what is there (§4b): no pair chosen yet, and
+  // the guide not read through before (gone back to the review and come again,
+  // it does not lead in a second time, nor point at the corner; decided
+  // 13. 11., Branislav). Kept with her form, so a reload knows it too.
+  const first = useRef(!answered && !f.guideSeen);
+  const [guide, setGuide] = useState(first.current ? 'guide' : null);
   const [hint, setHint] = useState(false);
   const pending = useRef(null);
   const moved = useRef(false);
@@ -84,7 +87,10 @@ export default function PersonalityTest({ f, set, onBack, onExit, onSend }) {
   };
   const closeGuide = () => {
     setGuide(null);
-    if (first.current) setHint(true);
+    if (first.current) {
+      setHint(true);
+      set({ guideSeen: true });
+    }
     first.current = false;
   };
   const go = (to) => {

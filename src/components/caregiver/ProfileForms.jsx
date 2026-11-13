@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
+import { languagesError } from '../../data/caregiverSignUp';
 
 // The fields of her profile, each group in its own dialog: "Izmenite" on a card
 // of "Moj profil" opens one (docs/superpowers/specs/2026-10-19-negovateljica-finska-design.md).
@@ -55,7 +56,7 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
   const [languages, setLanguages] = useState(profile.languages || []);
   const [bio, setBio] = useState(profile.bio ? t(profile.bio) : '');
   const check = useCheck();
-  const errors = { education: !education && requiredError(), bio: !bio.trim() && requiredError() };
+  const errors = { education: !education && requiredError(), languages: !languages.length && languagesError(), bio: !bio.trim() && requiredError() };
   const save = () => check.check(Object.values(errors)) && onSave({ education, languages, bio: bio.trim() });
   return (
     <Frame open={open} title={t('Profesija')} onClose={onClose} onSave={save}>
@@ -63,7 +64,7 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
       <Field label={t('Nivo obrazovanja')} required error={check.show(errors.education)}>
         <Select value={education} onChange={setEducation} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
       </Field>
-      <Checks label={t('Jezici koje govorite')} value={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages).map((o) => [o.value, o.label])} />
+      <Checks label={t('Jezici koje govorite')} required error={check.show(errors.languages)} value={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages).map((o) => [o.value, o.label])} />
       <Field label={t('Biografija')} required error={check.show(errors.bio)}>
         <TextArea value={bio} onChange={setBio} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
       </Field>
@@ -206,13 +207,15 @@ export function HealthForm({ open, profile, onClose, onSave }) {
   const [readiness, setReadiness] = useState(profile.readiness || []);
   const [unwilling, setUnwilling] = useState(profile.unwilling || '');
   const bool = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v === 'yes']));
-  const save = () => onSave({ habits: bool(habits), health: bool(health), languages, readiness, unwilling: unwilling.trim() });
+  const check = useCheck();
+  const noLanguage = !languages.length && languagesError();
+  const save = () => check.check([noLanguage]) && onSave({ habits: bool(habits), health: bool(health), languages, readiness, unwilling: unwilling.trim() });
   return (
     <Frame open={open} title={t('Zdravlje i navike')} onClose={onClose} onSave={save}>
       {HABITS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={habits[id] || 'no'} onChange={(v) => setHabits((h) => ({ ...h, [id]: v }))} />
       ))}
-      <Checks label={t('Jezici koje govorite')} value={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages).map((o) => [o.value, o.label])} />
+      <Checks label={t('Jezici koje govorite')} required error={check.show(noLanguage)} value={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages).map((o) => [o.value, o.label])} />
       {HEALTH_QUESTIONS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={health[id] || 'no'} onChange={(v) => setHealth((h) => ({ ...h, [id]: v }))} />
       ))}

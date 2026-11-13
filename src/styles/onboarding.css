@@ -1645,10 +1645,18 @@
   border-top: 1px solid rgba(122, 92, 70, 0.16);
 }
 
-/* the part's name a heading of its own, above the rows' 15: 16 medium, dark,
-   12 over its first row */
-.imm-review-title {
+/* the part's name and its "Izmeni" at the right, 12 over its first row; the
+   button (28) does not make the row taller than the name's 24 */
+.imm-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
   margin-bottom: var(--spacing-3);
+}
+
+/* the part's name a heading of its own, above the rows' 15: 16 medium, dark */
+.imm-review-title {
   font-size: 16px;
   line-height: 24px;
   font-weight: var(--font-medium);

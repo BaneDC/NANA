@@ -15,6 +15,7 @@ const filled = (market) => ({
   classifications: ['Lähihoitaja'],
   education: 'Srednja škola', // i18n-ignore
   bio: 'Iskustvo.',
+  languages: ['engleski'],
   days: ['0', '1'],
   slots: ['morning'],
   rateMin: '15',
@@ -34,6 +35,11 @@ describe('personality test', () => {
 describe('sign-up steps', () => {
   it('an empty basic step says what is missing', () => {
     expect(Object.keys(stepErrors('basic', emptyForm('fi')))).toEqual(['firstName', 'lastName', 'birth', 'address', 'area', 'phone']);
+  });
+  it('asks for at least one language she speaks, on both markets', () => {
+    expect(stepErrors('profession', { ...filled('fi'), languages: [] }).languages).toBeTruthy();
+    expect(stepErrors('health', { ...filled('sr'), languages: [] }).languages).toBeTruthy();
+    expect(stepErrors('health', filled('sr')).languages).toBeFalsy();
   });
   it('a filled Finnish form passes its steps', () => {
     const f = filled('fi');

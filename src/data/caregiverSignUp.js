@@ -62,6 +62,8 @@ export const emptyForm = (market) => ({
   emergency: { name: '', relation: '', phoneCountry: market === 'sr' ? 'RS' : 'FI', phone: '', address: '' },
   documents: {},
   test: {},
+  // the test's guide read through once: it does not lead in again (PersonalityTest)
+  guideSeen: false,
   // one answer of a few, so one is chosen from the start (decided 12. 11.)
   channel: 'whatsapp',
 });
@@ -98,6 +100,10 @@ export const EXAMPLE = {
   },
 };
 
+// the languages she speaks: at least one, on both markets' forms and on her
+// profile (decided 13. 11., Branislav)
+export const languagesError = () => t('Izaberite bar jedan jezik.');
+
 export function stepErrors(step, f) {
   const e = {};
   const need = (k, ok) => {
@@ -116,6 +122,7 @@ export function stepErrors(step, f) {
     if (!f.classifications.length) e.classifications = t('Izaberite bar jednu klasifikaciju.');
     need('education', !blank(f.education));
     need('bio', !blank(f.bio));
+    if (!f.languages.length) e.languages = languagesError();
   }
   if (step === 'qualifications') {
     need('education', !blank(f.education));
@@ -134,6 +141,7 @@ export function stepErrors(step, f) {
   }
   // a "Da" on allergies, a limit or a health problem asks what it is
   if (step === 'health') {
+    if (!f.languages.length) e.languages = languagesError();
     Object.keys(f.healthNotes || {}).forEach((id) => {
       if (f.health[id] && blank(f.healthNotes[id])) e['health-' + id] = requiredError();
     });

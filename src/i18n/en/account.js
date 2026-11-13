@@ -694,4 +694,8 @@ export default {
   "Za demo: negovateljica": "For the demo: caregiver",
   "Za demo: tržište": "For the demo: market",
   "Po jeziku": "By language",
+  "Izaberite lozinku": "Choose your password",
+  "Privremenu lozinku iz e-maila menjate pri prvoj prijavi. Nova lozinka mora imati najmanje 8 karaktera.": "On your first sign-in you replace the temporary password from the email. The new password must have at least 8 characters.",
+  "Sačuvaj i nastavi": "Save and continue",
+  "Za demo: nova privremena lozinka za {email}": "For the demo: a new temporary password for {email}",
 };

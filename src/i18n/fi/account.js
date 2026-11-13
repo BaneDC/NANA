@@ -694,4 +694,8 @@ export default {
   "Za demo: negovateljica": "Demoa varten: hoitaja",
   "Za demo: tržište": "Demoa varten: markkina",
   "Po jeziku": "Kielen mukaan",
+  "Izaberite lozinku": "Valitse salasana",
+  "Privremenu lozinku iz e-maila menjate pri prvoj prijavi. Nova lozinka mora imati najmanje 8 karaktera.": "Ensimmäisellä kirjautumisella vaihdat sähköpostin väliaikaisen salasanan. Uudessa salasanassa on oltava vähintään 8 merkkiä.",
+  "Sačuvaj i nastavi": "Tallenna ja jatka",
+  "Za demo: nova privremena lozinka za {email}": "Demoa varten: uusi väliaikainen salasana osoitteelle {email}",
 };

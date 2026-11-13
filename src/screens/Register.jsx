@@ -2,17 +2,17 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
-import { Field, FieldError, Input, Password, Phone, Select, requiredError, useCheck } from '../components/TextField';
+import { Field, Input, Password, Phone, Select, requiredError, useCheck } from '../components/TextField';
 import { COUNTRIES } from '../data/countries';
-import { saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode } from '../lib/account';
+import { activateCaregiver, awaitingFirstSignIn, changePassword, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
 import { setSiteMarket } from '../lib/siteLink';
-import CaregiverSignUp from './caregiver/SignUp';
+import CaregiverSignUp, { ConsentRow } from './caregiver/SignUp';
+import { StepPage, StepPanel } from '../components/StepCards';
 import LanguagePicker from '../components/LanguagePicker';
 import { HeaderBackSlot, PageHead, useHeaderBack } from '../components/HeaderBack';
 import { goBackTo, navigate, useRoute } from '../lib/route';
@@ -40,24 +40,6 @@ const SOURCES = [
 const sourceOptions = () => SOURCES.map((s) => ({ value: s, label: t(s) }));
 
 const MIN_PASSWORD = 8;
-
-// A consent: the box and its sentence, the whole line its label.
-// `error` under it once a press has asked (docs/patterns.md §10).
-export function Consent({ checked, onChange, children, required, error }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label className="flex cursor-pointer items-start gap-2 text-xs text-foreground">
-        {/* 2 down, on the middle of the sentence's first line */}
-        <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} aria-invalid={error ? true : undefined} className="mt-0.5" />
-        <span>
-          {children}
-          {required && <span className="text-primary-600"> *</span>}
-        </span>
-      </label>
-      <FieldError className="px-0 pl-6">{error}</FieldError>
-    </div>
-  );
-}
 
 // what a filled field can still get wrong
 const emailError = (email) => (!email.trim() ? requiredError() : !/\S+@\S+\.\S+/.test(email) ? t('Unesite ispravnu email adresu.') : null);
@@ -148,86 +130,109 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
     );
 
   // her own sign-up (part 5), in this same frame
-  if (who === 'caregiver') return <CaregiverSignUp onBack={() => goBackTo({ page: 'signup' })} onForm={onForm} onDone={(u, record) => onContinue(u, { record })} />;
+  if (who === 'caregiver') return <CaregiverSignUp onBack={() => goBackTo({ page: 'signup' })} onForm={onForm} />;
 
+  // on the onboarding's sky, as her account (docs/patterns.md §10, decided
+  // 13. 11.): the photos are not over it, and Minna comes next on the same sky
+  return <FamilySignUp {...{ firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
+}
+
+function FamilySignUp(p) {
+  const { show, onForm } = p;
+  useEffect(() => {
+    onForm?.(true);
+    return () => onForm?.(false);
+  }, [onForm]);
   return (
-    <>
-      <Welcome title={t('Dobro došli u NANA Prime')} sub={t('Polja označena zvezdicom su obavezna')} />
+    <StepPage
+      title={t('Dobro došli u NANA Prime')}
+      sub={t('Polja označena zvezdicom su obavezna')}
+      // opened from the website in a new tab: nothing behind it, so the logo, not a way back
+      lead={
+        <span className="flex h-(--button-size) items-center px-3">
+          <Logo width={120} />
+        </span>
+      }
+      language
+    >
       {/* a real form, so the browser's password manager knows this is a sign-up */}
-      <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
-
-        <FormCard>
-          <div className="grid grid-cols-2 gap-3 max-[480px]:grid-cols-1">
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), p.submit())}>
+        <StepPanel>
+          {/* one under the other on a phone, 24 apart as every question */}
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 max-[480px]:grid-cols-1">
             <Field label={t('Ime')} required error={show('firstName')}>
-              <Input value={firstName} onChange={setFirstName} placeholder="Anna" autoComplete="given-name" />
+              <Input value={p.firstName} onChange={p.setFirstName} placeholder="Anna" autoComplete="given-name" />
             </Field>
             <Field label={t('Prezime')} required error={show('lastName')}>
-              <Input value={lastName} onChange={setLastName} placeholder="Korhonen" autoComplete="family-name" />
+              <Input value={p.lastName} onChange={p.setLastName} placeholder="Korhonen" autoComplete="family-name" />
             </Field>
           </div>
           <Field label={t('Email')} required error={show('email')}>
-            <Input value={email} onChange={setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
+            <Input value={p.email} onChange={p.setEmail} type="email" placeholder="anna@mail.com" autoComplete="email" />
           </Field>
           <Field label={t('Broj telefona')} required as="div" labelId="reg-phone" error={show('phone')}>
             {/* the country's code in front, behind a line, then the number (TextField's Phone) */}
-            <Phone country={country} onCountry={setCountry} value={phone} onChange={setPhone} labelledBy="reg-phone" />
+            <Phone country={p.country} onCountry={p.setCountry} value={p.phone} onChange={p.setPhone} labelledBy="reg-phone" />
           </Field>
           <Field
             label={t('Lozinka')}
             required
-            hint={password && password.length < MIN_PASSWORD ? t('Još {n} karaktera', { n: MIN_PASSWORD - password.length }) : null}
+            hint={p.password && p.password.length < MIN_PASSWORD ? t('Još {n} karaktera', { n: MIN_PASSWORD - p.password.length }) : null}
             error={show('password')}
           >
-            <Password value={password} onChange={setPassword} placeholder={t('Najmanje 8 karaktera')} autoComplete="new-password" />
+            <Password value={p.password} onChange={p.setPassword} placeholder={t('Najmanje 8 karaktera')} autoComplete="new-password" />
           </Field>
           <Field label={t('Kako ste čuli za nas?')} required as="div" labelId="reg-source" error={show('source')}>
-            <Select value={source} onChange={setSource} labelledBy="reg-source" options={sourceOptions()} />
+            <Select value={p.source} onChange={p.setSource} labelledBy="reg-source" options={sourceOptions()} />
           </Field>
-
-          <div className="flex flex-col gap-2 px-1">
-            <Consent checked={processing} onChange={setProcessing} required error={show('processing')}>
+          {/* rows as on her account: a box, the sentence, the whole row the target */}
+          <div className="flex flex-col">
+            <ConsentRow required checked={p.processing} onChange={p.setProcessing} error={show('processing')}>
               {t('Saglasan/na sam sa obradom podataka')}
-            </Consent>
-            <Consent checked={accuracy} onChange={setAccuracy} required error={show('accuracy')}>
+            </ConsentRow>
+            <ConsentRow required checked={p.accuracy} onChange={p.setAccuracy} error={show('accuracy')}>
               {t('Potvrđujem da su podaci tačni')}
-            </Consent>
-            <Consent checked={newsletter} onChange={setNewsletter}>
+            </ConsentRow>
+            <ConsentRow checked={p.newsletter} onChange={p.setNewsletter}>
               {t('Želim da primam novosti i posebne ponude na email')}
-            </Consent>
+            </ConsentRow>
           </div>
-        </FormCard>
-
-        <Actions>
-          <Button type="submit" size="lg" className="w-full" loading={busy}>
-            {t('Napravi nalog')}
-          </Button>
-          <p className="w-full text-center text-small text-muted-foreground [&_a]:text-primary-600">
-            {t('Registracijom prihvatate naše')}{' '}
-            <a href="#uslovi" onClick={(e) => e.preventDefault()}>
-              {t('uslove korišćenja')}
-            </a>{' '}
-            {t('i')}{' '}
-            <a href="#privatnost" onClick={(e) => e.preventDefault()}>
-              {t('politiku privatnosti')}
-            </a>
-            .{' '}
-            <a href="#kolacici" onClick={(e) => e.preventDefault()}>
-              {t('Podešavanja kolačića')}
-            </a>
-          </p>
-          <p className="mt-2 flex w-full items-start gap-2 border-t-[0.8px] pt-4 text-small text-muted-foreground">
-            <ShieldCheck size={16} strokeWidth={1.75} className="shrink-0 text-primary-600" />
-            {t(
-              'NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o zaštiti podataka.'
-            )}
-          </p>
-          <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
-            {t('Već imate nalog? Prijavite se')}
-          </Button>
-          <DemoLink onDemo={onDemo} />
-        </Actions>
+          {/* as "Nastavi" on her account: at the card's right, on a phone across it */}
+          <div className="flex justify-end phone:*:flex-1">
+            <Button type="submit" loading={p.busy}>
+              {t('Napravi nalog')}
+            </Button>
+          </div>
+        </StepPanel>
       </form>
-    </>
+      {/* out of the card: the terms and the GDPR line, 16 under it, in by 16 */}
+      <div className="-mt-4 flex flex-col gap-4 px-4 text-small text-muted-foreground">
+        <p className="phone:text-center [&_a]:text-primary-600">
+          {t('Registracijom prihvatate naše')}{' '}
+          <a href="#uslovi" onClick={(e) => e.preventDefault()}>
+            {t('uslove korišćenja')}
+          </a>{' '}
+          {t('i')}{' '}
+          <a href="#privatnost" onClick={(e) => e.preventDefault()}>
+            {t('politiku privatnosti')}
+          </a>
+          .{' '}
+          <a href="#kolacici" onClick={(e) => e.preventDefault()}>
+            {t('Podešavanja kolačića')}
+          </a>
+        </p>
+        <p className="flex items-start gap-2">
+          <ShieldCheck size={16} strokeWidth={1.75} className="mt-0.5 shrink-0 text-primary-600" />
+          {t('NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o zaštiti podataka.')}
+        </p>
+      </div>
+      <div className="flex flex-col items-center gap-2">
+        <Button type="button" variant="ghost" size="lg" onClick={p.onSignIn}>
+          {t('Već imate nalog? Prijavite se')}
+        </Button>
+        <DemoLink onDemo={p.onDemo} />
+      </div>
+    </StepPage>
   );
 }
 
@@ -327,8 +332,12 @@ function DemoMarket() {
 }
 
 function SignIn({ onContinue, onSignUp, onDemo }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // the demo's "na prijavu" from a caregiver's thanks brings the email's
+  // address and temporary password
+  const given = useRoute().state;
+  const [email, setEmail] = useState(given?.email || '');
+  const [password, setPassword] = useState(given?.password || '');
+  const [awaiting] = useState(awaitingFirstSignIn);
   const [failed, setFailed] = useState(false);
   const check = useCheck();
   const errors = { email: emailError(email), password: !password && requiredError() };
@@ -341,7 +350,12 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     if (!check.check(Object.values(errors))) return;
     const user = await signIn(email, password);
     if (!user) setFailed(true);
-    else if (user.twoFactor && user.twoFactorSecret) {
+    // a caregiver's first sign-in, with the coordinator's temporary password:
+    // her own password first (docs/patterns.md §12d)
+    else if (user.mustChangePassword) {
+      setPending(user);
+      navigate({ page: 'signin', step: 'password' });
+    } else if (user.twoFactor && user.twoFactorSecret) {
       setPending(user);
       navigate({ page: 'signin', step: 'verify' });
     }
@@ -351,8 +365,9 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
   // the code's step is /signin/verify, only after the password: opened
   // without it (a reload, a link) it is the sign-in again
   const verifying = step === 'verify' && pending;
+  const choosing = step === 'password' && pending?.mustChangePassword;
   useEffect(() => {
-    if (step === 'verify' && !pending) navigate({ page: 'signin' }, { replace: true });
+    if ((step === 'verify' || step === 'password') && !pending) navigate({ page: 'signin' }, { replace: true });
   }, [step, pending]);
   const toSignIn = () => goBackTo({ page: 'signin' });
 
@@ -360,6 +375,18 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     return (
       <TwoFactorStep
         user={pending}
+        onContinue={onContinue}
+        onBack={() => {
+          setPending(null);
+          toSignIn();
+        }}
+      />
+    );
+  if (choosing)
+    return (
+      <FirstPassword
+        user={pending}
+        temp={password}
         onContinue={onContinue}
         onBack={() => {
           setPending(null);
@@ -409,6 +436,68 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
           >
             {t('Za testiranje: nalog sa dvofaktorskom prijavom')}
           </button>
+          {/* an approved caregiver whose email (temporary password) is gone */}
+          {awaiting && (
+            <button
+              type="button"
+              className={demoLink}
+              onClick={async () => {
+                const temp = await activateCaregiver(awaiting);
+                if (!temp) return;
+                setEmail(awaiting);
+                setPassword(temp);
+                setFailed(false);
+              }}
+            >
+              {t('Za demo: nova privremena lozinka za {email}', { email: awaiting })}
+            </button>
+          )}
+        </Actions>
+      </form>
+    </>
+  );
+}
+
+// A caregiver's first sign-in: the coordinator's email gave a temporary
+// password, and she picks her own before going in (docs/patterns.md §12d),
+// typed twice, at least 8, as in Settings.
+function FirstPassword({ user, temp, onContinue, onBack }) {
+  const [next, setNext] = useState('');
+  const [again, setAgain] = useState('');
+  const [failed, setFailed] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const check = useCheck();
+  const errors = {
+    next: passwordError(next),
+    again: !again ? requiredError() : again !== next && t('Dva unosa se ne poklapaju.'),
+  };
+  useHeaderBack(t('Nazad na prijavu'), onBack);
+  const submit = async () => {
+    if (saving || !check.check(Object.values(errors))) return;
+    setSaving(true);
+    const fault = await changePassword(user.email, temp, next);
+    setSaving(false);
+    if (fault) return setFailed(true);
+    const ready = { ...user, mustChangePassword: false };
+    updateAccount(ready);
+    onContinue(ready);
+  };
+  return (
+    <>
+      <Welcome title={t('Izaberite lozinku')} sub={t('Privremenu lozinku iz e-maila menjate pri prvoj prijavi. Nova lozinka mora imati najmanje 8 karaktera.')} />
+      <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
+        <FormCard>
+          <Field label={t('Nova lozinka')} required error={check.show(errors.next) || (failed ? t('Nije sačuvano - proverite da li je čuvanje podataka dozvoljeno u pregledaču.') : null)}>
+            <Password value={next} onChange={(v) => (setNext(v), setFailed(false))} autoComplete="new-password" />
+          </Field>
+          <Field label={t('Nova lozinka još jednom')} required error={check.show(errors.again)}>
+            <Password value={again} onChange={setAgain} autoComplete="new-password" />
+          </Field>
+        </FormCard>
+        <Actions>
+          <Button type="submit" size="lg" className="w-full" loading={saving}>
+            {t('Sačuvaj i nastavi')}
+          </Button>
         </Actions>
       </form>
     </>

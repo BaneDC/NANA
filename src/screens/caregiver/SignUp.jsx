@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteMarket } from '../../lib/siteLink';
@@ -12,8 +12,8 @@ import { Checks, Combobox, DateInput, Field, FieldError, FileField, Input, Phone
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
-import { saveAccount } from '../../lib/account';
-import { goBackTo, navigate, useRoute } from '../../lib/route';
+import { activateCaregiver, saveAccount } from '../../lib/account';
+import { goBackTo, href, navigate, useRoute } from '../../lib/route';
 import { clearDraft, loadDraft, saveDraft } from '../../data/signupDraft';
 import { dialOf } from '../../data/countries';
 import { CLASSIFICATIONS, EXAMPLE, STEPS, afterSteps, documentsNeeded, emptyForm, firstUnfinished, recordFrom, stepErrors } from '../../data/caregiverSignUp';
@@ -25,8 +25,8 @@ import { getLang, msg, t, useLang } from '@/i18n';
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // her account, with where she wants to work, then the parts of the form for that market
 // on one page, then her documents (Finland) or the personality test (Serbia),
-// the channel for the talk with the coordinator, and thanks. The part that
-// finishes the form sends it, and a review of all that was given comes before
+// the channel for the talk with the coordinator, and thanks. After the part that
+// finishes the form a review of all that was given comes, before
 // the next step. Every screen is in
 // the sign-up's own frame (Register.jsx): a title, grey panels with the fields,
 // the buttons under them. The form's parts are step cards (docs/patterns.md
@@ -69,8 +69,9 @@ function Chips({ label, value, onChange, options, multiple = true, required, err
   );
 }
 
-// a consent on her account, a row as a radio's (choiceRow), its star and its error with it
-function ConsentRow({ checked, onChange, required, error, children }) {
+// a consent on her account, a row as a radio's (choiceRow), its star and its
+// error with it; the family's sign-up has the same (Register.jsx)
+export function ConsentRow({ checked, onChange, required, error, children }) {
   return (
     <div className="flex flex-col">
       <label className={choiceRow}>
@@ -120,6 +121,7 @@ function YesNo({ label, value, onChange }) {
 // her steps, each an address: /signup/caregiver (the account), then /signup/caregiver/<step>
 const toStep = (step, opts) => navigate({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step }, opts);
 const backToStep = (step) => goBackTo({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step });
+const stepHref = (step) => href({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step });
 
 // the market her language points to: Serbian Serbia, Finnish Finland, English none
 const marketOfLang = (lang) => (lang === 'sr' || lang === 'fi' ? lang : null);
@@ -139,7 +141,7 @@ const draftNow = () => {
   return d && { ...d, screen: d.screen === 'country' ? 'account' : d.screen, reached: d.reached === 'country' ? 'account' : d.reached };
 };
 
-export default function CaregiverSignUp({ onDone, onBack, onForm }) {
+export default function CaregiverSignUp({ onBack, onForm }) {
   // what she had written, if she was here in the last week (signupDraft.js)
   const [kept] = useState(draftNow);
   // Where she wants to work, asked on the account (rule 16 in the routing
@@ -195,14 +197,41 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
   useEffect(() => {
     if (screen !== wanted) toStep(screen, { replace: true });
   }, [screen, wanted]);
-  // coming back to "Negovateljica" after a while: the step she was on
+  // Coming back after a while ("Negovateljica", a reload in a new tab): the
+  // step she was on. The browser has none of her steps before it, so they are
+  // written into the history (the form, then each after it), and its back goes
+  // to the step before, as our "Nazad" does, not out to "Ko ste?". Arrived the
+  // usual way (the step before is the one before in the history), nothing is
+  // added. The account is not among them: it is behind her (rule 17).
+  // once (StrictMode runs a mount's effect twice, the second time on the first
+  // render's address, and would write her steps in again)
+  const resumed = useRef(false);
   useEffect(() => {
-    if (wanted === 'account' && kept?.screen && kept.screen !== 'account') toStep(kept.screen, { replace: true });
+    if (resumed.current) return;
+    resumed.current = true;
+    const at = wanted === 'account' && kept?.screen && kept.screen !== 'account' ? kept.screen : screen;
+    const i = order.indexOf(at);
+    if (sent || i < 2) {
+      if (at !== wanted) toStep(at, { replace: true });
+      return;
+    }
+    if (at === wanted && window.history.state?.prev === stepHref(order[i - 1])) return;
+    order.slice(1, i + 1).forEach((step, j) => toStep(step, { replace: j === 0 }));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // kept as she goes, once her market is known, until it is sent and she goes on
   useEffect(() => {
     if (f || picked || account.email) saveDraft({ screen, reached: furthest, chosen: picked ? market : null, f, account, open, done, sent });
   }, [screen, furthest, market, picked, f, account, open, done, sent]);
+  // a part opened by "Izmeni" on the review: its top to the top of the
+  // screen, as a part opened from its row (§10); the parts above are rows already
+  const fromReview = useRef(false);
+  useEffect(() => {
+    if (screen !== 'form' || !fromReview.current) return;
+    fromReview.current = false;
+    const card = document.querySelectorAll('[data-slot=step-card]')[open];
+    const page = card?.closest('[data-slot=step-scroll]');
+    if (page) page.scrollTop += card.getBoundingClientRect().top - page.getBoundingClientRect().top;
+  }, [screen]); // eslint-disable-line react-hooks/exhaustive-deps
   const go = (step, opts) => {
     if (indexOf(step) > indexOf(furthest)) setFurthest(step);
     toStep(step, opts);
@@ -253,9 +282,10 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     backToStep(order[Math.max(0, order.indexOf(screen) - 1)]);
   };
   // the part's button: only that part is checked; then it folds, and the next
-  // one not done yet opens. On the part that finishes the form (every other
-  // one done) it is "Pošalji prijavu", and the review comes
-  const finishes = (i) => parts.every((p, j) => j === i || done.includes(p.id));
+  // one not done yet opens. After the part that finishes the form the review
+  // comes: "Dalje" the first time, "Sačuvaj" when every part was done already
+  // (a change from the review, which it goes straight back to)
+  const editing = parts.length > 0 && parts.every((p) => done.includes(p.id));
   const partNext = (i) => {
     if (!check.check(Object.values(stepErrors(parts[i].id, f)))) return;
     check.reset();
@@ -461,7 +491,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <Select value={f.education} onChange={(v) => set({ education: v })} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
         </Field>
         {/* a box each, the four of her market at sight (decided 12. 11., dizajner; was a dropdown) */}
-        <Checks label={t('Jezici koje govorite')} value={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages).map((o) => [o.value, o.label])} />
+        <Checks label={t('Jezici koje govorite')} required error={show('languages')} value={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages).map((o) => [o.value, o.label])} />
         <Field label={t('Biografija')} required error={show('bio')}>
           <TextArea value={f.bio} onChange={(v) => set({ bio: v })} rows={4} placeholder={t('Ukratko opišite iskustvo, posebno sa starijima, i šta vas čini pouzdanom.')} />
         </Field>
@@ -540,7 +570,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
           <YesNo key={id} label={t(label)} value={f.habits[id]} onChange={(v) => set({ habits: { ...f.habits, [id]: v } })} />
         ))}
         {/* a box each, the four of her market at sight (decided 12. 11., dizajner; was a dropdown) */}
-        <Checks label={t('Jezici koje govorite')} value={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages).map((o) => [o.value, o.label])} />
+        <Checks label={t('Jezici koje govorite')} required error={show('languages')} value={f.languages} onChange={(v) => set({ languages: v })} options={languageOptions(f.market, f.languages).map((o) => [o.value, o.label])} />
         {/* a "Da" on allergies, a limit or a health problem asks what it is,
             12 under the answer, and takes the focus */}
         {HEALTH_QUESTIONS.map(([id, label]) => (
@@ -611,7 +641,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
 
   if (screen === 'form')
     return (
-      // no buttons under the parts: the part that finishes the form sends it
+      // no buttons under the parts: the part that finishes the form leads to the review
       <StepPage back={exit} title={t('Vaši podaci')} sub={t('Za popunjavanje treba 10 do 20 minuta.')}>
         <StepCards>
           {parts.map((p, i) => (
@@ -624,7 +654,7 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
               summary={summary[p.id]}
               onOpen={() => openPart(i)}
               onNext={() => partNext(i)}
-              nextLabel={finishes(i) ? t('Pošalji prijavu') : undefined}
+              nextLabel={editing ? t('Sačuvaj') : undefined}
             >
               {i === open && body[p.id]}
             </StepCard>
@@ -633,8 +663,15 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
       </StepPage>
     );
 
-  // everything she gave, part by part, before the next step; "Izmenite
-  // podatke" takes her back to the parts, all folded
+  // everything she gave, part by part, before the next step; "Izmeni" by a
+  // part opens just that one in the form (a new step in the history, so the
+  // browser's back comes back here)
+  const edit = (i) => {
+    check.reset();
+    setOpen(i);
+    fromReview.current = true;
+    go('form');
+  };
   const yn = (v) => (v ? t('Da') : t('Ne'));
   const list = (xs) => xs.filter(Boolean).join(', ');
   const phone = (c, x) => x && `${dialOf(c)} ${x}`;
@@ -693,12 +730,9 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         eyebrow={t('Vaša prijava')}
         title={t('Ovo ste upisali')}
         sub={ahead[afterSteps(f)[0]]}
-        // as the form's buttons were: at the two edges of the parts, on a phone a column, "Nastavi" on top
+        // "Nastavi" alone, at the right; on a phone the full width
         actions={
-          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
-            <Button variant="secondary" size="lg" onClick={back}>
-              {t('Izmenite podatke')}
-            </Button>
+          <div className="flex justify-end phone:*:w-full">
             <Button size="lg" onClick={next}>
               {t('Nastavi')}
             </Button>
@@ -706,8 +740,8 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
         }
       >
         <div>
-          {parts.map((p) => (
-            <StepReview key={p.id} title={t(p.title)} rows={review[p.id]} />
+          {parts.map((p, i) => (
+            <StepReview key={p.id} title={t(p.title)} rows={review[p.id]} onEdit={() => edit(i)} />
           ))}
         </div>
       </StepPage>
@@ -756,27 +790,49 @@ export default function CaregiverSignUp({ onDone, onBack, onForm }) {
     );
 
   // thanks: what comes next said with the thanks, under the title as one
-  // text, no card (decided 11. 11.)
+  // text, no card (decided 11. 11.). No button: until the coordinator
+  // approves her she cannot sign in, and there is nothing more to do (decided
+  // 13. 11., Branislav). The prototype goes on from the demo's row under it.
   return (
     <StepPage
       title={t('Hvala!')}
-      sub={`${t('Prijava je poslata.')} ${t('Profil se aktivira posle kratkog razgovora sa koordinatorkom. Javiće vam se preko kanala {channel} i reći sve što treba da znate. Posle toga možete da primate upite.', {
+      sub={`${t('Prijava je poslata.')} ${t('Koordinatorka će vam se javiti preko kanala {channel} za kratak razgovor. Kad odobri vaš profil, dobićete e-mail sa podacima za prijavu. Do tada ne morate ništa da radite.', {
         channel: t(CHANNELS.find(([id]) => id === f.channel)?.[1] || ''),
       })}`}
-      actions={
-        <div className="flex justify-center phone:*:w-full">
-          <Button
-            size="lg"
-            onClick={() => {
-              if (!sent) return;
-              clearDraft();
-              onDone(sent.user, sent.record);
-            }}
-          >
-            {t('Na početnu')}
-          </Button>
-        </div>
-      }
-    />
+    >
+      {sent && <DemoApproval email={sent.user.email} />}
+    </StepPage>
+  );
+}
+
+// For the demo only, as the rows under "Ko ste?": the coordinator approves her
+// application, the email she would get is shown, and the sign-in opens with
+// its address and temporary password filled in. Her application is done with
+// then, so the draft goes.
+const demoLink = 'cursor-pointer text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground';
+function DemoApproval({ email }) {
+  const [temp, setTemp] = useState(null);
+  const approve = async () => setTemp(await activateCaregiver(email));
+  const signIn = () => {
+    clearDraft();
+    navigate({ page: 'signin' }, { state: { email, password: temp } });
+  };
+  return (
+    <div className="mt-8 flex flex-col items-center gap-2 text-center">
+      {!temp ? (
+        <button type="button" className={demoLink} onClick={approve}>
+          {t('Za demo: koordinatorka odobrava prijavu')}
+        </button>
+      ) : (
+        <>
+          <p className="max-w-md text-xs leading-body text-muted-foreground">
+            {t('Za demo, e-mail koji stiže: „Vaš profil je aktiviran. Prijavite se adresom {email} i privremenom lozinkom {password}. Pri prvoj prijavi birate svoju lozinku."', { email, password: temp })}
+          </p>
+          <button type="button" className={demoLink} onClick={signIn}>
+            {t('Za demo: na prijavu')}
+          </button>
+        </>
+      )}
+    </div>
   );
 }

@@ -30,7 +30,8 @@ import LanguagePicker from '@/components/LanguagePicker';
 // `back` ({ label, onClick }): the way out of the process, in the page's head
 // at the top left (docs/patterns.md §4); `language`: the language across from it,
 // on a page before the account (§12b). The page's own column under them.
-export function StepPage({ eyebrow, title, sub, start, actions, footer, back, language, children }) {
+// `lead`: what the head has at its left when there is no way back (the logo)
+export function StepPage({ eyebrow, title, sub, start, actions, footer, back, lead, language, children }) {
   const scroller = useRef(null);
   // a new title is a new page, to the top; the same one in another language is not
   const lang = useLang();
@@ -50,8 +51,8 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, back, la
             padding under it let the buttons, held 16 over the screen's edge,
             ride up by that much more once the page's end was reached */}
         <div className="flex min-h-full flex-col">
-          {(back || language) && (
-            <PageHead back={back} className="px-4 pt-3">
+          {(back || lead || language) && (
+            <PageHead back={back} lead={lead} className="px-4 pt-3">
               {language && <LanguagePicker />}
             </PageHead>
           )}
@@ -137,10 +138,19 @@ function Summary({ items }) {
 // family's plan after the onboarding: on the sky, no card; its name, then each
 // question and its answer as a row, the question left and the answer right (on
 // a phone the question over the answer); a question left empty says so.
-export function StepReview({ title, rows }) {
+// `onEdit`: "Izmeni" at the right of the part's name opens that part in the
+// form (decided 13. 11., Branislav)
+export function StepReview({ title, rows, onEdit }) {
   return (
     <section data-slot="step-review" className="imm-review-part">
-      <h2 className="imm-review-title">{title}</h2>
+      <div className="imm-review-head">
+        <h2 className="imm-review-title">{title}</h2>
+        {onEdit && (
+          <Button variant="ghost" size="sm" className="-my-0.5 shrink-0" onClick={onEdit} aria-label={t('Izmenite: {title}', { title })}>
+            {t('Izmeni')}
+          </Button>
+        )}
+      </div>
       <dl className="imm-review-rows">
         {rows.map(([label, value], i) => (
           <div key={i} className="contents">

@@ -14,7 +14,8 @@ const WITH_ID = { caregivers: 'caregiver', clients: 'client' };
 const ID_WORD = Object.fromEntries(Object.entries(WITH_ID).map(([word, page]) => [page, word]));
 // her first step, the account, is /signup/caregiver itself
 export const CAREGIVER_STEPS = ['form', 'review', 'documents', 'test', 'interview', 'thanks'];
-const SIGNIN_STEPS = ['verify', 'reset'];
+// password: her first sign-in with the coordinator's temporary password
+const SIGNIN_STEPS = ['verify', 'reset', 'password'];
 
 const UNKNOWN = { page: 'unknown' };
 
