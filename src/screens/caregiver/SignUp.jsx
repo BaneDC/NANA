@@ -643,7 +643,7 @@ export default function CaregiverSignUp({ onBack, onForm }) {
   if (screen === 'form')
     return (
       // no buttons under the parts: the part that finishes the form leads to the review
-      <StepPage back={exit} title={t('Vaši podaci')} sub={t('Za popunjavanje treba 10 do 20 minuta.')}>
+      <StepPage back={exit} title={t('Vaši podaci')} sub={t('Za popunjavanje je potrebno 5 do 10 minuta.')}>
         <StepCards>
           {parts.map((p, i) => (
             <StepCard

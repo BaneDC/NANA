@@ -10,7 +10,6 @@ import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { t } from '@/i18n';
-import { languagesError } from '../../data/caregiverSignUp';
 
 // The fields of her profile, each group in its own dialog: "Izmenite" on a card
 // of "Moj profil" opens one (docs/superpowers/specs/2026-10-19-negovateljica-finska-design.md).
@@ -56,7 +55,7 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
   const [languages, setLanguages] = useState(profile.languages || []);
   const [bio, setBio] = useState(profile.bio ? t(profile.bio) : '');
   const check = useCheck();
-  const errors = { education: !education && requiredError(), languages: !languages.length && languagesError(), bio: !bio.trim() && requiredError() };
+  const errors = { education: !education && requiredError(), languages: !languages.length && requiredError(), bio: !bio.trim() && requiredError() };
   const save = () => check.check(Object.values(errors)) && onSave({ education, languages, bio: bio.trim() });
   return (
     <Frame open={open} title={t('Profesija')} onClose={onClose} onSave={save}>
@@ -103,9 +102,9 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
   const a = Number(String(from).replace(',', '.'));
   const b = Number(String(to).replace(',', '.'));
   const errors = {
-    days: !days.length && t('Izaberite bar jedan dan.'),
-    slots: !slots.length && t('Izaberite bar jedno doba dana.'),
-    engagement: !fi && !engagement.length && t('Izaberite bar jednu vrstu angažmana.'),
+    days: !days.length && requiredError(),
+    slots: !slots.length && requiredError(),
+    engagement: !fi && !engagement.length && requiredError(),
     rate: fi && (!from || !to ? requiredError() : !(a > 0 && b >= a) ? t('Cena „od" ne može biti veća od cene „do".') : null),
   };
   const save = () =>
@@ -208,7 +207,7 @@ export function HealthForm({ open, profile, onClose, onSave }) {
   const [unwilling, setUnwilling] = useState(profile.unwilling || '');
   const bool = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v === 'yes']));
   const check = useCheck();
-  const noLanguage = !languages.length && languagesError();
+  const noLanguage = !languages.length && requiredError();
   const save = () => check.check([noLanguage]) && onSave({ habits: bool(habits), health: bool(health), languages, readiness, unwilling: unwilling.trim() });
   return (
     <Frame open={open} title={t('Zdravlje i navike')} onClose={onClose} onSave={save}>

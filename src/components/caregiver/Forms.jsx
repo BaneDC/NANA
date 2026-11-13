@@ -38,7 +38,7 @@ export function AgreementDialog({ open, care, caregiverId, onClose, onSend }) {
   const check = useCheck();
   const n = Number(String(rate).replace(',', '.'));
   const errors = {
-    services: !services.length && t('Izaberite bar jednu uslugu.'),
+    services: !services.length && requiredError(),
     rate: !rate.trim() ? requiredError() : !(n >= MIN_RATE) ? t('Najmanje {rate} / h.', { rate: money(MIN_RATE) }) : null,
   };
   const send = () => {

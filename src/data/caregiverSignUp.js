@@ -100,10 +100,6 @@ export const EXAMPLE = {
   },
 };
 
-// the languages she speaks: at least one, on both markets' forms and on her
-// profile (decided 13. 11., Branislav)
-export const languagesError = () => t('Izaberite bar jedan jezik.');
-
 export function stepErrors(step, f) {
   const e = {};
   const need = (k, ok) => {
@@ -119,19 +115,19 @@ export function stepErrors(step, f) {
     if (phoneShort(f.phone)) e.phone = blank(f.phone) ? requiredError() : t('Unesite ceo broj telefona.');
   }
   if (step === 'profession') {
-    if (!f.classifications.length) e.classifications = t('Izaberite bar jednu klasifikaciju.');
+    if (!f.classifications.length) e.classifications = requiredError();
     need('education', !blank(f.education));
     need('bio', !blank(f.bio));
-    if (!f.languages.length) e.languages = languagesError();
+    if (!f.languages.length) e.languages = requiredError();
   }
   if (step === 'qualifications') {
     need('education', !blank(f.education));
     need('bio', !blank(f.bio));
   }
   if (step === 'availability') {
-    if (!f.days.length) e.days = t('Izaberite bar jedan dan.');
-    if (!f.slots.length) e.slots = t('Izaberite bar jedno doba dana.');
-    if (f.market === 'sr' && !f.engagement.length) e.engagement = t('Izaberite bar jednu vrstu angažmana.');
+    if (!f.days.length) e.days = requiredError();
+    if (!f.slots.length) e.slots = requiredError();
+    if (f.market === 'sr' && !f.engagement.length) e.engagement = requiredError();
     if (f.market !== 'sr') {
       const a = Number(String(f.rateMin).replace(',', '.'));
       const b = Number(String(f.rateMax).replace(',', '.'));
@@ -141,7 +137,7 @@ export function stepErrors(step, f) {
   }
   // a "Da" on allergies, a limit or a health problem asks what it is
   if (step === 'health') {
-    if (!f.languages.length) e.languages = languagesError();
+    if (!f.languages.length) e.languages = requiredError();
     Object.keys(f.healthNotes || {}).forEach((id) => {
       if (f.health[id] && blank(f.healthNotes[id])) e['health-' + id] = requiredError();
     });
@@ -154,7 +150,9 @@ export function stepErrors(step, f) {
   }
   if (step === 'documents') {
     documentsNeeded(f).forEach((c) => {
-      if (!f.documents[c]) e['doc-' + c] = t('Dodajte dokument.');
+      // the one empty required field that says more (docs/patterns.md §10):
+      // its label names the document, not why it is asked for
+      if (!f.documents[c]) e['doc-' + c] = t('Potreban je za klasifikaciju {classification}.', { classification: c });
     });
   }
   if (step === 'test') {
