@@ -1,5 +1,6 @@
 "use client"
 
+import { useListOpen } from "@/hooks/use-list-open"
 import * as React from "react"
 import { DayPicker } from "react-day-picker"
 import { enGB, fi, srLatn } from "react-day-picker/locale"
@@ -124,16 +125,24 @@ function CalendarDropdown({ options = [], value, onChange, "aria-label": label }
         {!pick && <OptionSheet open={open} onOpenChange={setOpen} title={label} options={choices} value={value} onPick={choose} />}
       </>
     )
+  return <CalendarSelect options={options} value={value} onChange={onChange} label={label} chosen={chosen} />
+}
+
+// beside the calendar, the items drawn only while the list is open (useListOpen)
+function CalendarSelect({ options, value, onChange, label, chosen }) {
+  const list = useListOpen()
   return (
     <Select
       value={String(value)}
       onValueChange={(v) => onChange?.({ target: { value: v } })}
+      open={list.open}
+      onOpenChange={list.onOpenChange}
     >
       <SelectTrigger aria-label={label} className="h-8 min-w-0 justify-between gap-1 px-2 pointer-coarse:h-11">
         <SelectValue>{cap(chosen?.label)}</SelectValue>
       </SelectTrigger>
       <SelectContent className="max-h-72">
-        {options.map((o) => (
+        {list.drawn && options.map((o) => (
           <SelectItem key={o.value} value={String(o.value)} disabled={o.disabled}>
             {cap(o.label)}
           </SelectItem>

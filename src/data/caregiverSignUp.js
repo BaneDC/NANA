@@ -64,8 +64,10 @@ export const emptyForm = (market) => ({
   test: {},
   // the test's guide read through once: it does not lead in again (PersonalityTest)
   guideSeen: false,
-  // one answer of a few, so one is chosen from the start (decided 12. 11.)
-  channel: 'whatsapp',
+  // none chosen from the start, an exception to the required radio's first
+  // (decided 13. 11., Branislav): a channel she does not use, passed by with a
+  // press, and the coordinator would not reach her (docs/patterns.md §10)
+  channel: '',
 });
 
 // 18 or older today

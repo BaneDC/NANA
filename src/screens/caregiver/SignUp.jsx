@@ -785,7 +785,11 @@ export default function CaregiverSignUp({ onForm }) {
           {/* the hint goes with its question, 12 under it */}
           <div className="flex flex-col gap-3">
             <Radios label={t('Kako vam je najlakše?')} required value={f.channel} onChange={(v) => set({ channel: v })} options={CHANNELS.map(([id, l]) => [id, t(l)])} error={show('channel')} />
-            {f.channel && <PaneHint>{t('Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.', { channel: t(CHANNELS.find(([id]) => id === f.channel)[1]) })}</PaneHint>}
+            <PaneHint>
+              {f.channel
+                ? t('Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.', { channel: t(CHANNELS.find(([id]) => id === f.channel)[1]) })
+                : t('Koordinatorka vam se javlja preko kanala koji izaberete da dogovorite vreme.')}
+            </PaneHint>
           </div>
         </StepPanel>
       </StepPage>

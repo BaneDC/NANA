@@ -1,3 +1,4 @@
+import { useListOpen } from '@/hooks/use-list-open';
 import { cloneElement, createContext, useContext, useId, useMemo, useRef, useState } from 'react';
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronsUpDown, Eye, EyeOff, X } from 'lucide-react';
 import { FieldDescription, FieldError as FieldErrorRoot, FieldLabel, Field as FieldRoot } from '@/components/ui/field';
@@ -250,8 +251,14 @@ export function Select({ value, onChange, options, placeholder = t('Izaberite'),
         <OptionSheet open={open} onOpenChange={setOpen} title={(bare ? ariaLabel || label : label || ariaLabel) || placeholder} options={options} value={value} onPick={onChange} />
       </>
     );
+  return <DesktopSelect {...{ id, value, onChange, options, placeholder, labelledBy, ariaLabel, bare, className, state, chosen }} />;
+}
+
+// beside the field, the items drawn only while the list is open (useListOpen)
+function DesktopSelect({ id, value, onChange, options, placeholder, labelledBy, ariaLabel, bare, className, state, chosen }) {
+  const list = useListOpen();
   return (
-    <SelectRoot value={value ?? ''} onValueChange={onChange}>
+    <SelectRoot value={value ?? ''} onValueChange={onChange} open={list.open} onOpenChange={list.onOpenChange}>
       <SelectTrigger
         id={id}
         aria-labelledby={labelledBy}
@@ -262,7 +269,7 @@ export function Select({ value, onChange, options, placeholder = t('Izaberite'),
         <SelectValue placeholder={placeholder}>{chosen ? chosen.display ?? chosen.label : null}</SelectValue>
       </SelectTrigger>
       <SelectContent className={bare ? 'min-w-[280px]' : undefined}>
-        {options.map((o) => (
+        {list.drawn && options.map((o) => (
           <SelectItem key={o.value} value={o.value} meta={o.meta}>
             {o.icon && <span className="mr-2 inline-flex">{o.icon}</span>}
             {o.label}

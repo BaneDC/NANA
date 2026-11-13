@@ -239,6 +239,7 @@ export default {
   "Koordinatorka aktivira profil": "Coordinator activates the profile",
   "Koordinatorka je aktivirala profil. Porodice vas sada vide na „Pronađi\".": "The coordinator activated your profile. Families now see you on \"Find\".",
   "Koordinatorka vam se javlja preko kanala koji ste izabrali. Posle razgovora porodice vas vide na „Pronađi\" i mogu da vam pišu. Do tada možete da dopunite profil.": "The coordinator will reach you on the channel you chose. After the talk, families see you on \"Find\" and can write to you. Until then you can complete your profile.",
+  "Koordinatorka vam se javlja preko kanala koji izaberete da dogovorite vreme.": "The coordinator contacts you through the channel you choose to agree on a time.",
   "Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.": "The coordinator will reach you on {channel} to agree a time.",
   "Kratak video razgovor sa koordinatorkom je poslednji korak prijave.": "A short video call with the coordinator is the last step of applying.",
   "Muči je nezadovoljstvo, a ne može da ga otvoreno izrazi. Često je mrzovoljna.": "Troubled by discontent she cannot say openly. Often sullen.",

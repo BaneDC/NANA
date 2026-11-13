@@ -239,6 +239,7 @@ export default {
   "Koordinatorka aktivira profil": "Koordinaattori aktivoi profiilin",
   "Koordinatorka je aktivirala profil. Porodice vas sada vide na „Pronađi\".": "Koordinaattori aktivoi profiilisi. Perheet näkevät sinut nyt Etsi-sivulla.",
   "Koordinatorka vam se javlja preko kanala koji ste izabrali. Posle razgovora porodice vas vide na „Pronađi\" i mogu da vam pišu. Do tada možete da dopunite profil.": "Koordinattori ottaa yhteyttä valitsemaasi kanavaa pitkin. Keskustelun jälkeen perheet näkevät sinut Etsi-sivulla ja voivat kirjoittaa sinulle. Siihen asti voit täydentää profiiliasi.",
+  "Koordinatorka vam se javlja preko kanala koji izaberete da dogovorite vreme.": "Koordinaattori ottaa sinuun yhteyttä valitsemasi kanavan kautta sopiakseen ajan.",
   "Koordinatorka vam se javlja preko kanala {channel} da dogovorite vreme.": "Koordinaattori ottaa yhteyttä kanavalla {channel} sopiakseen ajan.",
   "Kratak video razgovor sa koordinatorkom je poslednji korak prijave.": "Lyhyt videopuhelu koordinaattorin kanssa on hakemuksen viimeinen vaihe.",
   "Muči je nezadovoljstvo, a ne može da ga otvoreno izrazi. Često je mrzovoljna.": "Häntä vaivaa tyytymättömyys, jota hän ei voi sanoa ääneen. Usein nyrpeä.",
