@@ -22,6 +22,7 @@ import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS,
 import { SLOTS, daysText } from '../../data/carePlan';
 import { getLang, msg, t, useLang } from '@/i18n';
 import { cn } from '@/lib/utils';
+import Logo from '../../components/Logo';
 
 // The caregiver's sign-up (docs/superpowers/specs/2026-10-19-registracija-negovateljice-design.md):
 // her account, with where she wants to work, then the parts of the form for that market
@@ -378,13 +379,20 @@ export default function CaregiverSignUp({ onForm }) {
 
   // her account, with where she wants to work, is the first step of the same
   // process as the form, so on its sky (docs/patterns.md §12d, decided 11. 11.;
-  // the market on it since 12. 11., Branislav); the language in the head,
-  // across from the way back, as on every page before the account (§12b)
+  // the market on it since 12. 11., Branislav); in the head the logo, as on
+  // the family's sign-up (opened from the website in a new tab, nothing behind
+  // it), and across from it the language (§4, §12b); the pages after it have
+  // neither (decided 13. 11., Branislav)
   if (screen === 'account')
     return (
       <StepPage
         title={t('Prijavite se kao negovateljica')}
         sub={t('Unesite svoje podatke da biste započeli proces prijave.')}
+        lead={
+          <span className="flex h-(--button-size) items-center px-3">
+            <Logo width={120} />
+          </span>
+        }
         language
       >
         {/* one card, as a part of the form: where, the email, the consents
