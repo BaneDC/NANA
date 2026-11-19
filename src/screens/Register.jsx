@@ -313,7 +313,7 @@ function MunicipalityPicker({ market, value, onChange, error }) {
                   role="radio"
                   aria-checked={on}
                   tabIndex={on || (at < 0 && i === 0) ? 0 : -1}
-                  className={cn('imm-option cursor-pointer', on && 'is-selected items-start')}
+                  className={cn('imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', on && 'is-selected items-start', on && count === 0 && 'flex-wrap')}
                   onClick={() => onChange(o.value)}
                   onKeyDown={(e) => move(e, i)}
                 >
@@ -326,14 +326,16 @@ function MunicipalityPicker({ market, value, onChange, error }) {
                       {o.group && <span className="font-normal text-muted-foreground"> · {o.group}</span>}
                     </span>
                     {on && count > 0 && <span className="imm-option-sub">{countText(count)}</span>}
-                    {/* none there: the orange part's small note, 8 under the
-                        name; a button holds no blocks, so spans */}
-                    {on && count === 0 && (
-                      <AttentionNote as="span" title={countText(0)} className="mt-2">
-                        {t('Nalog možete da napravite već sada. Javićemo vam čim se neka prijavi.')}
-                      </AttentionNote>
-                    )}
                   </span>
+                  {/* none there: the orange part's small note across the whole
+                      card, 8 under the name (the card's 12 less 4), 8 from its
+                      sides and foot, so r8 in the card's 16; a button holds no
+                      blocks, so spans (decided 19. 11., dizajner) */}
+                  {on && count === 0 && (
+                    <AttentionNote as="span" title={countText(0)} className="-mx-2 -mt-1 -mb-1 basis-[calc(100%+16px)]">
+                      {t('Nalog možete da napravite već sada. Javićemo vam čim se neka prijavi.')}
+                    </AttentionNote>
+                  )}
                 </button>
               );
             })}
