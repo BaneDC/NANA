@@ -46,3 +46,23 @@ export function AttentionTitle({ className, ...props }) {
 export function AttentionDescription({ className, ...props }) {
   return <p className={cn('text-xs leading-body text-primary-700', className)} {...props} />;
 }
+
+// The tint's small note inside a card (docs/patterns.md §10, "Napomena u
+// kartici", decided 19. 11., dizajner): what changes how the rest is read, said
+// plainly and not in small grey. The orange part's ground and ink, r8 in a
+// card's 16 (24 = 8 + 16), 12 in; the title and its sentence as the orange
+// part's, 4 apart, both in the one ink. No icon (§11), no button: the card's
+// buttons are under it.
+export function AttentionNote({ title, className, children, ...props }) {
+  return (
+    <div
+      role="status"
+      {...props}
+      data-slot="attention-note"
+      className={cn('flex flex-col gap-1 rounded-lg bg-primary-50 p-3 shadow-[inset_0_0_0_1px_var(--color-primary-200)]', className)}
+    >
+      <AttentionTitle>{title}</AttentionTitle>
+      {children && <AttentionDescription>{children}</AttentionDescription>}
+    </div>
+  );
+}

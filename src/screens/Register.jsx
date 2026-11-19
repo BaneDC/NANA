@@ -5,10 +5,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Logo from '../components/Logo';
+import { AttentionNote } from '../components/Attention';
 import PhotoCarousel from '../components/PhotoCarousel';
 import { Field, FieldError, Input, Password, Phone, Select, choiceError, choiceRow, pageFocus, requiredError, useCheck } from '../components/TextField';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FieldDescription } from '@/components/ui/field';
 import { COUNTRIES } from '../data/countries';
 import { activateCaregiver, awaitingFirstSignIn, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
@@ -211,19 +211,15 @@ const WHERE_OPTIONS = [
   ['diaspora', msg('Dijaspora'), '🌍'],
 ];
 // how many caregivers we have in her municipality, said before she gives us
-// anything of hers; none does not stop her (the plan, and word when one signs up)
-const countText = (market, municipality) => {
-  const n = caregiverCount(market, municipality);
-  return n
-    ? t('U ovoj opštini trenutno imamo {count}.', {
-        count: tn(n, 'negovateljicu', 'negovateljice', 'negovateljica'),
-      })
-    : t('U ovoj opštini trenutno nemamo negovateljicu. Možemo da napravimo plan nege i javimo vam čim se neka prijavi.');
-};
+// anything of hers, in the row of the one chosen (decided 19. 11., dizajner;
+// until then a line under the list); none does not stop her (the account, and
+// word when one signs up), said in a note over the buttons
+const countText = (n) => (n ? tn(n, 'negovateljica', 'negovateljice', 'negovateljica') : t('nema negovateljica'));
 
 // The municipality without a dropdown (decided 19. 11., Branislav): a search,
 // and under it the first ten that match as radios, the one chosen kept at the
-// top when the search no longer finds it; the count under the list.
+// top when the search no longer finds it; the count in its row. The list
+// keeps the height of ten rows, so the card does not jump as she types.
 const SHOWN = 10;
 const plain = (x) => x.toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/\p{Diacritic}/gu, '');
 function MunicipalityPicker({ market, value, onChange, error }) {
@@ -233,12 +229,13 @@ function MunicipalityPicker({ market, value, onChange, error }) {
   const found = all.filter((o) => !q || plain(`${o.label} ${o.group || ''}`).includes(q)).slice(0, SHOWN);
   const chosen = all.find((o) => o.value === value);
   const rows = chosen && !found.some((o) => o.value === value) ? [chosen, ...found.slice(0, SHOWN - 1)] : found;
+  const count = value ? caregiverCount(market, value) : null;
   return (
     <div className="flex flex-col gap-3">
       <Field label={t('Opština')} required>
         <Input value={query} onChange={setQuery} icon={Search} placeholder={t('Pretražite opštine')} autoComplete="off" />
       </Field>
-      <div className="flex flex-col gap-1">
+      <div className="flex min-h-[320px] flex-col gap-1 pointer-coarse:min-h-[440px]">
         {rows.length ? (
           <RadioGroup value={value} onValueChange={onChange} aria-label={t('Opština')} aria-invalid={error ? true : undefined} className="flex flex-col gap-0">
             {rows.map((o) => (
@@ -247,6 +244,7 @@ function MunicipalityPicker({ market, value, onChange, error }) {
                 <span className="min-w-0">
                   {o.label}
                   {o.group && <span className="text-muted-foreground"> · {o.group}</span>}
+                  {o.value === value && <span className={count ? 'text-primary-600' : 'text-muted-foreground'}> · {countText(count)}</span>}
                 </span>
               </label>
             ))}
@@ -254,7 +252,7 @@ function MunicipalityPicker({ market, value, onChange, error }) {
         ) : (
           <p className="text-xs leading-5 text-muted-foreground">{t('Nema rezultata.')}</p>
         )}
-        {error ? <FieldError className={choiceError}>{error}</FieldError> : value && <FieldDescription className={choiceError}>{countText(market, value)}</FieldDescription>}
+        {error && <FieldError className={choiceError}>{error}</FieldError>}
       </div>
     </div>
   );
@@ -315,6 +313,11 @@ function FamilySignUp(p) {
         <form className="contents" onSubmit={(e) => (e.preventDefault(), p.toAccount())}>
           <StepPanel>
             <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
+            {/* none there: said plainly over the buttons, not small under the
+                list (decided 19. 11., dizajner) */}
+            {p.municipality && caregiverCount(p.market, p.municipality) === 0 && (
+              <AttentionNote title={t('U ovoj opštini još nemamo negovateljicu')}>{t('Nastavite i napravite nalog. Javićemo vam čim se neka negovateljica iz ove opštine prijavi.')}</AttentionNote>
+            )}
             {/* a step back inside the sign-up is a button by the main one (§4) */}
             <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
               <Button type="button" variant="secondary" onClick={() => p.backFrom('municipality')}>
