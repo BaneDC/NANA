@@ -4,6 +4,7 @@ import Register from './screens/Register';
 import Dashboard from './screens/Dashboard';
 import FindCaregiver from './screens/FindCaregiver';
 import MedicalRecord from './screens/MedicalRecord';
+import FamilyProfile from './screens/FamilyProfile';
 import Settings from './screens/Settings';
 import AppNav from './components/AppNav';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -632,7 +633,6 @@ export default function App() {
           view={view}
           onView={setView}
           user={user}
-          recordOf={answers['about-person']?.values?.name}
           onHelp={() => setHelp(true)}
           onSim={() => setSim(true)}
           careBadge={waitingOnYou(care).length + plansToConfirm(care).length}
@@ -808,6 +808,7 @@ export default function App() {
                   onReportChange={reportChange}
                 />
               )}
+              {view === 'profile' && <FamilyProfile user={user} onSaveUser={saveUser} />}
               {view === 'settings' && (
                 <Settings
                   unlocked={unlocked}

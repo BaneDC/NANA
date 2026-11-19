@@ -7,6 +7,7 @@ import {
   Inbox,
   Users,
   Wallet,
+  FileHeart,
   FlaskConical,
   LayoutDashboard,
   MessageSquare,
@@ -45,7 +46,7 @@ import { msg, t } from '@/i18n';
 // for too often for that, so they are a place in the nav.
 const HOME_VIEWS = ['dashboard', 'caregiver'];
 
-// the account is in Settings (the Profile page went on 10 October)
+// the account is on the profile, from the card at the foot (19. 11.)
 const FOOTER_ITEMS = [{ id: 'settings', label: msg('Podešavanja'), icon: Settings }];
 // "Pomoć" stands over them and is not a page: it opens the coordinator's
 // contact in a dialog (HelpDialog), so it is never the selected item
@@ -165,7 +166,6 @@ export default function AppNav({
   view,
   onView,
   user,
-  recordOf,
   onHelp,
   onSim,
   careBadge,
@@ -291,6 +291,9 @@ export default function AppNav({
                 count={requestsBadge}
                 onClick={go(() => onView('requests'))}
               />
+              {/* the person cared for, a place of its own (19. 11., Branislav;
+                  until then the card at the foot opened it) */}
+              <Place icon={FileHeart} label={t('Medicinski karton')} active={view === 'record'} onClick={go(() => onView('record'))} />
             </>
           )}
           {/* her side: for now one page, the requests sent to her; the board,
@@ -328,15 +331,15 @@ export default function AppNav({
             the width, so the avatar slides 8 to the column's edge; the padding
             above and below stays, so the card is as tall and nothing over it
             moves. Folded, the ring is the avatar's, not the tall, narrow
-            card's. It opens the medical record of the person they care for
-            (docs/patterns.md §10a), ringed on hover and while that page is
-            open, as a card that opens something is. */}
+            card's. It opens the profile, on both sides (the family's since
+            19. 11., Branislav; it opened the medical record), ringed on hover
+            and while that page is open, as a card that opens something is. */}
         <button
           type="button"
-          onClick={go(() => onView(caregiver ? 'profile' : 'record'))}
-          aria-current={view === (caregiver ? 'profile' : 'record') ? 'page' : undefined}
-          aria-label={caregiver ? t('Moj profil') : recordOf ? t('Medicinski karton: {name}', { name: recordOf }) : t('Medicinski karton')}
-          title={caregiver ? t('Moj profil') : t('Medicinski karton')}
+          onClick={go(() => onView('profile'))}
+          aria-current={view === 'profile' ? 'page' : undefined}
+          aria-label={t('Moj profil')}
+          title={t('Moj profil')}
           className="group/me flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:px-0 pointer-coarse:menu-folded:pl-1 transition-[padding,background-color,border-radius,box-shadow] duration-200 ease-out outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:shadow-none! menu-folded:focus-visible:ring-0 [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
         >
           <Avatar className="transition-shadow duration-200 ease-out menu-folded:group-hover/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-aria-[current=page]/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-focus-visible/me:ring-[3px] menu-folded:group-focus-visible/me:ring-ring/50">

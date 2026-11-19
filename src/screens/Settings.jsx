@@ -10,7 +10,6 @@ import { Page, PageHeader, PageHeaderText, PageTitle, PageDescription, PageSecti
 import { CheckList, DataList, DataRow } from '@/components/data-list';
 import Dialog from '../components/Dialog';
 import { useKept } from '@/hooks/use-kept';
-import AccountCard from '../components/AccountCard';
 import CookieSettings from '../components/CookieSettings';
 import TwoFactorSetup, { TwoFactorDisable, TwoFactorNewCodes } from '../components/TwoFactorSetup';
 import { Field, FieldError, Password, requiredError, useCheck } from '../components/TextField';
@@ -169,6 +168,23 @@ function PackageCard({ country, subscription, unlocked, onChoose }) {
   );
 }
 
+// Signing out: it ends what is on, so secondary (§9); nothing is lost, so no
+// question first (decided 11. 11., dizajner). Both profiles, /profile, end
+// with it (19. 11.).
+export function SignOutCard() {
+  return (
+    <Card>
+      <CardTitle>{t('Odjava')}</CardTitle>
+      <CardDescription>{t('Sve što ste uneli ostaje sačuvano. Prijavite se ponovo kad god želite.')}</CardDescription>
+      <CardFooter>
+        <Button variant="secondary" onClick={signOut}>
+          {t('Odjavi se')}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
 export default function Settings({ payments = true, unlocked, subscription, care, user, onCare, onSaveUser, onFlash, onSubscribe }) {
   // kept on the account, as the language and the cookies are: they were only in
   // this page's state, so leaving it turned them back off. A switch saves as it
@@ -229,17 +245,16 @@ export default function Settings({ payments = true, unlocked, subscription, care
           <PageTitle>{t('Podešavanja')}</PageTitle>
           <PageDescription>
             {!payments
-              ? t('Nalog, bezbednost, jezik i obaveštenja, privatnost.')
+              ? t('Bezbednost, jezik i obaveštenja, privatnost.')
               : marketHas('package')
-                ? t('Nalog, paket, bezbednost, jezik i obaveštenja, privatnost.')
-                : t('Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.')}
+                ? t('Paket, bezbednost, jezik i obaveštenja, privatnost.')
+                : t('Plaćanje, bezbednost, jezik i obaveštenja, privatnost.')}
           </PageDescription>
         </PageHeaderText>
       </PageHeader>
 
-      <PageSection title={t('Nalog')}>
-        <AccountCard user={user} onSave={onSaveUser} />
-      </PageSection>
+      {/* no "Nalog": the account is on the profile, /profile, on both sides
+          (decided 19. 11., Branislav) */}
 
       {/* a caregiver pays nothing here: her money comes in through Stripe */}
       {payments && (
@@ -499,19 +514,8 @@ export default function Settings({ payments = true, unlocked, subscription, care
         </Card>
       </PageSection>
 
-      {/* last on the page, for both sides (decided 11. 11., dizajner): it ends
-          what is on, so secondary (§9); nothing is lost, so no question first */}
-      <PageSection>
-        <Card>
-          <CardTitle>{t('Odjava')}</CardTitle>
-          <CardDescription>{t('Sve što ste uneli ostaje sačuvano. Prijavite se ponovo kad god želite.')}</CardDescription>
-          <CardFooter>
-            <Button variant="secondary" onClick={signOut}>
-              {t('Odjavi se')}
-            </Button>
-          </CardFooter>
-        </Card>
-      </PageSection>
+      {/* no "Odjava" either: it ends the profile, /profile, on both sides
+          (decided 19. 11., Branislav) */}
 
       {keptCookies && (
         <CookieSettings

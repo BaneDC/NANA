@@ -15,7 +15,7 @@ export default {
   "Kurs za gerontodomaćice": "Home care assistant course",
   "Kursevi": "Courses",
   "Medicinska sestra u penziji. Radila sam dvadeset godina na gerijatriji, a sada negujem starije kod kuće.": "A retired nurse. I worked twenty years in geriatrics and now care for older people at home.",
-  "Nalog, paket, bezbednost, jezik i obaveštenja, privatnost.": "Account, package, security, language and notifications, privacy.",
+  "Paket, bezbednost, jezik i obaveštenja, privatnost.": "Package, security, language and notifications, privacy.",
   "Ne obnavlja se sam. Kad istekne, izaberite paket ponovo.": "It does not renew. When it runs out, choose a package again.",
   "Nega nepokretnih osoba": "Care of bedridden people",
   "Nega osoba sa demencijom": "Dementia care",

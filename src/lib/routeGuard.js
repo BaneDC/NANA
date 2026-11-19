@@ -3,7 +3,7 @@
 //
 // ctx: { signedIn, role, market, hasPlan, summaryShowing, hasClient(id), hasCaregiver(id) }
 
-const FAMILY = ['chat', 'dashboard', 'caregiver', 'requests', 'find-caregiver', 'record', 'settings'];
+const FAMILY = ['chat', 'dashboard', 'caregiver', 'requests', 'find-caregiver', 'record', 'profile', 'settings'];
 const CAREGIVER = {
   fi: ['board', 'clients', 'client', 'earnings', 'profile', 'settings'],
   sr: ['requests', 'client', 'profile', 'settings'],

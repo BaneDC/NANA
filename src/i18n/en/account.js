@@ -284,7 +284,7 @@ export default {
   'Dva unosa se ne poklapaju.': 'The two entries do not match.',
   'Sačuvaj lozinku': 'Save password',
   'Podešavanja': 'Settings',
-  'Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.': 'Account, payment, security, language and notifications, privacy.',
+  'Plaćanje, bezbednost, jezik i obaveštenja, privatnost.': 'Payment, security, language and notifications, privacy.',
   'Plaćanje': 'Payment',
   'Pretplata': 'Subscription',
   'Otkazana': 'Cancelled',
@@ -697,4 +697,5 @@ export default {
   "Po jeziku": "By language",
   "Za demo: nova privremena lozinka za {email}": "For the demo: a new temporary password for {email}",
   'Za demo': 'For the demo',
+  'Vaši podaci i odjava.': 'Your details and signing out.',
 };

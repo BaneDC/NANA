@@ -1,6 +1,6 @@
 // The caregiver's side (src/screens/caregiver).
 export default {
-  "Nalog, bezbednost, jezik i obaveštenja, privatnost.": "Account, security, language and notifications, privacy.",
+  "Bezbednost, jezik i obaveštenja, privatnost.": "Security, language and notifications, privacy.",
   "Bez imena": "No name",
   "Prihvatili ste. {name} vidi vaš telefon i e-mail.": "Accepted. {name} can see your phone and e-mail.",
   "Prihvatili ste. Sledeće su uslovi saradnje.": "Accepted. Next come the terms of your work together.",
