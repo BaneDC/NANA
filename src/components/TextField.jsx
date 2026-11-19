@@ -131,17 +131,18 @@ export function useCheck() {
       if (!errors.some(Boolean)) return true;
       setTried(true);
       const from = document.activeElement?.closest('form, [role="dialog"], [data-slot="drawer-content"]') || document;
-      // the first thing that is wrong, whatever it is (§10, decided 16. 11.):
-      // a field takes the focus, a group of answers (radios, chips) gives it to
-      // its first answer, and what cannot hold it (a choice of services) has
-      // its error brought into view
+      // the first thing that is wrong, whatever it is (§10, decided 16. 11.;
+      // changed 19. 11., Branislav): the page always glides to it, its
+      // question and error in view, and only a field typed into takes the
+      // focus; a list, a checkbox, radios or chips are only brought into view
       requestAnimationFrame(() => {
         const first = from.querySelector('[aria-invalid="true"], [role="alert"]');
         if (!first) return;
-        const canHold = 'input:not([type=hidden]), textarea, button, [tabindex]:not([tabindex="-1"])';
-        const field = first.matches('[role="alert"]') ? null : first.matches(canHold) ? first : first.querySelector(canHold);
-        if (field) field.focus();
-        (field ? first.closest('[data-slot=field]') || first : first).scrollIntoView({ block: 'nearest' });
+        const typed = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]), textarea';
+        const field = first.matches('[role="alert"]') ? null : first.matches(typed) ? first : first.querySelector(typed);
+        if (field) field.focus({ preventScroll: true });
+        const still = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        (first.closest('[data-slot=field]') || first).scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' });
       });
       return false;
     },

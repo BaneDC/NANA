@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { ChevronDown, ShieldCheck } from 'lucide-react';
+import { ChevronDown, Search, ShieldCheck } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
-import { Combobox, Field, Input, Password, Phone, Select, pageFocus, requiredError, useCheck } from '../components/TextField';
+import { Field, FieldError, Input, Password, Phone, Select, choiceError, choiceRow, pageFocus, requiredError, useCheck } from '../components/TextField';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { FieldDescription } from '@/components/ui/field';
 import { COUNTRIES } from '../data/countries';
 import { activateCaregiver, awaitingFirstSignIn, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
-import { setSiteMarket, siteWhere } from '../lib/siteLink';
+import { setSiteMarket } from '../lib/siteLink';
 import { caregiverCount } from '../data/caregiverCounts';
 import { municipalityGroups } from '../data/caregiverProfile';
-import CaregiverSignUp, { ConsentRow, Radios } from './caregiver/SignUp';
+import CaregiverSignUp, { ConsentRow } from './caregiver/SignUp';
 import { StepPage, StepPanel } from '../components/StepCards';
 import LanguagePicker from '../components/LanguagePicker';
 import { HeaderBackSlot, PageHead, useHeaderBack } from '../components/HeaderBack';
@@ -60,14 +63,11 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [email, setEmail] = useState('');
   // Where the person cared for lives (decided 16. 11., Branislav), asked first,
   // as the caregiver's "Gde želite da radite?": Serbia, Finland or abroad
-  // (diaspora: Serbia's market, only caregivers who travel). Chosen already
-  // when the website's link said it (in the prototype the demo's market row),
-  // else by her language: Serbian Serbia, Finnish Finland, English nothing.
-  // Abroad is never guessed. It gives the fields' examples and the phone's
-  // country code, until she picks a code.
+  // (diaspora: Serbia's market, only caregivers who travel). Never chosen for
+  // her, by a link or her language (decided 19. 11., Branislav). It gives the
+  // fields' examples and the phone's country code, until she picks a code.
   const lang = useLang();
-  const [chosen, setChosen] = useState(null);
-  const where = chosen ?? siteWhere() ?? siteRow.read() ?? (lang === 'sr' || lang === 'fi' ? lang : null);
+  const [where, setChosen] = useState(null);
   // the municipality she lives in, for the count under it; another market's is not kept
   const [municipality, setMunicipality] = useState('');
   const setWhere = (w) => {
@@ -119,21 +119,29 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   };
   const show = (k) => check.show(errors[k]);
 
-  // Two steps (decided 19. 11., Branislav): where the person lives first, on
-  // /signup/family, then the account, /signup/family/account. The account
-  // opened without the first step done (a reload, a link) is the first step.
-  const placeMissing = Boolean(errors.where || errors.municipality);
+  // Steps (decided 19. 11., Branislav): the country, /signup/family, a press
+  // on its card goes on; the municipality, /signup/family/municipality, for
+  // Serbia and Finland only; then the account, /signup/family/account. A step
+  // opened before the ones it needs are done (a reload, a link) is the first
+  // of them not done.
+  const family = (s) => ({ page: 'signup', who: 'family', step: s });
+  const shown = !where ? undefined : step === 'account' && !abroad && !municipality ? 'municipality' : step === 'municipality' && abroad ? 'account' : step;
   useEffect(() => {
-    if (who === 'family' && step === 'account' && placeMissing) navigate({ page: 'signup', who: 'family' }, { replace: true });
-  }, [who, step, placeMissing]);
-  const toAccount = () => {
-    if (!check.check([errors.where, errors.municipality])) return;
+    if (who === 'family' && shown !== step) navigate(family(shown), { replace: true });
+  }, [who, step, shown]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pickWhere = (w) => {
+    setWhere(w);
     check.reset();
-    navigate({ page: 'signup', who: 'family', step: 'account' });
+    navigate(family(w === 'diaspora' ? 'account' : 'municipality'));
   };
-  const toPlace = () => {
+  const toAccount = () => {
+    if (!check.check([errors.municipality])) return;
     check.reset();
-    goBackTo({ page: 'signup', who: 'family' });
+    navigate(family('account'));
+  };
+  const backFrom = (s) => {
+    check.reset();
+    goBackTo(family(s === 'account' && !abroad ? 'municipality' : undefined));
   };
 
   const submit = async () => {
@@ -183,7 +191,7 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
 
   // on the onboarding's sky, as her account (docs/patterns.md §10, decided
   // 13. 11.): the photos are not over it, and Minna comes next on the same sky
-  return <FamilySignUp {...{ account: step === 'account' && !placeMissing, toAccount, toPlace, example: FAMILY_EXAMPLE[market], where, setWhere, market, municipality, setMunicipality, firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, sharing, setSharing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
+  return <FamilySignUp {...{ step: shown, pickWhere, toAccount, backFrom, example: FAMILY_EXAMPLE[market], where, setWhere, market, municipality, setMunicipality, firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, sharing, setSharing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
 }
 
 // the examples in the family's fields, from her market (as the caregiver's, EXAMPLE)
@@ -196,10 +204,11 @@ const FAMILY_EXAMPLE = {
   fi: { firstName: 'Anna', lastName: 'Korhonen', email: 'anna@mail.com' },
 };
 
+// each with its flag, as the caregiver's countries; the diaspora the globe
 const WHERE_OPTIONS = [
-  ['sr', msg('Srbija')],
-  ['fi', msg('Finska')],
-  ['diaspora', msg('U inostranstvu')],
+  ['sr', msg('Srbija'), '🇷🇸'],
+  ['fi', msg('Finska'), '🇫🇮'],
+  ['diaspora', msg('Dijaspora'), '🌍'],
 ];
 // how many caregivers we have in her municipality, said before she gives us
 // anything of hers; none does not stop her (the plan, and word when one signs up)
@@ -211,6 +220,45 @@ const countText = (market, municipality) => {
       })
     : t('U ovoj opštini trenutno nemamo negovateljicu. Možemo da napravimo plan nege i javimo vam čim se neka prijavi.');
 };
+
+// The municipality without a dropdown (decided 19. 11., Branislav): a search,
+// and under it the first ten that match as radios, the one chosen kept at the
+// top when the search no longer finds it; the count under the list.
+const SHOWN = 10;
+const plain = (x) => x.toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/\p{Diacritic}/gu, '');
+function MunicipalityPicker({ market, value, onChange, error }) {
+  const [query, setQuery] = useState('');
+  const all = municipalityGroups(market).flatMap((g) => g.options.map((o) => ({ ...o, group: o.value === o.label ? null : g.label })));
+  const q = plain(query.trim());
+  const found = all.filter((o) => !q || plain(`${o.label} ${o.group || ''}`).includes(q)).slice(0, SHOWN);
+  const chosen = all.find((o) => o.value === value);
+  const rows = chosen && !found.some((o) => o.value === value) ? [chosen, ...found.slice(0, SHOWN - 1)] : found;
+  return (
+    <div className="flex flex-col gap-3">
+      <Field label={t('Opština')} required>
+        <Input value={query} onChange={setQuery} icon={Search} placeholder={t('Pretražite opštine')} autoComplete="off" />
+      </Field>
+      <div className="flex flex-col gap-1">
+        {rows.length ? (
+          <RadioGroup value={value} onValueChange={onChange} aria-label={t('Opština')} aria-invalid={error ? true : undefined} className="flex flex-col gap-0">
+            {rows.map((o) => (
+              <label key={o.value} className={choiceRow}>
+                <RadioGroupItem value={o.value} className="mt-0.5" />
+                <span className="min-w-0">
+                  {o.label}
+                  {o.group && <span className="text-muted-foreground"> · {o.group}</span>}
+                </span>
+              </label>
+            ))}
+          </RadioGroup>
+        ) : (
+          <p className="text-xs leading-5 text-muted-foreground">{t('Nema rezultata.')}</p>
+        )}
+        {error ? <FieldError className={choiceError}>{error}</FieldError> : value && <FieldDescription className={choiceError}>{countText(market, value)}</FieldDescription>}
+      </div>
+    </div>
+  );
+}
 
 function FamilySignUp(p) {
   const { show, onForm } = p;
@@ -232,36 +280,46 @@ function FamilySignUp(p) {
     </div>
   );
 
-  // the first step, before anything of hers: where the person lives, and how
-  // many caregivers we have there (docs/patterns.md §10, 16. 11.; its own step
-  // since 19. 11., Branislav)
-  if (!p.account)
+  // the first step, before anything of hers: where the person lives, as the
+  // caregiver's "Gde želite da radite?" (decided 19. 11., Branislav): glass
+  // cards as the personality test's, each with its flag, none chosen for her;
+  // a press goes on
+  if (!p.step)
     return (
-      <StepPage title={t('Dobro došli u NANA Prime')} sub={t('Polja označena zvezdicom su obavezna')} lead={lead} language>
+      <StepPage eyebrow={t('Dobro došli u NANA Prime')} title={t('Gde živi osoba kojoj treba nega?')} lead={lead} language>
+        <div className="grid grid-cols-3 gap-2 phone:grid-cols-1">
+          {WHERE_OPTIONS.map(([id, l, flag]) => (
+            <button
+              key={id}
+              type="button"
+              className={cn('imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', p.where === id && 'is-selected')}
+              onClick={() => p.pickWhere(id)}
+            >
+              <span aria-hidden="true" className="text-[24px] leading-6">
+                {flag}
+              </span>
+              {/* one line each, whatever the language (19. 11., Branislav) */}
+              <span className="imm-option-title whitespace-nowrap">{t(l)}</span>
+            </button>
+          ))}
+        </div>
+        {signIn}
+      </StepPage>
+    );
+
+  // Serbia and Finland: the municipality, and how many caregivers we have
+  // there, before anything of hers (docs/patterns.md §10, 16. 11.)
+  if (p.step === 'municipality')
+    return (
+      <StepPage eyebrow={t(WHERE_OPTIONS.find(([id]) => id === p.where)[1])} title={t('U kojoj opštini živi osoba kojoj treba nega?')} lead={lead} language>
         <form className="contents" onSubmit={(e) => (e.preventDefault(), p.toAccount())}>
           <StepPanel>
-            <Radios
-              label={t('Gde živi osoba kojoj treba nega?')}
-              required
-              value={p.where ?? ''}
-              onChange={p.setWhere}
-              options={WHERE_OPTIONS.map(([id, l]) => [id, t(l)])}
-              error={show('where')}
-              hint={p.where === 'diaspora' ? t('Imamo negovateljice iz Srbije koje dolaze kod klijenta u inostranstvo. Napravite nalog da ih vidite.') : null}
-            />
-            {p.where && p.where !== 'diaspora' && (
-              <Field label={t('Opština')} required error={show('municipality')} hint={p.municipality ? countText(p.market, p.municipality) : null}>
-                <Combobox
-                  value={p.municipality}
-                  onChange={p.setMunicipality}
-                  groups={municipalityGroups(p.market)}
-                  placeholder={t('Pretražite opštine')}
-                  searchPlaceholder={t('Pretražite opštine')}
-                />
-              </Field>
-            )}
-            {/* as "Dalje" in the form's card: at its right, on a phone across it */}
-            <div className="flex justify-end phone:*:flex-1">
+            <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
+            {/* a step back inside the sign-up is a button by the main one (§4) */}
+            <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+              <Button type="button" variant="secondary" onClick={() => p.backFrom('municipality')}>
+                {t('Nazad')}
+              </Button>
               <Button type="submit">{t('Nastavi')}</Button>
             </div>
           </StepPanel>
@@ -272,7 +330,13 @@ function FamilySignUp(p) {
 
   // the second step, the account: her name, how to reach her, the password
   return (
-    <StepPage title={t('Vaši podaci')} sub={t('Polja označena zvezdicom su obavezna')} lead={lead} language>
+    <StepPage
+      title={t('Vaši podaci')}
+      // abroad has no municipality step: what it means is said here
+      sub={p.where === 'diaspora' ? t('Imamo negovateljice iz Srbije koje dolaze kod klijenta u inostranstvo. Napravite nalog da ih vidite.') : t('Polja označena zvezdicom su obavezna')}
+      lead={lead}
+      language
+    >
       {/* a real form, so the browser's password manager knows this is a sign-up */}
       <form className="contents" onSubmit={(e) => (e.preventDefault(), p.submit())}>
         <StepPanel>
@@ -328,7 +392,7 @@ function FamilySignUp(p) {
               "Nazad" at the left, "Napravi nalog" at the right; on a phone one
               under the other, across the card, the main one on top */}
           <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
-            <Button type="button" variant="secondary" onClick={p.toPlace}>
+            <Button type="button" variant="secondary" onClick={() => p.backFrom('account')}>
               {t('Nazad')}
             </Button>
             <Button type="submit" loading={p.busy}>

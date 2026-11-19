@@ -409,4 +409,10 @@ export default {
   "Za demo: koordinatorka odobrava prijavu": "Demoa varten: koordinaattori hyväksyy hakemuksen",
   "Za demo, e-mail koji stiže: „Vaš profil je aktiviran. Prijavite se adresom {email} i privremenom lozinkom {password}. Svoju lozinku postavljate u Podešavanjima.\"": "Demoa varten, saapuva sähköposti: ”Profiilisi on aktivoitu. Kirjaudu osoitteella {email} ja väliaikaisella salasanalla {password}. Oman salasanasi asetat Asetuksissa.”",
   "Za demo: na prijavu": "Demoa varten: kirjautumiseen",
+  "Šta ste radili": "Mitä teit",
+  "Jutarnja rutina, doručak, kratka šetnja.": "Aamutoimet, aamiainen, lyhyt kävely.",
+  "Kako je {name} bio/la danas?": "Miten {name} voi tänään?",
+  "Šta ste stigli da uradite": "Mitä ehdit tehdä",
+  "Sve je označeno. Skinite oznaku sa onoga što ovog puta nije urađeno.": "Kaikki on valittu. Poista valinta siitä, mitä ei tällä kertaa tehty.",
+  "Nesigurno hoda i nije htela da jede.": "Kävely on epävarmaa, eikä hän halunnut syödä.",
 };

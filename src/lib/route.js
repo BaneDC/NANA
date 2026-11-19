@@ -12,10 +12,10 @@ const PLAIN = ['onboarding', 'chat', 'dashboard', 'requests', 'find-caregiver', 
 // pages with an id: the address's word, and the route's page
 const WITH_ID = { caregivers: 'caregiver', clients: 'client' };
 const ID_WORD = Object.fromEntries(Object.entries(WITH_ID).map(([word, page]) => [page, word]));
-// the first step of both sign-ups, where (the market, and the family's
-// municipality), is /signup/family and /signup/caregiver themselves; the
-// account comes after it (decided 19. 11., Branislav)
-export const FAMILY_STEPS = ['account'];
+// the first step of both sign-ups, the market, is /signup/family and
+// /signup/caregiver themselves; the family's municipality is a step of its
+// own, then the account (decided 19. 11., Branislav)
+export const FAMILY_STEPS = ['municipality', 'account'];
 export const CAREGIVER_STEPS = ['account', 'form', 'review', 'documents', 'test', 'interview', 'thanks'];
 // password: her first sign-in with the coordinator's temporary password
 const SIGNIN_STEPS = ['verify', 'reset'];

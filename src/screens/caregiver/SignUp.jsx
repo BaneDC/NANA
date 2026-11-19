@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { activateCaregiver, saveAccount } from '../../lib/account';
 import { goBackTo, href, navigate, useRoute } from '../../lib/route';
 import { clearDraft, loadDraft, saveDraft } from '../../data/signupDraft';
-import { dialOf } from '../../data/countries';
+import { COUNTRIES, dialOf } from '../../data/countries';
 import { CLASSIFICATIONS, EXAMPLE, STEPS, afterSteps, documentsNeeded, emptyForm, firstUnfinished, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { marketDate } from '../../data/familyCare';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
@@ -134,10 +134,6 @@ const BEFORE_FORM = ['market', 'account'];
 
 // the market her language points to: Serbian Serbia, Finnish Finland, English none
 const marketOfLang = (lang) => (lang === 'sr' || lang === 'fi' ? lang : null);
-const MARKET_OPTIONS = [
-  ['sr', msg('Srbija')],
-  ['fi', msg('Finska')],
-];
 // a draft from before the account was her first step (12. 11.)
 const draftNow = () => {
   const d = loadDraft();
@@ -402,23 +398,37 @@ export default function CaregiverSignUp({ onForm }) {
       <Logo width={120} />
     </span>
   );
+  // the country, as in the designer's notes of 11. 11. (c363fbc; back since
+  // 19. 11., Branislav): two glass cards side by side as the personality
+  // test's, each with its flag, none chosen for her (only one she picked
+  // herself shows as chosen); a press picks and goes on
   if (screen === 'market')
     return (
-      <StepPage title={t('Prijavite se kao negovateljica')} sub={t('Unesite svoje podatke da biste započeli proces prijave.')} lead={lead} language>
-        <StepPanel>
-          <Radios
-            label={t('Gde želite da radite?')}
-            required
-            value={market ?? ''}
-            onChange={pickMarket}
-            options={MARKET_OPTIONS.map(([id, l]) => [id, t(l)])}
-            error={check.show(!market && requiredError())}
-          />
-          {/* as "Dalje" in the form's card: at its right, on a phone across it */}
-          <div className="flex justify-end phone:*:flex-1">
-            <Button onClick={next}>{t('Nastavi')}</Button>
-          </div>
-        </StepPanel>
+      <StepPage title={t('Gde želite da radite?')} sub={t('Izaberite zemlju u kojoj želite da negujete starije.')} lead={lead} language>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            ['sr', 'RS'],
+            ['fi', 'FI'],
+          ].map(([id, code]) => {
+            const c = COUNTRIES.find((x) => x.id === code);
+            return (
+              <button
+                key={id}
+                type="button"
+                className={cn('imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', picked && market === id && 'is-selected')}
+                onClick={() => {
+                  pickMarket(id);
+                  go('account');
+                }}
+              >
+                <span aria-hidden="true" className="text-[24px] leading-6">
+                  {c.flag}
+                </span>
+                <span className="imm-option-title">{t(c.name)}</span>
+              </button>
+            );
+          })}
+        </div>
       </StepPage>
     );
 

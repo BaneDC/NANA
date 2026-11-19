@@ -7,7 +7,7 @@ import { Note, Part } from '@/components/pane';
 import Dialog from '../Dialog';
 import { Field, FieldError, Input, MultiCombobox, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { SERVICE_GROUPS, serviceTitle } from '../../data/serviceCatalog';
-import { activeVersion, arrangementOf, chargedFor, hourText, money, todayOf } from '../../data/familyCare';
+import { activeVersion, arrangementOf, chargedFor, firstName, hourText, money, todayOf } from '../../data/familyCare';
 import { OTHER_REASON, nowOf } from '../../data/caregiverCare';
 import { SERVICE_FEE } from '../../data/fees';
 import { msg, t } from '@/i18n';
@@ -117,7 +117,6 @@ export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
   const [day, setDay] = useState('tomorrow');
   const [start, setStart] = useState('9');
   const [hours, setHours] = useState(typedHours(3));
-  const [notes, setNotes] = useState('');
   const check = useCheck();
   const hourNow = now % 24;
   // today, only what is still ahead
@@ -131,7 +130,7 @@ export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
   const soon = day === 'today' && s - hourNow < 1;
   const send = () => {
     if (!check.check(Object.values(errors))) return;
-    onSend({ day: day === 'today' ? today : today + 1, start: s, hours: h, notes: notes.trim() || undefined });
+    onSend({ day: day === 'today' ? today : today + 1, start: s, hours: h });
   };
   return (
     <Dialog open={open} eyebrow={care.elder.name} title={t('Plan posete')} className={formGap} onClose={onClose}>
@@ -148,9 +147,6 @@ export function VisitPlanDialog({ open, care, caregiverId, onClose, onSend }) {
       </Field>
       <Field label={t('Trajanje')} required hint={t('Od 0,5 do 24 sata, na pola sata (npr. 1 ili 1,5).')} error={check.show(errors.hours)}>
         <Hours value={hours} onChange={setHours} />
-      </Field>
-      <Field label={t('Napomena')}>
-        <TextArea value={notes} onChange={setNotes} rows={2} placeholder={t('Šta će raditi, šta da porodica pripremi.')} />
       </Field>
       {/* what it comes to, apart from what she fills in: on the grey ground */}
       <DataList className="rounded-2xl bg-muted p-4">
@@ -217,8 +213,15 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
         </Field>
         {!errors.hours && h > visit.hours && <Note>{t('Sat više porodica mora da odobri. Do tada se naplaćuje planirano.')}</Note>}
       </div>
-      <Field label={t('Urađeno')}>
-        <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={done} onValueChange={setDone} aria-label={t('Urađeno')}>
+      {/* the questions and their order as on production (19. 11., Branislav) */}
+      <Field label={t('Šta ste radili')} required error={check.show(errors.note)}>
+        <Input value={note} onChange={setNote} placeholder={t('Jutarnja rutina, doručak, kratka šetnja.')} />
+      </Field>
+      <Choice label={t('Kako je {name} bio/la danas?', { name: firstName(care.elder.name) })} value={mood} onChange={setMood} options={MOOD} />
+      <Choice label={t('Ishrana')} value={eating} onChange={setEating} options={AMOUNT} />
+      <Choice label={t('Kretanje')} value={moving} onChange={setMoving} options={AMOUNT} />
+      <Field label={t('Šta ste stigli da uradite')} hint={t('Sve je označeno. Skinite oznaku sa onoga što ovog puta nije urađeno.')}>
+        <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={done} onValueChange={setDone} aria-label={t('Šta ste stigli da uradite')}>
           {visit.services.map((id) => (
             <ToggleGroupItem key={id} value={id}>
               {serviceTitle(id)}
@@ -226,15 +229,9 @@ export function WorkOrderDialog({ open, care, visit, onClose, onSend }) {
           ))}
         </ToggleGroup>
       </Field>
-      <Choice label={t('Raspoloženje')} value={mood} onChange={setMood} options={MOOD} />
-      <Choice label={t('Ishrana')} value={eating} onChange={setEating} options={AMOUNT} />
-      <Choice label={t('Kretanje')} value={moving} onChange={setMoving} options={AMOUNT} />
-      <Field label={t('Šta ste zapisali')} required error={check.show(errors.note)}>
-        <TextArea value={note} onChange={setNote} rows={3} placeholder={t('Kako je prošla poseta, šta porodica treba da zna.')} />
-      </Field>
       {/* always there, not behind a press (decided 11. 11.) */}
       <Field label={t('Nešto vas je zabrinulo?')} hint={t('Vidi samo koordinatorka.')}>
-        <TextArea value={worry} onChange={setWorry} rows={2} />
+        <TextArea value={worry} onChange={setWorry} rows={2} placeholder={t('Nesigurno hoda i nije htela da jede.')} />
       </Field>
       <DialogFooter>
         <Button onClick={send}>{t('Pošalji radni nalog')}</Button>

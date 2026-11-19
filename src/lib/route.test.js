@@ -5,6 +5,7 @@ const table = [
   ['/', { page: null }],
   ['/signup', { page: 'signup' }],
   ['/signup/family', { page: 'signup', who: 'family' }],
+  ['/signup/family/municipality', { page: 'signup', who: 'family', step: 'municipality' }],
   ['/signup/family/account', { page: 'signup', who: 'family', step: 'account' }],
   ['/signup/caregiver', { page: 'signup', who: 'caregiver' }],
   ['/signup/caregiver/account', { page: 'signup', who: 'caregiver', step: 'account' }],

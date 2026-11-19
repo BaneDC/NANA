@@ -409,4 +409,10 @@ export default {
   "Za demo: koordinatorka odobrava prijavu": "For the demo: the coordinator approves the application",
   "Za demo, e-mail koji stiže: „Vaš profil je aktiviran. Prijavite se adresom {email} i privremenom lozinkom {password}. Svoju lozinku postavljate u Podešavanjima.\"": "For the demo, the email that arrives: “Your profile is active. Sign in with {email} and the temporary password {password}. You set your own password in Settings.”",
   "Za demo: na prijavu": "For the demo: to sign-in",
+  "Šta ste radili": "What you did",
+  "Jutarnja rutina, doručak, kratka šetnja.": "Morning routine, breakfast, short walk.",
+  "Kako je {name} bio/la danas?": "How was {name} today?",
+  "Šta ste stigli da uradite": "What you got to",
+  "Sve je označeno. Skinite oznaku sa onoga što ovog puta nije urađeno.": "Everything is ticked. Untick anything that did not happen this time.",
+  "Nesigurno hoda i nije htela da jede.": "Unsteady on her feet, and she did not want to eat.",
 };

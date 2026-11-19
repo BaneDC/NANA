@@ -200,7 +200,6 @@ export const planVisit = (caregiverId, soonOrOpts = false) => (c) => {
     rate: act.rate,
     agreementVersion: act.version,
     services: act.services,
-    notes: opts?.notes ?? (a.visits.length ? msg('Kao i prošli put. Ako treba nešto iz apoteke, ostavite recept na stolu.') : msg('Prva poseta. Upoznaću se sa njom i proći kroz plan nege sa vama.')),
     status: 'planned',
     sentAt: now,
   };
