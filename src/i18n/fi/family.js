@@ -522,9 +522,8 @@ export default {
   "Gde živi osoba kojoj treba nega?": "Missä hoitoa tarvitseva henkilö asuu?",
   "U inostranstvu": "Ulkomailla",
   "Imamo negovateljice iz Srbije koje dolaze kod klijenta u inostranstvo. Napravite nalog da ih vidite.": "Meillä on serbialaisia hoitajia, jotka tulevat asiakkaan luo ulkomaille. Luo tili nähdäksesi heidät.",
-  "U ovoj opštini trenutno imamo {count}.": "Tässä kunnassa meillä on tällä hetkellä {count}.",
-  "negovateljicu|negovateljice|negovateljica": "hoitaja|hoitajaa",
-  "U ovoj opštini trenutno nemamo negovateljicu. Možemo da napravimo plan nege i javimo vam čim se neka prijavi.": "Tässä kunnassa meillä ei tällä hetkellä ole hoitajaa. Voimme tehdä hoitosuunnitelman ja ilmoittaa teille heti, kun joku ilmoittautuu.",
   "U kojoj opštini živi osoba kojoj treba nega?": "Missä kunnassa hoitoa tarvitseva henkilö asuu?",
   "Dijaspora": "Diaspora",
+  "Još nemamo negovateljicu u ovoj opštini": "Tässä kunnassa ei vielä ole hoitajaa",
+  "Nalog možete da napravite već sada. Javićemo vam čim se neka prijavi.": "Voitte luoda tilin jo nyt. Ilmoitamme teille heti, kun joku ilmoittautuu.",
 };

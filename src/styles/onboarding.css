@@ -1633,6 +1633,78 @@
   mask-image: linear-gradient(to top, #000 65%, transparent 100%);
 }
 
+/* A list that scrolls in a place of its own (the family's municipality,
+   docs/patterns.md §10). On a computer: as tall as the screen leaves it under
+   the question and the search, never taller than the cards; its height does
+   not follow the search, so nothing under it moves as she types. Faded where
+   there is more (data-up, data-down from the page), so it is plain the list
+   goes on. Out 16 each side, so the cards' shadows are not cut; the 16 under
+   the last card and the bar's 16 put the buttons 32 under it at the end. */
+@property --scroll-up {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-down {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.imm-scroll {
+  height: clamp(232px, calc(100dvh - 460px), 600px);
+  margin: calc(var(--spacing-1) * -1) calc(var(--spacing-4) * -1) 0;
+  padding: var(--spacing-1) var(--spacing-4) var(--spacing-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 92, 70, 0.28) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--scroll-up), #000 calc(100% - var(--scroll-down)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--scroll-up), #000 calc(100% - var(--scroll-down)), transparent 100%);
+  transition: --scroll-up 0.2s ease-out, --scroll-down 0.2s ease-out;
+}
+
+.imm-scroll[data-up] {
+  --scroll-up: 32px;
+}
+
+.imm-scroll[data-down] {
+  --scroll-down: 64px;
+}
+
+/* the one chosen, brought into view, stops clear of the fade */
+.imm-scroll .imm-option {
+  scroll-margin: var(--spacing-8) 0 64px;
+}
+
+/* On a phone the page scrolls as one, the question and the search with it:
+   no place of its own, no fade. At least a screen under the search, so the
+   search stays where it is as the cards it finds get fewer (the page cannot
+   run shorter than where she has scrolled to). The chosen card stops clear of
+   the bar (two buttons, 136). */
+@media (max-width: 640px) {
+  .imm-scroll {
+    height: auto;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .imm-scroll .imm-option {
+    scroll-margin: var(--spacing-4) 0 152px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-scroll {
+    transition: none;
+  }
+}
+
 /* The caregiver's review after her form, as the family's plan after the
    onboarding: on the sky, no cards. A part is its name (16 medium, 12 above
    its rows), 24, a line, 24 from the next; a row is the question left (200) and the answer

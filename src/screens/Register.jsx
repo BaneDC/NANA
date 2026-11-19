@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronDown, Search, ShieldCheck } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Logo from '../components/Logo';
+import { AttentionNote } from '../components/Attention';
 import PhotoCarousel from '../components/PhotoCarousel';
-import { Field, FieldError, Input, Password, Phone, Select, choiceError, choiceRow, pageFocus, requiredError, useCheck } from '../components/TextField';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { FieldDescription } from '@/components/ui/field';
+import { Field, FieldError, Input, Password, Phone, Select, pageFocus, requiredError, useCheck } from '../components/TextField';
 import { COUNTRIES } from '../data/countries';
 import { activateCaregiver, awaitingFirstSignIn, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
@@ -211,50 +210,140 @@ const WHERE_OPTIONS = [
   ['diaspora', msg('Dijaspora'), '🌍'],
 ];
 // how many caregivers we have in her municipality, said before she gives us
-// anything of hers; none does not stop her (the plan, and word when one signs up)
-const countText = (market, municipality) => {
-  const n = caregiverCount(market, municipality);
-  return n
-    ? t('U ovoj opštini trenutno imamo {count}.', {
-        count: tn(n, 'negovateljicu', 'negovateljice', 'negovateljica'),
-      })
-    : t('U ovoj opštini trenutno nemamo negovateljicu. Možemo da napravimo plan nege i javimo vam čim se neka prijavi.');
-};
+// anything of hers, at the right of the name in the card of the one chosen
+// (decided 19. 11., dizajner; until then a line under the list); none is a
+// note of its own in that card, under the name, with that it does not stop
+// her (decided 19. 11., dizajner; until then a note over the buttons)
+const countText = (n) => (n ? tn(n, 'negovateljica', 'negovateljice', 'negovateljica') : t('Još nemamo negovateljicu u ovoj opštini'));
 
 // The municipality without a dropdown (decided 19. 11., Branislav): a search,
-// and under it the first ten that match as radios, the one chosen kept at the
-// top when the search no longer finds it; the count under the list.
-const SHOWN = 10;
+// and under it every one that matches, the one chosen kept at the top when the
+// search no longer finds it; the count in its card. On a computer the list
+// scrolls in a place of its own, faded where there is more, so it is plain
+// there is more; on a phone the page scrolls as one, the question and the
+// search with it (decided 19. 11., dizajner).
 const plain = (x) => x.toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/\p{Diacritic}/gu, '');
 function MunicipalityPicker({ market, value, onChange, error }) {
   const [query, setQuery] = useState('');
+  const list = useRef(null);
+  const scroller = useRef(null);
   const all = municipalityGroups(market).flatMap((g) => g.options.map((o) => ({ ...o, group: o.value === o.label ? null : g.label })));
   const q = plain(query.trim());
-  const found = all.filter((o) => !q || plain(`${o.label} ${o.group || ''}`).includes(q)).slice(0, SHOWN);
+  const found = all.filter((o) => !q || plain(`${o.label} ${o.group || ''}`).includes(q));
   const chosen = all.find((o) => o.value === value);
-  const rows = chosen && !found.some((o) => o.value === value) ? [chosen, ...found.slice(0, SHOWN - 1)] : found;
+  const rows = chosen && !found.some((o) => o.value === value) ? [chosen, ...found] : found;
+  const count = value ? caregiverCount(market, value) : null;
+  const at = rows.findIndex((o) => o.value === value);
+  // a radio group to the keyboard: Tab comes into the chosen card, the arrows move and choose
+  const move = (e, i) => {
+    const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const n = (i + step + rows.length) % rows.length;
+    onChange(rows[n].value);
+    list.current?.querySelectorAll('[role=radio]')[n]?.focus();
+  };
+  // the fades say where there is more: at the top once scrolled, at the bottom while more is under it
+  const edges = () => {
+    const el = scroller.current;
+    if (!el) return;
+    el.toggleAttribute('data-up', el.scrollTop > 1);
+    el.toggleAttribute('data-down', el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+  };
+  useEffect(() => {
+    edges();
+    window.addEventListener('resize', edges);
+    return () => window.removeEventListener('resize', edges);
+  });
+  // a new search starts the list at its top (on a phone the page does not move)
+  useEffect(() => {
+    if (scroller.current) scroller.current.scrollTop = 0;
+    edges();
+  }, [q]);
+  // the one chosen in view, clear of the buttons and the fade
+  useEffect(() => {
+    if (!value) return;
+    const card = list.current?.querySelector('[aria-checked=true]');
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(() => card?.scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' }));
+  }, [value]);
   return (
     <div className="flex flex-col gap-3">
-      <Field label={t('Opština')} required>
-        <Input value={query} onChange={setQuery} icon={Search} placeholder={t('Pretražite opštine')} autoComplete="off" />
-      </Field>
       <div className="flex flex-col gap-1">
+        {/* Enter (a phone's "done") picks the first one found and puts the
+            keyboard away; it does not send the step, which said "required"
+            to someone only searching (19. 11.). Names of places: no
+            correcting, no spelling. The title asks the question, so no label */}
+        <Input
+          value={query}
+          onChange={setQuery}
+          icon={Search}
+          aria-label={t('Pretražite opštine')}
+          placeholder={t('Pretražite opštine')}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          enterKeyHint="done"
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            if (found[0]) onChange(found[0].value);
+            e.currentTarget.blur();
+          }}
+        />
+        {error && <FieldError>{error}</FieldError>}
+      </div>
+      {/* the onboarding's choice cards without their letters (a list, not a
+          question; decided 19. 11., dizajner), one to choose (.imm-scroll:
+          its height does not follow the search, so nothing jumps as she
+          types) */}
+      {/* what the chosen card now says, said to a screen reader as she chooses */}
+      <p role="status" className="sr-only">
+        {value ? countText(count) : ''}
+      </p>
+      <div ref={scroller} onScroll={edges} className="imm-scroll">
         {rows.length ? (
-          <RadioGroup value={value} onValueChange={onChange} aria-label={t('Opština')} aria-invalid={error ? true : undefined} className="flex flex-col gap-0">
-            {rows.map((o) => (
-              <label key={o.value} className={choiceRow}>
-                <RadioGroupItem value={o.value} className="mt-0.5" />
-                <span className="min-w-0">
-                  {o.label}
-                  {o.group && <span className="text-muted-foreground"> · {o.group}</span>}
-                </span>
-              </label>
-            ))}
-          </RadioGroup>
+          <div ref={list} role="radiogroup" aria-label={t('Opština')} aria-required aria-invalid={error ? true : undefined} className="imm-options">
+            {rows.map((o, i) => {
+              const on = o.value === value;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  tabIndex={on || (at < 0 && i === 0) ? 0 : -1}
+                  className={cn('imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', on && 'is-selected', on && count === 0 && 'flex-wrap')}
+                  onClick={() => onChange(o.value)}
+                  onKeyDown={(e) => move(e, i)}
+                >
+                  <span className="imm-option-text">
+                    <span className="imm-option-title">
+                      {o.label}
+                      {o.group && <span className="font-normal text-muted-foreground"> · {o.group}</span>}
+                    </span>
+                  </span>
+                  {/* the count at the right of the name, in the one ink of the
+                      tint (primary-700: 6 : 1 on the chosen card; the
+                      primary-600 it had was 3.3 : 1) */}
+                  {on && count > 0 && <span className="shrink-0 text-xs leading-6 whitespace-nowrap text-primary-700">{countText(count)}</span>}
+                  {/* none there: the small note across the whole card, 8
+                      under the name (the card's 12 less 4), 8 from its
+                      sides and foot, so r8 in the card's 16; a button holds no
+                      blocks, so spans (decided 19. 11., dizajner) */}
+                  {on && count === 0 && (
+                    <AttentionNote as="span" title={countText(0)} className="-mx-2 -mt-1 -mb-1 basis-[calc(100%+16px)]">
+                      {t('Nalog možete da napravite već sada. Javićemo vam čim se neka prijavi.')}
+                    </AttentionNote>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         ) : (
-          <p className="text-xs leading-5 text-muted-foreground">{t('Nema rezultata.')}</p>
+          <p className="pt-4 text-center text-xs leading-5 text-muted-foreground">{t('Nema rezultata.')}</p>
         )}
-        {error ? <FieldError className={choiceError}>{error}</FieldError> : value && <FieldDescription className={choiceError}>{countText(market, value)}</FieldDescription>}
       </div>
     </div>
   );
@@ -309,24 +398,34 @@ function FamilySignUp(p) {
 
   // Serbia and Finland: the municipality, and how many caregivers we have
   // there, before anything of hers (docs/patterns.md §10, 16. 11.)
-  if (p.step === 'municipality')
+  if (p.step === 'municipality') {
+    // Nothing in a card (decided 19. 11., dizajner; until then the search and
+    // the list as radios in one glass card): the search alone on the sky, the
+    // municipalities the onboarding's choice cards under it, and the page
+    // scrolls as one; the buttons on the bar held at the bottom of the screen
     return (
-      <StepPage eyebrow={t(WHERE_OPTIONS.find(([id]) => id === p.where)[1])} title={t('U kojoj opštini živi osoba kojoj treba nega?')} lead={lead} language>
-        <form className="contents" onSubmit={(e) => (e.preventDefault(), p.toAccount())}>
-          <StepPanel>
-            <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
-            {/* a step back inside the sign-up is a button by the main one (§4) */}
-            <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
-              <Button type="button" variant="secondary" onClick={() => p.backFrom('municipality')}>
-                {t('Nazad')}
-              </Button>
-              <Button type="submit">{t('Nastavi')}</Button>
-            </div>
-          </StepPanel>
-        </form>
-        {signIn}
+      <StepPage
+        eyebrow={t(WHERE_OPTIONS.find(([id]) => id === p.where)[1])}
+        title={t('U kojoj opštini živi osoba kojoj treba nega?')}
+        lead={lead}
+        language
+        actions={
+          // a step back inside the sign-up is a button by the main one (§4)
+          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+            <Button type="button" variant="secondary" size="lg" onClick={() => p.backFrom('municipality')}>
+              {t('Nazad')}
+            </Button>
+            <Button type="button" size="lg" onClick={p.toAccount}>
+              {t('Nastavi')}
+            </Button>
+          </div>
+        }
+        footer={signIn}
+      >
+        <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
       </StepPage>
     );
+  }
 
   // the second step, the account: her name, how to reach her, the password
   return (

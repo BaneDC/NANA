@@ -46,3 +46,29 @@ export function AttentionTitle({ className, ...props }) {
 export function AttentionDescription({ className, ...props }) {
   return <p className={cn('text-xs leading-body text-primary-700', className)} {...props} />;
 }
+
+// The tint's small note inside a card (docs/patterns.md §10, "Napomena u
+// kartici", decided 19. 11., dizajner): what changes how the rest is read, said
+// plainly and not in small grey. A ground of its own, darker than any card it
+// sits in (`primary-200`; the orange part's `primary-50` was 1.02 : 1 to a
+// chosen card), its ink `primary-800` (7.6 : 1); r8, 8 in from a card's 16,
+// 12 in; the title and its sentence as the orange part's, 4 apart, one ink. No icon (§11), no button: the card's
+// buttons are under it. As a span (`as="span"`) it sits inside a button, a
+// choice card's: there it says nothing to a screen reader on its own, the
+// card's name carries it and the page says it once in a status of its own.
+export function AttentionNote({ as = 'div', title, className, children, ...props }) {
+  const Box = as;
+  const inline = as === 'span';
+  const Line = inline ? 'span' : 'p';
+  return (
+    <Box
+      role={inline ? undefined : 'status'}
+      {...props}
+      data-slot="attention-note"
+      className={cn('flex flex-col gap-1 rounded-lg bg-primary-200 p-3', className)}
+    >
+      <Line className="text-sm font-medium text-primary-800">{title}</Line>
+      {children && <Line className="text-xs leading-body text-primary-800">{children}</Line>}
+    </Box>
+  );
+}
