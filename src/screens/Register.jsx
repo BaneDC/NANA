@@ -210,11 +210,10 @@ const WHERE_OPTIONS = [
   ['diaspora', msg('Dijaspora'), '🌍'],
 ];
 // how many caregivers we have in her municipality, said before she gives us
-// anything of hers, under the name in the card of the one chosen (decided
-// 19. 11., dizajner; until then at its right, before that a line under the
-// list); none is a note of its own in that card, under the name, with that
-// it does not stop her (decided 19. 11., dizajner; until then a note over the
-// buttons)
+// anything of hers, at the right of the name in the card of the one chosen
+// (decided 19. 11., dizajner; until then a line under the list); none is a
+// note of its own in that card, under the name, with that it does not stop
+// her (decided 19. 11., dizajner; until then a note over the buttons)
 const countText = (n) => (n ? tn(n, 'negovateljica', 'negovateljice', 'negovateljica') : t('Još nemamo negovateljicu u ovoj opštini'));
 
 // The municipality without a dropdown (decided 19. 11., Branislav): a search,
@@ -324,8 +323,11 @@ function MunicipalityPicker({ market, value, onChange, error }) {
                       {o.label}
                       {o.group && <span className="font-normal text-muted-foreground"> · {o.group}</span>}
                     </span>
-                    {on && count > 0 && <span className="imm-option-sub">{countText(count)}</span>}
                   </span>
+                  {/* the count at the right of the name, in the one ink of the
+                      tint (primary-700: 6 : 1 on the chosen card; the
+                      primary-600 it had was 3.3 : 1) */}
+                  {on && count > 0 && <span className="shrink-0 text-xs leading-6 whitespace-nowrap text-primary-700">{countText(count)}</span>}
                   {/* none there: the small note across the whole card, 8
                       under the name (the card's 12 less 4), 8 from its
                       sides and foot, so r8 in the card's 16; a button holds no
