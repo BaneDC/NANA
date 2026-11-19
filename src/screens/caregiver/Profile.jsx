@@ -11,6 +11,7 @@ import Tags from '../../components/Tags';
 import { AvailabilityForm, EmergencyForm, HealthForm, PersonalForm, ProfessionForm, QualificationsForm, radiusText } from '../../components/caregiver/ProfileForms';
 import { SLOTS, daysText, engagementText } from '../../data/carePlan';
 import { DOCUMENTS, HABITS, educationText, HEALTH_QUESTIONS, PERSONAL, READINESS } from '../../data/caregiverProfile';
+import { SignOutCard } from '../Settings';
 import { t } from '@/i18n';
 
 // "Moj profil", laid out as Settings is: groups of cards, each saying what it
@@ -157,6 +158,12 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
               ))}
           </Group>
         )}
+      </PageSection>
+
+      {/* last on her profile, as on the family's (decided 19. 11., Branislav;
+          until then the last card of Settings) */}
+      <PageSection>
+        <SignOutCard />
       </PageSection>
 
       {kept === 'personal' && <PersonalForm open={form === 'personal'} profile={c} onClose={close} onSave={save} />}

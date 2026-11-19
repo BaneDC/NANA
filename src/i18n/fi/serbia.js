@@ -15,7 +15,7 @@ export default {
   "Kurs za gerontodomaćice": "Kotiavustajan kurssi",
   "Kursevi": "Kurssit",
   "Medicinska sestra u penziji. Radila sam dvadeset godina na gerijatriji, a sada negujem starije kod kuće.": "Eläkkeellä oleva sairaanhoitaja. Työskentelin kaksikymmentä vuotta geriatriassa ja hoidan nyt ikäihmisiä kotona.",
-  "Nalog, paket, bezbednost, jezik i obaveštenja, privatnost.": "Tili, paketti, turvallisuus, kieli ja ilmoitukset, yksityisyys.",
+  "Paket, bezbednost, jezik i obaveštenja, privatnost.": "Paketti, turvallisuus, kieli ja ilmoitukset, yksityisyys.",
   "Ne obnavlja se sam. Kad istekne, izaberite paket ponovo.": "Se ei uusiudu. Kun se päättyy, valitse paketti uudelleen.",
   "Nega nepokretnih osoba": "Vuodepotilaiden hoito",
   "Nega osoba sa demencijom": "Muistisairaiden hoito",

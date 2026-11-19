@@ -284,7 +284,7 @@ export default {
   'Dva unosa se ne poklapaju.': 'Salasanat eivät täsmää.',
   'Sačuvaj lozinku': 'Tallenna salasana',
   'Podešavanja': 'Asetukset',
-  'Nalog, plaćanje, bezbednost, jezik i obaveštenja, privatnost.': 'Tili, maksaminen, turvallisuus, kieli ja ilmoitukset, yksityisyys.',
+  'Plaćanje, bezbednost, jezik i obaveštenja, privatnost.': 'Maksaminen, turvallisuus, kieli ja ilmoitukset, yksityisyys.',
   'Plaćanje': 'Maksaminen',
   'Pretplata': 'Tilaus',
   'Otkazana': 'Peruttu',
@@ -697,4 +697,5 @@ export default {
   "Po jeziku": "Kielen mukaan",
   "Za demo: nova privremena lozinka za {email}": "Demoa varten: uusi väliaikainen salasana osoitteelle {email}",
   'Za demo': 'Demoa varten',
+  'Vaši podaci i odjava.': 'Tietosi ja uloskirjautuminen.',
 };

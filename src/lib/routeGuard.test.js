@@ -25,6 +25,7 @@ describe('guard', () => {
     expect(resolve({ page: 'settings' }, np)).toEqual({ page: 'onboarding' });
     expect(resolve({ page: 'onboarding' }, np)).toBeNull();
   });
+  it('the family has a profile (19. 11.)', () => expect(resolve({ page: 'profile' }, base)).toBeNull());
   it('the summary stays while it shows', () => {
     expect(resolve({ page: 'onboarding' }, base)).toEqual({ page: 'dashboard' });
     expect(resolve({ page: 'onboarding' }, { ...base, summaryShowing: true })).toBeNull();
