@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronDown, Search, ShieldCheck } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -7,8 +7,7 @@ import { cn } from '@/lib/utils';
 import Logo from '../components/Logo';
 import { AttentionNote } from '../components/Attention';
 import PhotoCarousel from '../components/PhotoCarousel';
-import { Field, FieldError, Input, Password, Phone, Select, choiceError, choiceRow, pageFocus, requiredError, useCheck } from '../components/TextField';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Field, FieldError, Input, Password, Phone, Select, pageFocus, requiredError, useCheck } from '../components/TextField';
 import { COUNTRIES } from '../data/countries';
 import { activateCaregiver, awaitingFirstSignIn, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
@@ -224,36 +223,84 @@ const SHOWN = 10;
 const plain = (x) => x.toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/\p{Diacritic}/gu, '');
 function MunicipalityPicker({ market, value, onChange, error }) {
   const [query, setQuery] = useState('');
+  const list = useRef(null);
   const all = municipalityGroups(market).flatMap((g) => g.options.map((o) => ({ ...o, group: o.value === o.label ? null : g.label })));
   const q = plain(query.trim());
   const found = all.filter((o) => !q || plain(`${o.label} ${o.group || ''}`).includes(q)).slice(0, SHOWN);
   const chosen = all.find((o) => o.value === value);
   const rows = chosen && !found.some((o) => o.value === value) ? [chosen, ...found.slice(0, SHOWN - 1)] : found;
   const count = value ? caregiverCount(market, value) : null;
+  const at = rows.findIndex((o) => o.value === value);
+  // a radio group to the keyboard: Tab comes into the chosen card, the arrows move and choose
+  const move = (e, i) => {
+    const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const n = (i + step + rows.length) % rows.length;
+    onChange(rows[n].value);
+    list.current?.querySelectorAll('[role=radio]')[n]?.focus();
+  };
   return (
     <div className="flex flex-col gap-3">
-      <Field label={t('Opština')} required>
-        <Input value={query} onChange={setQuery} icon={Search} placeholder={t('Pretražite opštine')} autoComplete="off" />
-      </Field>
-      <div className="flex min-h-[320px] flex-col gap-1 pointer-coarse:min-h-[440px]">
-        {rows.length ? (
-          <RadioGroup value={value} onValueChange={onChange} aria-label={t('Opština')} aria-invalid={error ? true : undefined} className="flex flex-col gap-0">
-            {rows.map((o) => (
-              <label key={o.value} className={choiceRow}>
-                <RadioGroupItem value={o.value} className="mt-0.5" />
-                <span className="min-w-0">
-                  {o.label}
-                  {o.group && <span className="text-muted-foreground"> · {o.group}</span>}
-                  {o.value === value && <span className={count ? 'text-primary-600' : 'text-muted-foreground'}> · {countText(count)}</span>}
-                </span>
-              </label>
-            ))}
-          </RadioGroup>
-        ) : (
-          <p className="text-xs leading-5 text-muted-foreground">{t('Nema rezultata.')}</p>
-        )}
-        {error && <FieldError className={choiceError}>{error}</FieldError>}
+      <div className="flex flex-col gap-1">
+        {/* Enter (a phone's "done") picks the first one found and puts the
+            keyboard away; it does not send the step, which said "required"
+            to someone only searching (19. 11.). Names of places: no
+            correcting, no spelling. The title asks the question, so no label */}
+        <Input
+          value={query}
+          onChange={setQuery}
+          icon={Search}
+          aria-label={t('Pretražite opštine')}
+          placeholder={t('Pretražite opštine')}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          enterKeyHint="done"
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            if (found[0]) onChange(found[0].value);
+            e.currentTarget.blur();
+          }}
+        />
+        {error && <FieldError>{error}</FieldError>}
       </div>
+      {/* the onboarding's choice cards, one to choose; ten cards high
+          whatever the search finds, so the page does not jump as she types */}
+      {rows.length ? (
+        <div ref={list} role="radiogroup" aria-label={t('Opština')} aria-required aria-invalid={error ? true : undefined} className="imm-options min-h-[592px]">
+          {rows.map((o, i) => {
+            const on = o.value === value;
+            return (
+              <button
+                key={o.value}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                tabIndex={on || (at < 0 && i === 0) ? 0 : -1}
+                className={cn('imm-option cursor-pointer', on && 'is-selected')}
+                onClick={() => onChange(o.value)}
+                onKeyDown={(e) => move(e, i)}
+              >
+                <span className="imm-letter" aria-hidden="true">
+                  {String.fromCharCode(97 + i)}
+                </span>
+                <span className="imm-option-text">
+                  <span className="imm-option-title">
+                    {o.label}
+                    {o.group && <span className="font-normal text-muted-foreground"> · {o.group}</span>}
+                  </span>
+                </span>
+                {on && <span className={cn('shrink-0 text-xs leading-5 whitespace-nowrap', count ? 'text-primary-600' : 'text-muted-foreground')}>{countText(count)}</span>}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="min-h-[592px] text-center text-xs leading-5 text-muted-foreground">{t('Nema rezultata.')}</p>
+      )}
     </div>
   );
 }
@@ -307,29 +354,45 @@ function FamilySignUp(p) {
 
   // Serbia and Finland: the municipality, and how many caregivers we have
   // there, before anything of hers (docs/patterns.md §10, 16. 11.)
-  if (p.step === 'municipality')
+  if (p.step === 'municipality') {
+    // none there: said plainly over the buttons, not small under the list
+    // (decided 19. 11., dizajner)
+    const none = p.municipality && caregiverCount(p.market, p.municipality) === 0;
+    // Nothing in a card (decided 19. 11., dizajner; until then the search and
+    // the list as radios in one glass card): the search alone on the sky, the
+    // municipalities the onboarding's choice cards under it, and the page
+    // scrolls as one; the buttons on the bar held at the bottom of the screen,
+    // the note over them, so both are always in reach
     return (
-      <StepPage eyebrow={t(WHERE_OPTIONS.find(([id]) => id === p.where)[1])} title={t('U kojoj opštini živi osoba kojoj treba nega?')} lead={lead} language>
-        <form className="contents" onSubmit={(e) => (e.preventDefault(), p.toAccount())}>
-          <StepPanel>
-            <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
-            {/* none there: said plainly over the buttons, not small under the
-                list (decided 19. 11., dizajner) */}
-            {p.municipality && caregiverCount(p.market, p.municipality) === 0 && (
-              <AttentionNote title={t('U ovoj opštini još nemamo negovateljicu')}>{t('Nastavite i napravite nalog. Javićemo vam čim se neka negovateljica iz ove opštine prijavi.')}</AttentionNote>
+      <StepPage
+        eyebrow={t(WHERE_OPTIONS.find(([id]) => id === p.where)[1])}
+        title={t('U kojoj opštini živi osoba kojoj treba nega?')}
+        lead={lead}
+        language
+        actions={
+          <div className="flex flex-col gap-3">
+            {none && (
+              <AttentionNote title={t('U ovoj opštini još nemamo negovateljicu')} className="rounded-2xl px-4 py-3">
+                {t('Nastavite i napravite nalog. Javićemo vam čim se neka negovateljica iz ove opštine prijavi.')}
+              </AttentionNote>
             )}
             {/* a step back inside the sign-up is a button by the main one (§4) */}
             <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
-              <Button type="button" variant="secondary" onClick={() => p.backFrom('municipality')}>
+              <Button type="button" variant="secondary" size="lg" onClick={() => p.backFrom('municipality')}>
                 {t('Nazad')}
               </Button>
-              <Button type="submit">{t('Nastavi')}</Button>
+              <Button type="button" size="lg" onClick={p.toAccount}>
+                {t('Nastavi')}
+              </Button>
             </div>
-          </StepPanel>
-        </form>
-        {signIn}
+          </div>
+        }
+        footer={signIn}
+      >
+        <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
       </StepPage>
     );
+  }
 
   // the second step, the account: her name, how to reach her, the password
   return (
