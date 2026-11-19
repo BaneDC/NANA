@@ -1,4 +1,5 @@
 import { msg, t } from '../i18n';
+import { isShortPlan, pathNow } from './path';
 
 // The Clinical Frailty Scale the client's flow is built around. The questionnaire
 // estimates a level from the answers, the conversation then branches on it, and the
@@ -89,7 +90,10 @@ export function estimateFrailty(answers) {
   return Math.min(9, Math.max(1, Math.round(total / weight)));
 }
 
+// None on the short path and for a small plan (path.js): one answer about how
+// she moves is not an estimate, and a level drawn from it would mislead.
 export function frailtyOf(answers) {
+  if (pathNow() === 'caregiver' || isShortPlan(answers)) return null;
   const level = estimateFrailty(answers);
   if (!level) return null;
   return { level, band: bandOf(level), ...CFS[level] };

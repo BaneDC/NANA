@@ -1,4 +1,4 @@
-import { demoAnswersRs, demoAnswers, demoNotes, demoUser, demoUserRs } from './demoCase';
+import { demoAnswersRs, demoAnswers, demoNotes, demoShortAnswers, demoShortAnswersRs, demoUser, demoUserRs } from './demoCase';
 import { caregiverById } from './carePlan';
 import { demoPerson } from './person';
 import { fillCare } from './demoFill';
@@ -20,7 +20,8 @@ export function demoEntry(search) {
   const v = (q.get('demo') || '').toLowerCase();
   const market = v === 'rs' || q.get('trziste') === 'sr' ? 'sr' : 'fi';
   const role = v === 'negovateljica' ? 'caregiver' : 'family';
-  return { role, market, filled: q.has('puno'), explicit: Boolean(v) || q.has('trziste') };
+  // &kratko: the family that asked only for a caregiver, on a small plan
+  return { role, market, filled: q.has('puno'), short: q.has('kratko'), explicit: Boolean(v) || q.has('trziste') };
 }
 
 const KEY = 'nana.demo.session';
@@ -67,7 +68,17 @@ export function demoAccount(role, market) {
   };
 }
 
-export function seedState(market, { filled }) {
+export function seedState(market, { filled, short = false } = {}) {
+  if (short) {
+    const user = demoAccount('family', market);
+    const answers = market === 'sr' ? demoShortAnswersRs : demoShortAnswers;
+    const person = { ...demoPerson(answers, [], user), path: 'caregiver' };
+    return {
+      person: { ...person, care: withAnswers(person.care, answers, user) },
+      family: { unlocked: false, subscription: null },
+      clients: market === 'fi' ? caregiverClients() : caregiverClientsRs(),
+    };
+  }
   // Serbia has no agreements or visits to fill a week of care with (part 2)
   filled = filled && market !== 'sr';
   const user = demoAccount('family', market);

@@ -8,8 +8,9 @@ import PersonalityTest from './PersonalityTest';
 import CookieSettings from '../../components/CookieSettings';
 import { COOKIE_DEFAULT } from '../../data/cookies';
 import { Radius, radiusText } from '../../components/caregiver/ProfileForms';
-import { Checks, Combobox, DateInput, Field, FieldError, FileField, Input, Phone, Select, TextArea, choiceError, choiceRow, requiredError, useCheck } from '../../components/TextField';
+import { Checks, Combobox, DateText, Field, FieldError, FileField, Input, Phone, Select, TextArea, choiceError, choiceRow, requiredError, useCheck } from '../../components/TextField';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FieldDescription } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { activateCaregiver, saveAccount } from '../../lib/account';
@@ -59,6 +60,7 @@ function Chips({ label, value, onChange, options, multiple = true, required, err
         value={value}
         onValueChange={(v) => (multiple ? onChange(v) : v && onChange(v))}
         aria-label={label}
+        aria-invalid={error ? true : undefined}
       >
         {options.map(([id, text]) => (
           <ToggleGroupItem key={id} value={id}>
@@ -88,10 +90,12 @@ export function ConsentRow({ checked, onChange, required, error, children }) {
   );
 }
 
-function Radios({ label, value, onChange, options, required, error }) {
+// `hint`: a grey line under the answers, where a field's would be (the
+// family's account: what choosing "abroad" means; docs/patterns.md §10)
+export function Radios({ label, value, onChange, options, required, error, hint }) {
   return (
     <Field label={label} required={required}>
-      <RadioGroup value={value} onValueChange={onChange} aria-label={label} className="flex flex-col gap-0">
+      <RadioGroup value={value} onValueChange={onChange} aria-label={label} aria-invalid={error ? true : undefined} className="flex flex-col gap-0">
         {options.map(([id, text]) => (
           <label key={id} className={choiceRow}>
             <RadioGroupItem value={id} className="mt-0.5" />
@@ -99,7 +103,7 @@ function Radios({ label, value, onChange, options, required, error }) {
           </label>
         ))}
       </RadioGroup>
-      {error && <FieldError className={choiceError}>{error}</FieldError>}
+      {error ? <FieldError className={choiceError}>{error}</FieldError> : hint && <FieldDescription className={choiceError}>{hint}</FieldDescription>}
     </Field>
   );
 }
@@ -120,10 +124,13 @@ function YesNo({ label, value, onChange }) {
   return <Chips label={label} cols="grid-cols-2" multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
 }
 
-// her steps, each an address: /signup/caregiver (the account), then /signup/caregiver/<step>
-const toStep = (step, opts) => navigate({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step }, opts);
-const backToStep = (step) => goBackTo({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step });
-const stepHref = (step) => href({ page: 'signup', who: 'caregiver', step: step === 'account' ? undefined : step });
+// her steps, each an address: /signup/caregiver (where she wants to work),
+// then /signup/caregiver/<step>, the account first (decided 19. 11., Branislav)
+const toStep = (step, opts) => navigate({ page: 'signup', who: 'caregiver', step: step === 'market' ? undefined : step }, opts);
+const backToStep = (step) => goBackTo({ page: 'signup', who: 'caregiver', step: step === 'market' ? undefined : step });
+const stepHref = (step) => href({ page: 'signup', who: 'caregiver', step: step === 'market' ? undefined : step });
+// the steps before the form: nothing of hers is bound to a market until past them
+const BEFORE_FORM = ['market', 'account'];
 
 // the market her language points to: Serbian Serbia, Finnish Finland, English none
 const marketOfLang = (lang) => (lang === 'sr' || lang === 'fi' ? lang : null);
@@ -138,7 +145,7 @@ const draftNow = () => {
   // is still on the account: that market, what she typed is let go; once she
   // is past the account it is hers to finish, whatever a link says (rule 17;
   // decided 13. 11., Branislav, as on production)
-  if (d?.f && d.reached === 'account' && siteMarket() && d.f.market !== siteMarket()) {
+  if (d?.f && BEFORE_FORM.includes(d.reached) && siteMarket() && d.f.market !== siteMarket()) {
     clearDraft();
     return null;
   }
@@ -154,7 +161,7 @@ export default function CaregiverSignUp({ onForm }) {
   // until she picks.
   // (a form only binds once she is past the account: the old flow made one on
   // the country, before the account)
-  const begun = kept?.f && kept.reached !== 'account' ? kept.f.market : null;
+  const begun = kept?.f && !BEFORE_FORM.includes(kept.reached) ? kept.f.market : null;
   const [market, setMarket] = useState(() => begun ?? siteMarket() ?? kept?.chosen ?? marketOfLang(getLang()));
   // only a market she picked herself is kept with the draft (as `chosen`);
   // one from a link or her language is not, so the next visit's link and
@@ -185,19 +192,19 @@ export default function CaregiverSignUp({ onForm }) {
   // (the browser's too) goes no further than that. The step is the address's;
   // one she may not be on yet (a reload with nothing kept, a link, a step of
   // the other country) shows, and becomes, the furthest she may.
-  const order = f ? ['account', 'form', 'review', ...afterSteps(f)] : ['account'];
-  const [furthest, setFurthest] = useState(kept?.reached ?? 'account');
+  const order = f ? [...BEFORE_FORM, 'form', 'review', ...afterSteps(f)] : BEFORE_FORM;
+  const [furthest, setFurthest] = useState(kept?.reached ?? 'market');
   // a step that is no longer on her way (documents she no longer needs) counts as the one after the review
   const indexOf = (step) => (order.includes(step) ? order.indexOf(step) : Math.max(0, order.indexOf('interview')));
-  const wanted = useRoute().route.step ?? 'account';
-  // past the account her market is set (rule 17): the account is behind her
-  const locked = Boolean(f) && indexOf(furthest) > 0;
+  const wanted = useRoute().route.step ?? 'market';
+  // past the account her market is set (rule 17): the market and the account are behind her
+  const locked = Boolean(f) && indexOf(furthest) > order.indexOf('account');
   // and no further than the first step that is not right now (forward
   // included): what she changes after a step is checked again
-  const stop = !f ? null : emailError(account.email) || !account.processing || !account.accuracy ? 'account' : firstUnfinished(order, f);
+  const stop = !market ? 'market' : !f ? null : emailError(account.email) || !account.processing || !account.accuracy ? 'account' : firstUnfinished(order, f);
   const limit = stop ? Math.min(indexOf(furthest), order.indexOf(stop)) : indexOf(furthest);
-  const allowed = sent ? wanted === 'thanks' : order.includes(wanted) && order.indexOf(wanted) <= limit && wanted !== 'thanks' && !(locked && wanted === 'account');
-  const screen = allowed ? wanted : sent ? 'thanks' : order[locked ? Math.max(1, limit) : limit];
+  const allowed = sent ? wanted === 'thanks' : order.includes(wanted) && order.indexOf(wanted) <= limit && wanted !== 'thanks' && !(locked && BEFORE_FORM.includes(wanted));
+  const screen = allowed ? wanted : sent ? 'thanks' : order[locked ? Math.max(order.indexOf('form'), limit) : limit];
   useEffect(() => {
     if (screen !== wanted) toStep(screen, { replace: true });
   }, [screen, wanted]);
@@ -206,21 +213,22 @@ export default function CaregiverSignUp({ onForm }) {
   // written into the history (the form, then each after it), and its back goes
   // to the step before, as our "Nazad" does, not out to "Ko ste?". Arrived the
   // usual way (the step before is the one before in the history), nothing is
-  // added. The account is not among them: it is behind her (rule 17).
+  // added. The market and the account are not among them: they are behind her (rule 17).
   // once (StrictMode runs a mount's effect twice, the second time on the first
   // render's address, and would write her steps in again)
   const resumed = useRef(false);
   useEffect(() => {
     if (resumed.current) return;
     resumed.current = true;
-    const at = wanted === 'account' && kept?.screen && kept.screen !== 'account' ? kept.screen : screen;
+    const at = wanted === 'market' && kept?.screen && kept.screen !== 'market' ? kept.screen : screen;
     const i = order.indexOf(at);
-    if (sent || i < 2) {
+    const form = order.indexOf('form');
+    if (sent || i <= form) {
       if (at !== wanted) toStep(at, { replace: true });
       return;
     }
     if (at === wanted && window.history.state?.prev === stepHref(order[i - 1])) return;
-    order.slice(1, i + 1).forEach((step, j) => toStep(step, { replace: j === 0 }));
+    order.slice(form, i + 1).forEach((step, j) => toStep(step, { replace: j === 0 }));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // kept as she goes, once her market is known, until it is sent and she goes on
   useEffect(() => {
@@ -262,8 +270,13 @@ export default function CaregiverSignUp({ onForm }) {
   const [asked, setAsked] = useState(null);
 
   const next = () => {
+    if (screen === 'market') {
+      if (!check.check([!market && requiredError()])) return;
+      check.reset();
+      return go('account');
+    }
     if (screen === 'account') {
-      const e = [!market && requiredError(), emailError(account.email), !account.processing && requiredError(), !account.accuracy && requiredError()];
+      const e = [emailError(account.email), !account.processing && requiredError(), !account.accuracy && requiredError()];
       if (!check.check(e)) return;
       check.reset();
       // the form for her market; from here on the market stays
@@ -377,27 +390,21 @@ export default function CaregiverSignUp({ onForm }) {
     </p>
   );
 
-  // her account, with where she wants to work, is the first step of the same
+  // Where she wants to work, then her account: the first two steps of the same
   // process as the form, so on its sky (docs/patterns.md §12d, decided 11. 11.;
-  // the market on it since 12. 11., Branislav); in the head the logo, as on
-  // the family's sign-up (opened from the website in a new tab, nothing behind
-  // it), and across from it the language (§4, §12b); the pages after it have
-  // neither (decided 13. 11., Branislav)
-  if (screen === 'account')
+  // the market its own step since 19. 11., Branislav, before it was at the top
+  // of the account); in the head the logo, as on the family's sign-up (opened
+  // from the website in a new tab, nothing behind it), and across from it the
+  // language (§4, §12b); the pages after them have neither (decided 13. 11.,
+  // Branislav)
+  const lead = (
+    <span className="flex h-(--button-size) items-center px-3">
+      <Logo width={120} />
+    </span>
+  );
+  if (screen === 'market')
     return (
-      <StepPage
-        title={t('Prijavite se kao negovateljica')}
-        sub={t('Unesite svoje podatke da biste započeli proces prijave.')}
-        lead={
-          <span className="flex h-(--button-size) items-center px-3">
-            <Logo width={120} />
-          </span>
-        }
-        language
-      >
-        {/* one card, as a part of the form: where, the email, the consents
-            and "Nastavi" in it, the terms alone under it (decided 12. 11.,
-            dizajner; until then the consents and the button were under it) */}
+      <StepPage title={t('Prijavite se kao negovateljica')} sub={t('Unesite svoje podatke da biste započeli proces prijave.')} lead={lead} language>
         <StepPanel>
           <Radios
             label={t('Gde želite da radite?')}
@@ -407,10 +414,25 @@ export default function CaregiverSignUp({ onForm }) {
             options={MARKET_OPTIONS.map(([id, l]) => [id, t(l)])}
             error={check.show(!market && requiredError())}
           />
+          {/* as "Dalje" in the form's card: at its right, on a phone across it */}
+          <div className="flex justify-end phone:*:flex-1">
+            <Button onClick={next}>{t('Nastavi')}</Button>
+          </div>
+        </StepPanel>
+      </StepPage>
+    );
+
+  if (screen === 'account')
+    return (
+      <StepPage title={t('Prijavite se kao negovateljica')} sub={t('Unesite svoje podatke da biste započeli proces prijave.')} lead={lead} language>
+        {/* one card, as a part of the form: the email, the consents and the
+            buttons in it, the terms alone under it (decided 12. 11.,
+            dizajner; until then the consents and the button were under it) */}
+        <StepPanel>
           <Field label={t('Email adresa')} required error={check.show(emailError(account.email))}>
             <Input value={account.email} onChange={(v) => setAccount((a) => ({ ...a, email: v }))} type="email" autoComplete="email" placeholder={market ? EXAMPLE[market].email : t('Unesite svoju email adresu')} />
           </Field>
-          {/* rows as the radios over them: a box, the sentence, the whole row the target */}
+          {/* rows as the radios on the step before: a box, the sentence, the whole row the target */}
           <div className="flex flex-col">
             <ConsentRow required checked={account.processing} onChange={(v) => setAccount((a) => ({ ...a, processing: v }))} error={check.show(!account.processing && requiredError())}>
               {t('Saglasnost za obradu podataka')}
@@ -419,8 +441,13 @@ export default function CaregiverSignUp({ onForm }) {
               {t('Potvrda tačnosti podataka')}
             </ConsentRow>
           </div>
-          {/* as "Dalje" in the form's card: at its right, on a phone across it */}
-          <div className="flex justify-end phone:*:flex-1">
+          {/* a step back inside the sign-up is a button by the main one (§4):
+              "Nazad" at the left, "Nastavi" at the right; on a phone one under
+              the other, across the card, the main one on top */}
+          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+            <Button variant="secondary" onClick={back}>
+              {t('Nazad')}
+            </Button>
             <Button onClick={next}>{t('Nastavi')}</Button>
           </div>
         </StepPanel>
@@ -446,19 +473,9 @@ export default function CaregiverSignUp({ onForm }) {
           </Field>
         </div>
         <Field label={t('Datum rođenja')} required error={show('birth')}>
-          {/* years back: month and year as dropdowns in the calendar */}
-          {/* opens on today; someone under 18 is told so under the field
-              (docs/patterns.md §10), the days are not switched off */}
-          <DateInput
-            value={f.birth ? new Date(f.birth) : null}
-            onChange={(d) => set({ birth: d.getTime() })}
-            from={new Date(1920, 0, 1)}
-            to={new Date()}
-            today={new Date()}
-            pickYear
-            market={f.market}
-            placeholder={t('Izaberite datum rođenja')}
-          />
+          {/* typed, not picked: a date known by heart (docs/patterns.md §10,
+              13. 11.); someone under 18 is told so under the field */}
+          <DateText value={f.birth} onChange={(v) => set({ birth: v })} />
         </Field>
         <Field label={t('Prebivalište')} required error={show('address')}>
           <Input value={f.address} onChange={(v) => set({ address: v })} placeholder={EXAMPLE[f.market].address} />
@@ -634,7 +651,7 @@ export default function CaregiverSignUp({ onForm }) {
   };
   // what a part folded into its row says it holds
   const summary = {
-    basic: [`${f.firstName} ${f.lastName}`.trim(), f.area, f.phone && `${dialOf(f.phoneCountry)} ${f.phone}`, f.birth && marketDate(new Date(f.birth), f.market), f.address],
+    basic: [`${f.firstName} ${f.lastName}`.trim(), f.area, f.phone && `${dialOf(f.phoneCountry)} ${f.phone}`, typeof f.birth === 'number' && marketDate(new Date(f.birth), f.market), f.address],
     profession: [...f.classifications, f.education && t(f.education)],
     qualifications: [f.education && educationText(f.education, true), f.certificate && t('Sertifikat negovateljice'), f.courses],
     availability: [
@@ -689,7 +706,7 @@ export default function CaregiverSignUp({ onForm }) {
   const review = {
     basic: [
       [t('Ime i prezime'), `${f.firstName} ${f.lastName}`.trim()],
-      [t('Datum rođenja'), f.birth && marketDate(new Date(f.birth), f.market)],
+      [t('Datum rođenja'), typeof f.birth === 'number' && marketDate(new Date(f.birth), f.market)],
       [t('Prebivalište'), f.address],
       [t('Opština'), f.area],
       [t('Broj telefona'), phone(f.phoneCountry, f.phone)],
@@ -840,7 +857,7 @@ function DemoApproval({ email }) {
       ) : (
         <>
           <p className="max-w-md text-xs leading-body text-muted-foreground">
-            {t('Za demo, e-mail koji stiže: „Vaš profil je aktiviran. Prijavite se adresom {email} i privremenom lozinkom {password}. Pri prvoj prijavi birate svoju lozinku."', { email, password: temp })}
+            {t('Za demo, e-mail koji stiže: „Vaš profil je aktiviran. Prijavite se adresom {email} i privremenom lozinkom {password}. Svoju lozinku postavljate u Podešavanjima."', { email, password: temp })}
           </p>
           <button type="button" className={demoLink} onClick={signIn}>
             {t('Za demo: na prijavu')}

@@ -9,7 +9,7 @@ import AppNav from './components/AppNav';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import Logo from './components/Logo';
 import CaregiverSidebar from './components/CaregiverSidebar';
-import KitAssistant, { CHANGE_OPENER, ChatPane, ChatSource, chatStage, chatStore } from './components/KitAssistant';
+import KitAssistant, { CHANGE_OPENER, COMPLETE_OPENER, ChatPane, ChatSource, chatStage, chatStore } from './components/KitAssistant';
 import { demoAccount, demoEntry, go, seedState, session, toCountry } from './data/demo';
 import { caregiverClientsRs } from './data/caregiverClients';
 import { store } from './data/store';
@@ -31,6 +31,7 @@ import { AppPane } from '@/components/page';
 import { SidePanelFrame } from './components/SidePanel';
 import { clearKey, loadKey, saveKey } from './lib/claudeChat';
 import { reconcile } from './data/dependencies';
+import { SHORT_PATH, isShortPlan, setPath } from './data/path';
 import { arrangementOf, askCaregiver, canAsk, cardTrouble, linkCard, dateOfToday, firstName, plansToConfirm, relanguage, standingWith, unseenAnswers, waitingOnYou } from './data/familyCare';
 import { declineCard } from './data/sim';
 import { startCare, withAnswers } from './data/familyStart';
@@ -47,7 +48,7 @@ import { requestFoot, requestNote } from './data/firstSteps';
 import { changeEntry } from './data/planLog';
 import { newPerson, planOf, withPlan } from './data/person';
 import { localized, locale, msg, setLang, t, useKeepScroll, useLang } from './i18n';
-import { marketHas, setMarket } from './data/market';
+import { marketHas, setMarket, setPlace } from './data/market';
 import { packageOver, plansFor, renewalAt, renewsOn } from './data/plans';
 
 
@@ -59,8 +60,9 @@ const DEMO_TAB = ENTRY && (ENTRY.explicit || !session.read() ? { role: ENTRY.rol
 if (DEMO_TAB) session.write(DEMO_TAB);
 const DEMO = Boolean(DEMO_TAB);
 // /?demo&puno: the week into care, every time it is opened, over what was kept
-if (ENTRY?.filled) {
-  store.save(DEMO_TAB.market, seedState(DEMO_TAB.market, { filled: true }));
+if (ENTRY?.filled || ENTRY?.short) {
+  // /?demo&kratko: the family that asked only for a caregiver (a small plan)
+  store.save(DEMO_TAB.market, seedState(DEMO_TAB.market, { filled: ENTRY.filled, short: ENTRY.short }));
   // filled once: the address loses &puno, so a reload keeps what was done since
   window.history.replaceState(window.history.state, '', window.location.pathname + keptSearch(window.location.search));
 }
@@ -68,6 +70,14 @@ if (ENTRY?.filled) {
 // What registration already told us about the person writing, as the answer the
 // onboarding would otherwise ask for, so Minna does not ask it again.
 const aboutYou = (u) => ({ values: { 'your-name': u.name, 'your-phone': u.phone } });
+// with them, the municipality the person lives in, given before the account was made
+const withSignUp = (answers, u) => ({
+  ...answers,
+  'about-you': { values: { ...answers['about-you']?.values, ...aboutYou(u).values } },
+  ...(u.municipality && !answers['about-person']?.values?.city
+    ? { 'about-person': { values: { ...answers['about-person']?.values, city: u.municipality } } }
+    : {}),
+});
 
 // The screen: the menu and the pane beside it, 12 from the window's edges;
 // on a narrow screen the top bar above the pane, edge to edge.
@@ -172,6 +182,12 @@ export default function App() {
   // her medical record: what the answers do not hold, and its history
   const setRecord = useMemo(() => setPart('record'), [setPart]);
   const { answers, notes, care, record, log: planLog } = person;
+  // which way through Minna's conversation: a family abroad has only the short one (path.js)
+  // where she lives now: what "Gde živi" says, and until Minna has it, what the
+  // sign-up said; a move changes the first (found in review, 16. 11.)
+  setPlace(DEMO || caregiverSide ? {} : { abroad: user.abroad, municipality: answers['about-person']?.values?.city || user.municipality });
+  const path = !DEMO && user.abroad ? 'caregiver' : person.path || 'plan';
+  setPath(caregiverSide ? 'plan' : path);
   // rebuilt when what it is built from changes, not on every change to her care
   const { planMade } = person;
   const plan = useMemo(() => planOf({ planMade, answers, notes }), [planMade, answers, notes, lang]);
@@ -456,6 +472,22 @@ export default function App() {
     setView({ 'my-care': 'dashboard', plan: 'dashboard' }[page] || page);
   };
 
+  // "Dopunite plan nege" on a small plan (docs/patterns.md §12, decided
+  // 16. 11.): the assistant opens beside the plan and asks what the full plan
+  // still needs, one question at a time. The plan stays small until the last
+  // of them is answered (path.js), so leaving half way loses nothing.
+  const completePlan = () => {
+    setPerson((p) => (p.path === 'plan' ? p : { ...p, path: 'plan' }));
+    setRightPanel('copilot');
+    focusComposer(300);
+    startConversation(COMPLETE_OPENER);
+  };
+  const recordFromAssistant = (changes) => {
+    const next = applyChanges(answers, changes).answers;
+    setAnswers(next);
+    if (plan?.short && !isShortPlan(next)) say(t('Plan nege je sada ceo.'));
+  };
+
   chatCtx.current = {
     conversation,
     plan,
@@ -468,6 +500,9 @@ export default function App() {
     apiKey,
     onAddNotes: addNotes,
     onApplyChanges: applyFromAssistant,
+    // a small plan being made whole: she asks what is missing and files it at once
+    completing: Boolean(plan?.short) && path === 'plan' && conversations.find((c) => c.id === conversation)?.opener === COMPLETE_OPENER,
+    onRecordAnswers: recordFromAssistant,
     onAskCaregiver: assistantAsk,
     onOpenPage: openPage,
     // for what opens in the chat's pane
@@ -530,8 +565,8 @@ export default function App() {
   // What the account has got to, kept so signing in again resumes it.
   useEffect(() => {
     if (phase !== 'app' || !user.email || DEMO) return;
-    saveProgress(user.email, { answers, notes, planDone: Boolean(plan), planLog });
-  }, [phase, user, answers, notes, plan, planLog]);
+    saveProgress(user.email, { answers, notes, planDone: Boolean(plan), planLog, path: person.path });
+  }, [phase, user, answers, notes, plan, planLog, person.path]);
 
   // A new conversation with the assistant; the plan and everything done stays.
   const newChat = () => {
@@ -647,11 +682,13 @@ export default function App() {
                 // finished onboarding opens on Moja nega and is not run again.
                 const saved = loadProgress(u.email);
                 if (saved?.planDone) {
-                  setPerson((p) => ({ ...p, answers: saved.answers, notes: saved.notes || [], planMade: true, log: saved.planLog || [] }));
+                  setPerson((p) => ({ ...p, answers: saved.answers, notes: saved.notes || [], planMade: true, log: saved.planLog || [], path: saved.path || 'plan' }));
                   navigate({ page: 'dashboard' }, { replace: true });
                   return;
                 }
-                setAnswers({ ...(saved?.answers || {}), 'about-you': aboutYou(u) });
+                // what registration already said is not asked again: who writes, and
+                // the municipality she lives in (16. 11.)
+                setPerson((p) => ({ ...p, path: saved?.path || 'plan', answers: withSignUp(saved?.answers || {}, u) }));
                 if (saved?.notes) setNotes(saved.notes);
                 // A family starts with Minna, not with the questionnaire: the AI
                 // onboarding is the first thing after signing in, and the rest of
@@ -717,6 +754,9 @@ export default function App() {
                   onCaregiver={showCaregiver}
                   onView={setView}
                   onAskAssistant={askAssistant}
+                  // a small plan can be made whole, unless she lives abroad (no partners there)
+                  onCompletePlan={plan?.short && !user.abroad ? completePlan : undefined}
+                  completing={Object.keys(answers).some((id) => !SHORT_PATH.includes(id))}
                   onFindCaregiver={() => setView('find-caregiver')}
                   onShare={() => setSharing(true)}
                 />
@@ -753,6 +793,7 @@ export default function App() {
                   onCare={setCare}
                   onDrawer={setDrawer}
                   onFlash={(text) => setFlash({ text, at: Date.now() })}
+                  onHelp={() => setHelp(true)}
                 />
               )}
               {view === 'record' && (
@@ -860,6 +901,8 @@ export default function App() {
             onNote={onNote}
             apiKey={apiKey}
             onPlan={onPlan}
+            onPath={(p) => setPerson((x) => (x.path === p ? x : { ...x, path: p }))}
+            straight={Boolean(user.abroad)}
             // The first thing after the onboarding is the home, which is the
             // care plan itself until someone comes (docs/patterns.md §4a).
             onFinish={() => {

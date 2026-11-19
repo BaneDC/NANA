@@ -474,6 +474,7 @@ export default {
   'Kako ste čuli za nas?': 'How did you hear about us?',
   'Saglasan/na sam sa obradom podataka': 'I agree to my data being processed',
   'Potvrđujem da su podaci tačni': 'I confirm the details are correct',
+  'Saglasan/na sam da negovateljice kojima se obratim vide moje podatke': 'I agree that the caregivers I contact can see my details',
   'Želim da primam novosti i posebne ponude na email': 'I would like news and special offers by email',
   'Napravi nalog': 'Create account',
   'Registracijom prihvatate naše': 'By signing up you accept our',
@@ -694,8 +695,6 @@ export default {
   "Za demo: negovateljica": "For the demo: caregiver",
   "Za demo: tržište": "For the demo: market",
   "Po jeziku": "By language",
-  "Izaberite lozinku": "Choose your password",
-  "Privremenu lozinku iz e-maila menjate pri prvoj prijavi. Nova lozinka mora imati najmanje 8 karaktera.": "On your first sign-in you replace the temporary password from the email. The new password must have at least 8 characters.",
-  "Sačuvaj i nastavi": "Save and continue",
   "Za demo: nova privremena lozinka za {email}": "For the demo: a new temporary password for {email}",
+  'Za demo': 'For the demo',
 };

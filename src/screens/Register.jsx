@@ -1,22 +1,25 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { ShieldCheck } from 'lucide-react';
+import { ChevronDown, ShieldCheck } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import Logo from '../components/Logo';
 import PhotoCarousel from '../components/PhotoCarousel';
-import { Field, Input, Password, Phone, Select, requiredError, useCheck } from '../components/TextField';
+import { Combobox, Field, Input, Password, Phone, Select, pageFocus, requiredError, useCheck } from '../components/TextField';
 import { COUNTRIES } from '../data/countries';
-import { activateCaregiver, awaitingFirstSignIn, changePassword, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
+import { activateCaregiver, awaitingFirstSignIn, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
 import { currentCode, verifyCode } from '../lib/totp';
 import { demoTwoFactor } from '../data/demoCase';
 import { session } from '../data/demo';
-import { setSiteMarket, siteMarket } from '../lib/siteLink';
-import CaregiverSignUp, { ConsentRow } from './caregiver/SignUp';
+import { setSiteMarket, siteWhere } from '../lib/siteLink';
+import { caregiverCount } from '../data/caregiverCounts';
+import { municipalityGroups } from '../data/caregiverProfile';
+import CaregiverSignUp, { ConsentRow, Radios } from './caregiver/SignUp';
 import { StepPage, StepPanel } from '../components/StepCards';
 import LanguagePicker from '../components/LanguagePicker';
 import { HeaderBackSlot, PageHead, useHeaderBack } from '../components/HeaderBack';
 import { goBackTo, navigate, useRoute } from '../lib/route';
-import { msg, t, useLang } from '../i18n';
+import { msg, t, tn, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
 
 // Registering, and signing back in. For now only the family's side signs up
@@ -55,12 +58,24 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  // her market, as the caregiver's (decided 13. 11., Branislav): what the
-  // website's link (in the prototype the demo's market row) said, else her
-  // language; in English with no link Finland, as before. It gives the
-  // fields' examples and the phone's country code, until she picks a code.
+  // Where the person cared for lives (decided 16. 11., Branislav), asked first,
+  // as the caregiver's "Gde želite da radite?": Serbia, Finland or abroad
+  // (diaspora: Serbia's market, only caregivers who travel). Chosen already
+  // when the website's link said it (in the prototype the demo's market row),
+  // else by her language: Serbian Serbia, Finnish Finland, English nothing.
+  // Abroad is never guessed. It gives the fields' examples and the phone's
+  // country code, until she picks a code.
   const lang = useLang();
-  const market = siteMarket() ?? siteRow.read() ?? (lang === 'sr' ? 'sr' : 'fi');
+  const [chosen, setChosen] = useState(null);
+  const where = chosen ?? siteWhere() ?? siteRow.read() ?? (lang === 'sr' || lang === 'fi' ? lang : null);
+  // the municipality she lives in, for the count under it; another market's is not kept
+  const [municipality, setMunicipality] = useState('');
+  const setWhere = (w) => {
+    if (w !== where) setMunicipality('');
+    setChosen(w);
+  };
+  const abroad = where === 'diaspora';
+  const market = where === 'fi' ? 'fi' : where ? 'sr' : lang === 'sr' ? 'sr' : 'fi';
   const [picked, setPicked] = useState(null);
   const country = picked ?? (market === 'sr' ? 'RS' : 'FI');
   const setCountry = setPicked;
@@ -68,13 +83,17 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const [password, setPassword] = useState('');
   const [source, setSource] = useState('');
   const [processing, setProcessing] = useState(false);
+  // that the caregivers the family writes to see what it left here, so they
+  // can decide whether to take the work (decided 18. 11., Branislav)
+  const [sharing, setSharing] = useState(false);
   const [accuracy, setAccuracy] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
   const [busy, setBusy] = useState(false);
   // who is signing up, from the address: /signup/family goes on to the form
   // below, /signup/caregiver to her own sign-up; /signup asks (in the
   // prototype it stands in for the website, where production asks)
-  const who = useRoute().route.who ?? null;
+  const { who: whoRoute, step } = useRoute().route;
+  const who = whoRoute ?? null;
   // "Ko ste?" stands in for the website: the market row below goes along to
   // her sign-up as the website's link would, ?market= for Finska or Srbija,
   // nothing for "Po jeziku" (her language decides; in English she picks)
@@ -86,6 +105,8 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
   const dial = COUNTRIES.find((c) => c.id === country);
   const check = useCheck();
   const errors = {
+    where: !where && requiredError(),
+    municipality: where && !abroad && !municipality && requiredError(),
     firstName: !firstName.trim() && requiredError(),
     lastName: !lastName.trim() && requiredError(),
     email: emailError(email),
@@ -93,9 +114,27 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
     password: passwordError(password),
     source: !source && requiredError(),
     processing: !processing && requiredError(),
+    sharing: !sharing && requiredError(),
     accuracy: !accuracy && requiredError(),
   };
   const show = (k) => check.show(errors[k]);
+
+  // Two steps (decided 19. 11., Branislav): where the person lives first, on
+  // /signup/family, then the account, /signup/family/account. The account
+  // opened without the first step done (a reload, a link) is the first step.
+  const placeMissing = Boolean(errors.where || errors.municipality);
+  useEffect(() => {
+    if (who === 'family' && step === 'account' && placeMissing) navigate({ page: 'signup', who: 'family' }, { replace: true });
+  }, [who, step, placeMissing]);
+  const toAccount = () => {
+    if (!check.check([errors.where, errors.municipality])) return;
+    check.reset();
+    navigate({ page: 'signup', who: 'family', step: 'account' });
+  };
+  const toPlace = () => {
+    check.reset();
+    goBackTo({ page: 'signup', who: 'family' });
+  };
 
   const submit = async () => {
     if (busy || !check.check(Object.values(errors))) return;
@@ -108,9 +147,11 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
       name: `${firstName.trim()} ${lastName.trim()}`,
       email: email.trim(),
       phone: `${dial.code} ${phone.trim()}`,
-      country,
+      // the market is where the person lives, not the phone's code (16. 11.)
+      country: where === 'fi' ? 'FI' : 'RS',
+      ...(abroad ? { abroad: true } : { municipality }),
       source,
-      consents: { processing, accuracy, newsletter },
+      consents: { processing, sharing, accuracy, newsletter },
       registeredAt: new Date().toISOString(),
     };
     await saveAccount(user, password);
@@ -142,13 +183,33 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
 
   // on the onboarding's sky, as her account (docs/patterns.md §10, decided
   // 13. 11.): the photos are not over it, and Minna comes next on the same sky
-  return <FamilySignUp {...{ example: FAMILY_EXAMPLE[market], firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
+  return <FamilySignUp {...{ account: step === 'account' && !placeMissing, toAccount, toPlace, example: FAMILY_EXAMPLE[market], where, setWhere, market, municipality, setMunicipality, firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, sharing, setSharing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
 }
 
 // the examples in the family's fields, from her market (as the caregiver's, EXAMPLE)
 const FAMILY_EXAMPLE = {
-  sr: { firstName: 'Marko', lastName: 'Petrović', email: 'marko.petrovic@gmail.com' }, // i18n-ignore: a name, not translated
+  sr: {
+    firstName: 'Marko',
+    lastName: 'Petrović',
+    email: 'marko.petrovic@gmail.com',
+  }, // i18n-ignore: a name, not translated
   fi: { firstName: 'Anna', lastName: 'Korhonen', email: 'anna@mail.com' },
+};
+
+const WHERE_OPTIONS = [
+  ['sr', msg('Srbija')],
+  ['fi', msg('Finska')],
+  ['diaspora', msg('U inostranstvu')],
+];
+// how many caregivers we have in her municipality, said before she gives us
+// anything of hers; none does not stop her (the plan, and word when one signs up)
+const countText = (market, municipality) => {
+  const n = caregiverCount(market, municipality);
+  return n
+    ? t('U ovoj opštini trenutno imamo {count}.', {
+        count: tn(n, 'negovateljicu', 'negovateljice', 'negovateljica'),
+      })
+    : t('U ovoj opštini trenutno nemamo negovateljicu. Možemo da napravimo plan nege i javimo vam čim se neka prijavi.');
 };
 
 function FamilySignUp(p) {
@@ -157,18 +218,61 @@ function FamilySignUp(p) {
     onForm?.(true);
     return () => onForm?.(false);
   }, [onForm]);
+  // opened from the website in a new tab: nothing behind it, so the logo, not a way back
+  const lead = (
+    <span className="flex h-(--button-size) items-center px-3">
+      <Logo width={120} />
+    </span>
+  );
+  const signIn = (
+    <div className="flex flex-col items-center gap-2">
+      <Button type="button" variant="ghost" size="lg" onClick={p.onSignIn}>
+        {t('Već imate nalog? Prijavite se')}
+      </Button>
+    </div>
+  );
+
+  // the first step, before anything of hers: where the person lives, and how
+  // many caregivers we have there (docs/patterns.md §10, 16. 11.; its own step
+  // since 19. 11., Branislav)
+  if (!p.account)
+    return (
+      <StepPage title={t('Dobro došli u NANA Prime')} sub={t('Polja označena zvezdicom su obavezna')} lead={lead} language>
+        <form className="contents" onSubmit={(e) => (e.preventDefault(), p.toAccount())}>
+          <StepPanel>
+            <Radios
+              label={t('Gde živi osoba kojoj treba nega?')}
+              required
+              value={p.where ?? ''}
+              onChange={p.setWhere}
+              options={WHERE_OPTIONS.map(([id, l]) => [id, t(l)])}
+              error={show('where')}
+              hint={p.where === 'diaspora' ? t('Imamo negovateljice iz Srbije koje dolaze kod klijenta u inostranstvo. Napravite nalog da ih vidite.') : null}
+            />
+            {p.where && p.where !== 'diaspora' && (
+              <Field label={t('Opština')} required error={show('municipality')} hint={p.municipality ? countText(p.market, p.municipality) : null}>
+                <Combobox
+                  value={p.municipality}
+                  onChange={p.setMunicipality}
+                  groups={municipalityGroups(p.market)}
+                  placeholder={t('Pretražite opštine')}
+                  searchPlaceholder={t('Pretražite opštine')}
+                />
+              </Field>
+            )}
+            {/* as "Dalje" in the form's card: at its right, on a phone across it */}
+            <div className="flex justify-end phone:*:flex-1">
+              <Button type="submit">{t('Nastavi')}</Button>
+            </div>
+          </StepPanel>
+        </form>
+        {signIn}
+      </StepPage>
+    );
+
+  // the second step, the account: her name, how to reach her, the password
   return (
-    <StepPage
-      title={t('Dobro došli u NANA Prime')}
-      sub={t('Polja označena zvezdicom su obavezna')}
-      // opened from the website in a new tab: nothing behind it, so the logo, not a way back
-      lead={
-        <span className="flex h-(--button-size) items-center px-3">
-          <Logo width={120} />
-        </span>
-      }
-      language
-    >
+    <StepPage title={t('Vaši podaci')} sub={t('Polja označena zvezdicom su obavezna')} lead={lead} language>
       {/* a real form, so the browser's password manager knows this is a sign-up */}
       <form className="contents" onSubmit={(e) => (e.preventDefault(), p.submit())}>
         <StepPanel>
@@ -191,7 +295,13 @@ function FamilySignUp(p) {
           <Field
             label={t('Lozinka')}
             required
-            hint={p.password && p.password.length < MIN_PASSWORD ? t('Još {n} karaktera', { n: MIN_PASSWORD - p.password.length }) : null}
+            hint={
+              p.password && p.password.length < MIN_PASSWORD
+                ? t('Još {n} karaktera', {
+                    n: MIN_PASSWORD - p.password.length,
+                  })
+                : null
+            }
             error={show('password')}
           >
             <Password value={p.password} onChange={p.setPassword} placeholder={t('Najmanje 8 karaktera')} autoComplete="new-password" />
@@ -204,6 +314,9 @@ function FamilySignUp(p) {
             <ConsentRow required checked={p.processing} onChange={p.setProcessing} error={show('processing')}>
               {t('Saglasan/na sam sa obradom podataka')}
             </ConsentRow>
+            <ConsentRow required checked={p.sharing} onChange={p.setSharing} error={show('sharing')}>
+              {t('Saglasan/na sam da negovateljice kojima se obratim vide moje podatke')}
+            </ConsentRow>
             <ConsentRow required checked={p.accuracy} onChange={p.setAccuracy} error={show('accuracy')}>
               {t('Potvrđujem da su podaci tačni')}
             </ConsentRow>
@@ -211,8 +324,13 @@ function FamilySignUp(p) {
               {t('Želim da primam novosti i posebne ponude na email')}
             </ConsentRow>
           </div>
-          {/* as "Nastavi" on her account: at the card's right, on a phone across it */}
-          <div className="flex justify-end phone:*:flex-1">
+          {/* a step back inside the sign-up is a button by the main one (§4):
+              "Nazad" at the left, "Napravi nalog" at the right; on a phone one
+              under the other, across the card, the main one on top */}
+          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+            <Button type="button" variant="secondary" onClick={p.toPlace}>
+              {t('Nazad')}
+            </Button>
             <Button type="submit" loading={p.busy}>
               {t('Napravi nalog')}
             </Button>
@@ -240,12 +358,7 @@ function FamilySignUp(p) {
           {t('NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o zaštiti podataka.')}
         </p>
       </div>
-      <div className="flex flex-col items-center gap-2">
-        <Button type="button" variant="ghost" size="lg" onClick={p.onSignIn}>
-          {t('Već imate nalog? Prijavite se')}
-        </Button>
-        <DemoLink onDemo={p.onDemo} />
-      </div>
+      {signIn}
     </StepPage>
   );
 }
@@ -271,11 +384,43 @@ export function Actions(props) {
 const demoLink =
   'cursor-pointer text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground';
 
+// What is only for the demo is folded under a quiet "Za demo" (decided 18. 11.,
+// Branislav; docs/patterns.md §10), closed as the page comes; whether it was
+// opened is kept for this tab.
+const DEMO_OPEN = 'nana.demo.rows';
+function DemoRows({ children }) {
+  const [open, setOpen] = useState(() => {
+    try {
+      return sessionStorage.getItem(DEMO_OPEN) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const toggle = (now) => {
+    setOpen(now);
+    try {
+      sessionStorage.setItem(DEMO_OPEN, now ? '1' : '0');
+    } catch {
+      /* lasts until the page is left */
+    }
+  };
+  return (
+    <Collapsible open={open} onOpenChange={toggle} className="flex flex-col items-center">
+      <CollapsibleTrigger className="group/demo inline-flex cursor-pointer items-center gap-1 rounded-sm text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 pointer-coarse:min-h-11">
+        {t('Za demo')}
+        <ChevronDown size={14} strokeWidth={1.75} className="transition-transform duration-180 group-data-[state=open]/demo:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="flex flex-col items-center gap-2 pt-2">{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 // Straight into the app on a finished plan, for trying the chat and everything
 // after the plan without running (and paying for) the onboarding each time.
+// Only on "Ko ste?", the first page of the sign-up.
 function DemoLink({ onDemo }) {
   return (
-    <>
+    <DemoRows>
       <button type="button" className={demoLink} onClick={() => onDemo('family')}>
         {t('Za demo: porodica')}
       </button>
@@ -287,7 +432,7 @@ function DemoLink({ onDemo }) {
         {t('Za pregled: sve kartice na jednoj stranici')}
       </button>
       <DemoMarket />
-    </>
+    </DemoRows>
   );
 }
 
@@ -321,7 +466,10 @@ function DemoMarket() {
   const pick = (m) => {
     setMarket(m);
     siteRow.write(m === 'lang' ? null : m);
-    session.write({ role: session.read()?.role || 'family', market: m === 'lang' ? 'fi' : m });
+    session.write({
+      role: session.read()?.role || 'family',
+      market: m === 'lang' ? 'fi' : m,
+    });
   };
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -354,7 +502,10 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
   const [awaiting] = useState(awaitingFirstSignIn);
   const [failed, setFailed] = useState(false);
   const check = useCheck();
-  const errors = { email: emailError(email), password: !password && requiredError() };
+  const errors = {
+    email: emailError(email),
+    password: !password && requiredError(),
+  };
 
   // with two-factor on, the right password leads to the code, not in
   const [pending, setPending] = useState(null);
@@ -364,24 +515,25 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     if (!check.check(Object.values(errors))) return;
     const user = await signIn(email, password);
     if (!user) setFailed(true);
-    // a caregiver's first sign-in, with the coordinator's temporary password:
-    // her own password first (docs/patterns.md §12d)
-    else if (user.mustChangePassword) {
-      setPending(user);
-      navigate({ page: 'signin', step: 'password' });
-    } else if (user.twoFactor && user.twoFactorSecret) {
+    else if (user.twoFactor && user.twoFactorSecret) {
       setPending(user);
       navigate({ page: 'signin', step: 'verify' });
     }
-    else onContinue(user);
+    // a caregiver's first sign-in, with the coordinator's temporary password:
+    // straight in, as on production; her own password she sets in Settings
+    // (decided 16. 11., Branislav; a step that asked for it here is gone)
+    else if (user.firstSignIn) {
+      const ready = { ...user, firstSignIn: false };
+      updateAccount(ready);
+      onContinue(ready);
+    } else onContinue(user);
   };
 
   // the code's step is /signin/verify, only after the password: opened
   // without it (a reload, a link) it is the sign-in again
   const verifying = step === 'verify' && pending;
-  const choosing = step === 'password' && pending?.mustChangePassword;
   useEffect(() => {
-    if ((step === 'verify' || step === 'password') && !pending) navigate({ page: 'signin' }, { replace: true });
+    if (step === 'verify' && !pending) navigate({ page: 'signin' }, { replace: true });
   }, [step, pending]);
   const toSignIn = () => goBackTo({ page: 'signin' });
 
@@ -389,18 +541,6 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     return (
       <TwoFactorStep
         user={pending}
-        onContinue={onContinue}
-        onBack={() => {
-          setPending(null);
-          toSignIn();
-        }}
-      />
-    );
-  if (choosing)
-    return (
-      <FirstPassword
-        user={pending}
-        temp={password}
         onContinue={onContinue}
         onBack={() => {
           setPending(null);
@@ -417,7 +557,14 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
         <FormCard>
           <Field label={t('Email')} required error={check.show(errors.email)}>
-            <Input value={email} onChange={(v) => (setEmail(v), setFailed(false))} type="email" placeholder="anna@mail.com" autoComplete="email" />
+            <Input
+              value={email}
+              onChange={(v) => (setEmail(v), setFailed(false))}
+              type="email"
+              placeholder="anna@mail.com"
+              autoComplete="email"
+              autoFocus={pageFocus()}
+            />
           </Field>
           {/* the link 8 under the password, at its right edge */}
           <div className="flex flex-col items-end gap-2">
@@ -437,81 +584,38 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
           <Button type="button" variant="ghost" size="lg" data-fold="" onClick={onSignUp}>
             {t('Nemate nalog? Napravite ga')}
           </Button>
-          <DemoLink onDemo={onDemo} />
-          <button
-            type="button"
-            className={demoLink}
-            onClick={async () => {
-              await saveTestTwoFactorAccount(demoTwoFactor);
-              setEmail(demoTwoFactor.user.email);
-              setPassword(demoTwoFactor.password);
-              setFailed(false);
-            }}
-          >
-            {t('Za testiranje: nalog sa dvofaktorskom prijavom')}
-          </button>
-          {/* an approved caregiver whose email (temporary password) is gone */}
-          {awaiting && (
+          <DemoRows>
             <button
               type="button"
               className={demoLink}
               onClick={async () => {
-                const temp = await activateCaregiver(awaiting);
-                if (!temp) return;
-                setEmail(awaiting);
-                setPassword(temp);
+                await saveTestTwoFactorAccount(demoTwoFactor);
+                setEmail(demoTwoFactor.user.email);
+                setPassword(demoTwoFactor.password);
                 setFailed(false);
               }}
             >
-              {t('Za demo: nova privremena lozinka za {email}', { email: awaiting })}
+              {t('Za testiranje: nalog sa dvofaktorskom prijavom')}
             </button>
-          )}
-        </Actions>
-      </form>
-    </>
-  );
-}
-
-// A caregiver's first sign-in: the coordinator's email gave a temporary
-// password, and she picks her own before going in (docs/patterns.md §12d),
-// typed twice, at least 8, as in Settings.
-function FirstPassword({ user, temp, onContinue, onBack }) {
-  const [next, setNext] = useState('');
-  const [again, setAgain] = useState('');
-  const [failed, setFailed] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const check = useCheck();
-  const errors = {
-    next: passwordError(next),
-    again: !again ? requiredError() : again !== next && t('Dva unosa se ne poklapaju.'),
-  };
-  useHeaderBack(t('Nazad na prijavu'), onBack);
-  const submit = async () => {
-    if (saving || !check.check(Object.values(errors))) return;
-    setSaving(true);
-    const fault = await changePassword(user.email, temp, next);
-    setSaving(false);
-    if (fault) return setFailed(true);
-    const ready = { ...user, mustChangePassword: false };
-    updateAccount(ready);
-    onContinue(ready);
-  };
-  return (
-    <>
-      <Welcome title={t('Izaberite lozinku')} sub={t('Privremenu lozinku iz e-maila menjate pri prvoj prijavi. Nova lozinka mora imati najmanje 8 karaktera.')} />
-      <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
-        <FormCard>
-          <Field label={t('Nova lozinka')} required error={check.show(errors.next) || (failed ? t('Nije sačuvano - proverite da li je čuvanje podataka dozvoljeno u pregledaču.') : null)}>
-            <Password value={next} onChange={(v) => (setNext(v), setFailed(false))} autoComplete="new-password" />
-          </Field>
-          <Field label={t('Nova lozinka još jednom')} required error={check.show(errors.again)}>
-            <Password value={again} onChange={setAgain} autoComplete="new-password" />
-          </Field>
-        </FormCard>
-        <Actions>
-          <Button type="submit" size="lg" className="w-full" loading={saving}>
-            {t('Sačuvaj i nastavi')}
-          </Button>
+            {/* an approved caregiver whose email (temporary password) is gone */}
+            {awaiting && (
+              <button
+                type="button"
+                className={demoLink}
+                onClick={async () => {
+                  const temp = await activateCaregiver(awaiting);
+                  if (!temp) return;
+                  setEmail(awaiting);
+                  setPassword(temp);
+                  setFailed(false);
+                }}
+              >
+                {t('Za demo: nova privremena lozinka za {email}', {
+                  email: awaiting,
+                })}
+              </button>
+            )}
+          </DemoRows>
         </Actions>
       </form>
     </>
@@ -541,7 +645,7 @@ function ResetPassword({ email: given, onBack }) {
       <form className="contents" onSubmit={(e) => (e.preventDefault(), send())}>
         <FormCard>
           <Field label={t('Email adresa')} required error={check.show(emailError(email))}>
-            <Input value={email} onChange={setEmail} type="email" placeholder={t('Unesite svoju email adresu')} autoComplete="email" />
+            <Input value={email} onChange={setEmail} type="email" placeholder={t('Unesite svoju email adresu')} autoComplete="email" autoFocus={pageFocus()} />
           </Field>
         </FormCard>
         <Actions>
@@ -676,8 +780,16 @@ export default function Register({ onContinue, onDemo }) {
     <motion.div
       className="flex min-h-0 flex-1 flex-col items-center justify-[safe_center] gap-6 overflow-y-auto px-6 py-12 *:shrink-0"
       initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }}
-      exit={{ opacity: 0, y: -16, transition: { duration: 0.2, ease: 'easeIn' } }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.3, ease: 'easeOut' },
+      }}
+      exit={{
+        opacity: 0,
+        y: -16,
+        transition: { duration: 0.2, ease: 'easeIn' },
+      }}
     >
       {/* the head (§4, §12b): the logo at the left, or the way back where
           there is one, and the language at the right; the logo's text where

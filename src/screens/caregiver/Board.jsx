@@ -82,7 +82,7 @@ function BoardCard({ client, caregiverId, onOpen, act }) {
         </div>
         <DataList className="mt-2">
           {stage === 'request' && care.need && <DataRow label={t('Kada')}>{scheduleText(care.need.schedule)}</DataRow>}
-          {stage === 'request' && care.need && <DataRow label={t('Sati')}>{t('{hours} h nedeljno', { hours: care.need.hours })}</DataRow>}
+          {stage === 'request' && care.need?.hours && <DataRow label={t('Sati')}>{t('{hours} h nedeljno', { hours: care.need.hours })}</DataRow>}
           {(pen || act0) && <DataRow label={t('Cena')}>{t('{rate} / h', { rate: money((pen || act0).rate) })}</DataRow>}
           {stage === 'active' && <DataRow label={t('Sledeća poseta')}>{next ? `${next.date} · ${next.time}` : t('Još ništa nije planirano')}</DataRow>}
           {due && <DataRow label={t('Poseta')}>{`${due.date} · ${due.time}`}</DataRow>}

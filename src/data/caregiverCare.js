@@ -123,7 +123,8 @@ export const sendTerms = (caregiverId, opts = {}) => (c) => {
     status: 'sent',
     services: opts.services ?? (change && add ? [...services, add] : services),
     rate: opts.rate ?? (change ? before.rate + 1 : rateOf(pick(caregiverId))),
-    hours: need.hours,
+    // the family may not have said how many hours: the terms then start from the usual
+    hours: need.hours ?? needFrom({}).hours,
     schedule: need.schedule,
     sentAt: now,
     sentOn: whenText(now, now),

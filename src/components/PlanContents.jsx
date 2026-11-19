@@ -28,7 +28,9 @@ export default function PlanContents({
   change,
 }) {
   const open = (plan.recommendations || []).filter((r) => !r.locked);
+  // a small plan keeps nothing back: it has only the caregivers (path.js)
   const locked = (plan.recommendations || []).filter((r) => r.locked);
+  const none = locked.length === 0;
 
   return (
     <div className="flex flex-col gap-8">
@@ -57,7 +59,7 @@ export default function PlanContents({
           {/* Everything else in the plan is written and ready; the subscription is
               what opens it, along with the caregivers' numbers. The heading stays
               readable so it is obvious what is being withheld. */}
-          {unlocked ? (
+          {none ? null : unlocked ? (
             locked.map((rec) => (
               <RecommendationCard
                 key={rec.id}

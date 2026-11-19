@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { caregiverClients } from './caregiverClients';
 import { earnings, myClients, netOf, owes, stageOf } from './caregiverView';
 import { seedState } from './demo';
+import { isShortPlan } from './path';
+import { planQuestions } from './planEdits';
 
 const clients = caregiverClients();
 const byId = Object.fromEntries(clients.map((c) => [c.id, c.person.care]));
@@ -45,5 +47,31 @@ describe('earnings', () => {
     expect(e.paid.length).toBeGreaterThan(0);
     expect(e.reserved).toBeGreaterThan(0);
     expect(e.processing).toBeGreaterThan(0);
+  });
+});
+
+describe('families that asked only for a caregiver, on her side', () => {
+  const short = (state, id) => myClients(state, id).filter((c) => isShortPlan(c.person.answers));
+  it('Sanna has one, with a request to answer', () => {
+    const [c] = short(seedState('fi', {}), 'sanna');
+    expect(c.stage).toBe('request');
+    expect(c.care.need).toMatchObject({ hours: 6, schedule: 'uto, čet · popodne' });
+  });
+  it('Milica has one, and one from abroad, round the clock', () => {
+    const mine = short(seedState('sr', {}), 'milica');
+    expect(mine.map((c) => c.id).sort()).toEqual(['jovic', 'kostic']);
+    const abroad = mine.find((c) => c.id === 'kostic');
+    expect(abroad.care.elder.area).toBe('Cirih, Švajcarska');
+    expect(abroad.care.need).toMatchObject({ schedule: '24 sata', hours: null });
+  });
+  it('none of them shows a question nobody answered', () => {
+    for (const [m, id] of [['fi', 'sanna'], ['sr', 'milica']])
+      for (const c of short(seedState(m, {}), id))
+        expect(planQuestions(c.person.answers).flatMap((s) => s.questions).every(({ answer }) => answer)).toBe(true);
+  });
+  it('the demo family that asked only for a caregiver has a small plan', () => {
+    const s = seedState('fi', { short: true });
+    expect(isShortPlan(s.person.answers)).toBe(true);
+    expect(s.person.path).toBe('caregiver');
   });
 });

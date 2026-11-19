@@ -107,6 +107,32 @@ export default function PersonalityTest({ f, set, onBack, onExit, onSend }) {
       go(at + 1);
     }, HOLD_MS);
   };
+  // For the demo only, and not on the screen: Ctrl+H, the key of the hidden
+  // simulation in the app (docs/patterns.md §14), here chooses every pair at
+  // once (by chance, so the result differs) and shows the last one, where
+  // "Pošalji test" is. The guide is taken as read.
+  const fillAll = () => {
+    clearTimeout(pending.current);
+    pending.current = null;
+    first.current = false;
+    setGuide(null);
+    setHint(false);
+    set({ test: Object.fromEntries(PAIRS.map((_, i) => [i, f.test[i] ?? (Math.random() < 0.5 ? 0 : 1)])), guideSeen: true });
+    go(PAIRS.length - 1);
+  };
+  const fill = useRef(fillAll);
+  fill.current = fillAll;
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!e.ctrlKey || e.altKey || e.metaKey || e.key.toLowerCase() !== 'h') return;
+      e.preventDefault();
+      // not the app's panel as well
+      e.stopPropagation();
+      fill.current();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
   const back = () => {
     clearTimeout(pending.current);
     pending.current = null;

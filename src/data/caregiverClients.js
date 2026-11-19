@@ -28,6 +28,22 @@ const family = (id, elder, age, city, relative) => {
   return { id, person: { ...p, care: withAnswers(p.care, answers, user) } };
 };
 
+// A family that asked only for a caregiver (path.js, decided 16. 11.): the
+// short way's five answers, so a small plan, and less for her to read. `area`:
+// where a family abroad lives, a country and a city instead of a municipality.
+const shortFamily = (id, { elder, age, city, relative, relation, phone, email, needs, schedule, mobility }, account = demoUser) => {
+  const answers = {
+    'about-person': { values: { name: elder, age, city } },
+    'about-you': { values: { 'your-name': relative, relation, 'your-phone': phone } },
+    'care-needs': { optionIds: needs },
+    'care-schedule': { values: schedule },
+    mobility: { optionId: mobility },
+  };
+  const user = { ...account, name: relative, phone, ...(email ? { email } : {}) };
+  const p = { ...demoPerson(answers, [], user), path: 'caregiver' };
+  return { id, person: { ...p, care: withAnswers(p.care, answers, user) } };
+};
+
 const run = (client, ...steps) => ({
   ...client,
   person: { ...client.person, care: steps.reduce((c, step) => step(c), client.person.care) },
@@ -60,6 +76,21 @@ export function caregiverClients() {
     run(family('heikkinen', 'Pentti Heikkinen', '81', 'Vallila, Helsinki', 'Anne Heikkinen'), ...agreed, paidVisit, visitDone), // i18n-ignore
     run(family('laine', 'Helmi Laine', '90', 'Munkkiniemi, Helsinki', 'Petri Laine'), ...agreed, paidVisit, endArrangement(CAREGIVER)), // i18n-ignore
     run(family('nieminen', 'Toivo Nieminen', '76', 'Espoo', 'Sari Nieminen'), asked, answerRequest(CAREGIVER, false)), // i18n-ignore
+    // asked only for a caregiver: a small plan
+    run(
+      shortFamily('salonen', {
+        elder: 'Aili Salonen', // i18n-ignore
+        age: '82',
+        city: 'Pasila, Helsinki', // i18n-ignore
+        relative: 'Tuomas Salonen', // i18n-ignore
+        relation: msg('Sin'),
+        phone: '+358 40 771 3020',
+        needs: ['meals', 'company', 'walks'],
+        schedule: { days: 'uto, čet', slots: 'popodne', hours: '3' }, // i18n-ignore: as typed
+        mobility: 'stick',
+      }),
+      asked
+    ),
   ];
 }
 
@@ -178,5 +209,45 @@ export function caregiverClientsRs() {
     run(f('ilic'), askedRs, answerRequest(MILICA, false, DECLINE_REASONS[0])),
     run(f('djordjevic'), askedRs, answerRequest(MILICA, false, DECLINE_REASONS[1])),
     run(f('pavlovic'), askedRs, answerRequest(MILICA, false, DECLINE_REASONS[3])),
+    // asked only for a caregiver: a small plan
+    run(
+      shortFamily(
+        'jovic',
+        {
+          elder: 'Stana Jović', // i18n-ignore
+          age: '80',
+          city: 'Voždovac, Beograd', // i18n-ignore
+          relative: 'Milan Jović', // i18n-ignore
+          relation: msg('Sin'),
+          phone: '+381 63 404 1187',
+          email: 'milan.jovic@mail.rs',
+          needs: ['meals', 'housekeeping', 'company'],
+          schedule: { days: 'pon – pet', slots: 'pre podne', hours: '4', engagement: 'dnevne posete' }, // i18n-ignore: as typed
+          mobility: 'stick',
+        },
+        demoUserRs
+      ),
+      askedRs
+    ),
+    // a family abroad (diaspora): the country and the city, round the clock
+    run(
+      shortFamily(
+        'kostic',
+        {
+          elder: 'Milena Kostić', // i18n-ignore
+          age: '85',
+          city: 'Cirih, Švajcarska', // i18n-ignore
+          relative: 'Bojan Kostić', // i18n-ignore
+          relation: msg('Sin'),
+          phone: '+41 79 555 2134',
+          email: 'bojan.kostic@mail.ch',
+          needs: ['personal-care', 'meals', 'medication', 'mobility'],
+          schedule: { engagement: '24 sata' }, // i18n-ignore: as typed
+          mobility: 'walker',
+        },
+        { ...demoUserRs, abroad: true }
+      ),
+      askedRs
+    ),
   ];
 }

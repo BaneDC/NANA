@@ -1,7 +1,8 @@
-import { applicableQuestions, flowContext, questionById, steps } from './flow';
+import { questionById } from './flow';
+import { fieldsOf, openQuestions, pathNow, untouched } from './path';
 import { frailtyOf } from './frailty';
 import { Q, STEP_INTRO, WHY, WHY_FOLLOW_UPS } from './flow.sr';
-import { emergencyNumber } from './market';
+import { emergencyNumber, isAbroad } from './market';
 import { getLang, inEnglish, t } from '../i18n';
 
 // The AI variant's contract with the model.
@@ -42,37 +43,31 @@ export const TUNING = (model = MODEL) =>
 // band would move as the rest of daily life landed, and `reconcile` would drop
 // the answer it had just collected. The other two variants get this for free
 // from walking the steps in order; here the model chooses, so it has to be said.
-export function remainingQuestions(answers) {
-  const level = frailtyOf(answers)?.level;
-  const ctx = flowContext(answers, level);
-  const dailyLife = steps.find((s) => s.id === 'daily-life');
-  const bandIsSettled = dailyLife.questions.every((q) => answers[q.id]);
-
-  return steps.flatMap((step) => {
-    if (step.id === 'support' && !bandIsSettled) return [];
-    return applicableQuestions(step, ctx)
-      .filter((q) => !answers[q.id])
-      .map((q) => serialize(q, step.id));
-  });
+export function remainingQuestions(answers, path = pathNow()) {
+  return openQuestions(answers, path).map(({ q, stepId }) => serialize(q, stepId, answers[q.id]));
 }
 
 // A family back after leaving the onboarding half done (decided 12. 11.):
 // the first question she has not answered, asked straight away from the flow,
 // instead of the blank page again. Null on a first visit, where registration
-// has given only "about-you".
-export function resumeAt(answers) {
-  if (!Object.keys(answers).some((id) => id !== 'about-you')) return null;
-  return remainingQuestions(answers)[0]?.id ?? null;
+// has given only who is writing and the municipality. `straight`: no blank
+// page at all (a family abroad has one way through, so nothing to choose).
+export function resumeAt(answers, path = pathNow(), { straight = false } = {}) {
+  if (!straight && untouched(answers)) return null;
+  return remainingQuestions(answers, path)[0]?.id ?? null;
 }
 
-function serialize(q, stepId) {
+// `answer`: what is already there; a field with a value is not asked again
+// (her municipality from registration, your name and phone)
+function serialize(q, stepId, answer) {
   const sr = Q[q.id] || {};
   const out = { id: q.id, sekcija: stepId, pitanje: t(sr.title || q.title), tip: q.type };
 
   if (q.type === 'inputs') {
-    out.polja = q.fields.map((f) => ({
+    out.polja = fieldsOf(q).filter((f) => !answer?.values?.[f.id]?.trim()).map((f) => ({
       id: f.id,
-      naziv: t(sr.fields?.[f.id] || f.label),
+      // a family abroad names the country: we have no municipality there
+      naziv: q.id === 'about-person' && f.id === 'city' && isAbroad() ? t('Zemlja i grad u kom živi') : t(sr.fields?.[f.id] || f.label),
       obavezno: !f.optional,
     }));
   } else {
@@ -84,7 +79,9 @@ function serialize(q, stepId) {
 }
 
 // The answer the model reports, in the shape the rest of the app already stores.
-export function toAnswer(entry) {
+// `prev`: the answer already there. Fields are added to it, not put in its
+// place, so what registration filled in stays.
+export function toAnswer(entry, prev) {
   const q = questionById[entry.questionId];
   if (!q) return null;
   // Everything the model sends is checked against the question it claims to be
@@ -99,7 +96,7 @@ export function toAnswer(entry) {
     const values = Object.fromEntries(
       Object.entries(entry.values || {}).filter(([id, v]) => q.fields.some((f) => f.id === id) && v?.trim())
     );
-    return Object.keys(values).length ? { values } : null;
+    return Object.keys(values).length ? { values: { ...prev?.values, ...values } } : null;
   }
   if (q.type === 'single') {
     return q.options.some((o) => o.id === entry.optionId) ? { optionId: entry.optionId } : null;
@@ -133,6 +130,14 @@ const whyField = () =>
 // reads back and never change; the descriptions follow the conversation's language
 // (English for English and Finnish, see systemPrompt).
 export const tools = () => [
+  // the short way through, chosen in words instead of by its opener (path.js)
+  {
+    name: 'only_caregiver',
+    description: inEnglish(
+      'Pozovi samo na početku razgovora, i samo kada korisnik jasno kaže da želi isključivo negovateljicu, bez plana nege i bez priče o stanju osobe. Ako nije jasno, ne pozivaj: plan nege je podrazumevan. Posle poziva dobijaš kraću listu pitanja.'
+    ),
+    input_schema: { type: 'object', properties: {} },
+  },
   {
     name: 'record_answers',
     description:
@@ -335,17 +340,25 @@ export function stateMessage(answers, notes = []) {
   const remaining = remainingQuestions(answers);
   const frailty = frailtyOf(answers);
 
+  const short = pathNow() === 'caregiver';
   if (!remaining.length) {
-    return inEnglish(
-      'Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada praviš plan nege. Ne pozivaj `ask` ni `follow_up`.'
-    );
+    return short
+      ? inEnglish('Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada tražiš negovateljice koje odgovaraju. Ne pominji plan nege. Ne pozivaj `ask` ni `follow_up`.')
+      : inEnglish(
+          'Sva pitanja su odgovorena. Pozovi `assess` poslednji put, pa se zahvali u jednoj rečenici i reci da sada praviš plan nege. Ne pozivaj `ask` ni `follow_up`.'
+        );
   }
 
   return [
     inEnglish(
       'Prvo zabeleži sve iz poslednje korisnikove poruke (`record_answers`, `record_note`), pa pozovi `assess`, pa tek onda pitaj sledeće. U svojoj rečenici pomeni konkretan detalj iz te poruke.'
     ),
-    frailty
+    short
+      ? inEnglish('Ovo je kraći put: korisnik želi samo negovateljicu. Pitaj samo pitanja sa liste ispod, redom, bez potpitanja o stanju osobe i bez pominjanja plana nege ili procene. Ne pozivaj `only_caregiver`.')
+      : null,
+    short
+      ? null
+      : frailty
       ? inEnglish('Trenutna procena krhkosti: nivo {level}. Ne pominji je korisniku, biće mu prikazana zasebno.', { level: frailty.level })
       : inEnglish('Još nema dovoljno odgovora za procenu krhkosti.'),
     notes.length

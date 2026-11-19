@@ -5,6 +5,7 @@ import { questionById } from '../data/flow';
 import { frailtyOf } from '../data/frailty';
 import { emergencyNumber } from '../data/market';
 import { remainingQuestions, resumeAt, systemPrompt, withoutLongDashes } from '../data/conversation';
+import { setPath, untouched } from '../data/path';
 import { Q, CFS_SR, STARTERS, SECTION } from '../data/flow.sr';
 import { buildPlan, caregiversIn } from '../data/carePlan';
 import { planOverview } from '../data/carePlan.sr';
@@ -372,11 +373,16 @@ export default function ImmersiveConversation({
   onPlan,
   onFinish,
   onKeyRejected,
+  // the short way through (path.js): chosen by its opener, or said in words;
+  // `straight`: a family abroad has only that way, so no blank first page
+  onPath,
+  straight = false,
 }) {
   // back after leaving it half done: straight to the first question she has
   // not answered, from the flow, without the blank page (decided 12. 11.)
-  const [resumed] = useState(() => resumeAt(answers));
-  const [welcomeBack, setWelcomeBack] = useState(Boolean(resumed));
+  const [resumed] = useState(() => resumeAt(answers, undefined, { straight }));
+  // straight in is a first visit, not a return
+  const [welcomeBack, setWelcomeBack] = useState(Boolean(resumed) && !untouched(answers));
   const [stage, setStage] = useState(resumed ? 'talking' : 'open'); // open | talking | plan
   const [said, setSaid] = useState('');
   const [draft, setDraft] = useState('');
@@ -564,6 +570,7 @@ export default function ImmersiveConversation({
           },
           onAnswer,
           onNote,
+          onPath,
           onAsk: (id, reason) => {
             setAsked(id);
             setWhy(reason);
@@ -596,7 +603,7 @@ export default function ImmersiveConversation({
         setBusy(false);
       }
     },
-    [client, system, onAnswer, onNote, onPlan, assess, onKeyRejected]
+    [client, system, onAnswer, onNote, onPlan, onPath, assess, onKeyRejected]
   );
 
   const pick = (answer, label) => {
@@ -722,7 +729,14 @@ export default function ImmersiveConversation({
                     className="imm-starter"
                     variants={piece}
                     whileHover={{ y: -1 }}
-                    onClick={() => turn(t(s.title), answers, notes)}
+                    onClick={() => {
+                      // the short way is set before the turn reads what is left to ask
+                      if (s.path) {
+                        setPath(s.path);
+                        onPath?.(s.path);
+                      }
+                      turn(t(s.title), answers, notes);
+                    }}
                   >
                     <span className="imm-starter-text">
                       <span className="imm-starter-title">{t(s.title)}</span>
@@ -983,7 +997,7 @@ export default function ImmersiveConversation({
                     <p className="imm-plan-reco-title">{overview.role}</p>
                     <p className="imm-plan-text">{overview.recommendation}</p>
                     <div className="imm-plan-reco-foot">
-                      <span className="imm-plan-count">{tn(caregiversIn().length, 'negovateljica odgovara ovoj slici', 'negovateljice odgovaraju ovoj slici', 'negovateljica odgovara ovoj slici')}</span>
+                      <span className="imm-plan-count">{caregiversIn().length > 0 && tn(caregiversIn().length, 'negovateljica odgovara ovoj slici', 'negovateljice odgovaraju ovoj slici', 'negovateljica odgovara ovoj slici')}</span>
                       <Button variant="primary" size="lg" onClick={onFinish}>
                         {t('Pogledaj ceo plan')} <ArrowUpRight size={14} strokeWidth={2} />
                       </Button>

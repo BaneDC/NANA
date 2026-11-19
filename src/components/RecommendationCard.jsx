@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ItemGroup } from '@/components/ui/item';
 import { cn } from '@/lib/utils';
-import { caregiversFor } from '../data/carePlan';
+import { NONE_TEXT, NONE_TITLE, caregiversFor } from '../data/carePlan';
 import { PARTNERS, discounted, price } from '../data/partners';
 import CaregiverRow from './CaregiverRow';
 import { t } from '../i18n';
@@ -51,7 +51,13 @@ export default function RecommendationCard({
       <p className="text-small font-medium text-muted-foreground">{t('Zašto ovo preporučujemo')}</p>
       <CardDescription>{rec.why}</CardDescription>
 
-      {rec.kind === 'caregivers' && (
+      {/* nobody in her municipality: said where they would be listed (16. 11.) */}
+      {rec.kind === 'caregivers' && !caregiversFor(unlocked).length && (
+        <CardDescription>
+          {t(NONE_TITLE)}. {t(NONE_TEXT)}
+        </CardDescription>
+      )}
+      {rec.kind === 'caregivers' && caregiversFor(unlocked).length > 0 && (
         <ItemGroup>
           {caregiversFor(unlocked)
             .slice(0, 5)
@@ -73,7 +79,7 @@ export default function RecommendationCard({
       {/* Before a subscription, what writing to one of them takes is said
           here, by the buttons, and not only in the dialog they open
           (docs/patterns.md §4b). */}
-      {rec.kind === 'caregivers' && !unlocked && askNote && <p className="text-small text-muted-foreground">{askNote}</p>}
+      {rec.kind === 'caregivers' && !unlocked && askNote && caregiversFor(unlocked).length > 0 && <p className="text-small text-muted-foreground">{askNote}</p>}
 
       {rec.kind === 'offer' && <Offer rec={rec} bookable={unlocked && bookable} />}
 

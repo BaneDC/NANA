@@ -5,7 +5,9 @@ const table = [
   ['/', { page: null }],
   ['/signup', { page: 'signup' }],
   ['/signup/family', { page: 'signup', who: 'family' }],
+  ['/signup/family/account', { page: 'signup', who: 'family', step: 'account' }],
   ['/signup/caregiver', { page: 'signup', who: 'caregiver' }],
+  ['/signup/caregiver/account', { page: 'signup', who: 'caregiver', step: 'account' }],
   ['/signup/caregiver/documents', { page: 'signup', who: 'caregiver', step: 'documents' }],
   ['/signin', { page: 'signin' }],
   ['/signin/verify', { page: 'signin', step: 'verify' }],
@@ -31,8 +33,7 @@ describe('route', () => {
   it('anything else is unknown', () => {
     expect(parse('/nope')).toEqual({ page: 'unknown' });
     expect(parse('/signup/caregiver/nope')).toEqual({ page: 'unknown' });
-    // the account is /signup/caregiver itself (12. 11.)
-    expect(parse('/signup/caregiver/account')).toEqual({ page: 'unknown' });
+    expect(parse('/signup/family/form')).toEqual({ page: 'unknown' });
     expect(parse('/signup/nobody')).toEqual({ page: 'unknown' });
     expect(parse('/clients/a/b')).toEqual({ page: 'unknown' });
   });

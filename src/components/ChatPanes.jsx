@@ -6,7 +6,7 @@ import { SheetDescription } from '@/components/ui/sheet';
 import { Item, ItemContent, ItemGroup } from '@/components/ui/item';
 import { DataList, DataRow } from '@/components/data-list';
 import { PaneLabel } from '@/components/pane';
-import { caregiverById, caregiversIn, daysText, slotsText } from '../data/carePlan';
+import { NONE_TEXT, NONE_TITLE, caregiverById, caregiversIn, daysText, slotsText } from '../data/carePlan';
 import { marketHas } from '../data/market';
 import { allVisits, firstName, money, pendingVersion, services, standingWith, waitingOnYou } from '../data/familyCare';
 import { priceLine } from '../data/plans';
@@ -139,6 +139,13 @@ function VisitsPane({ care, onDrawer }) {
 
 function CaregiversPane({ care, onContact }) {
   const list = [...caregiversIn()].sort((a, b) => b.match - a.match);
+  // nobody in her municipality (market.js): said here too
+  if (!list.length)
+    return (
+      <Empty>
+        {t(NONE_TITLE)}. {t(NONE_TEXT)}
+      </Empty>
+    );
   return (
     <ItemGroup>
       {list.map((c) => {

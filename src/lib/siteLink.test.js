@@ -3,15 +3,18 @@ import { readSiteLink } from './siteLink';
 
 describe('readSiteLink', () => {
   it('reads the language and the market, and takes them off the address', () => {
-    expect(readSiteLink('?lng=fi&market=sr')).toEqual({ found: true, lang: 'fi', market: 'sr', search: '' });
+    expect(readSiteLink('?lng=fi&market=sr')).toEqual({ found: true, lang: 'fi', market: 'sr', where: 'sr', search: '' });
   });
   it('keeps the rest of the address, the demo too', () => {
-    expect(readSiteLink('?demo&lng=en&trziste=sr')).toEqual({ found: true, lang: 'en', market: null, search: '?demo&trziste=sr' });
+    expect(readSiteLink('?demo&lng=en&trziste=sr')).toEqual({ found: true, lang: 'en', market: null, where: null, search: '?demo&trziste=sr' });
   });
   it('knows no market but Serbia and Finland', () => {
     expect(readSiteLink('?market=at').market).toBeNull();
   });
+  it('reads abroad for the family, and gives the caregiver no market from it', () => {
+    expect(readSiteLink('?market=diaspora')).toMatchObject({ market: null, where: 'diaspora' });
+  });
   it('finds nothing in an address without them', () => {
-    expect(readSiteLink('?demo')).toEqual({ found: false, lang: null, market: null, search: '?demo' });
+    expect(readSiteLink('?demo')).toEqual({ found: false, lang: null, market: null, where: null, search: '?demo' });
   });
 });

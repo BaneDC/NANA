@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useIsPhone } from '@/hooks/use-phone';
 import { cn } from '@/lib/utils';
+import { pageFocus } from '@/components/TextField';
 import { t, useLang } from '@/i18n';
 import GradientBackground from '@/components/immersive/GradientBackground';
 import { PageHead } from '@/components/HeaderBack';
@@ -169,8 +170,17 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
   const inner = useRef(null);
   const fields = useRef(null);
   // opened after the page came (by "Dalje" or its row), so its first field
-  // takes the focus once it has grown; the part open from the start does not
+  // takes the focus once it has grown. The part open from the start takes it
+  // only with a mouse and a keyboard, and only if it begins with a typed
+  // field (§10, decided 16. 11.): never on a phone.
   const focusOnOpen = useRef(false);
+  useEffect(() => {
+    if (state !== 'active' || !pageFocus()) return;
+    const first = fields.current?.querySelector('input:not([type=hidden]), textarea, button, [role=radio], [role=checkbox]');
+    if (first && first.matches('input:not([type=checkbox]):not([type=radio]), textarea')) first.focus({ preventScroll: true });
+    // only as the page comes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const was = useRef(state);
   const [height, setHeight] = useState('auto');
   const [moving, setMoving] = useState(false);
@@ -204,7 +214,8 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
     setMoving(false);
     if (open && focusOnOpen.current) {
       focusOnOpen.current = false;
-      fields.current?.querySelector('input:not([type=hidden]), textarea, button')?.focus({ preventScroll: true });
+      // never on a phone: the keyboard would cover the part just opened
+      if (pageFocus()) fields.current?.querySelector('input:not([type=hidden]), textarea, button')?.focus({ preventScroll: true });
     }
   };
   const fade = still

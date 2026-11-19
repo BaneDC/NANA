@@ -54,7 +54,7 @@ import PlanChangeBanner from '../components/PlanChangeBanner';
 import RecommendationCard from '../components/RecommendationCard';
 import { CoordinatorContact, PersonRows } from '../components/PlanFooterBlocks';
 import StatCard from '../components/StatCard';
-import { marketHas } from '../data/market';
+import { marketHas, noneHere } from '../data/market';
 import { getLang, t, tn } from '../i18n';
 
 // The family's home, and the one page they should rarely need to leave
@@ -230,6 +230,8 @@ export default function Dashboard({
   onCaregiver,
   onView,
   onAskAssistant,
+  onCompletePlan,
+  completing,
   onFindCaregiver,
   onCare,
   onSelectCaregiver,
@@ -375,6 +377,23 @@ export default function Dashboard({
     />
   );
 
+  // A small plan (only a caregiver was asked for) can be made whole: one card
+  // under it, saying what the whole plan adds, and the assistant asks the rest
+  // (docs/patterns.md §12, decided 16. 11.). "Nastavite" once that has begun.
+  const completeCard = onCompletePlan && (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('Dopunite plan nege')}</CardTitle>
+      </CardHeader>
+      <CardDescription>
+        {t('Do sada ste tražili samo negovateljicu. Uz još nekoliko pitanja dobijate ceo plan nege: procenu stanja, savete za stan i svakodnevicu i usluge naših partnera.')}
+      </CardDescription>
+      <CardFooter>
+        <Button onClick={onCompletePlan}>{completing ? t('Nastavite') : t('Dopunite plan')}</Button>
+      </CardFooter>
+    </Card>
+  );
+
   // While nobody comes yet, the home is the plan, laid out as the overview is
   // (docs/patterns.md §4a): the coordinator's letter first, the caregivers to
   // write to across the page, the partners and the advice two to a line
@@ -397,6 +416,7 @@ export default function Dashboard({
         />
       )}
       {unlocked ? partsRow : lockedRow}
+      {completeCard}
       <CoordinatorContact coordinator={plan.coordinator || coordinator} />
     </div>
   );
@@ -489,7 +509,9 @@ export default function Dashboard({
           The way down to the caregivers is a button only on a phone, where
           their rows have none and the first is two screens down; wider, they
           are right under the letter, each with its own "Pošalji poruku". */}
-      {fresh && plan && (
+      {/* nobody in her municipality (market.js): there is nobody to write to,
+          so the step is not offered; the plan says so where they would be */}
+      {fresh && plan && !noneHere() && (
         <Attention title={t('Sledeći korak')}>
           <Card>
             <CardDescription>
@@ -811,6 +833,7 @@ export default function Dashboard({
               is no longer this page; then who to call when something is not
               right. Both the page's whole width (docs/patterns.md §4a). */}
           {letterCard}
+          {completeCard}
           <CoordinatorContact coordinator={plan?.coordinator || coordinator} />
         </div>
       )}

@@ -3,6 +3,7 @@ import { PAIRS, traitOf } from './personalityTest';
 import { adult, afterSteps, emptyForm, firstUnfinished, recordFrom, stepErrors } from './caregiverSignUp';
 import { marketDate } from './familyCare';
 import { languageOptions } from './caregiverProfile';
+import { typedDay } from '../components/TextField';
 
 const filled = (market) => ({
   ...emptyForm(market),
@@ -110,5 +111,22 @@ describe('languageOptions', () => {
   });
   it('keeps one she already had that the list no longer offers, so it can be taken off', () => {
     expect(languageOptions('RS', ['srpski', 'ruski']).map((o) => o.value)).toEqual(['srpski', 'engleski', 'nemački', 'francuski', 'ruski']);
+  });
+});
+
+describe('a date of birth, typed', () => {
+  const birth = (v) => stepErrors('basic', { ...emptyForm('sr'), birth: v }).birth;
+  it('says what is wrong with what was typed', () => {
+    expect(birth('')).toBe('Ovo polje je obavezno.');
+    expect(birth('20.12')).toBe('Unesite ceo datum.');
+    expect(birth('31.02.1990')).toBe('Ovaj datum ne postoji.');
+    expect(birth(new Date(1890, 0, 1).getTime())).toBe('Proverite godinu.');
+    expect(birth(new Date(2015, 0, 1).getTime())).toBe('Morate imati najmanje 18 godina.');
+    expect(birth(new Date(1989, 11, 20).getTime())).toBeUndefined();
+  });
+  it('takes a whole real day as the day', () => {
+    expect(typedDay('20121989')?.getTime()).toBe(new Date(1989, 11, 20).getTime());
+    expect(typedDay('31021990')).toBeNull();
+    expect(typedDay('2012198')).toBeNull();
   });
 });

@@ -254,6 +254,7 @@ export const STEP_INTRO = {
   'daily-life':
     msg('Hvala. Sada kada smo se upoznali, volela bih da razumem kako izgleda njihov svakodnevni dan.'),
   support: msg('Sad mi je slika jasna. Još par pitanja i preporuka će biti precizna.'),
+  care: msg('Još samo da znam šta tačno treba da prenesem negovateljici.'),
   reason: msg('Još jedna stvar, i ona je najvažnija: zašto ste nam se javili baš sada?'),
 };
 
@@ -275,10 +276,13 @@ export const STARTERS = [
     title: msg('Nešto se promenilo i zabrinut sam'),
     sub: msg('Pad, zbunjenost, loša nedelja: recite mi šta se desilo'),
   },
+  // the short way through: five questions and the caregivers (path.js,
+  // decided 16. 11.; until then "Treba mi neko u stanu nekoliko puta nedeljno")
   {
-    id: 'help',
-    title: msg('Treba mi neko u stanu nekoliko puta nedeljno'),
-    sub: msg('Negovateljice u njenom kraju i koliko koštaju'),
+    id: 'caregiver',
+    path: 'caregiver',
+    title: msg('Treba mi samo negovateljica'),
+    sub: msg('Nekoliko pitanja, pa negovateljice u njenom kraju'),
   },
   {
     id: 'abroad',
@@ -294,6 +298,7 @@ export const SECTION = {
   'getting-to-know': msg('Upoznavanje'),
   'daily-life': msg('Svakodnevni život'),
   support: msg('Kakva podrška'),
+  care: msg('Negovateljica'),
   reason: msg('Zašto ste se javili'),
 };
 

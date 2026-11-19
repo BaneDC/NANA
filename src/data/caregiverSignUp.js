@@ -1,4 +1,4 @@
-import { requiredError } from '../components/TextField';
+import { requiredError, typedDateError } from '../components/TextField';
 import { DOCUMENTS } from './caregiverProfile';
 import { dialOf } from './countries';
 import { msg, t } from '../i18n';
@@ -110,7 +110,9 @@ export function stepErrors(step, f) {
   if (step === 'basic') {
     need('firstName', !blank(f.firstName));
     need('lastName', !blank(f.lastName));
-    if (!f.birth) e.birth = requiredError();
+    // typed (DateText): what was typed until it is a real day
+    if (f.birth === '' || f.birth == null) e.birth = requiredError();
+    else if (typedDateError(f.birth)) e.birth = typedDateError(f.birth);
     else if (!adult(f.birth)) e.birth = t('Morate imati najmanje 18 godina.');
     need('address', !blank(f.address));
     need('area', !blank(f.area));
@@ -215,7 +217,7 @@ export function recordFrom(f, id, email = '') {
     slots: f.slots,
     classifications: sr ? [] : f.classifications,
     address: f.address.trim(),
-    birth: f.birth ? marketDate(new Date(f.birth), f.market) : '',
+    birth: typeof f.birth === 'number' ? marketDate(new Date(f.birth), f.market) : '',
     ...(sr
       ? { certificate: f.certificate, courses: f.courses.trim(), engagement: f.engagement, abroad: f.abroad, habits: f.habits, health: f.health, healthNotes: Object.fromEntries(Object.entries(f.healthNotes || {}).filter(([id]) => f.health[id]).map(([id, v]) => [id, v.trim()])), readiness: f.readiness, unwilling: f.unwilling.trim(), emergency: { ...f.emergency, phone: `${dialOf(f.emergency.phoneCountry)} ${f.emergency.phone.trim()}` } }
       : { rateMin: Number(String(f.rateMin).replace(',', '.')), rateMax: Number(String(f.rateMax).replace(',', '.')) }),

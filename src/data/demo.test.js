@@ -4,12 +4,13 @@ import { demoAccount, demoEntry, seedState, toCountry } from './demo';
 describe('demoEntry', () => {
   it('is nothing without demo', () => expect(demoEntry('?kartice')).toBeNull());
   it('is the Finnish family by default', () =>
-    expect(demoEntry('?demo')).toEqual({ role: 'family', market: 'fi', filled: false, explicit: false }));
+    expect(demoEntry('?demo')).toEqual({ role: 'family', market: 'fi', filled: false, short: false, explicit: false }));
   it('reads the caregiver and the market', () =>
-    expect(demoEntry('?demo=negovateljica&trziste=sr')).toEqual({ role: 'caregiver', market: 'sr', filled: false, explicit: true }));
+    expect(demoEntry('?demo=negovateljica&trziste=sr')).toEqual({ role: 'caregiver', market: 'sr', filled: false, short: false, explicit: true }));
   it('keeps ?demo=rs as the Serbian family', () =>
-    expect(demoEntry('?demo=rs')).toEqual({ role: 'family', market: 'sr', filled: false, explicit: true }));
+    expect(demoEntry('?demo=rs')).toEqual({ role: 'family', market: 'sr', filled: false, short: false, explicit: true }));
   it('reads puno', () => expect(demoEntry('?demo&puno').filled).toBe(true));
+  it('reads kratko', () => expect(demoEntry('?demo&kratko').short).toBe(true));
 });
 
 describe('demoAccount', () => {
@@ -31,10 +32,11 @@ describe('seedState', () => {
     expect(s.family).toEqual({ unlocked: false, subscription: null });
     expect(s.clients.length).toBeGreaterThan(0);
   });
+  // two of the four to answer asked only for a caregiver, one of them from abroad (16. 11.)
   it('gives Milica in Serbia requests to answer and some she declined', () => {
     const status = seedState('sr', { filled: false }).clients.map((c) => c.person.care.requests[0]);
     expect(status.every((r) => r.caregiverId === 'milica')).toBe(true);
-    expect(status.filter((r) => r.status === 'pending')).toHaveLength(2);
+    expect(status.filter((r) => r.status === 'pending')).toHaveLength(4);
     expect(status.filter((r) => r.status === 'declined')).toHaveLength(3);
   });
   it('filled is a week into care, paid', () => {

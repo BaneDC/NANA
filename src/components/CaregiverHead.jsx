@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Rating from './Rating';
 import Standing from './Standing';
+import { placeText } from '../data/carePlan';
 import { t } from '../i18n';
 
 // Who she is, at the top of her details (the profile drawer, her pane in the
@@ -20,7 +21,7 @@ export default function CaregiverHead({ caregiver: c, standing }) {
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <CaregiverName name={c.name} match={c.match} />
         <p className="text-small text-muted-foreground">
-          <Rating caregiver={c} /> · {c.rate && <>{c.rate} · </>}{t('{area}, do {radius} km', c)}
+          <Rating caregiver={c} /> · {c.rate && <>{c.rate} · </>}{placeText(c)}
         </p>
         <Standing standing={standing} className="self-start" />
       </div>

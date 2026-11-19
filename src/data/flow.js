@@ -357,6 +357,48 @@ export const steps = [
     ],
   },
 
+  // What the caregiver is to do, and when (decided 16. 11.). `care-needs` is
+  // asked only on the short path ("samo negovateljica", `path`), where nothing
+  // else says what is needed; on the full plan the answers above do. Neither
+  // has a `when`: an answer here is never retired by the frailty band.
+  {
+    id: 'care',
+    intro: msg('Još samo da znam šta tačno treba da prenesem negovateljici.'),
+    questions: [
+      {
+        id: 'care-needs',
+        type: 'multi',
+        path: 'caregiver',
+        title: msg('Oko čega joj treba pomoć?'),
+        subtitle: msg('Izaberite sve što važi'),
+        shortTitle: msg('Šta je potrebno'),
+        options: [
+          { id: 'personal-care', title: msg('Lična nega: kupanje, oblačenje, toalet'), short: msg('Lična nega') },
+          { id: 'meals', title: msg('Obroci'), short: msg('Obroci') },
+          { id: 'medication', title: msg('Lekovi'), short: msg('Lekovi') },
+          { id: 'company', title: msg('Društvo i razgovor'), short: msg('Društvo') },
+          { id: 'errands', title: msg('Nabavka i obaveze'), short: msg('Nabavka') },
+          { id: 'housekeeping', title: msg('Kućni poslovi'), short: msg('Kućni poslovi') },
+          { id: 'walks', title: msg('Šetnje'), short: msg('Šetnje') },
+          { id: 'mobility', title: msg('Pomoć pri kretanju'), short: msg('Kretanje') },
+        ],
+      },
+      {
+        id: 'care-schedule',
+        type: 'inputs',
+        title: msg('Kada i koliko vam treba negovateljica?'),
+        subtitle: msg('Jednom rečenicom: kojim danima, u koje doba dana i koliko sati'),
+        shortTitle: msg('Kada i koliko'),
+        fields: [
+          { id: 'days', label: msg('Kojim danima'), placeholder: msg('pon, sre, pet') },
+          { id: 'slots', label: msg('U koje doba dana'), placeholder: msg('pre podne') },
+          { id: 'hours', label: msg('Koliko sati po dolasku'), placeholder: '3', optional: true },
+          // Serbia's caregivers say whether they come for the day or stay (engagement)
+          { id: 'engagement', label: msg('Dnevne posete ili 24 sata'), placeholder: msg('dnevne posete'), optional: true, market: 'RS' },
+        ],
+      },
+    ],
+  },
   {
     id: 'reason',
     intro: msg('Još jedna stvar, i ona je najvažnija - zašto ste nam se javili baš sada?'),
@@ -429,11 +471,13 @@ export const steps = [
 
 // Frailty is estimated from the second section, so branching questions can only be
 // resolved once those answers exist.
-export function flowContext(answers, level) {
-  return { level: level ?? null, band: level ? bandOf(level) : null };
+// `path`: 'caregiver' on the short path; a question with a `path` is asked on it only
+export function flowContext(answers, level, path) {
+  return { level: level ?? null, band: level ? bandOf(level) : null, path: path ?? null };
 }
 
 export function questionApplies(question, ctx) {
+  if (question.path && question.path !== ctx.path) return false;
   if (!question.when) return true;
   if (!ctx.band) return false; // not enough answered to know which branch yet
   return question.when(ctx);

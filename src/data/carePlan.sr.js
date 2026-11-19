@@ -1,6 +1,10 @@
 import { riskIdsOf } from './carePlan';
 import { frailtyOf } from './frailty';
-import { msg, t } from '../i18n';
+import { msg, t, tn } from '../i18n';
+import { isShortPlan } from './path';
+import { needFrom, scheduleText } from './familyStart';
+import { questionById } from './flow';
+import { srOptionTitles } from './flow.sr';
 
 // The care plan's overview in Serbian, for the last screen of the AI
 // conversation — the plan read back in the language it was talked through in.
@@ -122,6 +126,34 @@ export function planOverview(answers, notes = [], { to = 'family' } = {}) {
   const you = answers['about-you']?.values || {};
   const caller = you['your-name']?.trim();
   const relation = you.relation?.trim();
+
+  // a small plan (path.js): who she is, how she moves, what is needed and
+  // when; no risks, no goal, nothing read from what the short path did not ask
+  if (isShortPlan(answers)) {
+    const said = (id) => srOptionTitles(questionById[id], answers[id]);
+    const needs = said('care-needs').map((x) => x.charAt(0).toLowerCase() + x.slice(1));
+    const need = needFrom(answers);
+    const story = [];
+    if (said('mobility')[0]) story.push(t('Kreće se: {how}.', { how: said('mobility')[0].toLowerCase() }));
+    if (needs.length) story.push(t('Treba joj pomoć oko ovoga: {needs}.', { needs: needs.join(', ') }));
+    if (answers['care-schedule'])
+      story.push(
+        (to === 'caregiver' ? t('Negovateljica im treba: {when}.', { when: scheduleText(need.schedule) }) : t('Negovateljica vam treba: {when}.', { when: scheduleText(need.schedule) })) +
+          (need.perVisit ? ` ${t('Po dolasku {hours}.', { hours: tn(need.perVisit, 'sat', 'sata', 'sati') })}` : '')
+      );
+    if (caller) story.push(t('{caller} je glavni kontakt.', { caller: `${caller}${relation ? ` (${relation.toLowerCase()})` : ''}` }));
+    return {
+      short: true,
+      lead: `${name || t('Osoba o kojoj brinete')}${details.length ? ` (${details.join(', ')})` : ''} ${t('živi kod kuće')}.`,
+      story,
+      risks: [],
+      goal: null,
+      worry: null,
+      notes: notes.map(sentence),
+      role: t('Negovateljica'),
+      recommendation: t('Negovateljice koje odgovaraju onome što ste naveli. Ceo plan nege možete da dopunite kad god poželite.'),
+    };
+  }
 
   const band = frailtyOf(answers)?.band ?? 'moderate';
   const reasonId = answers['reason-for-contact']?.optionId;

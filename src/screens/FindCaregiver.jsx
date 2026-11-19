@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Phone } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardLink } from '@/components/ui/card';
+import { Card, CardDescription, CardFooter, CardLink } from '@/components/ui/card';
 import {
   Pagination,
   PaginationContent,
@@ -12,7 +12,8 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Page, PageDescription, PageHeader, PageHeaderText, PageTitle } from '@/components/page';
-import { caregiversIn, engagementText, matchReasons } from '../data/carePlan';
+import { NONE_TEXT, NONE_TITLE, caregiversIn, engagementText, matchReasons, placeText } from '../data/carePlan';
+import Attention from '../components/Attention';
 import { standingWith } from '../data/familyCare';
 import Rating from '../components/Rating';
 import Tags, { Groups } from '../components/Tags';
@@ -33,7 +34,7 @@ const PER_PAGE = 10;
 // what stands under her text on a phone starts where her name does
 const underText = 'phone:ml-[calc(var(--avatar)+var(--spacing-3))]';
 
-export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFlash }) {
+export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFlash, onHelp }) {
   const [page, setPage] = useState(1);
 
   // best match first, as the recommendation it is
@@ -51,14 +52,30 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
       <PageHeader>
         <PageHeaderText>
           <PageTitle>{t('Pronađi negovateljicu')}</PageTitle>
-          <PageDescription>
-            {t('Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju.')} {askNote}
-          </PageDescription>
+          {/* nobody to list: the empty page under it says so */}
+          {results.length > 0 && (
+            <PageDescription>
+              {t('Na osnovu onoga što ste nam rekli, ovo su negovateljice koje najbolje odgovaraju.')} {askNote}
+            </PageDescription>
+          )}
         </PageHeaderText>
       </PageHeader>
 
+      {/* nobody in her municipality (market.js, decided 16. 11.): an empty
+          page as every other (docs/patterns.md §5), what is missing and whom to ask */}
+      {!results.length && (
+        <Attention title={t(NONE_TITLE)}>
+          <Card>
+            <CardDescription>{t(NONE_TEXT)}</CardDescription>
+            <CardFooter>
+              <Button onClick={onHelp}>{t('Pišite koordinatorki')}</Button>
+            </CardFooter>
+          </Card>
+        </Attention>
+      )}
+
       {/* text outside a card: in line with the text in the cards under it (§3) */}
-      <div className="flex items-baseline gap-3 pl-4 text-small leading-body text-muted-foreground">
+      <div className={results.length ? 'flex items-baseline gap-3 pl-4 text-small leading-body text-muted-foreground' : 'hidden'}>
         {/* what this page shows, out of everyone */}
         <span>
           {t('{shown} od {all} negovateljica', { shown: shown.length, all: results.length })}
@@ -86,7 +103,7 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
                   </span>
                 </CaregiverName>
                 <div className="text-small text-muted-foreground">
-                  <Rating caregiver={c} /> · {c.rate && <>{c.rate} · </>}{t('{area}, do {radius} km', c)}
+                  <Rating caregiver={c} /> · {c.rate && <>{c.rate} · </>}{placeText(c)}
                 </div>
                 {/* Why she comes up (the platform's reasons) and what she is,
                     each a labelled group of tags, the labels in one column. */}
@@ -137,7 +154,7 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
       )}
 
       {/* The way out for someone who does not want to choose from a list. */}
-      <Card className="flex-row items-center gap-3 text-muted-foreground">
+      <Card className={results.length ? 'flex-row items-center gap-3 text-muted-foreground' : 'hidden'}>
         <Phone size={16} strokeWidth={1.75} />
         <p className="flex-1 text-xs leading-body">
           {t('Niste sigurni koju da izaberete? Koordinatorka poznaje svaku od njih i može da vas pozove danas.')}

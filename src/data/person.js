@@ -18,11 +18,12 @@ import { startRecord } from './record';
 // answers and notes once the onboarding has made it, and every change rebuilds
 // it, so it can never disagree with them.
 //
-// { answers, notes, planMade, log, care, record }
+// { answers, notes, planMade, path, log, care, record }
 export const newPerson = ({
   answers = {},
   notes = [],
   planMade = false,
+  path = 'plan',
   log = [],
   care = startCare(null),
   record = startRecord(false),
@@ -30,6 +31,8 @@ export const newPerson = ({
   answers,
   notes,
   planMade,
+  // which way through Minna's conversation: 'plan' or 'caregiver' (path.js)
+  path,
   log,
   care,
   record,

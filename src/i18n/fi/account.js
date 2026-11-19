@@ -474,6 +474,7 @@ export default {
   'Kako ste čuli za nas?': 'Mistä kuulitte meistä?',
   'Saglasan/na sam sa obradom podataka': 'Hyväksyn tietojeni käsittelyn',
   'Potvrđujem da su podaci tačni': 'Vahvistan, että tiedot ovat oikein',
+  'Saglasan/na sam da negovateljice kojima se obratim vide moje podatke': 'Hyväksyn, että hoitajat, joihin otan yhteyttä, näkevät tietoni',
   'Želim da primam novosti i posebne ponude na email': 'Haluan uutisia ja erikoistarjouksia sähköpostiini',
   'Napravi nalog': 'Luo tili',
   'Registracijom prihvatate naše': 'Rekisteröitymällä hyväksytte',
@@ -694,8 +695,6 @@ export default {
   "Za demo: negovateljica": "Demoa varten: hoitaja",
   "Za demo: tržište": "Demoa varten: markkina",
   "Po jeziku": "Kielen mukaan",
-  "Izaberite lozinku": "Valitse salasana",
-  "Privremenu lozinku iz e-maila menjate pri prvoj prijavi. Nova lozinka mora imati najmanje 8 karaktera.": "Ensimmäisellä kirjautumisella vaihdat sähköpostin väliaikaisen salasanan. Uudessa salasanassa on oltava vähintään 8 merkkiä.",
-  "Sačuvaj i nastavi": "Tallenna ja jatka",
   "Za demo: nova privremena lozinka za {email}": "Demoa varten: uusi väliaikainen salasana osoitteelle {email}",
+  'Za demo': 'Demoa varten',
 };

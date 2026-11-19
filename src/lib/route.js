@@ -12,10 +12,13 @@ const PLAIN = ['onboarding', 'chat', 'dashboard', 'requests', 'find-caregiver', 
 // pages with an id: the address's word, and the route's page
 const WITH_ID = { caregivers: 'caregiver', clients: 'client' };
 const ID_WORD = Object.fromEntries(Object.entries(WITH_ID).map(([word, page]) => [page, word]));
-// her first step, the account, is /signup/caregiver itself
-export const CAREGIVER_STEPS = ['form', 'review', 'documents', 'test', 'interview', 'thanks'];
+// the first step of both sign-ups, where (the market, and the family's
+// municipality), is /signup/family and /signup/caregiver themselves; the
+// account comes after it (decided 19. 11., Branislav)
+export const FAMILY_STEPS = ['account'];
+export const CAREGIVER_STEPS = ['account', 'form', 'review', 'documents', 'test', 'interview', 'thanks'];
 // password: her first sign-in with the coordinator's temporary password
-const SIGNIN_STEPS = ['verify', 'reset', 'password'];
+const SIGNIN_STEPS = ['verify', 'reset'];
 
 const UNKNOWN = { page: 'unknown' };
 
@@ -26,7 +29,10 @@ export function parse(pathname) {
   if (rest.length) return UNKNOWN;
   if (first === 'signup') {
     if (!second) return third ? UNKNOWN : { page: 'signup' };
-    if (second === 'family') return third ? UNKNOWN : { page: 'signup', who: 'family' };
+    if (second === 'family') {
+      if (!third) return { page: 'signup', who: 'family' };
+      return FAMILY_STEPS.includes(third) ? { page: 'signup', who: 'family', step: third } : UNKNOWN;
+    }
     if (second !== 'caregiver') return UNKNOWN;
     if (!third) return { page: 'signup', who: 'caregiver' };
     return CAREGIVER_STEPS.includes(third) ? { page: 'signup', who: 'caregiver', step: third } : UNKNOWN;
@@ -56,6 +62,7 @@ export function href(route) {
 export function keptSearch(search) {
   const q = new URLSearchParams(search);
   q.delete('puno');
+  q.delete('kratko');
   const s = q.toString().replace(/=(?=&|$)/g, '');
   return s ? `?${s}` : '';
 }

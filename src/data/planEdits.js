@@ -1,4 +1,5 @@
 import { applicableQuestions, flowContext, questionById, steps } from './flow';
+import { SHORT_PATH, isShortPlan } from './path';
 import { frailtyOf } from './frailty';
 import { quoted } from './carePlan';
 import { CFS_SR, srField, srOptionTitles, srShort } from './flow.sr';
@@ -15,6 +16,7 @@ export const STEP_TITLE = {
   'getting-to-know': msg('Upoznavanje'),
   'daily-life': msg('Svakodnevica'),
   support: msg('Podrška'),
+  care: msg('Negovateljica'),
   reason: msg('Zašto sada'),
 };
 
@@ -22,12 +24,17 @@ export const STEP_TITLE = {
 // current answer. The frailty band decides which support questions exist at all,
 // so the list is worked out from the answers each time rather than kept.
 export function planQuestions(answers) {
-  const ctx = flowContext(answers, frailtyOf(answers)?.level);
+  // what was asked on the short path stays with the plan once it is whole;
+  // a small plan lists only what that path asked (path.js)
+  const short = isShortPlan(answers);
+  const ctx = flowContext(answers, frailtyOf(answers)?.level, answers['care-needs'] ? 'caregiver' : null);
   return steps
     .map((step) => ({
       id: step.id,
       title: STEP_TITLE[step.id] ? t(STEP_TITLE[step.id]) : step.id,
-      questions: applicableQuestions(step, ctx).map((q) => ({ q, answer: answers[q.id] || null })),
+      questions: applicableQuestions(step, ctx)
+        .filter((q) => (short ? SHORT_PATH.includes(q.id) : q.id !== 'care-schedule' || answers[q.id]))
+        .map((q) => ({ q, answer: answers[q.id] || null })),
     }))
     .filter((s) => s.questions.length);
 }

@@ -45,7 +45,7 @@ export const PERSONAL = {
   milica: {
     address: 'Njegoševa 14', // i18n-ignore
     birth: '4. 7. 1988.',
-    abroad: false,
+    abroad: true,
     habits: { smoker: false, alcohol: false, pets: true },
     health: { allergies: false, limits: false, problems: false, convicted: false },
     readiness: ['dementia', 'semi-mobile', 'bathing'],

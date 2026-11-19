@@ -65,7 +65,12 @@ const CHANGE_REPLY = msg(
   'Šta se promenilo, ili šta treba ispraviti? Recite svojim rečima, na primer „pala je i slomila nogu“, „dobila je novi lek“ ili „pogrešno je upisan broj telefona“. Pitaću šta mi treba, pa predložiti šta se menja u kartonu i u planu nege. Medicinske savete ne dajem: lekove i dijagnoze samo beležim.'
 );
 
-export const isOpener = (text) => text === CHANGE_OPENER || text === t(CHANGE_OPENER);
+// What starts making a small plan whole ("Dopunite plan nege"): sent as the
+// family's own too, but to the model, which answers with the first question.
+export const COMPLETE_OPENER = msg('Želim da dopunim plan nege.');
+
+export const isOpener = (text) => [CHANGE_OPENER, COMPLETE_OPENER].some((o) => text === o || text === t(o));
+const isFixed = (text) => text === CHANGE_OPENER || text === t(CHANGE_OPENER);
 
 // How far a conversation has got, for "Prijavi promenu" (docs/patterns.md §10a):
 // 'empty' nothing said yet, 'opener' only the fixed opener (however many times),
@@ -73,7 +78,7 @@ export const isOpener = (text) => text === CHANGE_OPENER || text === t(CHANGE_OP
 export function chatStage(chat) {
   const said = (chat?.turns || []).map((x) => x.user.trim()).filter(Boolean);
   if (!said.length) return 'empty';
-  return said.every(isOpener) ? 'opener' : 'talk';
+  return said.every(isFixed) ? 'opener' : 'talk';
 }
 
 // `opener`: the conversation starts with the fixed opener, sent once the chat exists.
@@ -82,13 +87,13 @@ export function ChatSource({ id, ctx, onTitle, opener }) {
 
   const send = useCallback(async function* (message, { turnId }) {
     dropKeyboardAfterSend();
-    const { plan, answers, care, record, today, apiKey, onAddNotes } = ctx.current;
+    const { plan, answers, care, record, today, apiKey, onAddNotes, completing } = ctx.current;
     if (!plan) {
       yield t('Asistent radi kad plan nege postoji. Završite razgovor sa Minnom, pa se vratite ovde.');
       return;
     }
     // fixed, so it needs no key
-    if (isOpener(message)) {
+    if (isFixed(message)) {
       const reply = t(CHANGE_REPLY);
       history.current = [...history.current, { role: 'user', content: message }, { role: 'assistant', content: reply }];
       yield reply;
@@ -119,6 +124,7 @@ export function ChatSource({ id, ctx, onTitle, opener }) {
       today,
       history: history.current,
       text: message,
+      completing,
       onText: (piece) => {
         pieces.push(piece);
         nudge();
@@ -165,6 +171,8 @@ export function ChatSource({ id, ctx, onTitle, opener }) {
     } else if (!shown) {
       yield r.said;
     }
+    // answers to what a small plan still lacked are kept as they are said
+    if (r.recorded.length) ctx.current.onRecordAnswers(r.recorded);
     if (r.notes.length) {
       onAddNotes(r.notes);
       yield { kind: 'custom', id: `notes-${turnId}`, type: 'note', data: { items: r.notes } };
@@ -215,7 +223,8 @@ export function ChatSource({ id, ctx, onTitle, opener }) {
     if (!opener || opened.current || !draft || isStreaming) return;
     opened.current = true;
     // after the kit has finished setting itself up
-    setTimeout(() => chat.submit(draft.id, t(CHANGE_OPENER)), 0);
+    // `true` is the fixed opener of "Prijavi promenu"; any other is its own
+    setTimeout(() => chat.submit(draft.id, t(opener === true ? CHANGE_OPENER : opener)), 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opener, turns, isStreaming]);
   useEffect(() => {

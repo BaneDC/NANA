@@ -164,7 +164,8 @@ export function AboutFamily({ client, pane = false }) {
           <Box label={t('Kada je potrebna pomoć')}>
             <Facts>
               <Fact label={t('Raspored')}>{care.need?.schedule ? scheduleText(care.need.schedule) : '-'}</Fact>
-              <Fact label={t('Sati')}>{care.need?.hours ? t('{hours} h nedeljno', { hours: care.need.hours }) : '-'}</Fact>
+              {/* said by the family, or worked out; not drawn when they named none (16. 11.) */}
+              {care.need?.hours ? <Fact label={t('Sati')}>{t('{hours} h nedeljno', { hours: care.need.hours })}</Fact> : null}
             </Facts>
           </Box>
           <Box label={t('Potrebne usluge')}>

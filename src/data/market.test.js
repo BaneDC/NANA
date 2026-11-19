@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { marketHas, setMarket } from './market';
+import { marketHas, setMarket, setPlace } from './market';
 import { packageOver, plansFor, renewalAt } from './plans';
 import { caregiversIn, matchReasons, setRegistered } from './carePlan';
 import { requestNote } from './firstSteps';
@@ -83,5 +83,29 @@ describe('a caregiver who signed up', () => {
     expect(caregiversIn('FI').some((c) => c.id === 'reg-1')).toBe(false);
     setRegistered([{ ...her, status: 'active' }]);
     expect(caregiversIn('FI').some((c) => c.id === 'reg-1')).toBe(true);
+  });
+});
+
+describe('where the family is', () => {
+  afterEach(() => (setMarket('FI'), setPlace()));
+
+  it('a family abroad sees only Serbian caregivers who work abroad', () => {
+    setMarket('RS');
+    const all = caregiversIn().length;
+    setPlace({ abroad: true });
+    const list = caregiversIn();
+    expect(list.length).toBeGreaterThan(0);
+    expect(list.length).toBeLessThan(all);
+    expect(list.every((c) => c.abroad)).toBe(true);
+    expect(list.some((c) => c.id === 'milica')).toBe(true);
+  });
+  it('a municipality with nobody in it has an empty list, and any other the whole one', () => {
+    setMarket('RS');
+    setPlace({ municipality: 'Čačak' });
+    expect(caregiversIn()).toEqual([]);
+    setPlace({ municipality: 'Niš' });
+    expect(caregiversIn().length).toBeGreaterThan(0);
+    setPlace();
+    expect(caregiversIn().length).toBeGreaterThan(0);
   });
 });

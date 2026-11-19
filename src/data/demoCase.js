@@ -66,6 +66,24 @@ export const demoAnswersRs = {
   'about-you': { values: { 'your-name': 'Jelena Petrović', relation: msg('Ćerka'), 'your-phone': '+381 64 123 4567' } }, // i18n-ignore: names
 };
 
+// The demo's family when it asked only for a caregiver (/?demo&kratko; path.js,
+// decided 16. 11.): what the short way through asks and nothing else, so the
+// plan is the small one and "Dopunite plan nege" is under it. What they said
+// about when is text, as they would have typed it.
+export const demoShortAnswers = {
+  'about-person': demoAnswers['about-person'],
+  'about-you': demoAnswers['about-you'],
+  'care-needs': { optionIds: ['meals', 'medication', 'company', 'walks'] },
+  'care-schedule': { values: { days: 'pon, sre, pet', slots: 'pre podne', hours: '3' } }, // i18n-ignore: as typed
+  mobility: { optionId: 'stick' },
+};
+export const demoShortAnswersRs = {
+  ...demoShortAnswers,
+  'about-person': demoAnswersRs['about-person'],
+  'about-you': demoAnswersRs['about-you'],
+  'care-schedule': { values: { days: 'pon – pet', slots: 'pre podne', hours: '4', engagement: 'dnevne posete' } }, // i18n-ignore: as typed
+};
+
 // The same, in the language of the moment: what the family "wrote" is text, not
 // a key, once it is in the plan.
 export const demoAnswersNow = () => {

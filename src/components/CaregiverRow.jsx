@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Item, ItemAction, ItemContent, ItemLink, ItemTitle } from '@/components/ui/item';
 import Rating from './Rating';
 import Standing from './Standing';
+import { placeText } from '../data/carePlan';
 import { t } from '../i18n';
 
 // One caregiver in the care plan: who she is, and the one thing the family can
@@ -33,7 +34,7 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
           <Badge className="my-[calc((var(--text-xs-leading)-20px)/2)] ml-2">{t('Poklapanje · {match}%', { match: caregiver.match })}</Badge>
         </ItemTitle>
         <div className="text-small text-muted-foreground">
-          <Rating caregiver={caregiver} /> · {caregiver.rate && <>{caregiver.rate} · </>}{t('{area}, do {radius} km', caregiver)}
+          <Rating caregiver={caregiver} /> · {caregiver.rate && <>{caregiver.rate} · </>}{placeText(caregiver)}
         </div>
       </ItemContent>
       {standing ? (

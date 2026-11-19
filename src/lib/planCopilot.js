@@ -2,7 +2,8 @@ import { MODEL, SYSTEM_TURNS, TUNING, toAnswer, withoutLongDashes } from '../dat
 import { questionById } from '../data/flow';
 import { isLoadBearing } from '../data/dependencies';
 import { frailtyOf } from '../data/frailty';
-import { answerText, planQuestions } from '../data/planEdits';
+import { answerText, applyChanges, planQuestions } from '../data/planEdits';
+import { fieldsOf, fullRemaining } from '../data/path';
 import { srField, srOption, srTitle } from '../data/flow.sr';
 import { caregiversIn, daysText, slotsText } from '../data/carePlan';
 import { activeVersion, allVisits, pendingVersion, waitingOnYou } from '../data/familyCare';
@@ -149,6 +150,59 @@ const SHOW = {
   },
 };
 
+// Making a small plan whole (docs/patterns.md §12, decided 16. 11.): the
+// family first asked only for a caregiver and now wants the whole care plan.
+// The questions it still needs are asked here, one at a time, and an answer
+// is kept as it is said: nothing to approve, since nothing is being changed.
+const recordTool = () => ({
+  name: 'record_answers',
+  description:
+    'Save the family\'s answers to the questions listed under "Completing the care plan". They are saved at once, with nothing for the family to approve. Use only for those questions, with their ids and option ids; a change to an answer that already exists still goes through `propose_changes`.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      answers: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            questionId: { type: 'string' },
+            optionId: { type: 'string', description: 'For "single" questions.' },
+            optionIds: { type: 'array', items: { type: 'string' }, description: 'For "multi" questions: every option that applies.' },
+            other: { type: 'string', description: 'For "multi" questions that allow it: anything that fits none of the options.' },
+            values: { type: 'object', additionalProperties: { type: 'string' }, description: 'For "inputs" questions: field id → value.' },
+          },
+          required: ['questionId'],
+        },
+      },
+    },
+    required: ['answers'],
+  },
+});
+
+const openFor = (answers) =>
+  fullRemaining(answers).map(({ q }) => ({
+    id: q.id,
+    question: srTitle(q),
+    type: q.type,
+    ...(q.type === 'inputs'
+      ? { fields: fieldsOf(q).filter((f) => !answers[q.id]?.values?.[f.id]).map((f) => ({ id: f.id, label: srField(q, f.id), required: !f.optional })) }
+      : { options: q.options.map((o) => ({ id: o.id, label: srOption(q, o.id) })), ...(q.allowOther ? { allowsOther: true } : {}), ...(q.allowEmpty ? { mayBeEmpty: true } : {}) }),
+  }));
+
+function completion(answers) {
+  const open = openFor(answers);
+  return [
+    'Completing the care plan: the family first asked only for a caregiver, so the plan is a small one, and they now want the whole care plan (an estimate of how she is, advice, and what our partners offer).',
+    open.length
+      ? `Questions the whole plan still needs (${open.length}), in order. Ask the first one, in one plain sentence of your own, naming its choices in words when it has them. When the family answers, call \`record_answers\` with it and, in the same message, ask the next one. One question a message. Record whatever else their answer covers, and never ask what the catalog above already has. More questions can appear as you go, because some depend on earlier answers. If they want to stop, say they can carry on later from "Moja nega".`
+      : 'Every question is answered: the care plan is whole now. Say so in one sentence and that it is on "Moja nega".',
+    open.length ? JSON.stringify(open) : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
 const system = (name) =>
   [
     `You are the assistant in NANA Prime, for the family caring for ${name}. The person talking to you is a family member. You know their care plan, the caregivers who fit it, who they have asked, and what is waiting on them - all in the latest system message, which is the truth about their situation; never invent visits, prices or answers that are not there.`,
@@ -258,11 +312,11 @@ function toChange(entry, answers) {
  * a piece is held back while it ends in a space, a comma or a dash; the rest
  * arrives with the next one, and whatever is left is in `said` at the end.
  */
-export async function askPlanCopilot({ client, name, answers, care, record, today, history, text, onText }) {
+export async function askPlanCopilot({ client, name, answers, care, record, today, history, text, onText, completing = false }) {
   const messages = [...history, { role: 'user', content: text }];
   // what she is working from: the questions, where the family stands, and
   // what her medical record already holds
-  const state = [catalog(answers), care ? situation(care) : null, record && today ? recordState(record, today) : null]
+  const state = [catalog(answers), completing ? completion(answers) : null, care ? situation(care) : null, record && today ? recordState(record, today) : null]
     .filter(Boolean)
     .join('\n\n');
 
@@ -280,7 +334,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
     system: SYSTEM_TURNS()
       ? system(name)
       : [{ type: 'text', text: system(name) }, { type: 'text', text: state }],
-    tools: [proposeTool(), noteTool(), REQUEST, SHOW],
+    tools: [proposeTool(), noteTool(), REQUEST, SHOW, ...(completing ? [recordTool()] : [])],
     messages: SYSTEM_TURNS() ? [...messages, { role: 'system', content: state }] : messages,
   });
 
@@ -319,10 +373,27 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
   let correction = false;
   let health = [];
   const notes = [];
+  // answers to what a small plan still lacked, kept as said
+  let recorded = [];
   const requests = [];
   const pages = [];
   if (calls.length) {
     const results = calls.map((call) => {
+      if (call.name === 'record_answers') {
+        const open = fullRemaining(applyChanges(answers, recorded).answers).map(({ q }) => q.id);
+        const valid = (call.input.answers || [])
+          .filter((e) => open.includes(e.questionId))
+          .map((e) => toChange(e, applyChanges(answers, recorded).answers))
+          .filter(Boolean);
+        recorded = recorded.concat(valid);
+        const left = fullRemaining(applyChanges(answers, recorded).answers).length;
+        return {
+          type: 'tool_result',
+          tool_use_id: call.id,
+          content: valid.length ? `Saved (${valid.length}). ${left ? `${left} left to ask.` : 'None left: the care plan is whole.'}` : 'Nothing saved: no entry named a question and option from the list.',
+          ...(valid.length ? {} : { is_error: true }),
+        };
+      }
       if (call.name === 'add_note') {
         const t = String(call.input.text || '').trim();
         if (t) notes.push(t);
@@ -374,6 +445,7 @@ export async function askPlanCopilot({ client, name, answers, care, record, toda
     correction,
     health,
     notes,
+    recorded,
     requests,
     pages,
     history: next,

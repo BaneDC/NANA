@@ -3,9 +3,11 @@ import { frailtyOf } from './frailty';
 import { CFS_SR, srOptionTitles } from './flow.sr';
 import { aidsFor, visitsFor } from './partners';
 import { eurRange } from '../lib/money';
-import { getLang, msg, t } from '../i18n';
+import { getLang, msg, t, tn } from '../i18n';
 import { caregiversRs } from './caregiversRs';
-import { market } from './market';
+import { isAbroad, market, noneHere } from './market';
+import { isShortPlan } from './path';
+import { needFrom, scheduleText } from './familyStart';
 
 // Matched caregivers. `match` is the fake relevance score the assistant "computed"
 // from the questionnaire — it exists to sell the AI framing in the prototype.
@@ -325,11 +327,21 @@ export const slotsText = (slots) => slots.map((s) => t(SLOTS[s].label).toLowerCa
 // Why she comes up, the way the platform says it under the match. Worked out
 // for the demo family, who live in Helsinki and want mornings; the platform
 // works it out from the plan.
+// Where she works, under her name: her municipality and how far she travels,
+// or, to a family abroad (market.js), that she works abroad.
+export const placeText = (c) => (isAbroad() ? t('Radi u inostranstvu') : t('{area}, do {radius} km', c));
+
+// What a family is told where a list of caregivers would be, when we have
+// nobody in its municipality (decided 16. 11.): the sign-up's sentence, said
+// to someone who already has a plan.
+export const NONE_TITLE = msg('U vašoj opštini trenutno nemamo negovateljicu');
+export const NONE_TEXT = msg('Javićemo vam čim se neka prijavi. Do tada vam koordinatorka može pomoći da nađete drugo rešenje.');
+
 export function matchReasons(c) {
   const reasons = [];
   if (c.match >= 85) reasons.push(t('Sve vrste nege'));
   // the demo families live in Helsinki and in Belgrade
-  reasons.push(/Helsinki|Beograd/.test(c.area) ? t('Isti grad') : t('Dolazi do {radius} km', { radius: c.radius }));
+  reasons.push(isAbroad() ? t('Radi u inostranstvu') : /Helsinki|Beograd/.test(c.area) ? t('Isti grad') : t('Dolazi do {radius} km', { radius: c.radius }));
   if (c.slots.includes('morning')) reasons.push(t('Raspored se poklapa'));
   return reasons;
 }
@@ -351,10 +363,14 @@ export const maskedEmail = (c) => (c?.market === 'RS' ? '********@*****.rs' : MA
 // the plan is unlocked, so it never sits in the DOM waiting to be read out.
 // The caregivers a family in this market can find and write to: the Finnish list
 // or the Serbian one. Lookups by id go through caregiverById, which knows both.
+// A family abroad sees only the Serbian caregivers who work abroad; one in a
+// municipality we have nobody in sees none (market.js, decided 16. 11.).
 export const caregiversIn = (m = market()) =>
-  [...(m === 'RS' ? caregiversRs : caregivers), ...registered.filter((c) => c.market === m && c.status === 'active')]
-    .map(withProfile)
-    .filter((c) => c.available !== false);
+  noneHere()
+    ? []
+    : [...(m === 'RS' ? caregiversRs : caregivers), ...registered.filter((c) => c.market === m && c.status === 'active')]
+        .map(withProfile)
+        .filter((c) => c.available !== false && (!isAbroad() || c.abroad));
 
 export function caregiversFor(unlocked) {
   return caregiversIn().map(({ phone, ...rest }) => (unlocked ? { ...rest, phone } : rest));
@@ -576,7 +592,81 @@ const lower = (s) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s);
 // Builds the care plan from what the user actually answered, so the artifact
 // visibly reflects the questionnaire — and follows the client's formula:
 // decision = frailty (50%) + reason for contact (35%) + context (15%).
+// The small plan (path.js, decided 16. 11.): what the short path asked and
+// nothing drawn from what it did not. Who she is, how she moves, what is
+// needed and when, who to call; one recommendation, the caregivers. The same
+// shape as the full plan, so every screen draws it, with less in it.
+function buildShortPlan(answers, notes) {
+  const typedName = answers['about-person']?.values?.name?.trim();
+  const name = typedName || t('Osoba o kojoj brinete');
+  const firstName = typedName?.split(' ')[0] || t('Ona');
+  const age = answers['about-person']?.values?.age?.trim();
+  const city = answers['about-person']?.values?.city?.trim();
+  const caller = answers['about-you']?.values?.['your-name']?.trim() || '';
+  const callerFirst = caller.split(' ')[0] || '';
+  const relation = answers['about-you']?.values?.relation?.trim();
+  const mobility = titlesOf('mobility', answers)[0];
+  const needs = titlesOf('care-needs', answers);
+  const when = scheduleText(needFrom(answers).schedule);
+  const hours = needFrom(answers).perVisit;
+
+  const details = [age, city].filter(Boolean);
+  const narrative = [(details.length ? name + ' (' + details.join(', ') + ')' : name) + ' ' + t('živi kod kuće') + '.'];
+  if (mobility) narrative.push(t('Kreće se: {how}.', { how: lower(mobility) }));
+  if (needs.length) narrative.push(t('Treba joj pomoć oko ovoga: {needs}.', { needs: listOf(needs.map(lower)) }));
+  if (answers['care-schedule']) narrative.push(t('Negovateljica vam treba: {when}.', { when }) + (hours ? ' ' + t('Po dolasku {hours}.', { hours: tn(hours, 'sat', 'sata', 'sati') }) : ''));
+  if (caller) narrative.push(t('{caller} je glavni kontakt.', { caller: relation ? caller + ' (' + relation.toLowerCase() + ')' : caller }));
+  if (notes.length) narrative.push(t('Rekli ste nam i: {notes}.', { notes: notes.map(quoted).join(', ') }));
+
+  const role = t('Negovateljica');
+  return {
+    short: true,
+    name,
+    firstName,
+    caller,
+    callerFirst,
+    relation,
+    narrative,
+    summary: narrative.join(' '),
+    letter: {
+      greeting: callerFirst ? t('Zdravo, {name},', { name: callerFirst }) : t('Zdravo,'),
+      paragraphs: [
+        t('Hvala vam što ste mi rekli šta vam treba. Ispod su negovateljice koje odgovaraju onome što ste naveli.'),
+        ...(notes.length ? [t('Zabeležila sam i ono što ste usput rekli: {notes}.', { notes: notes.map(quoted).join(', ') })] : []),
+        t('Kad god poželite, možemo da napravimo i ceo plan nege: procenu stanja, savete i usluge naših partnera.'),
+      ],
+      from: coordinator,
+    },
+    recommendations: [
+      {
+        id: 'caregiver',
+        kind: 'caregivers',
+        locked: false,
+        title: t('Negovateljice za ono što ste naveli'),
+        why: needs.length ? t('Podrška za ono što ste naveli: {needs}.', { needs: listOf(needs.slice(0, 4).map(lower)) }) : t('Podrška za ono što je najpotrebnije.'),
+        providers: 'caregivers',
+      },
+    ],
+    facts: [
+      { label: t('Za koga'), value: name },
+      mobility && { label: t('Kretanje'), value: mobility },
+      needs.length && { label: t('Gde treba pomoć'), value: needs.join(', ') },
+      answers['care-schedule'] && { label: t('Kada'), value: when },
+    ].filter(Boolean),
+    frailty: null,
+    band: null,
+    reason: null,
+    goal: '',
+    worry: '',
+    actions: [],
+    role,
+    notes,
+    coordinator,
+  };
+}
+
 export function buildPlan(answers, notes = []) {
+  if (isShortPlan(answers)) return buildShortPlan(answers, notes);
   const typedName = answers['about-person']?.values?.name?.trim();
   const name = typedName || t('Osoba o kojoj brinete');
   const firstName = typedName?.split(' ')[0] || t('Ona');

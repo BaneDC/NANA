@@ -131,12 +131,17 @@ export function useCheck() {
       if (!errors.some(Boolean)) return true;
       setTried(true);
       const from = document.activeElement?.closest('form, [role="dialog"], [data-slot="drawer-content"]') || document;
-      // the first wrong field, or, where what is wrong is not a field (a choice
-      // of services), its error brought into view
+      // the first thing that is wrong, whatever it is (§10, decided 16. 11.):
+      // a field takes the focus, a group of answers (radios, chips) gives it to
+      // its first answer, and what cannot hold it (a choice of services) has
+      // its error brought into view
       requestAnimationFrame(() => {
-        const field = from.querySelector('[aria-invalid="true"]');
+        const first = from.querySelector('[aria-invalid="true"], [role="alert"]');
+        if (!first) return;
+        const canHold = 'input:not([type=hidden]), textarea, button, [tabindex]:not([tabindex="-1"])';
+        const field = first.matches('[role="alert"]') ? null : first.matches(canHold) ? first : first.querySelector(canHold);
         if (field) field.focus();
-        else from.querySelector('[role="alert"]')?.scrollIntoView({ block: 'nearest' });
+        (field ? first.closest('[data-slot=field]') || first : first).scrollIntoView({ block: 'nearest' });
       });
       return false;
     },
@@ -145,6 +150,11 @@ export function useCheck() {
 }
 
 const keys = (onEnter) => (e) => e.key === 'Enter' && onEnter?.();
+
+// Whether the first field of a form that is alone on its page takes the focus
+// as the page comes (§10): with a mouse and a keyboard only. On a phone or any
+// touch screen never, since the keyboard would cover half the page at once.
+export const pageFocus = () => typeof window !== 'undefined' && !window.matchMedia('(max-width: 640px), (pointer: coarse)').matches;
 
 // an icon in front (a search), or a unit behind (€ / h)
 export function Input({ value, onChange, onEnter, icon: Icon, suffix, className, ...rest }) {
@@ -162,6 +172,75 @@ export function Input({ value, onChange, onEnter, icon: Icon, suffix, className,
       <InputGroupInput {...control} />
       {suffix && <InputGroupAddon align="inline-end">{suffix}</InputGroupAddon>}
     </InputGroup>
+  );
+}
+
+// A date known by heart, typed (a date of birth; docs/patterns.md §10, decided
+// 13. 11.): digits into places as a card's number, the dots put in by
+// themselves, what is still to come grey after what was typed. `value` is a
+// day (ms) once whole and real, else what was typed ('' for nothing), so a
+// half-typed date comes back after a reload and says what is wrong
+// (`typedDateError`).
+const dateDigits = (raw) => {
+  let d = '';
+  for (const ch of String(raw)) {
+    if (/\d/.test(ch)) {
+      if (d.length < 8) d += ch;
+    } else if (d.length === 1) d = `0${d}`; // "8." is the 8th
+    else if (d.length === 3) d = `${d.slice(0, 2)}0${d[2]}`; // "08.1." is January
+  }
+  return d;
+};
+const dateMask = (d) => [d.slice(0, 2), d.slice(2, 4), d.slice(4, 8)].filter(Boolean).join('.');
+const pad2 = (n) => String(n).padStart(2, '0');
+export const typedDay = (digits) => {
+  if (digits.length !== 8) return null;
+  const [dd, mm, yy] = [+digits.slice(0, 2), +digits.slice(2, 4), +digits.slice(4)];
+  const day = new Date(yy, mm - 1, dd);
+  return day.getFullYear() === yy && day.getMonth() === mm - 1 && day.getDate() === dd ? day : null;
+};
+// what a typed date says when it is not one; null when it is, or is empty
+export function typedDateError(value, now = new Date()) {
+  if (value === '' || value == null) return null;
+  if (typeof value === 'string') {
+    const d = dateDigits(value);
+    return d.length < 8 ? t('Unesite ceo datum.') : t('Ovaj datum ne postoji.');
+  }
+  const day = new Date(value);
+  return day.getFullYear() < 1900 || day > now ? t('Proverite godinu.') : null;
+}
+
+export function DateText({ value, onChange, autoFocus, className }) {
+  const id = useContext(FieldId);
+  const state = useContext(FieldState);
+  const digits = typeof value === 'number' ? (() => { const d = new Date(value); return `${pad2(d.getDate())}${pad2(d.getMonth() + 1)}${d.getFullYear()}`; })() : dateDigits(value ?? '');
+  const shown = dateMask(digits);
+  const template = t('dd.mm.gggg');
+  return (
+    <div className={cn('relative', className)}>
+      <InputBox
+        id={id}
+        value={shown}
+        inputMode="numeric"
+        autoComplete="bday"
+        autoFocus={autoFocus}
+        data-autofocus={autoFocus || undefined}
+        aria-description={t('Dan, mesec i godina, npr. 08.11.1967')}
+        onChange={(e) => {
+          const d = dateDigits(e.target.value);
+          if (!d) return onChange('');
+          const day = typedDay(d);
+          onChange(day ? day.getTime() : dateMask(d));
+        }}
+        {...invalidOf(state)}
+      />
+      {/* what is still to come, grey after what was typed: the typed part
+          is there unseen, to take the same width as in the field */}
+      <span aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center overflow-hidden px-[13px] text-xs whitespace-pre pointer-coarse:text-[16px]">
+        <span className="invisible">{shown}</span>
+        <span className="text-muted-foreground">{template.slice(shown.length)}</span>
+      </span>
+    </div>
   );
 }
 

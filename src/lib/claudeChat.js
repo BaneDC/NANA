@@ -11,6 +11,7 @@ import {
   withoutLongDashes,
 } from '../data/conversation';
 import { frailtyOf } from '../data/frailty';
+import { setPath } from '../data/path';
 import { inEnglish, t } from '../i18n';
 
 const KEY_STORAGE = 'nana.anthropic-key';
@@ -99,6 +100,7 @@ export async function runTurn({
   onFollowUp,
   onAssess,
   onThinking,
+  onPath,
 }) {
   let working = { ...answers };
   const collected = [...notes];
@@ -168,10 +170,15 @@ export async function runTurn({
     let waiting = false;
 
     for (const call of calls) {
-      if (call.name === 'record_answers') {
+      if (call.name === 'only_caregiver') {
+        // said in words that only a caregiver is wanted: the short path, from here
+        setPath('caregiver');
+        onPath?.('caregiver');
+        results.push({ type: 'tool_result', tool_use_id: call.id, content: stateMessage(working, collected) });
+      } else if (call.name === 'record_answers') {
         const recorded = [];
         for (const entry of call.input.odgovori || []) {
-          const answer = toAnswer(entry);
+          const answer = toAnswer(entry, working[entry.questionId]);
           if (!answer) continue;
           working = reconcile(working, { ...working, [entry.questionId]: answer }).answers;
           // only report what survived reconciliation — a changed band can drop

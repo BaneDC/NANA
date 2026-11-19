@@ -519,4 +519,10 @@ export default {
   "Poruka je poslata. {name} će vam se javiti danas.": "Viesti lähetetty. {name} ottaa teihin yhteyttä tänään.",
   "Zatvori": "Sulje",
   "Samo za demo": "Vain demoa varten",
+  "Gde živi osoba kojoj treba nega?": "Missä hoitoa tarvitseva henkilö asuu?",
+  "U inostranstvu": "Ulkomailla",
+  "Imamo negovateljice iz Srbije koje dolaze kod klijenta u inostranstvo. Napravite nalog da ih vidite.": "Meillä on serbialaisia hoitajia, jotka tulevat asiakkaan luo ulkomaille. Luo tili nähdäksesi heidät.",
+  "U ovoj opštini trenutno imamo {count}.": "Tässä kunnassa meillä on tällä hetkellä {count}.",
+  "negovateljicu|negovateljice|negovateljica": "hoitaja|hoitajaa",
+  "U ovoj opštini trenutno nemamo negovateljicu. Možemo da napravimo plan nege i javimo vam čim se neka prijavi.": "Tässä kunnassa meillä ei tällä hetkellä ole hoitajaa. Voimme tehdä hoitosuunnitelman ja ilmoittaa teille heti, kun joku ilmoittautuu.",
 };
