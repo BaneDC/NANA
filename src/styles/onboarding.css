@@ -1639,8 +1639,7 @@
    not follow the search, so nothing under it moves as she types. Faded where
    there is more (data-up, data-down from the page), so it is plain the list
    goes on. Out 16 each side, so the cards' shadows are not cut; the 16 under
-   the last card and the bar's 16 put the buttons 32 under it at the end.
-   With the note over the buttons (data-note) room under the last card for it. */
+   the last card and the bar's 16 put the buttons 32 under it at the end. */
 @property --scroll-up {
   syntax: '<length>';
   inherits: false;
@@ -1674,24 +1673,16 @@
   --scroll-down: 64px;
 }
 
-.imm-scroll[data-note] {
-  padding-bottom: 128px;
-}
-
 /* the one chosen, brought into view, stops clear of the fade */
 .imm-scroll .imm-option {
-  scroll-margin: var(--spacing-8) 0 var(--spacing-16);
-}
-
-.imm-scroll[data-note] .imm-option {
-  scroll-margin-bottom: 128px;
+  scroll-margin: var(--spacing-8) 0 64px;
 }
 
 /* On a phone the page scrolls as one, the question and the search with it:
    no place of its own, no fade. At least a screen under the search, so the
    search stays where it is as the cards it finds get fewer (the page cannot
    run shorter than where she has scrolled to). The chosen card stops clear of
-   the bar (two buttons, 136) and of the note over it. */
+   the bar (two buttons, 136). */
 @media (max-width: 640px) {
   .imm-scroll {
     height: auto;
@@ -1703,16 +1694,8 @@
     mask-image: none;
   }
 
-  .imm-scroll[data-note] {
-    padding-bottom: 112px;
-  }
-
   .imm-scroll .imm-option {
     scroll-margin: var(--spacing-4) 0 152px;
-  }
-
-  .imm-scroll[data-note] .imm-option {
-    scroll-margin-bottom: 264px;
   }
 }
 

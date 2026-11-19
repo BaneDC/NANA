@@ -52,17 +52,22 @@ export function AttentionDescription({ className, ...props }) {
 // plainly and not in small grey. The orange part's ground and ink, r8 in a
 // card's 16 (24 = 8 + 16), 12 in; the title and its sentence as the orange
 // part's, 4 apart, both in the one ink. No icon (§11), no button: the card's
-// buttons are under it.
-export function AttentionNote({ title, className, children, ...props }) {
+// buttons are under it. As a span (`as="span"`) it sits inside a button, a
+// choice card's: there it says nothing to a screen reader on its own, the
+// card's name carries it and the page says it once in a status of its own.
+export function AttentionNote({ as = 'div', title, className, children, ...props }) {
+  const Box = as;
+  const inline = as === 'span';
+  const Line = inline ? 'span' : 'p';
   return (
-    <div
-      role="status"
+    <Box
+      role={inline ? undefined : 'status'}
       {...props}
       data-slot="attention-note"
       className={cn('flex flex-col gap-1 rounded-lg bg-primary-50 p-3 shadow-[inset_0_0_0_1px_var(--color-primary-200)]', className)}
     >
-      <AttentionTitle>{title}</AttentionTitle>
-      {children && <AttentionDescription>{children}</AttentionDescription>}
-    </div>
+      <Line className="text-sm font-medium text-primary-700">{title}</Line>
+      {children && <Line className="text-xs leading-body text-primary-700">{children}</Line>}
+    </Box>
   );
 }

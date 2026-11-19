@@ -210,10 +210,12 @@ const WHERE_OPTIONS = [
   ['diaspora', msg('Dijaspora'), '🌍'],
 ];
 // how many caregivers we have in her municipality, said before she gives us
-// anything of hers, in the row of the one chosen (decided 19. 11., dizajner;
-// until then a line under the list); none does not stop her (the account, and
-// word when one signs up), said in a note over the buttons
-const countText = (n) => (n ? tn(n, 'negovateljica', 'negovateljice', 'negovateljica') : t('nema negovateljica'));
+// anything of hers, under the name in the card of the one chosen (decided
+// 19. 11., dizajner; until then at its right, before that a line under the
+// list); none is a note of its own in that card, under the name, with that
+// it does not stop her (decided 19. 11., dizajner; until then a note over the
+// buttons)
+const countText = (n) => (n ? tn(n, 'negovateljica', 'negovateljice', 'negovateljica') : t('Još nemamo negovateljicu u ovoj opštini'));
 
 // The municipality without a dropdown (decided 19. 11., Branislav): a search,
 // and under it every one that matches, the one chosen kept at the top when the
@@ -222,7 +224,7 @@ const countText = (n) => (n ? tn(n, 'negovateljica', 'negovateljice', 'negovatel
 // there is more; on a phone the page scrolls as one, the question and the
 // search with it (decided 19. 11., dizajner).
 const plain = (x) => x.toLowerCase().replace(/đ/g, 'd').normalize('NFD').replace(/\p{Diacritic}/gu, '');
-function MunicipalityPicker({ market, value, onChange, error, note }) {
+function MunicipalityPicker({ market, value, onChange, error }) {
   const [query, setQuery] = useState('');
   const list = useRef(null);
   const scroller = useRef(null);
@@ -259,13 +261,13 @@ function MunicipalityPicker({ market, value, onChange, error, note }) {
     if (scroller.current) scroller.current.scrollTop = 0;
     edges();
   }, [q]);
-  // the one chosen in view, clear of the buttons and of the note over them
+  // the one chosen in view, clear of the buttons and the fade
   useEffect(() => {
     if (!value) return;
     const card = list.current?.querySelector('[aria-checked=true]');
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     requestAnimationFrame(() => card?.scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' }));
-  }, [value, note]);
+  }, [value]);
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
@@ -294,9 +296,12 @@ function MunicipalityPicker({ market, value, onChange, error, note }) {
         {error && <FieldError>{error}</FieldError>}
       </div>
       {/* the onboarding's choice cards, one to choose (.imm-scroll: its
-          height does not follow the search, so nothing jumps as she types;
-          room under the last card for the note when it shows) */}
-      <div ref={scroller} onScroll={edges} data-note={note ? '' : undefined} className="imm-scroll">
+          height does not follow the search, so nothing jumps as she types) */}
+      {/* what the chosen card now says, said to a screen reader as she chooses */}
+      <p role="status" className="sr-only">
+        {value ? countText(count) : ''}
+      </p>
+      <div ref={scroller} onScroll={edges} className="imm-scroll">
         {rows.length ? (
           <div ref={list} role="radiogroup" aria-label={t('Opština')} aria-required aria-invalid={error ? true : undefined} className="imm-options">
             {rows.map((o, i) => {
@@ -308,7 +313,7 @@ function MunicipalityPicker({ market, value, onChange, error, note }) {
                   role="radio"
                   aria-checked={on}
                   tabIndex={on || (at < 0 && i === 0) ? 0 : -1}
-                  className={cn('imm-option cursor-pointer', on && 'is-selected')}
+                  className={cn('imm-option cursor-pointer', on && 'is-selected items-start')}
                   onClick={() => onChange(o.value)}
                   onKeyDown={(e) => move(e, i)}
                 >
@@ -320,8 +325,15 @@ function MunicipalityPicker({ market, value, onChange, error, note }) {
                       {o.label}
                       {o.group && <span className="font-normal text-muted-foreground"> · {o.group}</span>}
                     </span>
+                    {on && count > 0 && <span className="imm-option-sub">{countText(count)}</span>}
+                    {/* none there: the orange part's small note, 8 under the
+                        name; a button holds no blocks, so spans */}
+                    {on && count === 0 && (
+                      <AttentionNote as="span" title={countText(0)} className="mt-2">
+                        {t('Nalog možete da napravite već sada. Javićemo vam čim se neka prijavi.')}
+                      </AttentionNote>
+                    )}
                   </span>
-                  {on && <span className={cn('shrink-0 text-xs leading-5 whitespace-nowrap', count ? 'text-primary-600' : 'text-muted-foreground')}>{countText(count)}</span>}
                 </button>
               );
             })}
@@ -384,14 +396,10 @@ function FamilySignUp(p) {
   // Serbia and Finland: the municipality, and how many caregivers we have
   // there, before anything of hers (docs/patterns.md §10, 16. 11.)
   if (p.step === 'municipality') {
-    // none there: said plainly over the buttons, not small under the list
-    // (decided 19. 11., dizajner)
-    const none = p.municipality && caregiverCount(p.market, p.municipality) === 0;
     // Nothing in a card (decided 19. 11., dizajner; until then the search and
     // the list as radios in one glass card): the search alone on the sky, the
     // municipalities the onboarding's choice cards under it, and the page
-    // scrolls as one; the buttons on the bar held at the bottom of the screen,
-    // the note over them, so both are always in reach
+    // scrolls as one; the buttons on the bar held at the bottom of the screen
     return (
       <StepPage
         eyebrow={t(WHERE_OPTIONS.find(([id]) => id === p.where)[1])}
@@ -399,28 +407,19 @@ function FamilySignUp(p) {
         lead={lead}
         language
         actions={
-          // the note over the buttons, laid over what scrolls under them, so
-          // nothing moves when it shows (decided 19. 11., dizajner)
-          <div className="relative">
-            {none && (
-              <AttentionNote title={t('U ovoj opštini još nemamo negovateljicu')} className="absolute inset-x-0 bottom-full mb-3 rounded-2xl px-4 py-3">
-                {t('Nastavite i napravite nalog. Javićemo vam čim se neka negovateljica iz ove opštine prijavi.')}
-              </AttentionNote>
-            )}
-            {/* a step back inside the sign-up is a button by the main one (§4) */}
-            <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
-              <Button type="button" variant="secondary" size="lg" onClick={() => p.backFrom('municipality')}>
-                {t('Nazad')}
-              </Button>
-              <Button type="button" size="lg" onClick={p.toAccount}>
-                {t('Nastavi')}
-              </Button>
-            </div>
+          // a step back inside the sign-up is a button by the main one (§4)
+          <div className="flex justify-between gap-2 phone:flex-col-reverse phone:*:w-full">
+            <Button type="button" variant="secondary" size="lg" onClick={() => p.backFrom('municipality')}>
+              {t('Nazad')}
+            </Button>
+            <Button type="button" size="lg" onClick={p.toAccount}>
+              {t('Nastavi')}
+            </Button>
           </div>
         }
         footer={signIn}
       >
-        <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} note={none} />
+        <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
       </StepPage>
     );
   }

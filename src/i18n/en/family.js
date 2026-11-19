@@ -522,9 +522,8 @@ export default {
   "Gde živi osoba kojoj treba nega?": "Where does the person who needs care live?",
   "U inostranstvu": "Abroad",
   "Imamo negovateljice iz Srbije koje dolaze kod klijenta u inostranstvo. Napravite nalog da ih vidite.": "We have caregivers from Serbia who come to clients abroad. Create an account to see them.",
-  "nema negovateljica": "no caregivers",
-  "U ovoj opštini još nemamo negovateljicu": "We don't have a caregiver in this municipality yet",
-  "Nastavite i napravite nalog. Javićemo vam čim se neka negovateljica iz ove opštine prijavi.": "Go on and create your account. We'll let you know as soon as a caregiver from this municipality signs up.",
   "U kojoj opštini živi osoba kojoj treba nega?": "In which municipality does the person who needs care live?",
   "Dijaspora": "Diaspora",
+  "Još nemamo negovateljicu u ovoj opštini": "We don't have a caregiver in this municipality yet",
+  "Nalog možete da napravite već sada. Javićemo vam čim se neka prijavi.": "You can create your account now. We'll let you know as soon as one signs up.",
 };
