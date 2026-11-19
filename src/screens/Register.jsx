@@ -295,8 +295,10 @@ function MunicipalityPicker({ market, value, onChange, error }) {
         />
         {error && <FieldError>{error}</FieldError>}
       </div>
-      {/* the onboarding's choice cards, one to choose (.imm-scroll: its
-          height does not follow the search, so nothing jumps as she types) */}
+      {/* the onboarding's choice cards without their letters (a list, not a
+          question; decided 19. 11., dizajner), one to choose (.imm-scroll:
+          its height does not follow the search, so nothing jumps as she
+          types) */}
       {/* what the chosen card now says, said to a screen reader as she chooses */}
       <p role="status" className="sr-only">
         {value ? countText(count) : ''}
@@ -313,13 +315,10 @@ function MunicipalityPicker({ market, value, onChange, error }) {
                   role="radio"
                   aria-checked={on}
                   tabIndex={on || (at < 0 && i === 0) ? 0 : -1}
-                  className={cn('imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', on && 'is-selected items-start', on && count === 0 && 'flex-wrap')}
+                  className={cn('imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50', on && 'is-selected', on && count === 0 && 'flex-wrap')}
                   onClick={() => onChange(o.value)}
                   onKeyDown={(e) => move(e, i)}
                 >
-                  <span className="imm-letter" aria-hidden="true">
-                    {String.fromCharCode(97 + i)}
-                  </span>
                   <span className="imm-option-text">
                     <span className="imm-option-title">
                       {o.label}
@@ -327,8 +326,8 @@ function MunicipalityPicker({ market, value, onChange, error }) {
                     </span>
                     {on && count > 0 && <span className="imm-option-sub">{countText(count)}</span>}
                   </span>
-                  {/* none there: the orange part's small note across the whole
-                      card, 8 under the name (the card's 12 less 4), 8 from its
+                  {/* none there: the small note across the whole card, 8
+                      under the name (the card's 12 less 4), 8 from its
                       sides and foot, so r8 in the card's 16; a button holds no
                       blocks, so spans (decided 19. 11., dizajner) */}
                   {on && count === 0 && (
