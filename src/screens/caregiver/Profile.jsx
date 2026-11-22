@@ -81,7 +81,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
           <Fact label={t('Prebivalište')}>{c.address || '-'}</Fact>
           <Fact label={t('Opština')}>{c.area}</Fact>
           <Fact label={t('Telefon')}>{c.phone}</Fact>
-          <Fact label={t('E-mail')} note={t('Menja se preko koordinatorke, jer je to vaše ime za prijavu.')}>
+          <Fact label={t('E-mail')}>
             {user.email}
           </Fact>
         </Group>
@@ -166,7 +166,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
         <SignOutCard />
       </PageSection>
 
-      {kept === 'personal' && <PersonalForm open={form === 'personal'} profile={c} onClose={close} onSave={save} />}
+      {kept === 'personal' && <PersonalForm open={form === 'personal'} profile={c} email={user.email} onClose={close} onSave={save} />}
       {kept === 'profession' && <ProfessionForm open={form === 'profession'} profile={c} onClose={close} onSave={save} />}
       {kept === 'qualifications' && <QualificationsForm open={form === 'qualifications'} profile={c} onClose={close} onSave={save} />}
       {kept === 'health' && <HealthForm open={form === 'health'} profile={c} onClose={close} onSave={save} />}

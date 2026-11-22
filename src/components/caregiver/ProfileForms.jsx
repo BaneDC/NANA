@@ -9,6 +9,7 @@ import { Checks, Combobox, Field, FieldError, Input, Select, TextArea, requiredE
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
+import Tags, { Group, Groups } from '../Tags';
 import { t } from '@/i18n';
 
 // The fields of her profile, each group in its own dialog: "Izmenite" on a card
@@ -28,7 +29,7 @@ function Frame({ open, title, onClose, onSave, children }) {
   );
 }
 
-export function PersonalForm({ open, profile, onClose, onSave }) {
+export function PersonalForm({ open, profile, email, onClose, onSave }) {
   const [address, setAddress] = useState(profile.address || '');
   const [area, setArea] = useState(profile.area || '');
   const [phone, setPhone] = useState(profile.phone || '');
@@ -37,6 +38,14 @@ export function PersonalForm({ open, profile, onClose, onSave }) {
   const save = () => check.check(Object.values(errors)) && onSave({ address: address.trim(), area: area.trim(), phone: phone.trim() });
   return (
     <Frame open={open} title={t('Lični podaci')} onClose={onClose} onSave={save}>
+      {/* what is not changed, said here too, so its absence from the fields
+          is not a question (decided 22. 11., Branislav): one sentence for all */}
+      <Groups>
+        <Group label={t('Ime')} text={profile.name} />
+        <Group label={t('Datum rođenja')} text={profile.birth || '-'} />
+        {email && <Group label={t('E-mail')} text={email} />}
+        <PaneHint>{t('Ime, datum rođenja i e-mail ne mogu da se menjaju.')}</PaneHint>
+      </Groups>
       <Field label={t('Prebivalište')} required error={check.show(errors.address)}>
         <Input value={address} onChange={setAddress} />
       </Field>
@@ -59,7 +68,14 @@ export function ProfessionForm({ open, profile, onClose, onSave }) {
   const save = () => check.check(Object.values(errors)) && onSave({ education, languages, bio: bio.trim() });
   return (
     <Frame open={open} title={t('Profesija')} onClose={onClose} onSave={save}>
-      {profile.classifications?.length > 0 && <PaneHint>{t('Klasifikacije se menjaju preko koordinatorke, zbog dokumenata.')}</PaneHint>}
+      {/* shown, not only spoken of: what she has, why it is not changed
+          here, and where its documents are (decided 22. 11., Branislav) */}
+      {profile.classifications?.length > 0 && (
+        <Groups>
+          <Tags label={t('Klasifikacije')} items={profile.classifications} />
+          <PaneHint>{t('Kontaktirajte koordinatorku radi promene klasifikacija.')}</PaneHint>
+        </Groups>
+      )}
       <Field label={t('Nivo obrazovanja')} required error={check.show(errors.education)}>
         <Select value={education} onChange={setEducation} placeholder={t('Izaberite nivo obrazovanja')} options={EDUCATION.map((e) => ({ value: e, label: t(e) }))} />
       </Field>

@@ -68,7 +68,6 @@ export default {
   "Još nema plaćenih poseta. Poseta je ovde kad se porodici naplati, posle radnog naloga.": "Ei vielä maksettuja käyntejä. Käynti näkyy täällä, kun perhettä on veloitettu työraportin jälkeen.",
   "Još ništa nije planirano.": "Mitään ei ole vielä suunniteltu.",
   "Kako je prošla poseta, šta porodica treba da zna.": "Miten käynti meni, mitä perheen pitää tietää.",
-  "Klasifikacije se menjaju preko koordinatorke, zbog dokumenata.": "Luokitukset muutetaan koordinaattorin kautta asiakirjojen vuoksi.",
   "Klijenti po stanju": "Asiakkaat tilan mukaan",
   "Klijenti": "Asiakkaat",
   "Kod porodice": "Perheellä",
@@ -76,7 +75,6 @@ export default {
   "Kodeks ponašanja": "Käyttäytymisohjeet",
   "Kolone table": "Taulun sarakkeet",
   "Master": "Maisterin tutkinto",
-  "Menja se preko koordinatorke, jer je to vaše ime za prijavu.": "Muutetaan koordinaattorin kautta, koska kirjaudut sillä.",
   "Moj profil": "Oma profiili",
   "Najmanje {rate} / h.": "Vähintään {rate} / h.",
   "Napomena": "Huomautus",
@@ -415,4 +413,6 @@ export default {
   "Šta ste stigli da uradite": "Mitä ehdit tehdä",
   "Sve je označeno. Skinite oznaku sa onoga što ovog puta nije urađeno.": "Kaikki on valittu. Poista valinta siitä, mitä ei tällä kertaa tehty.",
   "Nesigurno hoda i nije htela da jede.": "Kävely on epävarmaa, eikä hän halunnut syödä.",
+  "Ime, datum rođenja i e-mail ne mogu da se menjaju.": "Nimeä, syntymäaikaa ja sähköpostia ei voi muuttaa.",
+  "Kontaktirajte koordinatorku radi promene klasifikacija.": "Ota yhteyttä koordinaattoriin muuttaaksesi luokituksiasi.",
 };

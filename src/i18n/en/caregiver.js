@@ -68,7 +68,6 @@ export default {
   "Još nema plaćenih poseta. Poseta je ovde kad se porodici naplati, posle radnog naloga.": "No paid visits yet. A visit appears here once the family is charged, after the work order.",
   "Još ništa nije planirano.": "Nothing planned yet.",
   "Kako je prošla poseta, šta porodica treba da zna.": "How the visit went, what the family should know.",
-  "Klasifikacije se menjaju preko koordinatorke, zbog dokumenata.": "Classifications are changed through the coordinator, because of the documents.",
   "Klijenti po stanju": "Clients by state",
   "Klijenti": "Clients",
   "Kod porodice": "With the family",
@@ -76,7 +75,6 @@ export default {
   "Kodeks ponašanja": "Code of conduct",
   "Kolone table": "Board columns",
   "Master": "Master's degree",
-  "Menja se preko koordinatorke, jer je to vaše ime za prijavu.": "Changed through the coordinator, since it is how you sign in.",
   "Moj profil": "My profile",
   "Najmanje {rate} / h.": "At least {rate} / h.",
   "Napomena": "Note",
@@ -415,4 +413,6 @@ export default {
   "Šta ste stigli da uradite": "What you got to",
   "Sve je označeno. Skinite oznaku sa onoga što ovog puta nije urađeno.": "Everything is ticked. Untick anything that did not happen this time.",
   "Nesigurno hoda i nije htela da jede.": "Unsteady on her feet, and she did not want to eat.",
+  "Ime, datum rođenja i e-mail ne mogu da se menjaju.": "Your name, date of birth and e-mail cannot be changed.",
+  "Kontaktirajte koordinatorku radi promene klasifikacija.": "Contact the coordinator to change your classifications.",
 };
