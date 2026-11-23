@@ -17,7 +17,8 @@ import {
   Settings,
 } from 'lucide-react';
 import Logo from './Logo';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { caregiverById } from '@/data/carePlan';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import {
@@ -197,6 +198,8 @@ export default function AppNav({
       .slice(0, 2)
       .join('')
       .toUpperCase() || 'NP';
+  // her photo, from her profile (23. 11.); a family has none
+  const photo = caregiver ? caregiverById(user.caregiverId)?.photo : null;
 
   return (
     <Sidebar>
@@ -343,6 +346,7 @@ export default function AppNav({
           className="group/me flex w-full cursor-pointer items-start gap-3 rounded-2xl bg-(--nav-card) p-2 text-left menu-folded:rounded-lg menu-folded:bg-transparent menu-folded:px-0 pointer-coarse:menu-folded:pl-1 transition-[padding,background-color,border-radius,box-shadow] duration-200 ease-out outline-none hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-[current=page]:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:shadow-none! menu-folded:focus-visible:ring-0 [--avatar:calc(var(--text-xs-leading)+var(--text-small-leading))]"
         >
           <Avatar className="transition-shadow duration-200 ease-out menu-folded:group-hover/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-aria-[current=page]/me:shadow-[0_0_0_1px_var(--color-primary-300)] menu-folded:group-focus-visible/me:ring-[3px] menu-folded:group-focus-visible/me:ring-ring/50">
+            {photo && <AvatarImage src={photo} alt="" className="object-cover" />}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <span className={cn('flex min-w-0 flex-1 flex-col', FADES)}>

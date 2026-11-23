@@ -1,5 +1,5 @@
 import { CreditCard, History, IdCard, Phone } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -220,6 +220,7 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
       <PageHeader>
         <PagePerson>
           <Avatar>
+            {cg.photo && <AvatarImage src={cg.photo} alt="" className="object-cover" />}
             <AvatarFallback className={cn(ended && 'bg-muted text-muted-foreground')}>{cg.initials}</AvatarFallback>
           </Avatar>
           <PageHeaderText>

@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 import { Page, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
 import { Card, CardAction, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -9,6 +10,7 @@ import { Fact, Facts } from '@/components/data-list';
 import { useKept } from '@/hooks/use-kept';
 import Tags from '../../components/Tags';
 import { AvailabilityForm, EmergencyForm, HealthForm, PersonalForm, ProfessionForm, QualificationsForm, radiusText } from '../../components/caregiver/ProfileForms';
+import PhotoDialog from '../../components/caregiver/PhotoDialog';
 import { SLOTS, daysText, engagementText } from '../../data/carePlan';
 import { DOCUMENTS, HABITS, educationText, HEALTH_QUESTIONS, PERSONAL, READINESS } from '../../data/caregiverProfile';
 import { SignOutCard } from '../Settings';
@@ -17,8 +19,8 @@ import { t } from '@/i18n';
 // "Moj profil", laid out as Settings is: groups of cards, each saying what it
 // holds as facts, with "Izmenite" opening its dialog (docs/superpowers/specs/2026-10-19-negovateljica-finska-design.md).
 // What she saves is laid over her record (setProfiles), so the families' tab
-// shows it at once. The picture, password, 2FA, language and cookies are in
-// Settings, as for a family.
+// shows it at once. Her photo is here, on her avatar (23. 11.); the password,
+// 2FA, language and cookies are in Settings, as for a family.
 function Group({ title, onEdit, children }) {
   return (
     <Card>
@@ -50,10 +52,25 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
   return (
     <Page>
       <PageHeader>
-        <PagePerson className="[--avatar:48px]">
-          <Avatar>
-            <AvatarFallback>{c.initials}</AvatarFallback>
-          </Avatar>
+        <PagePerson className="gap-5 [--avatar:48px]">
+          {/* her photo: a press on the avatar adds or changes it (decided
+              23. 11., dizajner), ringed on hover as a card that opens something, a pencil in its corner */}
+          <button
+            type="button"
+            onClick={() => setForm('photo')}
+            aria-label={c.photo ? t('Promenite fotografiju') : t('Dodajte fotografiju')}
+            title={c.photo ? t('Promenite fotografiju') : t('Dodajte fotografiju')}
+            className="relative shrink-0 cursor-pointer rounded-lg outline-none transition-shadow duration-200 ease-out hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <Avatar>
+              {c.photo && <AvatarImage src={c.photo} alt="" className="object-cover" />}
+              <AvatarFallback>{c.initials}</AvatarFallback>
+            </Avatar>
+            {/* the pencil says it changes before a hover does (23. 11., dizajner) */}
+            <span aria-hidden className="absolute -right-2 -bottom-2 box-border flex size-7 items-center justify-center rounded-full border-4 border-background bg-card text-foreground shadow-[0_0_0_1px_var(--card-line),0_2px_6px_rgba(76,34,18,0.16)]">
+              <Pencil className="size-3" />
+            </span>
+          </button>
           <PageHeaderText>
             <PageTitle>{c.name}</PageTitle>
             <PageDescription>{[c.area, c.rate].filter(Boolean).join(' · ')}</PageDescription>
@@ -61,6 +78,8 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
         </PagePerson>
       </PageHeader>
 
+      {/* until she adds a photo: it may wait, but families choose more
+          easily when they see her (decided 23. 11., dizajner) */}
       {/* on or off, saved as it moves: the whole row is its label (§10) */}
       <Card>
         <label className="flex w-full cursor-pointer items-center gap-4">
@@ -172,6 +191,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
       {kept === 'qualifications' && <QualificationsForm open={form === 'qualifications'} profile={c} onClose={close} onSave={save} />}
       {kept === 'health' && <HealthForm open={form === 'health'} profile={c} onClose={close} onSave={save} />}
       {kept === 'emergency' && <EmergencyForm open={form === 'emergency'} profile={c} onClose={close} onSave={save} />}
+      {kept === 'photo' && <PhotoDialog open={form === 'photo'} profile={c} onClose={close} onSave={save} />}
       {kept === 'availability' && <AvailabilityForm open={form === 'availability'} profile={c} market={market} onClose={close} onSave={save} />}
     </Page>
   );

@@ -14,12 +14,20 @@ import { toggleVariants } from "@/components/ui/toggle"
 // last 32 px going to nothing: on the right while there is more to come, on the
 // left once some has gone by, and none when it all fits. A form's choices keep
 // wrapping: all of them should be seen at once.
+//
+// A choice (not `scroll`) is never narrower than a seventh of its row, 8
+// between (a quarter on a phone): the days of the week's grid in the
+// caregiver's form (decided 23. 11., docs/patterns.md §10), so a short answer
+// ("Da", "Ne") is a day's width and lines up under the days, not a stub.
 
 const ToggleGroupContext = React.createContext({ size: "default" })
 
 // as wide as what holds it and the 16 on each side; `!` because a page makes
 // each of its children `w-full` (Page, src/components/page.jsx), which would
 // keep the row to the column and the right end 16 short of the screen's edge
+const choiceWidth =
+  "*:min-w-[calc((100%_-_6_*_var(--spacing-2))_/_7)] phone:*:min-w-[calc((100%_-_3_*_var(--spacing-2))_/_4)]"
+
 const scrollRow =
   "phone:-mx-4 phone:w-[calc(100%+2rem)]! phone:max-w-none! phone:-my-1 phone:shrink-0 phone:self-stretch phone:flex-nowrap phone:overflow-x-auto phone:scroll-px-4 phone:px-4 phone:py-1 phone:[scrollbar-width:none] phone:[&>*]:shrink-0 phone:[&::-webkit-scrollbar]:hidden " +
   "phone:data-[fade=end]:[mask-image:linear-gradient(to_right,#000_calc(100%-32px),transparent)] " +
@@ -63,7 +71,7 @@ function ToggleGroup({
       data-slot="toggle-group"
       data-size={size}
       data-fade={fade}
-      className={cn("group/toggle-group flex flex-wrap gap-2", scroll && scrollRow, className)}
+      className={cn("group/toggle-group flex flex-wrap gap-2", scroll ? scrollRow : choiceWidth, className)}
       {...props}>
       <ToggleGroupContext.Provider value={{ size }}>
         {children}

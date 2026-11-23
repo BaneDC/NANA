@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Phone } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardLink } from '@/components/ui/card';
 import {
@@ -94,6 +94,7 @@ export default function FindCaregiver({ care, askNote, onContact, onDrawer, onFl
               className="flex-row items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-small-leading))] phone:flex-wrap"
             >
               <Avatar>
+                {c.photo && <AvatarImage src={c.photo} alt="" className="object-cover" />}
                 <AvatarFallback>{c.initials}</AvatarFallback>
               </Avatar>
               <div className="flex min-w-0 flex-1 flex-col gap-1 phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Logo from '../components/Logo';
 import { AttentionNote } from '../components/Attention';
-import PhotoCarousel from '../components/PhotoCarousel';
 import { Field, FieldError, Input, Password, Phone, Select, pageFocus, requiredError, useCheck } from '../components/TextField';
 import { COUNTRIES } from '../data/countries';
 import { activateCaregiver, awaitingFirstSignIn, saveAccount, saveTestTwoFactorAccount, signIn, spendBackupCode, updateAccount } from '../lib/account';
@@ -17,9 +16,7 @@ import { setSiteMarket } from '../lib/siteLink';
 import { caregiverCount } from '../data/caregiverCounts';
 import { municipalityGroups } from '../data/caregiverProfile';
 import CaregiverSignUp, { ConsentRow } from './caregiver/SignUp';
-import { StepPage, StepPanel } from '../components/StepCards';
-import LanguagePicker from '../components/LanguagePicker';
-import { HeaderBackSlot, PageHead, useHeaderBack } from '../components/HeaderBack';
+import { StepFields, StepPage, StepPanel } from '../components/StepCards';
 import { goBackTo, navigate, useRoute } from '../lib/route';
 import { msg, t, tn, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
@@ -51,12 +48,40 @@ const emailError = (email) => (!email.trim() ? requiredError() : !/\S+@\S+\.\S+/
 const passwordError = (password) =>
   !password ? requiredError() : password.length < MIN_PASSWORD ? t('Kratka je - treba najmanje 8 karaktera.') : null;
 
-// The sign-up's parts, all 480 wide at most: a heading, a grey form card
-// (24 corners, 16 inside, fields 16 apart) and the actions under it.
-export const column = 'w-[480px] max-w-full shrink-0';
+// The head's left on the pages before the account: the logo (they open from
+// the website, so there is nothing to go back to)
+const LOGO = (
+  <span className="flex h-(--button-size) items-center px-3">
+    <Logo width={120} />
+  </span>
+);
+
+// Who the sign-in is for, as the website knows (decided 23. 11.): the family
+// sees its memories under it (MemoryStrip), a caregiver does not. In the
+// prototype "Ko ste?" stands in for the website, so it is the sign-up last
+// opened, Porodica or Negovateljica; kept for this tab. Nothing known is the
+// family, who come to it most.
+const WHO = 'nana.signin.who';
+const signInFor = {
+  read() {
+    try {
+      return sessionStorage.getItem(WHO);
+    } catch {
+      return null;
+    }
+  },
+  write(w) {
+    try {
+      sessionStorage.setItem(WHO, w);
+    } catch {
+      /* lasts until the page is left */
+    }
+  },
+};
+const familySignIn = () => signInFor.read() !== 'caregiver';
 
 
-function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
+function SignUp({ onContinue, onSignIn, onDemo }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -100,6 +125,10 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
     setSiteMarket(siteRow.read());
     navigate({ page: 'signup', who: w });
   };
+  // a sign-up opened, by "Ko ste?" or the website's link, says whom the sign-in is for
+  useEffect(() => {
+    if (who) signInFor.write(who);
+  }, [who]);
 
   const dial = COUNTRIES.find((c) => c.id === country);
   const check = useCheck();
@@ -165,32 +194,35 @@ function SignUp({ onContinue, onSignIn, onDemo, onForm }) {
     onContinue(user);
   };
 
+  // On the sky with the family's memories around it (decided 23. 11.; until
+  // then the photos' carousel over plain buttons): the two answers glass
+  // cards as the next step's countries, a press goes on
   if (who === null)
     return (
-      <>
-        <Welcome title={t('Ko ste?')} sub={t('Porodica traži negu za nekoga. Negovateljica nudi negu.')} />
-        <Actions>
-          <Button size="lg" className="w-full" onClick={() => setWho('family')}>
-            {t('Porodica')}
-          </Button>
-          <Button variant="secondary" size="lg" className="w-full" onClick={() => setWho('caregiver')}>
-            {t('Negovateljica')}
-          </Button>
-          {/* kept above the fold: the carousel gives way (PhotoCarousel) */}
-          <Button type="button" variant="ghost" size="lg" data-fold="" onClick={onSignIn}>
-            {t('Već imate nalog? Prijavite se')}
-          </Button>
+      <StepPage title={t('Ko ste?')} sub={t('Porodica traži negu za nekoga. Negovateljica nudi negu.')} lead={LOGO} language memories>
+        <div className="grid grid-cols-2 gap-2 phone:grid-cols-1">
+          {[
+            ['family', t('Porodica')],
+            ['caregiver', t('Negovateljica')],
+          ].map(([id, label]) => (
+            <button key={id} type="button" className="imm-option cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50" onClick={() => setWho(id)}>
+              <span className="imm-option-title">{label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <HaveAccount onSignIn={onSignIn} />
           <DemoLink onDemo={onDemo} />
-        </Actions>
-      </>
+        </div>
+      </StepPage>
     );
 
   // her own sign-up (part 5), in this same frame
-  if (who === 'caregiver') return <CaregiverSignUp onForm={onForm} />;
+  if (who === 'caregiver') return <CaregiverSignUp />;
 
   // on the onboarding's sky, as her account (docs/patterns.md §10, decided
   // 13. 11.): the photos are not over it, and Minna comes next on the same sky
-  return <FamilySignUp {...{ step: shown, pickWhere, toAccount, backFrom, example: FAMILY_EXAMPLE[market], where, setWhere, market, municipality, setMunicipality, firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, sharing, setSharing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo, onForm }} />;
+  return <FamilySignUp {...{ step: shown, pickWhere, toAccount, backFrom, example: FAMILY_EXAMPLE[market], where, setWhere, market, municipality, setMunicipality, firstName, setFirstName, lastName, setLastName, email, setEmail, country, setCountry, phone, setPhone, password, setPassword, source, setSource, processing, setProcessing, sharing, setSharing, accuracy, setAccuracy, newsletter, setNewsletter, busy, show, submit, onSignIn, onDemo }} />;
 }
 
 // the examples in the family's fields, from her market (as the caregiver's, EXAMPLE)
@@ -350,22 +382,19 @@ function MunicipalityPicker({ market, value, onChange, error }) {
 }
 
 function FamilySignUp(p) {
-  const { show, onForm } = p;
-  useEffect(() => {
-    onForm?.(true);
-    return () => onForm?.(false);
-  }, [onForm]);
+  const { show } = p;
   // opened from the website in a new tab: nothing behind it, so the logo, not a way back
   const lead = (
     <span className="flex h-(--button-size) items-center px-3">
       <Logo width={120} />
     </span>
   );
+  // the other door, on the first page only: the way in is where one who has an
+  // account looks for it; once in, nothing leads out of the sign-up (decided
+  // 23. 11., dizajner, as an enclosed checkout; until then on every step)
   const signIn = (
     <div className="flex flex-col items-center gap-2">
-      <Button type="button" variant="ghost" size="lg" onClick={p.onSignIn}>
-        {t('Već imate nalog? Prijavite se')}
-      </Button>
+      <HaveAccount onSignIn={p.onSignIn} />
     </div>
   );
 
@@ -420,7 +449,6 @@ function FamilySignUp(p) {
             </Button>
           </div>
         }
-        footer={signIn}
       >
         <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
       </StepPage>
@@ -521,26 +549,8 @@ function FamilySignUp(p) {
           {t('NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o zaštiti podataka.')}
         </p>
       </div>
-      {signIn}
     </StepPage>
   );
-}
-
-export function Welcome({ title, sub }) {
-  return (
-    <div className={`${column} px-7 text-center text-foreground`}>
-      <h1 className="text-base font-medium">{title}</h1>
-      <p className="text-sm">{sub}</p>
-    </div>
-  );
-}
-
-export function FormCard(props) {
-  return <div className={`${column} flex flex-col gap-4 rounded-3xl bg-muted p-4`} {...props} />;
-}
-
-export function Actions(props) {
-  return <div className={`${column} flex flex-col items-center gap-2 px-4`} {...props} />;
 }
 
 // for testing only, so plain underlined text rather than a button
@@ -551,6 +561,20 @@ const demoLink =
 // Branislav; docs/patterns.md §10), closed as the page comes; whether it was
 // opened is kept for this tab.
 const DEMO_OPEN = 'nana.demo.rows';
+// "Već imate nalog?" as text and "Prijavite se" as the button under it, so
+// what is pressed reads as a button (decided 23. 11., dizajner; until then the
+// whole sentence was one ghost button)
+function HaveAccount({ onSignIn }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-xs text-muted-foreground">{t('Već imate nalog?')}</span>
+      <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
+        {t('Prijavite se')}
+      </Button>
+    </div>
+  );
+}
+
 function DemoRows({ children }) {
   const [open, setOpen] = useState(() => {
     try {
@@ -670,6 +694,9 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     password: !password && requiredError(),
   };
 
+  // the family's memories around it, not a caregiver's (signInFor)
+  const [memories] = useState(familySignIn);
+
   // with two-factor on, the right password leads to the code, not in
   const [pending, setPending] = useState(null);
   const { step } = useRoute().route;
@@ -704,6 +731,7 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
     return (
       <TwoFactorStep
         user={pending}
+        memories={memories}
         onContinue={onContinue}
         onBack={() => {
           setPending(null);
@@ -712,13 +740,17 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
       />
     );
   // a forgotten password: its own step, /signin/reset
-  if (step === 'reset') return <ResetPassword email={email} onBack={toSignIn} />;
+  if (step === 'reset') return <ResetPassword email={email} memories={memories} onBack={toSignIn} />;
 
+  // On the sky, the fields each on its own in the middle (no card) and the
+  // family's memories around and behind them (decided 23. 11.; until then a
+  // grey card under the photos' carousel). "Prijavi se" last, the other door
+  // and the demo under it. The logo over the title, not in the head (decided
+  // 23. 11.), and the title names NANA Prime.
   return (
-    <>
-      <Welcome title={t('Prijavite se')} sub={t('Email adresom i lozinkom kojima ste napravili nalog')} />
+    <StepPage logo title={t('Prijavite se u NANA Prime')} sub={t('Email adresom i lozinkom kojima ste napravili nalog')} language memories={memories}>
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
-        <FormCard>
+        <StepFields>
           <Field label={t('Email')} required error={check.show(errors.email)}>
             <Input
               value={email}
@@ -738,57 +770,56 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
               {t('Zaboravili ste lozinku?')}
             </Button>
           </div>
-        </FormCard>
-        <Actions>
           <Button type="submit" size="lg" className="w-full">
             {t('Prijavi se')}
           </Button>
-          {/* kept above the fold: the carousel gives way (PhotoCarousel) */}
-          <Button type="button" variant="ghost" size="lg" data-fold="" onClick={onSignUp}>
-            {t('Nemate nalog? Napravite ga')}
-          </Button>
-          <DemoRows>
+        </StepFields>
+      </form>
+      <div className="flex flex-col items-center gap-2">
+        <Button type="button" variant="ghost" size="lg" onClick={onSignUp}>
+          {t('Nemate nalog? Napravite ga')}
+        </Button>
+        <DemoRows>
+          <button
+            type="button"
+            className={demoLink}
+            onClick={async () => {
+              await saveTestTwoFactorAccount(demoTwoFactor);
+              setEmail(demoTwoFactor.user.email);
+              setPassword(demoTwoFactor.password);
+              setFailed(false);
+            }}
+          >
+            {t('Za testiranje: nalog sa dvofaktorskom prijavom')}
+          </button>
+          {/* an approved caregiver whose email (temporary password) is gone */}
+          {awaiting && (
             <button
               type="button"
               className={demoLink}
               onClick={async () => {
-                await saveTestTwoFactorAccount(demoTwoFactor);
-                setEmail(demoTwoFactor.user.email);
-                setPassword(demoTwoFactor.password);
+                const temp = await activateCaregiver(awaiting);
+                if (!temp) return;
+                setEmail(awaiting);
+                setPassword(temp);
                 setFailed(false);
               }}
             >
-              {t('Za testiranje: nalog sa dvofaktorskom prijavom')}
+              {t('Za demo: nova privremena lozinka za {email}', {
+                email: awaiting,
+              })}
             </button>
-            {/* an approved caregiver whose email (temporary password) is gone */}
-            {awaiting && (
-              <button
-                type="button"
-                className={demoLink}
-                onClick={async () => {
-                  const temp = await activateCaregiver(awaiting);
-                  if (!temp) return;
-                  setEmail(awaiting);
-                  setPassword(temp);
-                  setFailed(false);
-                }}
-              >
-                {t('Za demo: nova privremena lozinka za {email}', {
-                  email: awaiting,
-                })}
-              </button>
-            )}
-          </DemoRows>
-        </Actions>
-      </form>
-    </>
+          )}
+        </DemoRows>
+      </div>
+    </StepPage>
   );
 }
 
 // A link for a new password, to the account's email (docs/patterns.md §10).
 // It never says whether the account exists, so addresses cannot be tried out.
 // The prototype sends nothing.
-function ResetPassword({ email: given, onBack }) {
+function ResetPassword({ email: given, memories, onBack }) {
   const [email, setEmail] = useState(given);
   const [sent, setSent] = useState(false);
   const check = useCheck();
@@ -797,27 +828,25 @@ function ResetPassword({ email: given, onBack }) {
     setSent(true);
   };
 
-  // back to signing in, from the head (docs/patterns.md §4, decided 12. 11.)
-  useHeaderBack(t('Nazad na prijavu'), onBack);
+  // back to signing in, from the head (docs/patterns.md §4, decided 12. 11.);
+  // the same sky and memories as signing in
+  const page = { back: { label: t('Nazad na prijavu'), onClick: onBack }, language: true, memories };
 
-  if (sent) return <Welcome title={t('Proverite email')} sub={t('Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.', { email: email.trim() })} />;
+  if (sent) return <StepPage {...page} title={t('Proverite email')} sub={t('Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.', { email: email.trim() })} />;
 
   return (
-    <>
-      <Welcome title={t('Nova lozinka')} sub={t('Upišite email adresu naloga i poslaćemo vam link za novu lozinku.')} />
+    <StepPage {...page} title={t('Nova lozinka')} sub={t('Upišite email adresu naloga i poslaćemo vam link za novu lozinku.')}>
       <form className="contents" onSubmit={(e) => (e.preventDefault(), send())}>
-        <FormCard>
+        <StepFields>
           <Field label={t('Email adresa')} required error={check.show(emailError(email))}>
             <Input value={email} onChange={setEmail} type="email" placeholder={t('Unesite svoju email adresu')} autoComplete="email" autoFocus={pageFocus()} />
           </Field>
-        </FormCard>
-        <Actions>
           <Button type="submit" size="lg" className="w-full">
             {t('Pošalji link')}
           </Button>
-        </Actions>
+        </StepFields>
       </form>
-    </>
+    </StepPage>
   );
 }
 
@@ -843,10 +872,10 @@ function TestCodes() {
 
 // The second step of signing in when two-factor is on: the six digits from
 // the app, or one of the backup codes saved when it was turned on (each signs
-// in once). Laid out as signing in is: the welcome, the grey form, the actions
-// under it. "Nazad na prijavu", in the head, goes back to the email and password.
-function TwoFactorStep({ user, onContinue, onBack }) {
-  useHeaderBack(t('Nazad na prijavu'), onBack);
+// in once). Laid out as signing in is: the title, the glass card with the code
+// and its buttons, on the same sky and memories. "Nazad na prijavu", in the
+// head, goes back to the email and password.
+function TwoFactorStep({ user, memories, onContinue, onBack }) {
   const [backup, setBackup] = useState(false);
   const [code, setCode] = useState('');
   const [typed, setTyped] = useState('');
@@ -886,13 +915,15 @@ function TwoFactorStep({ user, onContinue, onBack }) {
   const shown = error || check.show(missing);
 
   return (
-    <>
-      <Welcome
-        title={t('Dvofaktorska prijava')}
-        sub={backup ? t('Unesite jedan od rezervnih kodova koje ste sačuvali') : t('Unesite šestocifreni kod iz aplikacije za kodove')}
-      />
+    <StepPage
+      title={t('Dvofaktorska prijava')}
+      sub={backup ? t('Unesite jedan od rezervnih kodova koje ste sačuvali') : t('Unesite šestocifreni kod iz aplikacije za kodove')}
+      back={{ label: t('Nazad na prijavu'), onClick: onBack }}
+      language
+      memories={memories}
+    >
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
-        <FormCard>
+        <StepFields>
           {backup ? (
             <Field label={t('Rezervni kod')} required error={shown}>
               <Input
@@ -910,8 +941,6 @@ function TwoFactorStep({ user, onContinue, onBack }) {
               <FieldError className="text-center">{shown}</FieldError>
             </>
           )}
-        </FormCard>
-        <Actions>
           {/* the other way in and "Potvrdi" side by side, halves of the row;
               on a phone, where half is too narrow for the longer one, each
               takes what it needs and "Potvrdi" the rest */}
@@ -923,25 +952,23 @@ function TwoFactorStep({ user, onContinue, onBack }) {
               {t('Potvrdi')}
             </Button>
           </div>
-          {user.email === demoTwoFactor.user.email && <TestCodes />}
-        </Actions>
+        </StepFields>
       </form>
-    </>
+      {user.email === demoTwoFactor.user.email && <TestCodes />}
+    </StepPage>
   );
 }
 
 export default function Register({ onContinue, onDemo }) {
   // signing up or in: the address says which (src/lib/route.js)
   const mode = useRoute().route.page === 'signin' ? 'sign-in' : 'sign-up';
-  // a caregiver's sign-up past her account: a form, no photos over it
-  const [form, setForm] = useState(false);
-  // a page's way back, drawn in the head over the logo (docs/patterns.md §4)
-  const [back, setBack] = useState(null);
+  // Every page here is on its own sky (StepPage, over the whole screen), with
+  // its head, logo and language (decided 23. 11.; until then signing in, its
+  // steps and "Ko ste?" were in this frame, under the photos' carousel); the
+  // frame only brings them in and out.
   return (
-    // the whole screen, its column centred and scrolling (safe: a tall form is
-    // not cut off at the top)
     <motion.div
-      className="flex min-h-0 flex-1 flex-col items-center justify-[safe_center] gap-6 overflow-y-auto px-6 py-12 *:shrink-0"
+      className="flex min-h-0 flex-1 flex-col"
       initial={{ opacity: 0, y: 16 }}
       animate={{
         opacity: 1,
@@ -954,33 +981,11 @@ export default function Register({ onContinue, onDemo }) {
         transition: { duration: 0.2, ease: 'easeIn' },
       }}
     >
-      {/* the head (§4, §12b): the logo at the left, or the way back where
-          there is one, and the language at the right; the logo's text where
-          the arrow's is (decided 12. 11., dizajner) */}
-      {(back || !form) && (
-        <PageHead
-          back={back}
-          lead={
-            <span className="flex h-(--button-size) items-center px-3">
-              <Logo width={120} />
-            </span>
-          }
-          className={`${column} -mt-8 phone:-mx-2 phone:w-auto phone:max-w-none phone:self-stretch`}
-        >
-          {!form && <LanguagePicker />}
-        </PageHead>
+      {mode === 'sign-up' ? (
+        <SignUp onContinue={onContinue} onSignIn={() => navigate({ page: 'signin' })} onDemo={onDemo} />
+      ) : (
+        <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
       )}
-      {/* a page with a way back keeps the logo, under the head */}
-      {back && <Logo width={150} />}
-      {/* the photos on the sign-in and sign-up pages only, not over a form's steps */}
-      {!form && <PhotoCarousel />}
-      <HeaderBackSlot value={setBack}>
-        {mode === 'sign-up' ? (
-          <SignUp onContinue={onContinue} onSignIn={() => navigate({ page: 'signin' })} onDemo={onDemo} onForm={setForm} />
-        ) : (
-          <SignIn onContinue={onContinue} onSignUp={() => navigate({ page: 'signup' })} onDemo={onDemo} />
-        )}
-      </HeaderBackSlot>
     </motion.div>
   );
 }

@@ -1,5 +1,5 @@
 import { Send } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Item, ItemAction, ItemContent, ItemLink, ItemTitle } from '@/components/ui/item';
@@ -26,6 +26,7 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
   return (
     <Item className="items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-small-leading))] phone:flex-wrap">
       <Avatar>
+        {caregiver.photo && <AvatarImage src={caregiver.photo} alt="" className="object-cover" />}
         <AvatarFallback>{caregiver.initials}</AvatarFallback>
       </Avatar>
       <ItemContent className="phone:basis-[calc(100%-var(--avatar)-var(--spacing-3))]">

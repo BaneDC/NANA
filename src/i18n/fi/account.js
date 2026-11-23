@@ -488,11 +488,12 @@ export default {
   "Ako postoji nalog sa adresom {email}, poslali smo vam link za novu lozinku.": "Jos osoitteella {email} on tili, lähetimme sinulle linkin uuden salasanan asettamiseen.",
   "Upišite email adresu naloga i poslaćemo vam link za novu lozinku.": "Syötä tilisi sähköpostiosoite, niin lähetämme sinulle linkin uuden salasanan asettamiseen.",
   "Pošalji link": "Lähetä linkki",
-  'Već imate nalog? Prijavite se': 'Onko teillä jo tili? Kirjautukaa',
+  'Već imate nalog?': 'Onko teillä jo tili?',
+  'Prijavite se': 'Kirjautukaa',
   'Za testiranje: otvori demo sa gotovim planom': 'Testaukseen: avaa demo valmiilla suunnitelmalla',
   'Za pregled: sve kartice na jednoj stranici': 'Katselmointiin: kaikki kortit yhdellä sivulla',
   'Za demo: jezik': 'Demon kieli',
-  'Prijavite se': 'Kirjautukaa',
+  'Prijavite se u NANA Prime': 'Kirjautukaa NANA Primeen',
   'Email adresom i lozinkom kojima ste napravili nalog': 'Sähköpostilla ja salasanalla, joilla loitte tilin',
   'Email ili lozinka nisu tačni.': 'Sähköposti tai salasana on väärin.',
   'Vaša lozinka': 'Salasananne',
@@ -698,4 +699,7 @@ export default {
   "Za demo: nova privremena lozinka za {email}": "Demoa varten: uusi väliaikainen salasana osoitteelle {email}",
   'Za demo': 'Demoa varten',
   'Vaši podaci i odjava.': 'Tietosi ja uloskirjautuminen.',
+  // the family's memories under the sign-in (src/data/memories.js)
+  'Sećanja': 'Muistot',
+  'Godina sećanja': 'Muistojen vuosi',
 };

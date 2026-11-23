@@ -186,8 +186,8 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
 function YesNo({ label, value, onChange }) {
   return (
     <Field label={label}>
-      {/* two answers, two equal columns across, as on the sign-up (§10, "Kratki izbori u mreži") */}
-      <ToggleGroup type="single" size="sm" className="grid grid-cols-2 *:w-full" value={value} onValueChange={(v) => v && onChange(v)} aria-label={label}>
+      {/* two chips as wide as a day, as on the sign-up (§10, "Čip u formi nije uži od jednog dana") */}
+      <ToggleGroup type="single" size="sm" value={value} onValueChange={(v) => v && onChange(v)} aria-label={label}>
         <ToggleGroupItem value="no">{t('Ne')}</ToggleGroupItem>
         <ToggleGroupItem value="yes">{t('Da')}</ToggleGroupItem>
       </ToggleGroup>
