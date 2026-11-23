@@ -391,6 +391,9 @@ function FamilySignUp(p) {
       <Logo width={120} />
     </span>
   );
+  // the other door, on the first page only: the way in is where one who has an
+  // account looks for it; once in, nothing leads out of the sign-up (decided
+  // 23. 11., dizajner, as an enclosed checkout; until then on every step)
   const signIn = (
     <div className="flex flex-col items-center gap-2">
       <Button type="button" variant="ghost" size="lg" onClick={p.onSignIn}>
@@ -450,7 +453,6 @@ function FamilySignUp(p) {
             </Button>
           </div>
         }
-        footer={signIn}
       >
         <MunicipalityPicker market={p.market} value={p.municipality} onChange={p.setMunicipality} error={show('municipality')} />
       </StepPage>
@@ -551,7 +553,6 @@ function FamilySignUp(p) {
           {t('NANA Prime je finska kompanija. Vaši podaci se čuvaju i obrađuju bezbedno, u skladu sa EU GDPR propisima o zaštiti podataka.')}
         </p>
       </div>
-      {signIn}
     </StepPage>
   );
 }

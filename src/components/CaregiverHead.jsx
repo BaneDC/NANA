@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Rating from './Rating';
 import Standing from './Standing';
@@ -16,6 +16,7 @@ export default function CaregiverHead({ caregiver: c, standing }) {
   return (
     <div className="flex items-start gap-3 [--avatar:calc(var(--text-xs-leading)+2px+var(--text-small-leading))]">
       <Avatar>
+        {c.photo && <AvatarImage src={c.photo} alt="" className="object-cover" />}
         <AvatarFallback>{c.initials}</AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-1 flex-col gap-1">

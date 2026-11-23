@@ -49,7 +49,7 @@ const CHANNELS = [
 ];
 
 // cols: the chips in a grid, each as wide as its cell (docs/patterns.md §10),
-// for short answers; long ones keep wrapping
+// for the days; the others wrap, none narrower than a day (ToggleGroup)
 function Chips({ label, value, onChange, options, multiple = true, required, error, cols }) {
   return (
     <Field label={label} required={required}>
@@ -113,9 +113,10 @@ const yesNo = [
   ['no', msg('Ne')],
   ['yes', msg('Da')],
 ];
-// two answers, so two equal columns, wherever it is in the form
+// two short answers: each as wide as a day, the least a chip is (ToggleGroup),
+// not two halves of the row (decided 23. 11.; from 5. 11. two equal columns)
 function YesNo({ label, value, onChange }) {
-  return <Chips label={label} cols="grid-cols-2" multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
+  return <Chips label={label} multiple={false} value={value ? 'yes' : 'no'} onChange={(v) => onChange(v === 'yes')} options={yesNo.map(([k, l]) => [k, t(l)])} />;
 }
 
 // her steps, each an address: /signup/caregiver (where she wants to work),

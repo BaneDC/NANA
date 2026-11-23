@@ -1609,7 +1609,18 @@
 /* The page's buttons (StepPage, docs/patterns.md §10), across the whole page:
    in their place 32 under the page (16 and the bar's 16) when they fit; held at the bottom of the screen while the page runs
    past it, on a blur of the sky that fades out upward, as the test's bar on a
-   phone. No tint and no line: the bar never shows an edge. */
+   phone. No tint and no line: the bar never shows an edge. The blur is whole
+   over the bar and fades out over 24 above it; while the bar is held at the
+   bottom (data-stuck, from StepPage) over 64, so what goes under it is
+   blurred before it reaches the buttons (decided 23. 11.: a card sat right
+   on them). In their place the fade stays short, so the page's last line,
+   32 over the buttons, stays sharp. */
+@property --bar-fade {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 24px;
+}
+
 .imm-step-bar {
   position: sticky;
   bottom: 0;
@@ -1622,15 +1633,26 @@
 .imm-step-bar::before {
   content: '';
   position: absolute;
-  top: -24px;
+  top: calc(-1 * var(--bar-fade));
   bottom: 0;
   left: 0;
   right: 0;
   z-index: -1;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  -webkit-mask-image: linear-gradient(to top, #000 65%, transparent 100%);
-  mask-image: linear-gradient(to top, #000 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, #000 calc(100% - var(--bar-fade)), transparent);
+  mask-image: linear-gradient(to top, #000 calc(100% - var(--bar-fade)), transparent);
+  transition: --bar-fade 0.2s ease-out;
+}
+
+.imm-step-bar[data-stuck]::before {
+  --bar-fade: 64px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-step-bar::before {
+    transition: none;
+  }
 }
 
 /* A list that scrolls in a place of its own (the family's municipality,

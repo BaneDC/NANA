@@ -42,6 +42,19 @@ import Logo from '@/components/Logo';
 // already, so it is not read out twice
 export function StepPage({ eyebrow, title, sub, start, actions, footer, back, lead, language, memories, logo, children }) {
   const scroller = useRef(null);
+  // the buttons' bar held at the bottom of the screen: its blur reaches
+  // higher (onboarding.css, .imm-step-bar). Held while the line just after
+  // it, where it would be, is under the screen's edge.
+  const barEnd = useRef(null);
+  const [stuck, setStuck] = useState(false);
+  const hasBar = !!actions;
+  useEffect(() => {
+    const end = barEnd.current;
+    if (!hasBar || !end) return undefined;
+    const watch = new IntersectionObserver(([e]) => setStuck(!e.isIntersecting), { root: scroller.current });
+    watch.observe(end);
+    return () => watch.disconnect();
+  }, [hasBar]);
   // the memories are not on a phone: there they would only be under the fold
   const phone = useIsPhone();
   const strip = memories && !phone;
@@ -84,10 +97,11 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, back, le
             </div>
             {/* across the whole page, so its blur reaches both edges */}
             {actions && (
-              <div className="imm-step-bar -mx-6 self-stretch px-6 phone:-mx-4 phone:px-4">
+              <div className="imm-step-bar -mx-6 self-stretch px-6 phone:-mx-4 phone:px-4" data-stuck={stuck || undefined}>
                 <div className="mx-auto w-[560px] max-w-full">{actions}</div>
               </div>
             )}
+            {actions && <div ref={barEnd} aria-hidden className="-mt-px h-px self-stretch" />}
             {/* 32 under what is over it: the bar's own 16 and 16 more, or 32 */}
             {footer && <footer className={cn('flex w-[560px] max-w-full flex-wrap justify-center gap-1 pb-8 phone:pb-6', actions ? 'mt-4' : 'mt-8')}>{footer}</footer>}
           </div>
