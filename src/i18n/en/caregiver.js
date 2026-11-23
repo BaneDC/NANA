@@ -120,7 +120,6 @@ export default {
   "Profil je sačuvan.": "Profile saved.",
   // her photo, on her profile (23. 11.)
   "Vaša fotografija": "Your photo",
-  "Porodice je vide uz vaše ime.": "Families see it next to your name.",
   "Izaberite fotografiju": "Choose a photo",
   "Izaberite fotografiju u formatu JPG, PNG ili WebP.": "Choose a JPG, PNG or WebP photo.",
   "Fotografija je veća od 10 MB.": "The photo is larger than 10 MB.",
@@ -132,7 +131,6 @@ export default {
   "Izaberite drugu": "Choose another",
   "Promenite fotografiju": "Change photo",
   "Dodajte fotografiju": "Add a photo",
-  "Samo vi na fotografiji, lice se jasno vidi. Dnevno svetlo, bez filtera i naočara za sunce. JPG, PNG ili WebP, do 10 MB.": "Just you in the photo, your face clearly visible. Daylight, no filters or sunglasses. JPG, PNG or WebP, up to 10 MB.",
   "Provereno": "Checked",
   "Radni nalog je poslat. Naplaćuje se za 24 sata, osim ako porodica nešto prijavi.": "The work order is sent. It is charged in 24 hours unless the family reports something.",
   "Rezervacija se vraća porodici i ništa se ne naplaćuje.": "The reservation goes back to the family and nothing is charged.",

@@ -120,7 +120,6 @@ export default {
   "Profil je sačuvan.": "Profiili tallennettu.",
   // her photo, on her profile (23. 11.)
   "Vaša fotografija": "Valokuvasi",
-  "Porodice je vide uz vaše ime.": "Perheet näkevät sen nimesi vieressä.",
   "Izaberite fotografiju": "Valitse valokuva",
   "Izaberite fotografiju u formatu JPG, PNG ili WebP.": "Valitse JPG-, PNG- tai WebP-kuva.",
   "Fotografija je veća od 10 MB.": "Kuva on yli 10 Mt.",
@@ -132,7 +131,6 @@ export default {
   "Izaberite drugu": "Valitse toinen",
   "Promenite fotografiju": "Vaihda kuva",
   "Dodajte fotografiju": "Lisää kuva",
-  "Samo vi na fotografiji, lice se jasno vidi. Dnevno svetlo, bez filtera i naočara za sunce. JPG, PNG ili WebP, do 10 MB.": "Vain sinä kuvassa, kasvot näkyvät selvästi. Päivänvalo, ei suodattimia eikä aurinkolaseja. JPG, PNG tai WebP, enintään 10 Mt.",
   "Provereno": "Tarkistettu",
   "Radni nalog je poslat. Naplaćuje se za 24 sata, osim ako porodica nešto prijavi.": "Työraportti on lähetetty. Se veloitetaan 24 tunnin kuluttua, ellei perhe ilmoita jotain.",
   "Rezervacija se vraća porodici i ništa se ne naplaćuje.": "Varaus palautuu perheelle eikä mitään veloiteta.",

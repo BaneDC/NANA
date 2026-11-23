@@ -14,7 +14,7 @@ import { t } from '@/i18n';
 // shown, beside her name.
 //
 // Three faces of one dialog:
-// - none yet: her initials where the photo will be, what a good photo is, and
+// - none yet: her initials where the photo will be and
 //   "Izaberite fotografiju" (default, it sets up what is missing, §9);
 // - one chosen: the photo in the square it will be cut to, moved by a drag (or
 //   the arrows, the square has focus) and enlarged on the slider, "Izaberite
@@ -110,10 +110,9 @@ export default function PhotoDialog({ open, profile, onClose, onSave }) {
   };
 
   const square = 'size-60 shrink-0 self-center overflow-hidden rounded-2xl';
-  const hint = <PaneHint>{t('Samo vi na fotografiji, lice se jasno vidi. Dnevno svetlo, bez filtera i naočara za sunce. JPG, PNG ili WebP, do 10 MB.')}</PaneHint>;
 
   return (
-    <Dialog open={open} title={t('Vaša fotografija')} description={t('Porodice je vide uz vaše ime.')} className={formGap} onClose={onClose}>
+    <Dialog open={open} title={t('Vaša fotografija')} className={formGap} onClose={onClose}>
       <input
         ref={input}
         type="file"
@@ -185,10 +184,7 @@ export default function PhotoDialog({ open, profile, onClose, onSave }) {
               </span>
             )}
           </div>
-          <div className="flex flex-col gap-1">
-            {hint}
-            {error && <FieldError>{error}</FieldError>}
-          </div>
+          {error && <FieldError>{error}</FieldError>}
           <DialogFooter>
             {profile.photo ? (
               <>
