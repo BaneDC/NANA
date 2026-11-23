@@ -211,9 +211,7 @@ function SignUp({ onContinue, onSignIn, onDemo }) {
           ))}
         </div>
         <div className="flex flex-col items-center gap-2">
-          <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
-            {t('Već imate nalog? Prijavite se')}
-          </Button>
+          <HaveAccount onSignIn={onSignIn} />
           <DemoLink onDemo={onDemo} />
         </div>
       </StepPage>
@@ -396,9 +394,7 @@ function FamilySignUp(p) {
   // 23. 11., dizajner, as an enclosed checkout; until then on every step)
   const signIn = (
     <div className="flex flex-col items-center gap-2">
-      <Button type="button" variant="ghost" size="lg" onClick={p.onSignIn}>
-        {t('Već imate nalog? Prijavite se')}
-      </Button>
+      <HaveAccount onSignIn={p.onSignIn} />
     </div>
   );
 
@@ -565,6 +561,20 @@ const demoLink =
 // Branislav; docs/patterns.md §10), closed as the page comes; whether it was
 // opened is kept for this tab.
 const DEMO_OPEN = 'nana.demo.rows';
+// "Već imate nalog?" as text and "Prijavite se" as the button beside it, so
+// what is pressed reads as a button (decided 23. 11., dizajner; until then the
+// whole sentence was one ghost button)
+function HaveAccount({ onSignIn }) {
+  return (
+    <div className="flex items-center justify-center gap-1">
+      <span className="text-xs text-muted-foreground">{t('Već imate nalog?')}</span>
+      <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
+        {t('Prijavite se')}
+      </Button>
+    </div>
+  );
+}
+
 function DemoRows({ children }) {
   const [open, setOpen] = useState(() => {
     try {
