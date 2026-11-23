@@ -8,7 +8,7 @@ import { formGap } from './Forms';
 import { Checks, Combobox, Field, FieldError, Input, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
-import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
+import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_DETAILS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import Tags, { Group, Groups } from '../Tags';
 import { t } from '@/i18n';
 
@@ -17,10 +17,12 @@ import { t } from '@/i18n';
 // The sign-up (part 5) asks the same fields, as steps. Nothing is disabled for
 // what is missing; errors show on the press (docs/patterns.md §9, §10).
 
-function Frame({ open, title, onClose, onSave, children }) {
+// `description`: what the dialog is about, in its head, clear of the X's
+// column (docs/patterns.md §7), never as the first line of the form
+function Frame({ open, title, description, onClose, onSave, children }) {
   return (
     // the questions 24 apart, as every form in a dialog (decided 11. 11.)
-    <Dialog open={open} title={title} className={formGap} onClose={onClose}>
+    <Dialog open={open} title={title} description={description} className={formGap} onClose={onClose}>
       {children}
       <DialogFooter>
         <Button onClick={onSave}>{t('Sačuvaj')}</Button>
@@ -139,7 +141,8 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
         </Field>
       )}
       <Field label={t('Dani')} required>
-        <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={days} onValueChange={setDays} aria-label={t('Dani')}>
+        {/* seven in a row, on a phone four then three, each as wide as its cell (§10) */}
+        <ToggleGroup type="multiple" size="sm" className="grid grid-cols-7 *:w-full phone:grid-cols-4" value={days} onValueChange={setDays} aria-label={t('Dani')}>
           {DAYS.map((d, i) => (
             <ToggleGroupItem key={i} value={String(i)}>
               {t(d)}
@@ -157,12 +160,13 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
           ))}
         </ToggleGroup>
         <FieldError>{check.show(errors.slots)}</FieldError>
+        {/* with the choice it changes the meaning of, plain as the one under
+            "Angažman" (decided 22. 11., Branislav; was a grey tile) */}
+        {slots.length > 1 && <PaneHint>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</PaneHint>}
       </Field>
-      <Radius value={Number(radius)} onChange={(v) => setRadius(String(v))} />
-      {slots.length > 1 && (
-        <PaneHint>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</PaneHint>
-      )}
+      {/* in the sign-up's order (22. 11., Branislav): abroad, then the radius */}
       {!fi && <YesNo label={t('Rad u inostranstvu')} value={abroad} onChange={setAbroad} />}
+      <Radius value={Number(radius)} onChange={(v) => setRadius(String(v))} />
       {!fi && <PaneHint>{t('Tržišna cena je oko 1.000 RSD na sat i oko 6.000 RSD za 24 sata.')}</PaneHint>}
       {fi && (
         <Field label={t('Cena po satu, od - do')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={check.show(errors.rate)}>
@@ -182,7 +186,8 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
 function YesNo({ label, value, onChange }) {
   return (
     <Field label={label}>
-      <ToggleGroup type="single" size="sm" value={value} onValueChange={(v) => v && onChange(v)} aria-label={label}>
+      {/* two answers, two equal columns across, as on the sign-up (§10, "Kratki izbori u mreži") */}
+      <ToggleGroup type="single" size="sm" className="grid grid-cols-2 *:w-full" value={value} onValueChange={(v) => v && onChange(v)} aria-label={label}>
         <ToggleGroupItem value="no">{t('Ne')}</ToggleGroupItem>
         <ToggleGroupItem value="yes">{t('Da')}</ToggleGroupItem>
       </ToggleGroup>
@@ -221,18 +226,48 @@ export function HealthForm({ open, profile, onClose, onSave }) {
   const [languages, setLanguages] = useState(profile.languages || []);
   const [readiness, setReadiness] = useState(profile.readiness || []);
   const [unwilling, setUnwilling] = useState(profile.unwilling || '');
+  const [notes, setNotes] = useState(profile.healthNotes || {});
+  // the question just answered "Da", whose field takes the focus as it comes
+  const [asked, setAsked] = useState(null);
   const bool = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v === 'yes']));
   const check = useCheck();
   const noLanguage = !languages.length && requiredError();
-  const save = () => check.check([noLanguage]) && onSave({ habits: bool(habits), health: bool(health), languages, readiness, unwilling: unwilling.trim() });
+  const noteError = (id) => HEALTH_DETAILS[id] && health[id] === 'yes' && !(notes[id] || '').trim() && requiredError();
+  const save = () =>
+    check.check([noLanguage, ...HEALTH_QUESTIONS.map(([id]) => noteError(id))]) &&
+    onSave({
+      habits: bool(habits),
+      health: bool(health),
+      // only what a "Da" still stands behind
+      healthNotes: Object.fromEntries(Object.entries(notes).filter(([id]) => health[id] === 'yes').map(([id, v]) => [id, v.trim()])),
+      languages,
+      readiness,
+      unwilling: unwilling.trim(),
+    });
   return (
     <Frame open={open} title={t('Zdravlje i navike')} onClose={onClose} onSave={save}>
       {HABITS.map(([id, label]) => (
         <YesNo key={id} label={t(label)} value={habits[id] || 'no'} onChange={(v) => setHabits((h) => ({ ...h, [id]: v }))} />
       ))}
       <Checks label={t('Jezici koje govorite')} required error={check.show(noLanguage)} value={languages} onChange={setLanguages} options={languageOptions(profile.market, profile.languages).map((o) => [o.value, o.label])} />
+      {/* a "Da" on allergies, a limit or a health problem asks what it is,
+          12 under the answer, and takes the focus (as on the sign-up) */}
       {HEALTH_QUESTIONS.map(([id, label]) => (
-        <YesNo key={id} label={t(label)} value={health[id] || 'no'} onChange={(v) => setHealth((h) => ({ ...h, [id]: v }))} />
+        <div key={id} className="flex flex-col gap-3">
+          <YesNo
+            label={t(label)}
+            value={health[id] || 'no'}
+            onChange={(v) => {
+              setHealth((h) => ({ ...h, [id]: v }));
+              setAsked(v === 'yes' ? id : null);
+            }}
+          />
+          {HEALTH_DETAILS[id] && health[id] === 'yes' && (
+            <Field error={check.show(noteError(id))}>
+              <TextArea autoFocus={asked === id} rows={2} value={notes[id] || ''} onChange={(v) => setNotes((n) => ({ ...n, [id]: v }))} placeholder={t(HEALTH_DETAILS[id])} aria-label={t(label)} />
+            </Field>
+          )}
+        </div>
       ))}
       <Field label={t('Spremnost za rad')}>
         <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={readiness} onValueChange={setReadiness} aria-label={t('Spremnost za rad')}>
@@ -260,8 +295,7 @@ export function EmergencyForm({ open, profile, onClose, onSave }) {
   const errors = { name: !name.trim() && requiredError(), relation: !relation && requiredError(), phone: !phone.trim() && requiredError(), address: !address.trim() && requiredError() };
   const save = () => check.check(Object.values(errors)) && onSave({ emergency: { name: name.trim(), relation, phone: phone.trim(), address: address.trim() } });
   return (
-    <Frame open={open} title={t('Kontakt za hitne slučajeve')} onClose={onClose} onSave={save}>
-      <PaneHint>{t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.')}</PaneHint>
+    <Frame open={open} title={t('Kontakt za hitne slučajeve')} description={t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.')} onClose={onClose} onSave={save}>
       <Field label={t('Ime i prezime')} required error={check.show(errors.name)}>
         <Input value={name} onChange={setName} placeholder={t('Unesite ime i prezime')} />
       </Field>

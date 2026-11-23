@@ -41,6 +41,10 @@ describe('sign-up steps', () => {
     expect(stepErrors('profession', { ...filled('fi'), languages: [] }).languages).toBeTruthy();
     expect(stepErrors('health', { ...filled('sr'), languages: [] }).languages).toBeTruthy();
     expect(stepErrors('health', filled('sr')).languages).toBeFalsy();
+    // a "Da" on a conviction asks what it was, as the other three (22. 11.)
+    const convicted = { ...filled('sr'), health: { ...filled('sr').health, convicted: true } };
+    expect(stepErrors('health', convicted)['health-convicted']).toBeTruthy();
+    expect(stepErrors('health', { ...convicted, healthNotes: { ...convicted.healthNotes, convicted: 'Saobraćajni prekršaj' } })['health-convicted']).toBeFalsy();
   });
   it('a filled Finnish form passes its steps', () => {
     const f = filled('fi');

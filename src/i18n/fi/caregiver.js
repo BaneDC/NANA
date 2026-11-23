@@ -415,4 +415,5 @@ export default {
   "Nesigurno hoda i nije htela da jede.": "Kävely on epävarmaa, eikä hän halunnut syödä.",
   "Ime, datum rođenja i e-mail ne mogu da se menjaju.": "Nimeä, syntymäaikaa ja sähköpostia ei voi muuttaa.",
   "Kontaktirajte koordinatorku radi promene klasifikacija.": "Ota yhteyttä koordinaattoriin muuttaaksesi luokituksiasi.",
+  "Za koje krivično delo?": "Mistä rikoksesta?",
 };

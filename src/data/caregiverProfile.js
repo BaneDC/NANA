@@ -73,6 +73,15 @@ export const HEALTH_QUESTIONS = [
   ['problems', msg('Zdravstveni problemi koji otežavaju rad')],
   ['convicted', msg('Osuđivani za krivično delo')],
 ];
+// what a "Da" on a health question asks for, in a field under it, required
+// while it is "Da" (the sign-up and her profile alike; the conviction too
+// since 22. 11., Branislav)
+export const HEALTH_DETAILS = {
+  allergies: msg('Na šta ste alergični?'),
+  limits: msg('Koje ograničenje imate?'),
+  problems: msg('Koji problem imate i kako utiče na rad?'),
+  convicted: msg('Za koje krivično delo?'),
+};
 export const READINESS = [
   ['dementia', msg('Rad sa osobama sa demencijom')],
   ['immobile', msg('Rad sa nepokretnim osobama')],

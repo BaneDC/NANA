@@ -112,9 +112,10 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
           {c.engagement && <Fact label={t('Angažman')}>{engagementText(c).join(', ')}</Fact>}
           <Fact label={t('Dani')}>{daysText(c.days)}</Fact>
           <Fact label={t('Doba dana')}>{c.slots.map((s) => `${t(SLOTS[s].label).toLowerCase()} ${SLOTS[s].hours}`).join(', ')}</Fact>
+          {/* in the sign-up's order (22. 11., Branislav) */}
+          {!fi && <Fact label={t('Rad u inostranstvu')}>{c.abroad ? t('Da') : t('Ne')}</Fact>}
           <Fact label={t('Radijus')}>{radiusText(c.radius, true)}</Fact>
           {fi && c.rate && <Fact label={t('Cena')}>{c.rate}</Fact>}
-          {!fi && <Fact label={t('Rad u inostranstvu')}>{c.abroad ? t('Da') : t('Ne')}</Fact>}
         </Group>
         {!fi && (
           <Group title={t('Zdravlje i navike')} onEdit={() => setForm('health')}>
@@ -126,7 +127,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
             <Fact label={t('Jezici')}>{c.languages.map((l) => t(l)).join(', ')}</Fact>
             {HEALTH_QUESTIONS.map(([id, label]) => (
               <Fact key={id} label={t(label)}>
-                {c.health?.[id] ? t('Da') : t('Ne')}
+                {c.health?.[id] ? (c.healthNotes?.[id] ? `${t('Da')}: ${c.healthNotes[id]}` : t('Da')) : t('Ne')}
               </Fact>
             ))}
             <Fact label={t('Spremnost za rad')}>

@@ -1,5 +1,5 @@
 import { requiredError, typedDateError } from '../components/TextField';
-import { DOCUMENTS } from './caregiverProfile';
+import { DOCUMENTS, HEALTH_DETAILS } from './caregiverProfile';
 import { dialOf } from './countries';
 import { msg, t } from '../i18n';
 import { marketDate } from './familyCare';
@@ -56,7 +56,7 @@ export const emptyForm = (market) => ({
   habits: { smoker: false, alcohol: false, pets: false },
   health: { allergies: false, limits: false, problems: false, convicted: false },
   // what a "Da" on a health question is, in her words (HEALTH_DETAILS)
-  healthNotes: { allergies: '', limits: '', problems: '' },
+  healthNotes: { allergies: '', limits: '', problems: '', convicted: '' },
   readiness: [],
   unwilling: '',
   emergency: { name: '', relation: '', phoneCountry: market === 'sr' ? 'RS' : 'FI', phone: '', address: '' },
@@ -142,8 +142,9 @@ export function stepErrors(step, f) {
   // a "Da" on allergies, a limit or a health problem asks what it is
   if (step === 'health') {
     if (!f.languages.length) e.languages = requiredError();
-    Object.keys(f.healthNotes || {}).forEach((id) => {
-      if (f.health[id] && blank(f.healthNotes[id])) e['health-' + id] = requiredError();
+    // every question that asks for more, a draft from before one was added too
+    Object.keys(HEALTH_DETAILS).forEach((id) => {
+      if (f.health[id] && blank(f.healthNotes?.[id])) e['health-' + id] = requiredError();
     });
   }
   if (step === 'emergency') {

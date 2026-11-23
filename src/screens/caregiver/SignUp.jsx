@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { siteMarket } from '../../lib/siteLink';
-import { Note, PaneHint } from '@/components/pane';
+import { PaneHint } from '@/components/pane';
 import { StepCard, StepCards, StepPage, StepPanel, StepReview } from '@/components/StepCards';
 import PersonalityTest from './PersonalityTest';
 import CookieSettings from '../../components/CookieSettings';
@@ -19,7 +19,7 @@ import { clearDraft, loadDraft, saveDraft } from '../../data/signupDraft';
 import { COUNTRIES, dialOf } from '../../data/countries';
 import { CLASSIFICATIONS, EXAMPLE, STEPS, afterSteps, documentsNeeded, emptyForm, firstUnfinished, recordFrom, stepErrors } from '../../data/caregiverSignUp';
 import { marketDate } from '../../data/familyCare';
-import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
+import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_DETAILS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
 import { SLOTS, daysText } from '../../data/carePlan';
 import { getLang, msg, t, useLang } from '@/i18n';
 import { cn } from '@/lib/utils';
@@ -108,12 +108,6 @@ export function Radios({ label, value, onChange, options, required, error, hint 
   );
 }
 
-// what a "Da" asks for, in a field under it
-const HEALTH_DETAILS = {
-  allergies: msg('Na šta ste alergični?'),
-  limits: msg('Koje ograničenje imate?'),
-  problems: msg('Koji problem imate i kako utiče na rad?'),
-};
 
 const yesNo = [
   ['no', msg('Ne')],
@@ -585,8 +579,8 @@ export default function CaregiverSignUp({ onForm }) {
             options={Object.entries(SLOTS).map(([id, s]) => [id, `${t(s.label)} ${s.hours}`])}
             error={show('slots')}
           />
-          {/* easy to miss as small grey text, and it changes what the choice means */}
-          {f.slots.length > 1 && <Note>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</Note>}
+          {/* plain, as the one under "Angažman" (decided 22. 11., Branislav; was a grey tile) */}
+          {f.slots.length > 1 && <PaneHint>{t('Izborom više delova dana kažete da prihvatate pojedinačne smene u to vreme, a ne neprekidan rad ceo dan.')}</PaneHint>}
         </div>
         {sr && <YesNo label={t('Rad u inostranstvu')} value={f.abroad} onChange={(v) => set({ abroad: v })} />}
         <Radius value={f.radius} onChange={(v) => set({ radius: v })} />

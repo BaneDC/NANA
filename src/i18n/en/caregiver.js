@@ -415,4 +415,5 @@ export default {
   "Nesigurno hoda i nije htela da jede.": "Unsteady on her feet, and she did not want to eat.",
   "Ime, datum rođenja i e-mail ne mogu da se menjaju.": "Your name, date of birth and e-mail cannot be changed.",
   "Kontaktirajte koordinatorku radi promene klasifikacija.": "Contact the coordinator to change your classifications.",
+  "Za koje krivično delo?": "For what offence?",
 };
