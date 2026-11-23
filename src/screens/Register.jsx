@@ -561,12 +561,12 @@ const demoLink =
 // Branislav; docs/patterns.md §10), closed as the page comes; whether it was
 // opened is kept for this tab.
 const DEMO_OPEN = 'nana.demo.rows';
-// "Već imate nalog?" as text and "Prijavite se" as the button beside it, so
+// "Već imate nalog?" as text and "Prijavite se" as the button under it, so
 // what is pressed reads as a button (decided 23. 11., dizajner; until then the
 // whole sentence was one ghost button)
 function HaveAccount({ onSignIn }) {
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex flex-col items-center gap-1">
       <span className="text-xs text-muted-foreground">{t('Već imate nalog?')}</span>
       <Button type="button" variant="ghost" size="lg" onClick={onSignIn}>
         {t('Prijavite se')}
