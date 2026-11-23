@@ -492,7 +492,7 @@ export default {
   'Za testiranje: otvori demo sa gotovim planom': 'For testing: open the demo with a finished plan',
   'Za pregled: sve kartice na jednoj stranici': 'For review: every card on one page',
   'Za demo: jezik': 'For the demo: language',
-  'Prijavite se': 'Sign in',
+  'Prijavite se u NANA Prime': 'Sign in to NANA Prime',
   'Email adresom i lozinkom kojima ste napravili nalog': 'With the email and password you created the account with',
   'Email ili lozinka nisu tačni.': 'The email or password is not right.',
   'Vaša lozinka': 'Your password',
@@ -698,4 +698,7 @@ export default {
   "Za demo: nova privremena lozinka za {email}": "For the demo: a new temporary password for {email}",
   'Za demo': 'For the demo',
   'Vaši podaci i odjava.': 'Your details and signing out.',
+  // the family's memories under the sign-in (src/data/memories.js)
+  'Sećanja': 'Memories',
+  'Godina sećanja': 'Year of the memory',
 };

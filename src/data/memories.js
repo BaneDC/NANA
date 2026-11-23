@@ -2,7 +2,8 @@
 // 23. 11.): one life seen by the child, from the first days with mother and
 // father to the parents grown old, a photo a year that mattered. Generated for
 // the prototype (GPT Image 2.6), 640 on the long side; `wide` is 4:3, the rest
-// 3:4. In order of the years: the journey goes through them one by one.
+// 3:4 (the strip shows them all square, as in a dock). In order of the years:
+// the strip goes through them one by one.
 import m1974 from '@/assets/memories/1974.jpg';
 import m1975 from '@/assets/memories/1975.jpg';
 import m1976 from '@/assets/memories/1976.jpg';
@@ -18,7 +19,7 @@ import m2004 from '@/assets/memories/2004.jpg';
 import m2011 from '@/assets/memories/2011.jpg';
 import m2017 from '@/assets/memories/2017.jpg';
 import m2022 from '@/assets/memories/2022.jpg';
-import m2025 from '@/assets/memories/2025.jpg';
+import m2026 from '@/assets/memories/2026.jpg';
 
 export const MEMORIES = [
   { year: 1974, src: m1974 }, // the newborn, mother and father by the window
@@ -36,5 +37,5 @@ export const MEMORIES = [
   { year: 2011, src: m2011, wide: true }, // grandfather and grandchild in the garden
   { year: 2017, src: m2017 }, // the parents on a bench, she behind them
   { year: 2022, src: m2022, wide: true }, // holding mother's hand at the table
-  { year: 2025, src: m2025 }, // laughing with father on the balcony
+  { year: 2026, src: m2026 }, // laughing with father on the balcony, this year
 ];

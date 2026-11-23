@@ -1779,63 +1779,143 @@
 }
 
 
-/* The memories around the family's sign-in (MemoryLane, docs/patterns.md §10,
-   decided 23. 11.): over the sky, under the page, never in the way of a tap.
-   The page moves each photo (where, how large, how faint, how soft); here only
-   what does not change: no edge anywhere, the photo fading into the sky on
-   every side, and the year on its lower edge as if written there. */
-.imm-memories {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  user-select: none;
-  contain: strict;
-  animation: imm-memories-in 1.2s ease-out both;
-}
-
-@keyframes imm-memories-in {
-  from {
-    opacity: 0;
-  }
-}
-
-.imm-memory {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 0;
-  will-change: transform, opacity, filter;
-}
-
-.imm-memory-photo {
-  display: block;
+/* The memories under the family's sign-in (MemoryStrip, docs/patterns.md §10,
+   decided 23. 11.): a line of ticks at the page's foot, the memories evenly
+   along it, and over it their photos as in Apple's dock: squares in a row,
+   8 apart, at rest each over its tick, growing near the focus and pushing the
+   others aside, fading away from it. The year in focus under the line, with
+   the two ends. Not on a phone. The component moves the photos, the ticks and
+   the year; here what does not change. */
+.imm-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 22%, #000 78%, transparent),
-    linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(to right, transparent, #000 22%, #000 78%, transparent),
-    linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
-  mask-composite: intersect;
+  padding-bottom: var(--spacing-4);
 }
 
-.imm-memory-year {
+/* over the line, as wide as it: the photos stand on a floor 8 over it, and
+   at both ends fade out softly over 48 (decided 23. 11.: nothing past the
+   line's ends). The stage reaches 28 under the floor, so their shadows are
+   not cut, and lets the pointer through to the line there. */
+.imm-strip-stage {
+  position: relative;
+  height: calc(192px + var(--spacing-2) + var(--spacing-7));
+  margin-bottom: calc(-1 * var(--spacing-7));
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+
+.imm-strip-photo {
   position: absolute;
   left: 0;
-  right: 0;
-  bottom: var(--spacing-2);
-  text-align: center;
+  bottom: calc(var(--spacing-2) + var(--spacing-7));
+  width: 192px;
+  height: 192px;
+  object-fit: cover;
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 16px 32px -20px rgb(60 40 30 / 0.5);
+  transform-origin: 0 100%;
+  will-change: transform, opacity;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+}
+
+/* the line of years: a tick each, grown near the focus; 44 tall to touch */
+.imm-strip-time {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  width: 880px;
+  max-width: calc(100% - 2 * var(--spacing-10));
+}
+
+.imm-strip-ticks {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 44px;
+  padding-bottom: var(--spacing-1);
+  cursor: pointer;
+  touch-action: none;
+  border-radius: var(--radius-sm);
+  outline-offset: 4px;
+}
+
+.imm-strip-tick {
+  width: 1px;
+  height: 32px;
+  background: rgb(70 61 53 / 0.22);
+  transform: scaleY(0.25);
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.imm-strip-tick.has-memory {
+  background: rgb(70 61 53 / 0.42);
+}
+
+/* the memory in focus: a little darker and wider, not black (decided 23. 11.) */
+.imm-strip-tick.is-on {
+  width: 2px;
+  background: #8a7a6d;
+}
+
+/* under the line: the two ends, and between them the year in focus under its
+   tick (the component moves it); an end it comes near to steps aside */
+.imm-strip-ends {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 calc(-1 * var(--spacing-2));
+}
+
+.imm-strip-ends button {
+  min-height: 44px;
+  padding: 0 var(--spacing-2);
+  border-radius: var(--radius-lg);
   font-size: var(--text-xs-size);
   line-height: var(--text-xs-leading);
   font-variant-numeric: tabular-nums;
-  color: #6d5c4e;
+  color: #6f6155;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease-out,
+    visibility 0.2s;
 }
 
-/* standing still (reduced motion): the photos only appear */
-.imm-memories.is-still .imm-memory {
-  will-change: auto;
-  transition: opacity 0.6s ease;
+/* with a mouse the two ends need not be 44 tall */
+@media (pointer: fine) {
+  .imm-strip-ends button {
+    min-height: 24px;
+  }
+}
+
+.imm-strip-ends button.is-aside {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.imm-strip-year {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--spacing-2);
+  display: flex;
+  align-items: center;
+  font-size: var(--text-sm-size);
+  line-height: var(--text-sm-leading);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #5f5249;
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imm-strip-ends button {
+    transition: none;
+  }
 }

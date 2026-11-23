@@ -16,7 +16,7 @@ import { setSiteMarket } from '../lib/siteLink';
 import { caregiverCount } from '../data/caregiverCounts';
 import { municipalityGroups } from '../data/caregiverProfile';
 import CaregiverSignUp, { ConsentRow } from './caregiver/SignUp';
-import { StepPage, StepPanel } from '../components/StepCards';
+import { StepFields, StepPage, StepPanel } from '../components/StepCards';
 import { goBackTo, navigate, useRoute } from '../lib/route';
 import { msg, t, tn, useLang } from '../i18n';
 import { CodeInput } from '../components/TwoFactorSetup';
@@ -57,7 +57,7 @@ const LOGO = (
 );
 
 // Who the sign-in is for, as the website knows (decided 23. 11.): the family
-// sees its memories around it (MemoryLane), a caregiver does not. In the
+// sees its memories under it (MemoryStrip), a caregiver does not. In the
 // prototype "Ko ste?" stands in for the website, so it is the sign-up last
 // opened, Porodica or Negovateljica; kept for this tab. Nothing known is the
 // family, who come to it most.
@@ -731,14 +731,15 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
   // a forgotten password: its own step, /signin/reset
   if (step === 'reset') return <ResetPassword email={email} memories={memories} onBack={toSignIn} />;
 
-  // On the sky, the fields in one glass card in the middle and the family's
-  // memories around it (decided 23. 11.; until then a grey card under the
-  // photos' carousel). "Prijavi se" closes the card; the other door and the
-  // demo under it.
+  // On the sky, the fields each on its own in the middle (no card) and the
+  // family's memories around and behind them (decided 23. 11.; until then a
+  // grey card under the photos' carousel). "Prijavi se" last, the other door
+  // and the demo under it. The logo over the title, not in the head (decided
+  // 23. 11.), and the title names NANA Prime.
   return (
-    <StepPage title={t('Prijavite se')} sub={t('Email adresom i lozinkom kojima ste napravili nalog')} lead={LOGO} language memories={memories}>
+    <StepPage logo title={t('Prijavite se u NANA Prime')} sub={t('Email adresom i lozinkom kojima ste napravili nalog')} language memories={memories}>
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
-        <StepPanel>
+        <StepFields>
           <Field label={t('Email')} required error={check.show(errors.email)}>
             <Input
               value={email}
@@ -761,7 +762,7 @@ function SignIn({ onContinue, onSignUp, onDemo }) {
           <Button type="submit" size="lg" className="w-full">
             {t('Prijavi se')}
           </Button>
-        </StepPanel>
+        </StepFields>
       </form>
       <div className="flex flex-col items-center gap-2">
         <Button type="button" variant="ghost" size="lg" onClick={onSignUp}>
@@ -825,14 +826,14 @@ function ResetPassword({ email: given, memories, onBack }) {
   return (
     <StepPage {...page} title={t('Nova lozinka')} sub={t('Upišite email adresu naloga i poslaćemo vam link za novu lozinku.')}>
       <form className="contents" onSubmit={(e) => (e.preventDefault(), send())}>
-        <StepPanel>
+        <StepFields>
           <Field label={t('Email adresa')} required error={check.show(emailError(email))}>
             <Input value={email} onChange={setEmail} type="email" placeholder={t('Unesite svoju email adresu')} autoComplete="email" autoFocus={pageFocus()} />
           </Field>
           <Button type="submit" size="lg" className="w-full">
             {t('Pošalji link')}
           </Button>
-        </StepPanel>
+        </StepFields>
       </form>
     </StepPage>
   );
@@ -911,7 +912,7 @@ function TwoFactorStep({ user, memories, onContinue, onBack }) {
       memories={memories}
     >
       <form className="contents" onSubmit={(e) => (e.preventDefault(), submit())}>
-        <StepPanel>
+        <StepFields>
           {backup ? (
             <Field label={t('Rezervni kod')} required error={shown}>
               <Input
@@ -940,7 +941,7 @@ function TwoFactorStep({ user, memories, onContinue, onBack }) {
               {t('Potvrdi')}
             </Button>
           </div>
-        </StepPanel>
+        </StepFields>
       </form>
       {user.email === demoTwoFactor.user.email && <TestCodes />}
     </StepPage>

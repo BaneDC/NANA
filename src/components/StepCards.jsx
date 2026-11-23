@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils';
 import { pageFocus } from '@/components/TextField';
 import { t, useLang } from '@/i18n';
 import GradientBackground from '@/components/immersive/GradientBackground';
-import MemoryLane from '@/components/immersive/MemoryLane';
+import MemoryStrip from '@/components/immersive/MemoryStrip';
 import { PageHead } from '@/components/HeaderBack';
 import LanguagePicker from '@/components/LanguagePicker';
+import Logo from '@/components/Logo';
 
 // A form in parts on one page (docs/patterns.md §10), as the chat kit's
 // QuestionGroup until the kit's card takes a host's own fields
@@ -33,13 +34,17 @@ import LanguagePicker from '@/components/LanguagePicker';
 // at the top left (docs/patterns.md §4); `language`: the language across from it,
 // on a page before the account (§12b). The page's own column under them.
 // `lead`: what the head has at its left when there is no way back (the logo)
-// `memories`: the family's memories on the sky, around the page (MemoryLane;
-// the family's sign-in and "Ko ste?", docs/patterns.md §10)
-export function StepPage({ eyebrow, title, sub, start, actions, footer, back, lead, language, memories, children }) {
+// `memories`: the family's memories as a strip at the page's foot, under its
+// column (MemoryStrip; the family's sign-in and "Ko ste?", docs/patterns.md
+// §10); not on a phone
+// `logo`: the logo over the title, 24 over it, in place of the head's (the
+// sign-in, whose title names NANA Prime, decided 23. 11.); the title says it
+// already, so it is not read out twice
+export function StepPage({ eyebrow, title, sub, start, actions, footer, back, lead, language, memories, logo, children }) {
   const scroller = useRef(null);
-  // what the memories keep clear of: the page's column and its foot
-  const column = useRef(null);
-  const foot = useRef(null);
+  // the memories are not on a phone: there they would only be under the fold
+  const phone = useIsPhone();
+  const strip = memories && !phone;
   // a new title is a new page, to the top; the same one in another language is not
   const lang = useLang();
   const wasLang = useRef(lang);
@@ -53,8 +58,7 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, back, le
   return (
     <div data-slot="step-page" className="fixed inset-0 z-10 overflow-hidden">
       <GradientBackground />
-      {memories && <MemoryLane clear={[column, foot]} />}
-      <div ref={scroller} data-slot="step-scroll" className="absolute inset-0 overflow-y-auto">
+          <div ref={scroller} data-slot="step-scroll" className="absolute inset-0 overflow-y-auto">
         {/* with buttons the bar's own 16 is the page's foot: the page's
             padding under it let the buttons, held 16 over the screen's edge,
             ride up by that much more once the page's end was reached */}
@@ -64,9 +68,14 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, back, le
               {language && <LanguagePicker />}
             </PageHead>
           )}
-          <div className={cn('flex flex-1 flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8', actions && 'pb-0 phone:pb-0')}>
-            <div ref={column} className="flex w-[560px] max-w-full flex-col gap-8">
+          <div className={cn('flex flex-1 flex-col items-center justify-center px-6 py-12 phone:px-4 phone:py-8', actions && 'pb-0 phone:pb-0', strip && 'py-8')}>
+            <div className="flex w-[560px] max-w-full flex-col gap-8">
               <header className={cn('flex flex-col gap-2', start ? 'text-left' : 'text-center')}>
+                {logo && (
+                  <span aria-hidden className={cn('mb-4 flex', start ? 'justify-start' : 'justify-center')}>
+                    <Logo width={160} />
+                  </span>
+                )}
                 {eyebrow && <p className="imm-count my-0">{eyebrow}</p>}
                 <h1 className="imm-title">{title}</h1>
                 {sub && <p className={cn('my-0', start ? 'imm-plan-text' : 'imm-subtitle')}>{sub}</p>}
@@ -80,8 +89,9 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, back, le
               </div>
             )}
             {/* 32 under what is over it: the bar's own 16 and 16 more, or 32 */}
-            {footer && <footer ref={foot} className={cn('flex w-[560px] max-w-full flex-wrap justify-center gap-1 pb-8 phone:pb-6', actions ? 'mt-4' : 'mt-8')}>{footer}</footer>}
+            {footer && <footer className={cn('flex w-[560px] max-w-full flex-wrap justify-center gap-1 pb-8 phone:pb-6', actions ? 'mt-4' : 'mt-8')}>{footer}</footer>}
           </div>
+          {strip && <MemoryStrip />}
         </div>
       </div>
     </div>
@@ -94,6 +104,17 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, back, le
 export function StepPanel({ className, children }) {
   return (
     <section data-slot="step-panel" className={cn('imm-step is-open flex flex-col gap-6 p-4', className)}>
+      {children}
+    </section>
+  );
+}
+
+// The fields on the sky, with no glass card around them (the sign-in and its
+// steps, decided 23. 11.): each field is its own, narrower than the page's
+// column, 24 apart as in a card.
+export function StepFields({ className, children }) {
+  return (
+    <section data-slot="step-fields" className={cn('flex w-[400px] max-w-full flex-col gap-6 self-center', className)}>
       {children}
     </section>
   );
