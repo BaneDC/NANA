@@ -701,6 +701,7 @@ Prototip: u demou se sve, i karton, pamti po tržištu dok se u Simulaciji ne iz
 - strelica koja pokazuje da li je nešto otvoreno ili zatvoreno (disclosure);
 - „Pitaj asistenta", ista komponenta gde postoji (Moja nega);
 - kvačice u listama i u znački stanja, jer to nisu dugmad.
+- olovka na avataru koji se menja („Moj profil" negovateljice, §12c), jer to nije dugme sa tekstom.
 
 ## 12. Telefon
 
@@ -777,7 +778,7 @@ Aplikacija je na srpskom, engleskom i finskom. Tržište ostaje finsko: imena lj
 - **„Zarada":** njoj se zbir prikazuje (§8 važi za porodicu). „Klijenti": filter Sada / Završeno / Odbijeni.
 - **„Moj profil"** je složen kao Podešavanja: kartice sa `Facts` i „Izmenite" u glavi, koje otvara prozor (`src/components/caregiver/ProfileForms.jsx`, isti prozori služe i registraciji). Prekidač „Primam nove upite" je red-labela kao u Podešavanjima; isključen, porodice je ne vide na „Pronađi".
 - **Fotografija negovateljice se dodaje na njenom profilu, pritiskom na avatar** (odlučeno 23. 11., dizajner; ne traži se u prijavi i nije obavezna).
-  - **Avatar** u glavi „Moj profil" je dugme („Dodajte fotografiju" / „Promenite fotografiju" u `aria-label`). Na hover dobija okvir, kao kartica naloga u meniju.
+  - **Avatar** u glavi „Moj profil" je dugme („Dodajte fotografiju" / „Promenite fotografiju" u `aria-label`). Na hover dobija okvir, kao kartica naloga u meniju. **U donjem desnom uglu ima olovku** (odlučeno 23. 11., dizajner): beo krug 20 (`bg-card`, `shadow-card`), olovka (`Pencil` 12, `text-foreground`), 4 van ugla avatara, da se vidi da se fotka dodaje i menja i pre hovera; dekoracija je (`aria-hidden`), ime nosi dugme. Uvek je tu, i sa fotkom i bez nje.
   - **Dok fotke nema, prva kartica profila je podsetnik** „Dodajte svoju fotografiju": rečenica zašto i da se menja i preko avatara, pa „Dodajte fotografiju" (`default`, jer podešava ono što nedostaje).
   - Oba otvaraju prozor **„Vaša fotografija"** (`PhotoDialog`, `src/components/caregiver/PhotoDialog.jsx`; na telefonu donji panel). Ima tri stanja:
     - **bez fotke:** inicijali u kvadratu 240 (r16), sitno šta je dobra fotka (samo ona, lice se vidi, dnevno svetlo, bez filtera i naočara za sunce, JPG / PNG / WebP do 10 MB) i „Izaberite fotografiju" (`default`);

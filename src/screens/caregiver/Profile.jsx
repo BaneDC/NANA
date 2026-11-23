@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Pencil } from 'lucide-react';
 import { Page, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -53,18 +54,22 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
       <PageHeader>
         <PagePerson className="[--avatar:48px]">
           {/* her photo: a press on the avatar adds or changes it (decided
-              23. 11., dizajner), ringed on hover as a card that opens something */}
+              23. 11., dizajner), ringed on hover as a card that opens something, a pencil in its corner */}
           <button
             type="button"
             onClick={() => setForm('photo')}
             aria-label={c.photo ? t('Promenite fotografiju') : t('Dodajte fotografiju')}
             title={c.photo ? t('Promenite fotografiju') : t('Dodajte fotografiju')}
-            className="shrink-0 cursor-pointer rounded-lg outline-none transition-shadow duration-200 ease-out hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            className="relative shrink-0 cursor-pointer rounded-lg outline-none transition-shadow duration-200 ease-out hover:shadow-[0_0_0_1px_var(--color-primary-300)] focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <Avatar>
               {c.photo && <AvatarImage src={c.photo} alt="" className="object-cover" />}
               <AvatarFallback>{c.initials}</AvatarFallback>
             </Avatar>
+            {/* the pencil says it changes before a hover does (23. 11., dizajner) */}
+            <span aria-hidden className="absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-card text-foreground shadow-card">
+              <Pencil className="size-3" />
+            </span>
           </button>
           <PageHeaderText>
             <PageTitle>{c.name}</PageTitle>
