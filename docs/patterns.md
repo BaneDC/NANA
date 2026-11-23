@@ -117,7 +117,7 @@ Ako neki raspored ne može da ispoštuje pravilo nijednim radiusom sa skale, ras
 - `--text-chat-*` je razgovor sa asistentom: 14 / 20, na dodir 16 / 24.
 - Novi sitan tekst uvek ide na `--text-small-*`, a nikad na `--text-xs-*`. Veličina se ne kuca ručno (`text-[11px]` i slično); jedini izuzetak je broj.
 
-**Onboarding** (`.immersive`) zaključava tokene na staroj skali (12 / 14 / 16, dugme 32, polje 36 sa mišem), jer ima svoj vizuelni jezik.
+**Onboarding** (`.immersive`) zaključava tokene na staroj skali (12 / 14 / 16, dugme 32, polje 36 sa mišem), jer ima svoj vizuelni jezik. **Izuzetak je natpis dugmeta pod prstom: 14, kao u aplikaciji, a ne 12** (odlučeno 23. 11., dizajner: „Pošalji" je na telefonu bio sitan). Raste samo ono što se pritiska; ostatak onboardinga ostaje na svojoj skali.
 
 Za novi tekst kartice koristi `CardDescription` (u prozoru `DialogDescription`). Ne uvodi novu klasu istog izgleda.
 

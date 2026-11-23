@@ -117,6 +117,16 @@
   background: linear-gradient(180deg, #cbd8ed 0%, #f2e1dc 55%, #ffeeda 100%);
 }
 
+/* Under a finger a button's word is the app's 14, not the onboarding's 12
+   (decided 23. 11., dizajner: "Pošalji" at 12 read as small print on a phone).
+   Only what is pressed grows; the rest of the onboarding keeps its scale. */
+@media (pointer: coarse) {
+  .immersive :is(.btn, [data-slot='button']) {
+    --text-xs-size: 14px;
+    --text-xs-leading: 20px;
+  }
+}
+
 .imm-canvas {
   position: absolute;
   inset: 0;
