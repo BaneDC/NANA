@@ -133,8 +133,6 @@ export default {
   "Promenite fotografiju": "Vaihda kuva",
   "Dodajte fotografiju": "Lisää kuva",
   "Samo vi na fotografiji, lice se jasno vidi. Dnevno svetlo, bez filtera i naočara za sunce. JPG, PNG ili WebP, do 10 MB.": "Vain sinä kuvassa, kasvot näkyvät selvästi. Päivänvalo, ei suodattimia eikä aurinkolaseja. JPG, PNG tai WebP, enintään 10 Mt.",
-  "Dodajte svoju fotografiju": "Lisää valokuvasi",
-  "Porodice lakše biraju kad vide s kim će raditi. Fotografiju menjate i klikom na avatar.": "Perheet valitsevat helpommin, kun he näkevät, kenen kanssa työskentelevät. Voit vaihtaa kuvan myös klikkaamalla avatariasi.",
   "Provereno": "Tarkistettu",
   "Radni nalog je poslat. Naplaćuje se za 24 sata, osim ako porodica nešto prijavi.": "Työraportti on lähetetty. Se veloitetaan 24 tunnin kuluttua, ellei perhe ilmoita jotain.",
   "Rezervacija se vraća porodici i ništa se ne naplaćuje.": "Varaus palautuu perheelle eikä mitään veloiteta.",

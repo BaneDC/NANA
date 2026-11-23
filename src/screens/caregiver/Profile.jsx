@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { Page, PageDescription, PageHeader, PageHeaderText, PagePerson, PageSection, PageTitle } from '@/components/page';
-import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardAction, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
   return (
     <Page>
       <PageHeader>
-        <PagePerson className="[--avatar:48px]">
+        <PagePerson className="gap-5 [--avatar:48px]">
           {/* her photo: a press on the avatar adds or changes it (decided
               23. 11., dizajner), ringed on hover as a card that opens something, a pencil in its corner */}
           <button
@@ -67,7 +67,7 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
               <AvatarFallback>{c.initials}</AvatarFallback>
             </Avatar>
             {/* the pencil says it changes before a hover does (23. 11., dizajner) */}
-            <span aria-hidden className="absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-card text-foreground shadow-card">
+            <span aria-hidden className="absolute -right-2 -bottom-2 box-border flex size-7 items-center justify-center rounded-full border-4 border-background bg-card text-foreground shadow-[0_0_0_1px_var(--card-line),0_2px_6px_rgba(76,34,18,0.16)]">
               <Pencil className="size-3" />
             </span>
           </button>
@@ -80,18 +80,6 @@ export default function Profile({ caregiver, user, market, onSaveProfile }) {
 
       {/* until she adds a photo: it may wait, but families choose more
           easily when they see her (decided 23. 11., dizajner) */}
-      {!c.photo && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('Dodajte svoju fotografiju')}</CardTitle>
-          </CardHeader>
-          <CardDescription>{t('Porodice lakše biraju kad vide s kim će raditi. Fotografiju menjate i klikom na avatar.')}</CardDescription>
-          <CardFooter>
-            <Button onClick={() => setForm('photo')}>{t('Dodajte fotografiju')}</Button>
-          </CardFooter>
-        </Card>
-      )}
-
       {/* on or off, saved as it moves: the whole row is its label (§10) */}
       <Card>
         <label className="flex w-full cursor-pointer items-center gap-4">

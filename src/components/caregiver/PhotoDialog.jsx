@@ -9,8 +9,8 @@ import { Field, FieldError } from '../TextField';
 import { t } from '@/i18n';
 
 // Her photo, from her profile (decided 23. 11., dizajner: a press on her
-// avatar on "Moj profil" opens it; it is not asked at the sign-up, and until
-// she adds one the profile reminds her). Families see it wherever she is
+// avatar on "Moj profil", marked by a pencil, opens it; it is not asked at
+// the sign-up and nothing else reminds her). Families see it wherever she is
 // shown, beside her name.
 //
 // Three faces of one dialog:
