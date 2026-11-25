@@ -5,7 +5,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PaneHint } from '@/components/pane';
 import Dialog from '../Dialog';
 import { formGap } from './Forms';
-import { Checks, Combobox, Field, FieldError, Input, Select, TextArea, requiredError, useCheck } from '../TextField';
+import { Checks, Combobox, Field, FieldError, Input, Phone, Select, TextArea, requiredError, useCheck } from '../TextField';
+import { dialOf, splitPhone } from '../../data/countries';
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_DETAILS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
@@ -31,13 +32,20 @@ function Frame({ open, title, description, onClose, onSave, children }) {
   );
 }
 
+// the country a number is from by default: her market's
+const homeCountry = (profile) => (profile.market === 'RS' ? 'RS' : 'FI');
+// as the sign-up checks it (caregiverSignUp.js): empty, or too short to be whole
+const phoneError = (v) => (!v.trim() ? requiredError() : v.replace(/\D/g, '').length < 6 ? t('Unesite ceo broj telefona.') : null);
+const wholePhone = (country, number) => `${dialOf(country)} ${number.trim()}`;
+
 export function PersonalForm({ open, profile, email, onClose, onSave }) {
   const [address, setAddress] = useState(profile.address || '');
   const [area, setArea] = useState(profile.area || '');
-  const [phone, setPhone] = useState(profile.phone || '');
+  // the code and the number apart, as on the sign-up (Phone), kept whole
+  const [{ country, number: phone }, setPhone] = useState(() => splitPhone(profile.phone, homeCountry(profile)));
   const check = useCheck();
-  const errors = { address: !address.trim() && requiredError(), area: !area.trim() && requiredError(), phone: !phone.trim() && requiredError() };
-  const save = () => check.check(Object.values(errors)) && onSave({ address: address.trim(), area: area.trim(), phone: phone.trim() });
+  const errors = { address: !address.trim() && requiredError(), area: !area.trim() && requiredError(), phone: phoneError(phone) };
+  const save = () => check.check(Object.values(errors)) && onSave({ address: address.trim(), area: area.trim(), phone: wholePhone(country, phone) });
   return (
     <Frame open={open} title={t('Lični podaci')} onClose={onClose} onSave={save}>
       {/* what is not changed, said here too, so its absence from the fields
@@ -54,8 +62,8 @@ export function PersonalForm({ open, profile, email, onClose, onSave }) {
       <Field label={t('Opština')} required error={check.show(errors.area)}>
         <Combobox value={area} onChange={setArea} groups={municipalityGroups(profile.market === 'RS' ? 'sr' : 'fi')} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
       </Field>
-      <Field label={t('Telefon')} required error={check.show(errors.phone)}>
-        <Input value={phone} onChange={setPhone} type="tel" />
+      <Field label={t('Telefon')} required labelId="pf-phone" error={check.show(errors.phone)}>
+        <Phone country={country} onCountry={(v) => setPhone((p) => ({ ...p, country: v }))} value={phone} onChange={(v) => setPhone((p) => ({ ...p, number: v }))} labelledBy="pf-phone" />
       </Field>
     </Frame>
   );
@@ -269,15 +277,8 @@ export function HealthForm({ open, profile, onClose, onSave }) {
           )}
         </div>
       ))}
-      <Field label={t('Spremnost za rad')}>
-        <ToggleGroup type="multiple" size="sm" className="flex-wrap" value={readiness} onValueChange={setReadiness} aria-label={t('Spremnost za rad')}>
-          {READINESS.map(([id, label]) => (
-            <ToggleGroupItem key={id} value={id}>
-              {t(label)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </Field>
+      {/* boxes, as on the sign-up: more than one answer is a checkbox (§10) */}
+      <Checks label={t('Spremnost za rad')} value={readiness} onChange={setReadiness} options={READINESS.map(([id, l]) => [id, t(l)])} />
       <Field label={t('Šta ne želite da radite')}>
         <TextArea value={unwilling} onChange={setUnwilling} rows={2} placeholder={t('Npr. menjanje pelena, kupanje, rad sa nepokretnim osobama.')} />
       </Field>
@@ -289,11 +290,12 @@ export function EmergencyForm({ open, profile, onClose, onSave }) {
   const e = profile.emergency || {};
   const [name, setName] = useState(e.name || '');
   const [relation, setRelation] = useState(e.relation || '');
-  const [phone, setPhone] = useState(e.phone || '');
+  const [{ country, number: phone }, setPhone] = useState(() => splitPhone(e.phone, homeCountry(profile)));
   const [address, setAddress] = useState(e.address || '');
   const check = useCheck();
-  const errors = { name: !name.trim() && requiredError(), relation: !relation && requiredError(), phone: !phone.trim() && requiredError(), address: !address.trim() && requiredError() };
-  const save = () => check.check(Object.values(errors)) && onSave({ emergency: { name: name.trim(), relation, phone: phone.trim(), address: address.trim() } });
+  // the number as the sign-up asks it: only that it is there and whole enough
+  const errors = { name: !name.trim() && requiredError(), relation: !relation && requiredError(), phone: phone.replace(/\D/g, '').length < 6 && requiredError(), address: !address.trim() && requiredError() };
+  const save = () => check.check(Object.values(errors)) && onSave({ emergency: { name: name.trim(), relation, phone: wholePhone(country, phone), address: address.trim() } });
   return (
     <Frame open={open} title={t('Kontakt za hitne slučajeve')} description={t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.')} onClose={onClose} onSave={save}>
       <Field label={t('Ime i prezime')} required error={check.show(errors.name)}>
@@ -302,8 +304,8 @@ export function EmergencyForm({ open, profile, onClose, onSave }) {
       <Field label={t('Srodstvo')} required error={check.show(errors.relation)}>
         <Select value={relation} onChange={setRelation} placeholder={t('Majka, otac, sestra i sl.')} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
       </Field>
-      <Field label={t('Telefon')} required error={check.show(errors.phone)}>
-        <Input value={phone} onChange={setPhone} type="tel" />
+      <Field label={t('Telefon')} required labelId="pf-e-phone" error={check.show(errors.phone)}>
+        <Phone country={country} onCountry={(v) => setPhone((p) => ({ ...p, country: v }))} value={phone} onChange={(v) => setPhone((p) => ({ ...p, number: v }))} labelledBy="pf-e-phone" />
       </Field>
       <Field label={t('Adresa')} required error={check.show(errors.address)}>
         <Input value={address} onChange={setAddress} />

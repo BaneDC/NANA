@@ -24,3 +24,12 @@ export const countryOptions = () =>
     display: c.flag + ' ' + c.code,
   }));
 export const dialOf = (id) => COUNTRIES.find((c) => c.id === id)?.code || '';
+
+// "+381 64 777 1122" back into its country and the number after the code, for
+// a Phone field over a number kept whole (her profile); one with no known code
+// stays whole under `fallback`
+export const splitPhone = (whole, fallback) => {
+  const s = String(whole || '').trim();
+  const c = [...COUNTRIES].sort((a, b) => b.code.length - a.code.length).find((x) => s.startsWith(x.code));
+  return c ? { country: c.id, number: s.slice(c.code.length).trim() } : { country: fallback, number: s };
+};
