@@ -7,6 +7,7 @@ import Dialog from '../Dialog';
 import { formGap } from './Forms';
 import { Checks, Combobox, Field, FieldError, Input, Phone, Select, TextArea, requiredError, useCheck } from '../TextField';
 import { dialOf, splitPhone } from '../../data/countries';
+import { EXAMPLE } from '../../data/caregiverSignUp';
 import { Slider } from '@/components/ui/slider';
 import { SLOTS } from '../../data/carePlan';
 import { DAYS, EDUCATION, EDUCATION_SR, educationText, HABITS, HEALTH_DETAILS, HEALTH_QUESTIONS, READINESS, languageOptions, RELATIONS, municipalityGroups } from '../../data/caregiverProfile';
@@ -34,6 +35,8 @@ function Frame({ open, title, description, onClose, onSave, children }) {
 
 // the country a number is from by default: her market's
 const homeCountry = (profile) => (profile.market === 'RS' ? 'RS' : 'FI');
+// the sign-up's examples in the empty fields, for her market (caregiverSignUp.js)
+const example = (profile) => EXAMPLE[profile.market === 'RS' ? 'sr' : 'fi'];
 // as the sign-up checks it (caregiverSignUp.js): empty, or too short to be whole
 const phoneError = (v) => (!v.trim() ? requiredError() : v.replace(/\D/g, '').length < 6 ? t('Unesite ceo broj telefona.') : null);
 const wholePhone = (country, number) => `${dialOf(country)} ${number.trim()}`;
@@ -57,7 +60,7 @@ export function PersonalForm({ open, profile, email, onClose, onSave }) {
         <PaneHint>{t('Ime, datum rođenja i e-mail ne mogu da se menjaju.')}</PaneHint>
       </Groups>
       <Field label={t('Prebivalište')} required error={check.show(errors.address)}>
-        <Input value={address} onChange={setAddress} />
+        <Input value={address} onChange={setAddress} placeholder={example(profile).address} />
       </Field>
       <Field label={t('Opština')} required error={check.show(errors.area)}>
         <Combobox value={area} onChange={setArea} groups={municipalityGroups(profile.market === 'RS' ? 'sr' : 'fi')} placeholder={t('Pretražite opštine')} searchPlaceholder={t('Pretražite opštine')} />
@@ -179,8 +182,8 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
       {fi && (
         <Field label={t('Cena po satu, od - do')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={check.show(errors.rate)}>
           <div className="grid grid-cols-2 gap-3">
-            <Input value={from} onChange={setFrom} inputMode="decimal" suffix="€/h" aria-label={t('Od')} />
-            <Input value={to} onChange={setTo} inputMode="decimal" suffix="€/h" aria-label={t('Do')} />
+            <Input value={from} onChange={setFrom} inputMode="decimal" suffix="€/h" placeholder="15" aria-label={t('Od')} />
+            <Input value={to} onChange={setTo} inputMode="decimal" suffix="€/h" placeholder="25" aria-label={t('Do')} />
           </div>
         </Field>
       )}
@@ -299,7 +302,7 @@ export function EmergencyForm({ open, profile, onClose, onSave }) {
   return (
     <Frame open={open} title={t('Kontakt za hitne slučajeve')} description={t('Ova osoba se kontaktira ako ne možemo da vas dobijemo ili ako je broj pogrešan.')} onClose={onClose} onSave={save}>
       <Field label={t('Ime i prezime')} required error={check.show(errors.name)}>
-        <Input value={name} onChange={setName} placeholder={t('Unesite ime i prezime')} />
+        <Input value={name} onChange={setName} placeholder={example(profile).emergencyName} />
       </Field>
       <Field label={t('Srodstvo')} required error={check.show(errors.relation)}>
         <Select value={relation} onChange={setRelation} placeholder={t('Majka, otac, sestra i sl.')} options={RELATIONS.map((r) => ({ value: r, label: t(r) }))} />
@@ -308,7 +311,7 @@ export function EmergencyForm({ open, profile, onClose, onSave }) {
         <Phone country={country} onCountry={(v) => setPhone((p) => ({ ...p, country: v }))} value={phone} onChange={(v) => setPhone((p) => ({ ...p, number: v }))} labelledBy="pf-e-phone" />
       </Field>
       <Field label={t('Adresa')} required error={check.show(errors.address)}>
-        <Input value={address} onChange={setAddress} />
+        <Input value={address} onChange={setAddress} placeholder={example(profile).emergencyAddress} />
       </Field>
     </Frame>
   );

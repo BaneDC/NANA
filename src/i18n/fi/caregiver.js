@@ -367,7 +367,6 @@ export default {
   "Brat ili sestra": "Sisarus",
   "Komšija": "Naapuri",
   "Opis radnog iskustva i veština": "Työkokemuksen ja taitojen kuvaus",
-  "Unesite ime i prezime": "Kirjoita koko nimi",
   "Majka, otac, sestra i sl.": "Äiti, isä, sisko jne.",
   "Osnovna škola (Srbija)": "Peruskoulu",
   "Srednja škola (Srbija)": "Lukio",
