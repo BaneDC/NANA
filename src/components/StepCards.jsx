@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, animate, motion, useReducedMotion } from 'motion/react';
 import { Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,7 +71,7 @@ export function StepPage({ eyebrow, title, sub, start, actions, footer, back, le
   return (
     <div data-slot="step-page" className="fixed inset-0 z-10 overflow-hidden">
       <GradientBackground />
-          <div ref={scroller} data-slot="step-scroll" className="absolute inset-0 overflow-y-auto">
+          <div ref={scroller} data-slot="step-scroll" className="absolute inset-0 overflow-y-auto [overflow-anchor:none]">
         {/* with buttons the bar's own 16 is the page's foot: the page's
             padding under it let the buttons, held 16 over the screen's edge,
             ride up by that much more once the page's end was reached */}
@@ -134,6 +134,10 @@ export function StepFields({ className, children }) {
   );
 }
 
+// the parts 8 apart (gap-2); an opened part stops as far under the screen's
+// top. A part not open is a row this tall (min-h-14).
+const STEP_GAP = 8;
+const ROW = 56;
 export function StepCards({ className, children }) {
   return (
     <div data-slot="step-cards" className={cn('flex flex-col gap-2', className)}>
@@ -241,17 +245,34 @@ export function StepCard({ n, title, sub, state, summary = [], onOpen, onNext, n
     return () => watch.disconnect();
   }, []);
 
-  // its top to the top of the screen (decided 9. 11., Branislav), with the
-  // part above folding: as the heights start to move, the page goes to where
-  // the top will be once every part above is a row (56, min-h-14)
+  // its top 8 under the screen's top, as the parts are apart (decided 9. 11.,
+  // Branislav; the 8 on 25. 11.), in one move with the heights (as long, the
+  // same ease), not by the browser's own smooth scroll, which kept its own
+  // pace. Where the top will be is asked again on every frame, from where
+  // things are then: each part above as the row it is becoming (56, min-h-14),
+  // and the page centred while it is short, so it moves as the heights do.
+  const scrolling = useRef(null);
   const toTop = () => {
-    const page = inner.current?.closest('[data-slot=step-scroll]');
+    const card = inner.current?.closest('[data-slot=step-card]');
+    const page = card?.closest('[data-slot=step-scroll]');
     if (!page) return;
-    const above = [...page.querySelectorAll('[data-slot=step-card]')].filter((c) => c.compareDocumentPosition(inner.current) & Node.DOCUMENT_POSITION_FOLLOWING);
-    const fold = above.reduce((sum, c) => sum + c.offsetHeight - 56, 0);
-    const top = inner.current.getBoundingClientRect().top - page.getBoundingClientRect().top;
-    page.scrollTo({ top: page.scrollTop + top - fold, behavior: still ? 'auto' : 'smooth' });
+    const above = [...card.parentElement.children].filter((c) => c !== card && c.matches('[data-slot=step-card]') && c.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const goal = () => {
+      const fold = above.reduce((sum, c) => sum + c.offsetHeight - ROW, 0);
+      return Math.max(0, card.getBoundingClientRect().top - page.getBoundingClientRect().top + page.scrollTop - fold - STEP_GAP);
+    };
+    const from = page.scrollTop;
+    scrolling.current?.stop();
+    if (still) page.scrollTop = goal();
+    else
+      scrolling.current = animate(0, 1, {
+        duration: 0.25,
+        ease: EASE,
+        onUpdate: (p) => (page.scrollTop = from + (goal() - from) * p),
+        onComplete: () => (page.scrollTop = goal()),
+      });
   };
+  useEffect(() => () => scrolling.current?.stop(), []);
   const settle = () => {
     setMoving(false);
     if (open && focusOnOpen.current) {
