@@ -590,8 +590,8 @@ export default function CaregiverSignUp({ onForm }) {
         ) : (
           <Field label={t('Cena koju naplaćujete za negu starijih (EUR/sat)')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={show('rate')}>
             <div className="grid grid-cols-2 gap-3">
-              <Input value={f.rateMin} onChange={(v) => set({ rateMin: v })} inputMode="decimal" suffix="€/h" placeholder="15" aria-label={t('Od')} />
-              <Input value={f.rateMax} onChange={(v) => set({ rateMax: v })} inputMode="decimal" suffix="€/h" placeholder="25" aria-label={t('Do')} />
+              <Input value={f.rateMin} onChange={(v) => set({ rateMin: v })} inputMode="decimal" suffix="€/h" aria-label={t('Od')} />
+              <Input value={f.rateMax} onChange={(v) => set({ rateMax: v })} inputMode="decimal" suffix="€/h" aria-label={t('Do')} />
             </div>
           </Field>
         )}

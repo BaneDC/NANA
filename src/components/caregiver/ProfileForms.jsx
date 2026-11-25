@@ -182,8 +182,8 @@ export function AvailabilityForm({ open, profile, market, onClose, onSave }) {
       {fi && (
         <Field label={t('Cena po satu, od - do')} required hint={t('Tržišna cena je oko 15–25 € / h.')} error={check.show(errors.rate)}>
           <div className="grid grid-cols-2 gap-3">
-            <Input value={from} onChange={setFrom} inputMode="decimal" suffix="€/h" placeholder="15" aria-label={t('Od')} />
-            <Input value={to} onChange={setTo} inputMode="decimal" suffix="€/h" placeholder="25" aria-label={t('Do')} />
+            <Input value={from} onChange={setFrom} inputMode="decimal" suffix="€/h" aria-label={t('Od')} />
+            <Input value={to} onChange={setTo} inputMode="decimal" suffix="€/h" aria-label={t('Do')} />
           </div>
         </Field>
       )}
