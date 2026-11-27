@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, CalendarCheck, Check, Package } from 'lucide-react';
+import { CalendarCheck, Check, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,7 +70,6 @@ export default function RecommendationCard({
             <CardFooter className="-mt-2">
               <Button variant="secondary" onClick={onFindCaregivers}>
                 {t('Pogledajte još negovateljica')}
-                <ArrowRight size={14} strokeWidth={1.75} />
               </Button>
             </CardFooter>
           )}

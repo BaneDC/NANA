@@ -1,4 +1,4 @@
-import { CreditCard, History, IdCard, Phone } from 'lucide-react';
+import { History, IdCard, Phone } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -336,7 +336,6 @@ export default function CaregiverPage({ care, caregiverId, onCare, onDrawer, onB
                 onFlash(t('Kartica je dodata. Posete sada mogu da se rezervišu.'));
               }}
             >
-              <CreditCard size={14} strokeWidth={1.75} />
               {t('Dodaj karticu')}
             </Button>
           </CardFooter>

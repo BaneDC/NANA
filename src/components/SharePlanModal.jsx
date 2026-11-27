@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Send } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -68,7 +68,6 @@ export default function SharePlanModal({ open = true, plan, sentTo = [], onSend,
 
       <DialogFooter>
         <Button onClick={() => check.check([error]) && onSend(entered, note.trim())}>
-          <Send size={14} strokeWidth={1.75} />
           {entered.length > 1 ? t('Pošalji na {addresses}', { addresses: tn(entered.length, 'adresu', 'adrese', 'adresa') }) : t('Pošalji')}
         </Button>
       </DialogFooter>

@@ -1,4 +1,4 @@
-import { AlertTriangle, RotateCcw, Sparkles, PenLine } from 'lucide-react';
+import { AlertTriangle, Sparkles, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardFooter } from '@/components/ui/card';
 import Attention, { AttentionDescription, AttentionHead, AttentionTitle } from './Attention';
@@ -55,7 +55,6 @@ export default function PlanChangeBanner({ change, marked = true, onUndo, onDism
             {t('U redu')}
           </Button>
           <Button variant="ghost" onClick={onUndo}>
-            <RotateCcw size={14} strokeWidth={1.75} />
             {t('Poništi izmene')}
           </Button>
         </CardFooter>

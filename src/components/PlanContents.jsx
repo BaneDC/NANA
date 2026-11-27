@@ -97,7 +97,7 @@ export default function PlanContents({
                   )}
                 </p>
                 <Button size="lg" onClick={onUnlock}>
-                  <Lock size={12} strokeWidth={2} /> {t('Otključajte ceo plan nege')}
+                  {t('Otključajte ceo plan nege')}
                 </Button>
               </div>
             </div>

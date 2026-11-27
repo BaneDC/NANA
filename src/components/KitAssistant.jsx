@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { ArtifactPane, ChatExperience, ComponentsProvider, useChatTurns } from 'inline-chat-kit';
 import 'inline-chat-kit/styles.css';
-import { AlertTriangle, ArrowRight, Check, Send } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check } from 'lucide-react';
 import { createClient } from '../lib/claudeChat';
 import { PAGES, askPlanCopilot, decided } from '../lib/planCopilot';
 import { SideFrame } from './SidePanel';
@@ -292,7 +292,6 @@ function PlanDiffCard({ data, onDecide }) {
               {t('Ne sada')}
             </Button>
             <Button onClick={() => onDecide(true)}>
-              <Check size={14} strokeWidth={2} />
               {toRecord ? t('Upiši u karton') : t('Primeni na plan')}
             </Button>
           </>
@@ -384,7 +383,6 @@ function SendRequestCard({ data, foot, onSend, onOpen }) {
                 </span>
               ) : (
                 <Button onClick={() => onSend(id)}>
-                  <Send size={14} strokeWidth={1.75} />
                   {t('Pošalji upit')}
                 </Button>
               )}

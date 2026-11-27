@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { AlertTriangle, Check, CreditCard } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -207,7 +207,6 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
               onFlash(t('Kartica je dodata. Posete sada mogu da se rezervišu.'));
             }}
           >
-            <CreditCard size={14} strokeWidth={1.75} />
             {t('Dodaj karticu')}
           </Button>
           <FieldError className="px-0">{check.show(!hasCard && t('Prvo dodajte karticu.'))}</FieldError>
@@ -219,7 +218,6 @@ function Terms({ open = true, care, caregiverId, onCare, onClose, onFlash }) {
           {t('Odbij')}
         </Button>
         <Button onClick={agree}>
-          <Check size={14} strokeWidth={2} />
           {t('Prihvati uslove')}
         </Button>
       </SheetFooter>
@@ -404,7 +402,6 @@ function WorkOrder({ open = true, care, visitId, then, onCare, onClose, onFlash,
             {t('Nešto nije u redu')}
           </Button>
           <Button onClick={confirm}>
-            <Check size={14} strokeWidth={2} />
             {t('Sve je u redu - plati sada')}
           </Button>
         </SheetFooter>

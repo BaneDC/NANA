@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronDown, Clock, Lock, Search, Send } from 'lucide-react';
+import { Check, ChevronDown, Clock, Lock } from 'lucide-react';
 import { caregiverById } from '../data/carePlan';
 import {
   activeVersion,
@@ -361,7 +361,7 @@ export default function Dashboard({
           )}
         </p>
         <Button size="lg" onClick={onUnlock}>
-          <Lock size={12} strokeWidth={2} /> {t('Otključajte ceo plan nege')}
+          {t('Otključajte ceo plan nege')}
         </Button>
       </div>
     </div>
@@ -479,7 +479,6 @@ export default function Dashboard({
           <AskAssistant onClick={onAskAssistant} />
           {plan && onShare && (
             <Button variant="secondary" size="icon" onClick={onShare} aria-label={t('Pošalji plan')} title={t('Pošalji plan')}>
-              <Send size={14} strokeWidth={1.75} />
             </Button>
           )}
         </PageActions>
@@ -494,7 +493,6 @@ export default function Dashboard({
             </CardDescription>
             <CardFooter>
               <Button onClick={onFindCaregiver} disabled>
-                <Search size={14} strokeWidth={1.75} />
                 {t('Pronađi negovateljicu')}
               </Button>
             </CardFooter>
@@ -590,7 +588,6 @@ export default function Dashboard({
               {/* once a request is out, finding someone is in the menu; the one
                   step here is where the requests are */}
               <Button onClick={() => onView('requests')}>
-                <Send size={14} strokeWidth={1.75} />
                 {t('Pogledaj upite')}
               </Button>
             </CardFooter>

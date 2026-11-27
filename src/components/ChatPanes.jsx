@@ -1,4 +1,4 @@
-import { Check, Send } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -163,7 +163,6 @@ function CaregiversPane({ care, onContact }) {
                 </Badge>
               ) : (
                 <Button className="phone:w-full" onClick={() => onContact(c)}>
-                  <Send size={14} strokeWidth={1.75} />
                   {t('Poruka')}
                 </Button>
               )
@@ -260,7 +259,6 @@ export function paneFor(openId, ctx) {
             ) : (
               <div className="mt-1 flex gap-2 phone:flex-wrap phone:*:flex-auto">
                 <Button onClick={() => onContact(c)}>
-                  <Send size={14} strokeWidth={1.75} />
                   {t('Pošalji poruku')}
                 </Button>
               </div>

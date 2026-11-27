@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Clock, Search, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,7 +53,6 @@ export default function RequestsPage({ care, askNote, onCare, onCaregiver, onPro
             <CardDescription>{askNote}</CardDescription>
             <CardFooter>
               <Button onClick={onFind}>
-                <Search size={14} strokeWidth={1.75} />
                 {t('Pronađi negovateljicu')}
               </Button>
             </CardFooter>

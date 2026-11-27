@@ -1,4 +1,3 @@
-import { Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,13 +44,11 @@ export default function CaregiverRow({ caregiver, standing, onSelect, onOpen }) 
         (onOpen ? (
           <ItemAction>
             <Button onClick={() => onSelect(caregiver)}>
-              <Send size={14} strokeWidth={1.75} />
               {t('Pošalji poruku')}
             </Button>
           </ItemAction>
         ) : (
           <Button className="phone:w-full" onClick={() => onSelect(caregiver)}>
-            <Send size={14} strokeWidth={1.75} />
             {t('Pošalji poruku')}
           </Button>
         ))

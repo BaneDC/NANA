@@ -694,14 +694,18 @@ Prototip: u demou se sve, i karton, pamti po tržištu dok se u Simulaciji ne iz
 
 **Podešavanja (odlučeno 28. 9.):** dugme sa tekstom nema ikonicu. **„Odjava" je poslednja kartica profila, `/profile`, kod porodice i kod negovateljice** (odlučeno 19. 11., Branislav; od 11. 11., dizajner, bila je poslednja kartica Podešavanja, a do tada je nije bilo nigde): grupa bez naslova, kartica „Odjava", rečenica da sve ostaje sačuvano i „Odjavi se" (`secondary`, gasi; bez pitanja, jer se ništa ne gubi). Vodi na „Ko ste?" (`signOut` u `src/lib/account.js`), za porodicu i negovateljicu. To važi za stranicu i za sve njene dijaloge i drawer-e (kartica, lozinka, 2FA, kolačići). Izbor jezika pokazuje podloga čipa, bez kvačice.
 
-**Ostatak aplikacije — ODLUKA NA ČEKANJU:** tamo su ikonice još nedosledne („Pošalji poruku" ima ikonicu u planu, a na „Pronađi" nema). Dok se ne odluči, ne dodaj i ne uklanjaj ikonice van Podešavanja. Ne dodaj ni ikonice u naslove kartica: kolega ih je dodao 28. 9. (`0f734cd`), sweep obrazaca ih je istog dana uklonio, a konačna odluka još nije pala.
+**Ostatak aplikacije (odlučeno 27. 11., Branislav): dekorativna ikonica se ne stavlja.** Ikonica u dugmetu sa tekstom je dekorativna kad samo ponavlja ono što tekst već kaže (avion uz „Pošalji poruku", lupa uz „Pronađi negovateljicu", katanac uz „Otključajte ceo plan nege", kartica uz „Dodaj karticu", kvačica uz „Prihvati uslove", strelica uz „Pogledajte još negovateljica"). Takva se ne stavlja, ni u `primary`, ni u ostalim. Ikonica ostaje kad nosi nešto što tekst ne kaže: spisak ispod. Do 27. 11. odluka je bila na čekanju i ikonice su bile nedosledne („Pošalji poruku" je na četiri mesta imala avion, a na četiri nije), pa su tog dana uklonjene sa 17 dugmadi. Ikonice u naslovima kartica se i dalje ne dodaju: kolega ih je dodao 28. 9. (`0f734cd`), sweep obrazaca ih je istog dana uklonio.
 
 **Ikonica ostaje uvek:**
 - dugme bez teksta (`iconOnly`), uz `aria-label`;
 - strelica koja pokazuje da li je nešto otvoreno ili zatvoreno (disclosure);
 - „Pitaj asistenta", ista komponenta gde postoji (Moja nega);
-- kvačice u listama i u znački stanja, jer to nisu dugmad.
-- olovka na avataru koji se menja („Moj profil" negovateljice, §12c), jer to nije dugme sa tekstom.
+- kvačice u listama i u znački stanja, jer to nisu dugmad;
+- olovka na avataru koji se menja („Moj profil" negovateljice, §12c), jer to nije dugme sa tekstom;
+- „+" uz „Novi razgovor" u meniju, jer u skupljenom meniju ostaje samo on (§8);
+- slušalica uz broj telefona (dugme koje zove, u glavi stranice negovateljice), jer kaže da pritisak zove, a broj sam to ne kaže;
+- strelica u navigaciji („Nazad", prethodna i sledeća kolona), jer pokazuje smer;
+- onboarding (`Immersive*`) ima svoj jezik i ovo ga ne menja („Pogledaj ceo plan" sa strelicom ostaje).
 
 ## 12. Telefon
 
