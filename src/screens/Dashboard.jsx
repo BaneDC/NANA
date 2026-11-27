@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronDown, Clock, Lock } from 'lucide-react';
+import { Check, ChevronDown, Clock, Lock, Send } from 'lucide-react';
 import { caregiverById } from '../data/carePlan';
 import {
   activeVersion,
@@ -479,6 +479,7 @@ export default function Dashboard({
           <AskAssistant onClick={onAskAssistant} />
           {plan && onShare && (
             <Button variant="secondary" size="icon" onClick={onShare} aria-label={t('Pošalji plan')} title={t('Pošalji plan')}>
+              <Send size={14} strokeWidth={1.75} />
             </Button>
           )}
         </PageActions>
