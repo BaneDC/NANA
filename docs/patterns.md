@@ -389,6 +389,8 @@ Nova vrsta reda je `Item`. Ne piši joj posebnu ivicu, podlogu, senku ili radius
 
 ## 7. Šta se klikne
 
+**Prozor je uvek iznad onoga iz čega je otvoren** (odlučeno 27. 11., Branislav). Redosled slojeva, odozdo: strana (do 10) · meni na telefonu (30/31) · panel sa strane preko strane, asistent i Simulacija na telefonu i užem ekranu (35) · **prozori: `Dialog`, `Sheet`, `Drawer` (36)** · padajuće liste i prozorčići uz polje, `Select`, `Popover` (40) · obaveštenja (60). Do 27. 11. prozori su bili na 20, ispod panela asistenta, pa se na telefonu prozor otvoren iz asistenta („Pošalji upit": „Poruka sa planom nege") otvarao iza njega i delovalo je da se ništa ne dešava. Prozor ne dobija svoj sloj po mestu sa kog se otvara.
+
 **Kartica ili red koji predstavlja nešto sa svojim detaljima** (negovateljica, plan, poseta) ceo je klikabilan i otvara te detalje.
 
 ```jsx

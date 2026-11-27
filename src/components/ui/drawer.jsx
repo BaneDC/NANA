@@ -78,7 +78,7 @@ function initialFocusOf(popup) {
 function DrawerContent({
   className,
   bodyClassName,
-  layerClassName = "z-20",
+  layerClassName = "z-36",
   overlayClassName,
   children,
   kind = "sheet",
