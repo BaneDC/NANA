@@ -65,6 +65,13 @@ export function PageHeader({ className, ...props }) {
         'mb-2 flex items-start gap-8 pl-4',
         'phone:grid phone:grid-cols-[minmax(0,1fr)_auto] phone:gap-x-3 phone:gap-y-0',
         'phone:[&>:not([data-slot=page-header-text])]:col-start-2 phone:[&>:not([data-slot=page-header-text])]:row-start-2',
+        // actions that are only icons stand right of the title and the
+        // subtitle both, so the subtitle is not under the button's edge and
+        // stays as close to the title as anywhere (decided 27. 11., Branislav)
+        'phone:has-[>[data-phone-icons]]:[&>[data-slot=page-actions]]:row-[2/span_2]',
+        'phone:has-[>[data-phone-icons]]:[&>[data-slot=page-actions]]:self-start',
+        'phone:has-[>[data-phone-icons]]:[&_[data-slot=page-description]]:col-span-1!',
+        'phone:has-[>[data-phone-icons]]:[&_[data-slot=page-title]]:self-start!',
         // a person's page: her name keeps the first line, the actions go under it
         'phone:[&>[data-slot=page-person]]:col-span-full phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:col-span-full phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:row-start-3 phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:mt-3 phone:has-[>[data-slot=page-person]]:[&>[data-slot=page-actions]]:justify-start',
         className
@@ -125,11 +132,13 @@ export function PageDescription({ className, ...props }) {
 }
 
 // An icon button here is as tall as a text button beside it (32, 44 under a
-// finger), not a chip's 28 (§4).
-export function PageActions({ className, ...props }) {
+// finger), not a chip's 28 (§4). `phoneIcons`: on a phone only icon buttons
+// are left here, so they stand beside the title and the subtitle both.
+export function PageActions({ className, phoneIcons, ...props }) {
   return (
     <div
       data-slot="page-actions"
+      data-phone-icons={phoneIcons || undefined}
       className={cn(
         'flex shrink-0 items-center gap-2 phone:flex-wrap phone:justify-end',
         '[&_[data-slot=button][data-size=icon]]:size-(--button-size)',

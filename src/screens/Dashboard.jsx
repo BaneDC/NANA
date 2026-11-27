@@ -475,7 +475,8 @@ export default function Dashboard({
             one step in the card below. */}
         {/* Sending the plan on (SharePlanModal) is here since the plan has no
             page of its own: the plan is this page (docs/patterns.md §4a). */}
-        <PageActions>
+        {/* on a phone "Pitaj asistenta" is in the top bar, the plane is left */}
+        <PageActions phoneIcons>
           <AskAssistant onClick={onAskAssistant} />
           {plan && onShare && (
             <Button variant="secondary" size="icon" onClick={onShare} aria-label={t('Pošalji plan')} title={t('Pošalji plan')}>
